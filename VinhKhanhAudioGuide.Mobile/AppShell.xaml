@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="VinhKhanhAudioGuide.Mobile.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:VinhKhanhAudioGuide.Mobile.Views"
+    Shell.FlyoutBehavior="Disabled"
+    Title="Vinh Khanh Audio Guide">
+
+    <TabBar>
+        <ShellContent
+            Title="Trang chủ"
+            Icon="home_icon"
+            ContentTemplate="{DataTemplate views:MainPage}"
+            Route="MainPage" />
+        
+        <ShellContent
+            Title="Khám phá"
+            Icon="search_icon"
+            ContentTemplate="{DataTemplate views:SearchPage}"
+            Route="SearchPage" />
+        
+        <ShellContent
+            Title="Bản đồ"
+            Icon="map_icon"
+            ContentTemplate="{DataTemplate views:MapPage}"
+            Route="MapPage" />
+        
+        <ShellContent
+            Title="Tours"
+            Icon="tour_icon"
+            ContentTemplate="{DataTemplate views:ToursPage}"
+            Route="ToursPage" />
+        
+        <ShellContent
+            Title="Tài khoản"
+            Icon="profile_icon"
+            ContentTemplate="{DataTemplate views:ProfilePage}"
+            Route="ProfilePage" />
+    </TabBar>
+
+</Shell>

@@ -1,0 +1,60 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Tours.IndexModel
+@{
+    ViewData["Title"] = "Tours";
+    ViewData["ActivePage"] = "Tours";
+}
+
+<div class="page-header">
+    <h1><i class="fas fa-route me-2"></i>Quản lý Tours</h1>
+    <a asp-page="Create" class="btn-admin btn-admin-primary"><i class="fas fa-plus"></i> Thêm tour</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-admin">@TempData["Success"]</div>
+}
+
+<div class="admin-card">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên tour</th>
+                <th>Thời lượng</th>
+                <th>Giá</th>
+                <th>Nổi bật</th>
+                <th>Địa điểm</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var tour in Model.Tours)
+            {
+                var hours = tour.Duration / 60;
+                var mins = tour.Duration % 60;
+                <tr>
+                    <td><code>@tour.Id</code></td>
+                    <td><strong>@tour.Name</strong></td>
+                    <td>@(hours > 0 ? $"{hours}h" : "")@(mins > 0 ? $"{mins}p" : "")</td>
+                    <td>@(tour.Price == 0 ? "Miễn phí" : $"{tour.Price:N0} VNĐ")</td>
+                    <td>
+                        @if (tour.IsFeatured)
+                        {
+                            <span class="badge-admin badge-featured"><i class="fas fa-star"></i> Nổi bật</span>
+                        }
+                    </td>
+                    <td><span class="badge-admin badge-count">@tour.TourLocations.Count</span></td>
+                    <td>
+                        <a asp-page="Edit" asp-route-id="@tour.Id" class="btn-admin btn-sm-admin btn-admin-warning"><i class="fas fa-edit"></i></a>
+                        <a asp-page="Delete" asp-route-id="@tour.Id" class="btn-admin btn-sm-admin btn-admin-danger"><i class="fas fa-trash"></i></a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (!Model.Tours.Any())
+    {
+        <div class="empty-state"><i class="fas fa-route d-block"></i>Chưa có tour nào</div>
+    }
+</div>

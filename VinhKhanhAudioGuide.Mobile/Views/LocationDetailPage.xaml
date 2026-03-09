@@ -1,0 +1,263 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
+             xmlns:models="clr-namespace:VinhKhanhAudioGuide.Mobile.Models"
+             x:Class="VinhKhanhAudioGuide.Mobile.Views.LocationDetailPage"
+             x:DataType="viewmodels:LocationDetailViewModel"
+             Title="{Binding Title}">
+
+       <ScrollView>
+              <VerticalStackLayout Spacing="0">
+
+                     <!-- Location Image / Hero -->
+                     <Grid HeightRequest="250">
+                            <BoxView BackgroundColor="{StaticResource Primary}"
+                                          Opacity="0.7"/>
+                            <Image Source="{Binding ImageUrl}"
+                                   Aspect="AspectFill"
+                                   HeightRequest="250"/>
+                            <!-- Overlay text -->
+                            <VerticalStackLayout VerticalOptions="End"
+                                          Padding="20,0,20,15">
+                                   <Label Text="{Binding LocationName}"
+                                          TextColor="White"
+                                          FontSize="26"
+                                          FontAttributes="Bold"/>
+                                   <Label Text="{Binding Address}"
+                                          TextColor="White"
+                                          FontSize="12"
+                                          Opacity="0.9"/>
+                            </VerticalStackLayout>
+                     </Grid>
+
+                     <VerticalStackLayout Padding="20"
+                                   Spacing="15">
+
+                            <!-- Info Bar (matching web detail-info-bar) -->
+                            <Grid ColumnDefinitions="*,*,*,*"
+                                          ColumnSpacing="8">
+                                   <Frame Grid.Column="0"
+                                                 Style="{StaticResource InfoBarFrame}">
+                                          <VerticalStackLayout HorizontalOptions="Center"
+                                                        Spacing="2">
+                                                 <Label Text="⏱"
+                                                               FontSize="18"
+                                                               HorizontalOptions="Center"/>
+                                                 <Label Text="Thời gian"
+                                                               FontSize="10"
+                                                               TextColor="{StaticResource Gray500}"
+                                                               HorizontalOptions="Center"/>
+                                                 <Label Text="{Binding Duration, StringFormat='{0} phút'}"
+                                                               FontSize="12"
+                                                               FontAttributes="Bold"
+                                                               HorizontalOptions="Center"/>
+                                          </VerticalStackLayout>
+                                   </Frame>
+                                   <Frame Grid.Column="1"
+                                                 Style="{StaticResource InfoBarFrame}">
+                                          <VerticalStackLayout HorizontalOptions="Center"
+                                                        Spacing="2">
+                                                 <Label Text="🎧"
+                                                               FontSize="18"
+                                                               HorizontalOptions="Center"/>
+                                                 <Label Text="Audio"
+                                                               FontSize="10"
+                                                               TextColor="{StaticResource Gray500}"
+                                                               HorizontalOptions="Center"/>
+                                                 <Label Text="{Binding AudioGuideCountText}"
+                                                               FontSize="12"
+                                                               FontAttributes="Bold"
+                                                               HorizontalOptions="Center"/>
+                                          </VerticalStackLayout>
+                                   </Frame>
+                                   <Frame Grid.Column="2"
+                                                 Style="{StaticResource InfoBarFrame}">
+                                          <VerticalStackLayout HorizontalOptions="Center"
+                                                        Spacing="2">
+                                                 <Label Text="🏷"
+                                                               FontSize="18"
+                                                               HorizontalOptions="Center"/>
+                                                 <Label Text="Danh mục"
+                                                               FontSize="10"
+                                                               TextColor="{StaticResource Gray500}"
+                                                               HorizontalOptions="Center"/>
+                                                 <Label Text="{Binding CategoryName}"
+                                                               FontSize="11"
+                                                               FontAttributes="Bold"
+                                                               HorizontalOptions="Center"
+                                                               LineBreakMode="TailTruncation"/>
+                                          </VerticalStackLayout>
+                                   </Frame>
+                                   <Frame Grid.Column="3"
+                                                 Style="{StaticResource InfoBarFrame}">
+                                          <VerticalStackLayout HorizontalOptions="Center"
+                                                        Spacing="2">
+                                                 <Label Text="🌐"
+                                                               FontSize="18"
+                                                               HorizontalOptions="Center"/>
+                                                 <Label Text="Ngôn ngữ"
+                                                               FontSize="10"
+                                                               TextColor="{StaticResource Gray500}"
+                                                               HorizontalOptions="Center"/>
+                                                 <Label Text="Tiếng Việt"
+                                                               FontSize="11"
+                                                               FontAttributes="Bold"
+                                                               HorizontalOptions="Center"/>
+                                          </VerticalStackLayout>
+                                   </Frame>
+                            </Grid>
+
+                            <BoxView HeightRequest="1"
+                                          Color="LightGray"/>
+
+                            <!-- Description -->
+                            <Label Text="Giới thiệu"
+                                   FontSize="18"
+                                   FontAttributes="Bold"/>
+
+                            <Label Text="{Binding Description}"
+                                   FontSize="14"
+                                   TextColor="Gray"/>
+
+                            <!-- Audio Guides -->
+                            <Label Text="Audio Guide"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   Margin="0,10,0,0"/>
+                            <Label Text="Nghe thuyết minh về các điểm tham quan"
+                                   FontSize="12"
+                                   TextColor="{StaticResource Gray500}"
+                                   Margin="0,0,0,5"/>
+
+                            <CollectionView ItemsSource="{Binding AudioGuides}">
+                                   <CollectionView.ItemTemplate>
+                                          <DataTemplate x:DataType="models:AudioGuide">
+                                                 <Frame Padding="12"
+                                                        Margin="0,4"
+                                                        CornerRadius="10"
+                                                        BorderColor="LightGray">
+                                                        <Frame.GestureRecognizers>
+                                                               <TapGestureRecognizer
+                                                                      Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:LocationDetailViewModel}}, Path=PlayAudioCommand}"
+                                                                      CommandParameter="{Binding .}"/>
+                                                        </Frame.GestureRecognizers>
+                                                        <Grid ColumnDefinitions="44,*,Auto">
+                                                               <Frame BackgroundColor="{StaticResource Primary}"
+                                                                      CornerRadius="22"
+                                                                      Padding="0"
+                                                                      HeightRequest="44"
+                                                                      WidthRequest="44"
+                                                                      HasShadow="False">
+                                                                      <Label Text="▶"
+                                                                             TextColor="White"
+                                                                             FontSize="16"
+                                                                             HorizontalOptions="Center"
+                                                                             VerticalOptions="Center"/>
+                                                               </Frame>
+                                                               <VerticalStackLayout Grid.Column="1"
+                                                                                    Padding="12,0"
+                                                                                    VerticalOptions="Center"
+                                                                             Spacing="2">
+                                                                      <Label Text="{Binding Title}"
+                                                                             FontSize="14"
+                                                                             FontAttributes="Bold"/>
+                                                                      <Label Text="{Binding Description}"
+                                                                             FontSize="11"
+                                                                             TextColor="{StaticResource Gray500}"
+                                                                             LineBreakMode="TailTruncation"/>
+                                                               </VerticalStackLayout>
+                                                               <Label Grid.Column="2"
+                                                                      Text="{Binding Duration, StringFormat='⏱ {0} phút'}"
+                                                                      FontSize="11"
+                                                                      TextColor="{StaticResource Gray500}"
+                                                                      VerticalOptions="Center"/>
+                                                        </Grid>
+                                                 </Frame>
+                                          </DataTemplate>
+                                   </CollectionView.ItemTemplate>
+                            </CollectionView>
+
+                            <!-- Map Embed (matching web sidebar map) -->
+                            <Label Text="📍 Vị trí"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   Margin="0,10,0,0"/>
+
+                            <Frame CornerRadius="12"
+                                          Padding="0"
+                                          HeightRequest="200"
+                                          IsClippedToBounds="True"
+                                          HasShadow="True">
+                                   <WebView Source="{Binding MapHtmlSource}"/>
+                            </Frame>
+                            <Label Text="{Binding Address}"
+                                   FontSize="12"
+                                   TextColor="{StaticResource Gray500}"
+                                   Margin="0,5,0,0"/>
+
+                            <!-- Related Tours (matching web sidebar) -->
+                            <Label Text="🗺 Tours liên quan"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   Margin="0,10,0,0"
+                                   IsVisible="{Binding HasRelatedTours}"/>
+
+                            <CollectionView ItemsSource="{Binding RelatedTours}"
+                                            IsVisible="{Binding HasRelatedTours}">
+                                   <CollectionView.ItemTemplate>
+                                          <DataTemplate x:DataType="viewmodels:RelatedTourItem">
+                                                 <Frame Padding="10"
+                                                        Margin="0,4"
+                                                        CornerRadius="10"
+                                                        BorderColor="{StaticResource Gray100}">
+                                                        <Frame.GestureRecognizers>
+                                                               <TapGestureRecognizer
+                                                                      Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:LocationDetailViewModel}}, Path=OpenTourCommand}"
+                                                                      CommandParameter="{Binding .}"/>
+                                                        </Frame.GestureRecognizers>
+                                                        <Grid ColumnDefinitions="44,*,Auto">
+                                                               <Frame BackgroundColor="{StaticResource Secondary}"
+                                                                      CornerRadius="22"
+                                                                      Padding="0"
+                                                                      HeightRequest="44"
+                                                                      WidthRequest="44"
+                                                                      HasShadow="False">
+                                                                      <Label Text="🗺"
+                                                                             FontSize="18"
+                                                                             HorizontalOptions="Center"
+                                                                             VerticalOptions="Center"/>
+                                                               </Frame>
+                                                               <VerticalStackLayout Grid.Column="1"
+                                                                             Padding="10,0"
+                                                                             VerticalOptions="Center"
+                                                                             Spacing="2">
+                                                                      <Label Text="{Binding Name}"
+                                                                                    FontSize="14"
+                                                                                    FontAttributes="Bold"/>
+                                                                      <Label Text="{Binding Info}"
+                                                                                    FontSize="11"
+                                                                                    TextColor="{StaticResource Gray500}"/>
+                                                               </VerticalStackLayout>
+                                                               <Label Grid.Column="2"
+                                                                             Text=">"
+                                                                             FontSize="18"
+                                                                             TextColor="{StaticResource Gray400}"
+                                                                             VerticalOptions="Center"/>
+                                                        </Grid>
+                                                 </Frame>
+                                          </DataTemplate>
+                                   </CollectionView.ItemTemplate>
+                            </CollectionView>
+
+                            <!-- Start Button -->
+                            <Button Text="Bắt đầu nghe"
+                                    Command="{Binding StartListeningCommand}"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Margin="0,20,0,0"/>
+
+                     </VerticalStackLayout>
+              </VerticalStackLayout>
+       </ScrollView>
+
+</ContentPage>

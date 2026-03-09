@@ -1,0 +1,51 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Categories.IndexModel
+@{
+    ViewData["Title"] = "Danh mục";
+    ViewData["ActivePage"] = "Categories";
+}
+
+<div class="page-header">
+    <h1><i class="fas fa-folder me-2"></i>Quản lý danh mục</h1>
+    <a asp-page="Create" class="btn-admin btn-admin-primary"><i class="fas fa-plus"></i> Thêm danh mục</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-admin">@TempData["Success"]</div>
+}
+
+<div class="admin-card">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Icon</th>
+                <th>Tên danh mục</th>
+                <th>Mô tả</th>
+                <th>Số địa điểm</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cat in Model.Categories)
+            {
+                <tr>
+                    <td><code>@cat.Id</code></td>
+                    <td><i class="fas @cat.Icon"></i></td>
+                    <td><strong>@cat.Name</strong></td>
+                    <td>@cat.Description</td>
+                    <td><span class="badge-admin badge-count">@cat.Locations.Count</span></td>
+                    <td>
+                        <a asp-page="Edit" asp-route-id="@cat.Id" class="btn-admin btn-sm-admin btn-admin-warning"><i class="fas fa-edit"></i></a>
+                        <a asp-page="Delete" asp-route-id="@cat.Id" class="btn-admin btn-sm-admin btn-admin-danger"><i class="fas fa-trash"></i></a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (!Model.Categories.Any())
+    {
+        <div class="empty-state"><i class="fas fa-folder-open d-block"></i>Chưa có danh mục nào</div>
+    }
+</div>

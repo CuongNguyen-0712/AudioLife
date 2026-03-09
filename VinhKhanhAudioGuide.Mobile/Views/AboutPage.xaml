@@ -1,0 +1,326 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
+             x:Class="VinhKhanhAudioGuide.Mobile.Views.AboutPage"
+             x:DataType="viewmodels:AboutViewModel"
+             Title="Về ứng dụng">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0">
+
+            <!-- Hero gradient header -->
+            <Grid HeightRequest="200">
+                <BoxView BackgroundColor="{StaticResource Primary}"/>
+                <VerticalStackLayout HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        Spacing="5">
+                    <Label Text="🎧"
+                            FontSize="40"
+                            HorizontalOptions="Center"/>
+                    <Label Text="Vinh Khanh Audio Guide"
+                           FontSize="22"
+                           FontAttributes="Bold"
+                           TextColor="White"
+                           HorizontalOptions="Center"/>
+                    <Label Text="{Binding AppVersion, StringFormat='Phiên bản {0}'}"
+                           FontSize="13"
+                           TextColor="White"
+                           Opacity="0.85"
+                           HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </Grid>
+
+            <VerticalStackLayout Padding="20"
+                    Spacing="20">
+
+                <!-- Stats Row -->
+                <Grid ColumnDefinitions="*,*,*"
+                        ColumnSpacing="10">
+                    <Frame Grid.Column="0"
+                            Style="{StaticResource StatCard}"
+                            BackgroundColor="{StaticResource Primary}">
+                        <VerticalStackLayout HorizontalOptions="Center"
+                                Spacing="2">
+                            <Label Text="{Binding LocationCount}"
+                                    Style="{StaticResource StatNumber}"/>
+                            <Label Text="Địa điểm"
+                                    Style="{StaticResource StatLabel}"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                    <Frame Grid.Column="1"
+                            Style="{StaticResource StatCard}"
+                            BackgroundColor="{StaticResource Primary}">
+                        <VerticalStackLayout HorizontalOptions="Center"
+                                Spacing="2">
+                            <Label Text="{Binding AudioCount}"
+                                    Style="{StaticResource StatNumber}"/>
+                            <Label Text="Audio"
+                                    Style="{StaticResource StatLabel}"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                    <Frame Grid.Column="2"
+                            Style="{StaticResource StatCard}"
+                            BackgroundColor="{StaticResource Primary}">
+                        <VerticalStackLayout HorizontalOptions="Center"
+                                Spacing="2">
+                            <Label Text="{Binding TourCount}"
+                                    Style="{StaticResource StatNumber}"/>
+                            <Label Text="Tours"
+                                    Style="{StaticResource StatLabel}"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                </Grid>
+
+                <!-- Description -->
+                <Label Text="Vinh Khanh Audio Guide là ứng dụng hướng dẫn du lịch bằng âm thanh, giúp bạn khám phá văn hóa và lịch sử Việt Nam một cách sinh động và hấp dẫn."
+                       FontSize="14"
+                       TextColor="{StaticResource Gray600}"
+                       HorizontalTextAlignment="Center"/>
+
+                <BoxView HeightRequest="1"
+                        Color="LightGray"/>
+
+                <!-- How It Works Steps -->
+                <Label Text="Cách sử dụng"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+
+                <VerticalStackLayout Spacing="0">
+                    <!-- Step 1 -->
+                    <Grid ColumnDefinitions="44,*"
+                            Padding="0,0,0,0">
+                        <VerticalStackLayout HorizontalOptions="Center"
+                                Spacing="0">
+                            <Frame Style="{StaticResource TimelineNumber}">
+                                <Label Text="1"
+                                        TextColor="White"
+                                        FontSize="13"
+                                        FontAttributes="Bold"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center"/>
+                            </Frame>
+                            <BoxView Style="{StaticResource TimelineLine}"/>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1"
+                                Padding="10,0,0,15"
+                                Spacing="2">
+                            <Label Text="Chọn địa điểm"
+                                    FontSize="14"
+                                    FontAttributes="Bold"/>
+                            <Label Text="Tìm kiếm hoặc duyệt danh sách các địa điểm du lịch"
+                                    FontSize="12"
+                                    TextColor="{StaticResource Gray500}"/>
+                        </VerticalStackLayout>
+                    </Grid>
+                    <!-- Step 2 -->
+                    <Grid ColumnDefinitions="44,*"
+                            Padding="0,0,0,0">
+                        <VerticalStackLayout HorizontalOptions="Center"
+                                Spacing="0">
+                            <Frame Style="{StaticResource TimelineNumber}">
+                                <Label Text="2"
+                                        TextColor="White"
+                                        FontSize="13"
+                                        FontAttributes="Bold"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center"/>
+                            </Frame>
+                            <BoxView Style="{StaticResource TimelineLine}"/>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1"
+                                Padding="10,0,0,15"
+                                Spacing="2">
+                            <Label Text="Nghe thuyết minh"
+                                    FontSize="14"
+                                    FontAttributes="Bold"/>
+                            <Label Text="Phát audio hướng dẫn chất lượng cao tại mỗi điểm tham quan"
+                                    FontSize="12"
+                                    TextColor="{StaticResource Gray500}"/>
+                        </VerticalStackLayout>
+                    </Grid>
+                    <!-- Step 3 -->
+                    <Grid ColumnDefinitions="44,*"
+                            Padding="0,0,0,0">
+                        <VerticalStackLayout HorizontalOptions="Center"
+                                Spacing="0">
+                            <Frame Style="{StaticResource TimelineNumber}">
+                                <Label Text="3"
+                                        TextColor="White"
+                                        FontSize="13"
+                                        FontAttributes="Bold"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center"/>
+                            </Frame>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1"
+                                Padding="10,0,0,15"
+                                Spacing="2">
+                            <Label Text="Khám phá thêm"
+                                    FontSize="14"
+                                    FontAttributes="Bold"/>
+                            <Label Text="Theo dõi lộ trình tour hoặc tự do khám phá các điểm lân cận"
+                                    FontSize="12"
+                                    TextColor="{StaticResource Gray500}"/>
+                        </VerticalStackLayout>
+                    </Grid>
+                </VerticalStackLayout>
+
+                <BoxView HeightRequest="1"
+                        Color="LightGray"/>
+
+                <!-- Feature Grid -->
+                <Label Text="Tính năng nổi bật"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+
+                <Grid ColumnDefinitions="*,*"
+                        RowDefinitions="Auto,Auto,Auto"
+                        ColumnSpacing="10"
+                        RowSpacing="10">
+                    <Frame Grid.Row="0"
+                            Grid.Column="0"
+                            CornerRadius="12"
+                            Padding="15"
+                            BackgroundColor="{StaticResource Secondary}"
+                            HasShadow="False">
+                        <VerticalStackLayout HorizontalOptions="Center"
+                                Spacing="5">
+                            <Label Text="📍"
+                                    FontSize="24"
+                                    HorizontalOptions="Center"/>
+                            <Label Text="100+ địa điểm"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                    <Frame Grid.Row="0"
+                            Grid.Column="1"
+                            CornerRadius="12"
+                            Padding="15"
+                            BackgroundColor="{StaticResource Secondary}"
+                            HasShadow="False">
+                        <VerticalStackLayout HorizontalOptions="Center"
+                                Spacing="5">
+                            <Label Text="🎧"
+                                    FontSize="24"
+                                    HorizontalOptions="Center"/>
+                            <Label Text="Audio HD"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                    <Frame Grid.Row="1"
+                            Grid.Column="0"
+                            CornerRadius="12"
+                            Padding="15"
+                            BackgroundColor="{StaticResource Secondary}"
+                            HasShadow="False">
+                        <VerticalStackLayout HorizontalOptions="Center"
+                                Spacing="5">
+                            <Label Text="🌐"
+                                    FontSize="24"
+                                    HorizontalOptions="Center"/>
+                            <Label Text="Đa ngôn ngữ"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                    <Frame Grid.Row="1"
+                            Grid.Column="1"
+                            CornerRadius="12"
+                            Padding="15"
+                            BackgroundColor="{StaticResource Secondary}"
+                            HasShadow="False">
+                        <VerticalStackLayout HorizontalOptions="Center"
+                                Spacing="5">
+                            <Label Text="📥"
+                                    FontSize="24"
+                                    HorizontalOptions="Center"/>
+                            <Label Text="Offline mode"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                    <Frame Grid.Row="2"
+                            Grid.Column="0"
+                            CornerRadius="12"
+                            Padding="15"
+                            BackgroundColor="{StaticResource Secondary}"
+                            HasShadow="False">
+                        <VerticalStackLayout HorizontalOptions="Center"
+                                Spacing="5">
+                            <Label Text="🗺"
+                                    FontSize="24"
+                                    HorizontalOptions="Center"/>
+                            <Label Text="Bản đồ tương tác"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                    <Frame Grid.Row="2"
+                            Grid.Column="1"
+                            CornerRadius="12"
+                            Padding="15"
+                            BackgroundColor="{StaticResource Secondary}"
+                            HasShadow="False">
+                        <VerticalStackLayout HorizontalOptions="Center"
+                                Spacing="5">
+                            <Label Text="🛤"
+                                    FontSize="24"
+                                    HorizontalOptions="Center"/>
+                            <Label Text="Tour tùy chỉnh"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                </Grid>
+
+                <!-- Links -->
+                <VerticalStackLayout Spacing="10"
+                        Margin="0,10,0,0">
+                    <Button Text="Đánh giá ứng dụng"
+                            Command="{Binding RateAppCommand}"
+                            Style="{StaticResource PrimaryButton}"/>
+
+                    <Button Text="Chia sẻ ứng dụng"
+                            Command="{Binding ShareAppCommand}"
+                            Style="{StaticResource SecondaryButton}"/>
+                </VerticalStackLayout>
+
+                <!-- Legal -->
+                <VerticalStackLayout Spacing="10"
+                        HorizontalOptions="Center">
+                    <Label Text="Điều khoản sử dụng"
+                           Style="{StaticResource LinkText}"
+                           HorizontalOptions="Center">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding OpenTermsCommand}"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Label Text="Chính sách bảo mật"
+                           Style="{StaticResource LinkText}"
+                           HorizontalOptions="Center">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding OpenPrivacyPolicyCommand}"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                </VerticalStackLayout>
+
+                <Label Text="© 2026 Vinh Khanh Audio Guide. All rights reserved."
+                       FontSize="11"
+                       TextColor="{StaticResource Gray400}"
+                       HorizontalOptions="Center"
+                       Margin="0,10,0,20"/>
+
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

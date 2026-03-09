@@ -1,0 +1,23 @@
+﻿/* Vinh Khanh Audio Guide - Layout scoped styles */
+
+a.navbar-brand {
+  white-space: normal;
+  text-align: center;
+}
+
+a {
+  color: #512BD4;
+}
+
+.btn-primary {
+  color: #fff;
+  background-color: #512BD4;
+  border-color: #3B1FA0;
+}
+
+.nav-pills .nav-link.active,
+.nav-pills .show>.nav-link {
+  color: #fff;
+  background-color: #512BD4;
+  border-color: #3B1FA0;
+}

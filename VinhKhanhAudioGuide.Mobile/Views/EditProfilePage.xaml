@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
+             x:Class="VinhKhanhAudioGuide.Mobile.Views.EditProfilePage"
+             x:DataType="viewmodels:EditProfileViewModel"
+             Title="Chỉnh sửa hồ sơ">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            
+            <!-- Avatar -->
+            <VerticalStackLayout HorizontalOptions="Center" Spacing="10">
+                <Frame CornerRadius="50"
+                       HeightRequest="100"
+                       WidthRequest="100"
+                       Padding="0"
+                       IsClippedToBounds="True">
+                    <Image Source="{Binding AvatarUrl}" Aspect="AspectFill"/>
+                </Frame>
+                <Button Text="Đổi ảnh đại diện"
+                        Command="{Binding ChangeAvatarCommand}"
+                        Style="{StaticResource SmallButton}"/>
+            </VerticalStackLayout>
+
+            <!-- Form -->
+            <VerticalStackLayout Spacing="15">
+                
+                <!-- Name -->
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="Họ và tên"
+                           FontSize="12"
+                           TextColor="{StaticResource Gray500}"/>
+                    <Frame Padding="10" CornerRadius="8" BorderColor="{StaticResource Gray200}">
+                        <Entry Placeholder="Nhập họ và tên"
+                               Text="{Binding Name}"
+                               BackgroundColor="Transparent"/>
+                    </Frame>
+                </VerticalStackLayout>
+
+                <!-- Email -->
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="Email"
+                           FontSize="12"
+                           TextColor="{StaticResource Gray500}"/>
+                    <Frame Padding="10" CornerRadius="8" BorderColor="{StaticResource Gray200}">
+                        <Entry Placeholder="Nhập email"
+                               Text="{Binding Email}"
+                               Keyboard="Email"
+                               BackgroundColor="Transparent"/>
+                    </Frame>
+                </VerticalStackLayout>
+
+                <!-- Phone -->
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="Số điện thoại"
+                           FontSize="12"
+                           TextColor="{StaticResource Gray500}"/>
+                    <Frame Padding="10" CornerRadius="8" BorderColor="{StaticResource Gray200}">
+                        <Entry Placeholder="Nhập số điện thoại"
+                               Text="{Binding Phone}"
+                               Keyboard="Telephone"
+                               BackgroundColor="Transparent"/>
+                    </Frame>
+                </VerticalStackLayout>
+
+                <!-- Date of Birth -->
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="Ngày sinh"
+                           FontSize="12"
+                           TextColor="{StaticResource Gray500}"/>
+                    <Frame Padding="10" CornerRadius="8" BorderColor="{StaticResource Gray200}">
+                        <DatePicker Date="{Binding DateOfBirth}" Format="dd/MM/yyyy"/>
+                    </Frame>
+                </VerticalStackLayout>
+
+                <!-- Gender -->
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="Giới tính"
+                           FontSize="12"
+                           TextColor="{StaticResource Gray500}"/>
+                    <Frame Padding="10" CornerRadius="8" BorderColor="{StaticResource Gray200}">
+                        <Picker Title="Chọn giới tính"
+                                ItemsSource="{Binding GenderOptions}"
+                                SelectedItem="{Binding Gender}"/>
+                    </Frame>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+
+            <!-- Buttons -->
+            <VerticalStackLayout Spacing="10" Margin="0,20,0,0">
+                <Button Text="Lưu thay đổi"
+                        Command="{Binding SaveCommand}"
+                        IsEnabled="{Binding IsSaving, Converter={StaticResource InvertedBoolConverter}}"
+                        Style="{StaticResource PrimaryButton}"/>
+                
+                <Button Text="Đổi mật khẩu"
+                        Command="{Binding ChangePasswordCommand}"
+                        Style="{StaticResource SecondaryButton}"/>
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
+             xmlns:models="clr-namespace:VinhKhanhAudioGuide.Mobile.Models"
+             x:Class="VinhKhanhAudioGuide.Mobile.Views.FavoritesPage"
+             x:DataType="viewmodels:FavoritesViewModel"
+             Title="Yêu thích">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Empty State -->
+        <VerticalStackLayout Grid.Row="1"
+                             IsVisible="{Binding IsEmpty}"
+                             VerticalOptions="Center"
+                             HorizontalOptions="Center"
+                             Padding="40">
+            <Image Source="empty_favorites"
+                   HeightRequest="150"
+                   WidthRequest="150"
+                   Opacity="0.5"/>
+            <Label Text="Chưa có địa điểm yêu thích"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   Margin="0,20,0,10"/>
+            <Label Text="Nhấn vào biểu tượng trái tim để thêm địa điểm vào danh sách yêu thích"
+                   FontSize="14"
+                   TextColor="{StaticResource Gray500}"
+                   HorizontalTextAlignment="Center"/>
+            <Button Text="Khám phá địa điểm"
+                    Command="{Binding ExploreCommand}"
+                    Margin="0,20,0,0"/>
+        </VerticalStackLayout>
+
+        <!-- Favorites List -->
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding FavoriteLocations}"
+                        IsVisible="{Binding HasItems}"
+                        SelectionMode="Single"
+                        SelectionChangedCommand="{Binding LocationSelectedCommand}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Location">
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItems>
+                                <SwipeItem Text="Xóa"
+                                           BackgroundColor="{StaticResource AudioGuideRed}"
+                                           Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:FavoritesViewModel}}, Path=RemoveFavoriteCommand}"
+                                           CommandParameter="{Binding .}"/>
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+
+                        <Frame Padding="0"
+                               Margin="15,5"
+                               CornerRadius="12"
+                               HasShadow="True">
+                            <Grid ColumnDefinitions="100,*,50">
+                                <Image Source="{Binding ImageUrl}"
+                                       Aspect="AspectFill"
+                                       HeightRequest="100"/>
+                                <VerticalStackLayout Grid.Column="1"
+                                                     Padding="15"
+                                                     VerticalOptions="Center"
+                                                     Spacing="5">
+                                    <Label Text="{Binding Name}"
+                                           FontSize="16"
+                                           FontAttributes="Bold"/>
+                                    <Label Text="{Binding Description}"
+                                           FontSize="12"
+                                           TextColor="{StaticResource Gray500}"
+                                           LineBreakMode="TailTruncation"
+                                           MaxLines="2"/>
+                                    <HorizontalStackLayout Spacing="5">
+                                        <Image Source="time_icon"
+                                                HeightRequest="12"
+                                                WidthRequest="12"/>
+                                        <Label Text="{Binding Duration, StringFormat='{0} phút'}"
+                                               FontSize="11"
+                                               TextColor="{StaticResource Primary}"/>
+                                    </HorizontalStackLayout>
+                                </VerticalStackLayout>
+
+                                <ImageButton Grid.Column="2"
+                                             Source="heart_filled_icon"
+                                             HeightRequest="30"
+                                             WidthRequest="30"
+                                             VerticalOptions="Center"
+                                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:FavoritesViewModel}}, Path=RemoveFavoriteCommand}"
+                                             CommandParameter="{Binding .}"/>
+                            </Grid>
+                        </Frame>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+
+</ContentPage>

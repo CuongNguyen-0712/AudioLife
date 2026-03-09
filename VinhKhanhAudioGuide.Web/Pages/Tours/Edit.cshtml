@@ -1,0 +1,65 @@
+@page "{id}"
+@model VinhKhanhAudioGuide.Web.Pages.Tours.EditModel
+@{
+    ViewData["Title"] = "Sửa tour";
+    ViewData["ActivePage"] = "Tours";
+}
+
+<div class="page-header">
+    <h1><i class="fas fa-edit me-2"></i>Sửa tour</h1>
+    <a asp-page="Index" class="btn-admin btn-admin-outline"><i class="fas fa-arrow-left"></i> Quay lại</a>
+</div>
+
+<div class="admin-card">
+    <div class="p-4">
+        <form method="post" class="admin-form" style="max-width:700px;">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Tour.Id" class="form-label">Mã tour</label>
+                    <input asp-for="Tour.Id" class="form-control" readonly />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Tour.Duration" class="form-label">Thời lượng (phút)</label>
+                    <input asp-for="Tour.Duration" class="form-control" type="number" />
+                </div>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Tour.Name" class="form-label">Tên tour</label>
+                <input asp-for="Tour.Name" class="form-control" />
+                <span asp-validation-for="Tour.Name" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Tour.Description" class="form-label">Mô tả</label>
+                <textarea asp-for="Tour.Description" class="form-control" rows="4"></textarea>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Tour.Price" class="form-label">Giá (VNĐ)</label>
+                    <input asp-for="Tour.Price" class="form-control" type="number" step="1000" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Tour.ImageUrl" class="form-label">URL hình ảnh</label>
+                    <input asp-for="Tour.ImageUrl" class="form-control" />
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="form-check">
+                    <input asp-for="Tour.IsFeatured" class="form-check-input" />
+                    <label asp-for="Tour.IsFeatured" class="form-check-label">Tour nổi bật</label>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Chọn địa điểm trong tour</label>
+                @foreach (var loc in Model.AllLocations)
+                {
+                    <div class="form-check">
+                        <input type="checkbox" name="SelectedLocationIds" value="@loc.Id" class="form-check-input"
+                               id="loc_@loc.Id" @(Model.SelectedLocationIds.Contains(loc.Id) ? "checked" : "") />
+                        <label class="form-check-label" for="loc_@loc.Id">@loc.Name</label>
+                    </div>
+                }
+            </div>
+            <button type="submit" class="btn-admin btn-admin-primary"><i class="fas fa-save"></i> Cập nhật</button>
+        </form>
+    </div>
+</div>

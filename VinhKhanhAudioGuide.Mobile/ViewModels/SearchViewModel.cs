@@ -1,0 +1,220 @@
+using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using VinhKhanhAudioGuide.Mobile.Models;
+using VinhKhanhAudioGuide.Mobile.Services;
+using Location = VinhKhanhAudioGuide.Mobile.Models.Location;
+
+namespace VinhKhanhAudioGuide.Mobile.ViewModels;
+
+public partial class SearchViewModel : ObservableObject
+{
+    private readonly INavigationService _navigationService;
+
+    [ObservableProperty]
+    private string _searchQuery = string.Empty;
+
+    [ObservableProperty]
+    private bool _hasSearchQuery;
+
+    [ObservableProperty]
+    private bool _isLoading;
+
+    [ObservableProperty]
+    private bool _showNoResults;
+
+    [ObservableProperty]
+    private bool _showRecentSearches = true;
+
+    [ObservableProperty]
+    private bool _showResults;
+
+    [ObservableProperty]
+    private bool _allSelected = true;
+
+    [ObservableProperty]
+    private Location? _selectedLocation;
+
+    public ObservableCollection<CategoryFilter> Categories { get; } = new();
+    public ObservableCollection<string> RecentSearches { get; } = new();
+    public ObservableCollection<SearchResultItem> SearchResults { get; } = new();
+
+    public SearchViewModel(INavigationService navigationService)
+    {
+        _navigationService = navigationService;
+        LoadCategories();
+        LoadRecentSearches();
+    }
+
+    private void LoadCategories()
+    {
+        var categories = Data.SampleData.GetCategories();
+        foreach (var cat in categories)
+        {
+            Categories.Add(new CategoryFilter
+            {
+                Id = cat.Id,
+                Name = cat.Name,
+                IsSelected = false
+            });
+        }
+    }
+
+    private void LoadRecentSearches()
+    {
+        // Load from preferences
+        RecentSearches.Add("Chùa Một Cột");
+        RecentSearches.Add("Văn Miếu");
+        RecentSearches.Add("Hồ Gươm");
+        RecentSearches.Add("Bảo tàng");
+    }
+
+    partial void OnSearchQueryChanged(string value)
+    {
+        HasSearchQuery = !string.IsNullOrWhiteSpace(value);
+        ShowRecentSearches = !HasSearchQuery;
+
+        if (!HasSearchQuery)
+        {
+            ShowResults = false;
+            ShowNoResults = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task SearchAsync()
+    {
+        if (string.IsNullOrWhiteSpace(SearchQuery))
+            return;
+
+        IsLoading = true;
+        ShowRecentSearches = false;
+        ShowResults = false;
+        ShowNoResults = false;
+
+        await Task.Delay(500); // Simulate search
+
+        var allLocations = Data.SampleData.GetLocations();
+        var categories = Data.SampleData.GetCategories();
+        var query = SearchQuery.ToLowerInvariant();
+
+        SearchResults.Clear();
+
+        var selectedCategoryIds = Categories.Where(c => c.IsSelected).Select(c => c.Id).ToList();
+
+        foreach (var location in allLocations)
+        {
+            if (location.Name.ToLowerInvariant().Contains(query) ||
+                location.Description.ToLowerInvariant().Contains(query))
+            {
+                if (!AllSelected && selectedCategoryIds.Any() && !selectedCategoryIds.Contains(location.CategoryId))
+                    continue;
+
+                var category = categories.FirstOrDefault(c => c.Id == location.CategoryId);
+                SearchResults.Add(new SearchResultItem
+                {
+                    Id = location.Id,
+                    Name = location.Name,
+                    Description = location.Description,
+                    ImageUrl = location.ImageUrl,
+                    CategoryName = category?.Name ?? ""
+                });
+            }
+        }
+
+        // Add to recent searches
+        if (!RecentSearches.Contains(SearchQuery))
+        {
+            RecentSearches.Insert(0, SearchQuery);
+            if (RecentSearches.Count > 10)
+                RecentSearches.RemoveAt(RecentSearches.Count - 1);
+        }
+
+        IsLoading = false;
+        ShowResults = SearchResults.Count > 0;
+        ShowNoResults = SearchResults.Count == 0;
+    }
+
+    [RelayCommand]
+    private void ClearSearch()
+    {
+        SearchQuery = string.Empty;
+        SearchResults.Clear();
+        ShowResults = false;
+        ShowNoResults = false;
+        ShowRecentSearches = true;
+    }
+
+    [RelayCommand]
+    private void SelectAll()
+    {
+        AllSelected = true;
+        foreach (var cat in Categories)
+        {
+            cat.IsSelected = false;
+        }
+    }
+
+    [RelayCommand]
+    private void SelectCategory(CategoryFilter? category)
+    {
+        if (category is null) return;
+
+        AllSelected = false;
+        category.IsSelected = !category.IsSelected;
+
+        if (!Categories.Any(c => c.IsSelected))
+        {
+            AllSelected = true;
+        }
+    }
+
+    [RelayCommand]
+    private async Task UseRecentSearchAsync(string? query)
+    {
+        if (string.IsNullOrEmpty(query)) return;
+
+        SearchQuery = query;
+        await SearchAsync();
+    }
+
+    [RelayCommand]
+    private void RemoveRecentSearch(string? query)
+    {
+        if (string.IsNullOrEmpty(query)) return;
+        RecentSearches.Remove(query);
+    }
+
+    [RelayCommand]
+    private async Task LocationSelectedAsync()
+    {
+        if (SelectedLocation is null) return;
+
+        await _navigationService.NavigateToAsync(nameof(Views.LocationDetailPage),
+            new Dictionary<string, object> { { "LocationId", SelectedLocation.Id } });
+
+        SelectedLocation = null;
+    }
+}
+
+public class CategoryFilter : ObservableObject
+{
+    public string Id { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+
+    private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
+}
+
+public class SearchResultItem
+{
+    public string Id { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string ImageUrl { get; set; } = string.Empty;
+    public string CategoryName { get; set; } = string.Empty;
+}

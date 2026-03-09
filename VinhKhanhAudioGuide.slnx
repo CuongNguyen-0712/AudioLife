@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="VinhKhanhAudioGuide.Web/VinhKhanhAudioGuide.Web.csproj" />
+  <Project Path="VinhKhanhAudioGuide.Mobile/VinhKhanhAudioGuide.Mobile.csproj" />
+</Solution>

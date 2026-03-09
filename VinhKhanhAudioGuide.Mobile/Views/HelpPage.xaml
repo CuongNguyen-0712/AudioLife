@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
+             x:Class="VinhKhanhAudioGuide.Mobile.Views.HelpPage"
+             x:DataType="viewmodels:HelpViewModel"
+             Title="Trợ giúp">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+            
+            <!-- FAQ Section -->
+            <Label Text="Câu hỏi thường gặp"
+                   Style="{StaticResource SectionHeader}"/>
+
+            <CollectionView ItemsSource="{Binding FaqItems}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="viewmodels:FaqItem">
+                        <Frame Padding="15" Margin="0,4" CornerRadius="12">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer 
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:HelpViewModel}}, Path=ToggleFaqItemCommand}"
+                                    CommandParameter="{Binding .}"/>
+                            </Frame.GestureRecognizers>
+                            <VerticalStackLayout>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Text="{Binding Question}"
+                                           FontSize="14"
+                                           FontAttributes="Bold"/>
+                                    <Image Grid.Column="1"
+                                           Source="chevron_right"
+                                           HeightRequest="16"
+                                           Rotation="{Binding IsExpanded, Converter={StaticResource BoolToRotationConverter}}"/>
+                                </Grid>
+                                <Label Text="{Binding Answer}"
+                                       FontSize="13"
+                                       TextColor="{StaticResource Gray600}"
+                                       IsVisible="{Binding IsExpanded}"
+                                       Margin="0,10,0,0"/>
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- Contact Section -->
+            <Label Text="Liên hệ hỗ trợ"
+                   Style="{StaticResource SectionHeader}"/>
+
+            <Frame CornerRadius="12" Padding="0">
+                <VerticalStackLayout>
+                    <Frame Padding="15" BorderColor="Transparent">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SendEmailCommand}"/>
+                        </Frame.GestureRecognizers>
+                        <Grid ColumnDefinitions="40,*">
+                            <Image Source="email_icon" HeightRequest="24" WidthRequest="24"/>
+                            <VerticalStackLayout Grid.Column="1" Margin="15,0,0,0">
+                                <Label Text="Email"
+                                       FontSize="14"
+                                       FontAttributes="Bold"/>
+                                <Label Text="support@vinhkhanhaudioguide.com"
+                                       FontSize="12"
+                                       TextColor="{StaticResource Primary}"/>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Frame>
+                    
+                    <BoxView Style="{StaticResource Separator}" Margin="15,0"/>
+                    
+                    <Frame Padding="15" BorderColor="Transparent">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding CallHotlineCommand}"/>
+                        </Frame.GestureRecognizers>
+                        <Grid ColumnDefinitions="40,*">
+                            <Image Source="phone_icon" HeightRequest="24" WidthRequest="24"/>
+                            <VerticalStackLayout Grid.Column="1" Margin="15,0,0,0">
+                                <Label Text="Hotline"
+                                       FontSize="14"
+                                       FontAttributes="Bold"/>
+                                <Label Text="1900 1234"
+                                       FontSize="12"
+                                       TextColor="{StaticResource Primary}"/>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Frame>
+                    
+                    <BoxView Style="{StaticResource Separator}" Margin="15,0"/>
+                    
+                    <Frame Padding="15" BorderColor="Transparent">
+                        <Grid ColumnDefinitions="40,*">
+                            <Image Source="chat_icon" HeightRequest="24" WidthRequest="24"/>
+                            <VerticalStackLayout Grid.Column="1" Margin="15,0,0,0">
+                                <Label Text="Live Chat"
+                                       FontSize="14"
+                                       FontAttributes="Bold"/>
+                                <Label Text="Hỗ trợ trực tuyến 24/7"
+                                       FontSize="12"
+                                       TextColor="{StaticResource Gray500}"/>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Frame>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- User Guide -->
+            <Button Text="Xem hướng dẫn sử dụng"
+                    Command="{Binding OpenUserGuideCommand}"
+                    Style="{StaticResource SecondaryButton}"
+                    Margin="0,10"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -1,0 +1,24 @@
+Vinh Khanh Audio Guide
+=======================
+
+Phiên bản: 1.0.0
+Ngày phát hành: 20/02/2026
+
+Ứng dụng hướng dẫn du lịch bằng âm thanh,
+giúp bạn khám phá văn hóa và lịch sử Việt Nam
+một cách sinh động và hấp dẫn.
+
+Tính năng chính:
+- Hơn 100 địa điểm du lịch
+- Audio chất lượng cao
+- Hỗ trợ nhiều ngôn ngữ (Việt, Anh, Trung, Nhật, Hàn, Pháp)
+- Sử dụng offline
+- Bản đồ tương tác
+- Lộ trình tour tùy chỉnh
+
+Liên hệ:
+- Email: support@vinhkhanhaudioguide.com
+- Hotline: 1900 1234
+- Website: https://vinhkhanhaudioguide.com
+
+© 2026 Vinh Khanh Audio Guide. All rights reserved.

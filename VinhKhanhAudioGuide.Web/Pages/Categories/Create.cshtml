@@ -1,0 +1,37 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Categories.CreateModel
+@{
+    ViewData["Title"] = "Thêm danh mục";
+    ViewData["ActivePage"] = "Categories";
+}
+
+<div class="page-header">
+    <h1><i class="fas fa-plus me-2"></i>Thêm danh mục mới</h1>
+    <a asp-page="Index" class="btn-admin btn-admin-outline"><i class="fas fa-arrow-left"></i> Quay lại</a>
+</div>
+
+<div class="admin-card">
+    <div class="p-4">
+        <form method="post" class="admin-form" style="max-width:600px;">
+            <div class="mb-3">
+                <label asp-for="Category.Id" class="form-label">Mã danh mục</label>
+                <input asp-for="Category.Id" class="form-control" placeholder="Ví dụ: 1, 2, 3..." />
+                <span asp-validation-for="Category.Id" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Category.Name" class="form-label">Tên danh mục</label>
+                <input asp-for="Category.Name" class="form-control" />
+                <span asp-validation-for="Category.Name" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Category.Icon" class="form-label">Icon (Font Awesome class)</label>
+                <input asp-for="Category.Icon" class="form-control" placeholder="fa-landmark" />
+            </div>
+            <div class="mb-3">
+                <label asp-for="Category.Description" class="form-label">Mô tả</label>
+                <textarea asp-for="Category.Description" class="form-control" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn-admin btn-admin-primary"><i class="fas fa-save"></i> Lưu</button>
+        </form>
+    </div>
+</div>
