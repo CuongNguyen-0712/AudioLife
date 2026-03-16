@@ -1,0 +1,81 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Admin.IndexModel
+@{
+    ViewData["Title"] = "Dashboard Admin";
+    ViewData["ActivePage"] = "Dashboard";
+}
+
+<div class="page-header">
+    <h1><i class="fas fa-tachometer-alt me-2"></i>Dashboard Admin Tổng</h1>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-primary"><i class="fas fa-map-marker-alt"></i></div>
+            <div>
+                <div class="stat-value">@Model.LocationCount</div>
+                <div class="stat-label">Địa điểm</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-success"><i class="fas fa-folder"></i></div>
+            <div>
+                <div class="stat-value">@Model.CategoryCount</div>
+                <div class="stat-label">Danh mục</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-warning"><i class="fas fa-route"></i></div>
+            <div>
+                <div class="stat-value">@Model.TourCount</div>
+                <div class="stat-label">Tours</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-info"><i class="fas fa-headphones-alt"></i></div>
+            <div>
+                <div class="stat-value">@Model.AudioGuideCount</div>
+                <div class="stat-label">Audio Guides</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="admin-card">
+            <div class="card-header">
+                <span><i class="fas fa-bolt me-2"></i>Thao tác nhanh</span>
+            </div>
+            <div class="p-3">
+                <div class="d-flex flex-wrap gap-2">
+                    <a asp-page="/Categories/Create" class="btn-admin btn-admin-success"><i class="fas fa-plus"></i> Thêm danh mục</a>
+                    <a asp-page="/Locations/Create" class="btn-admin btn-admin-primary"><i class="fas fa-plus"></i> Thêm địa điểm</a>
+                    <a asp-page="/Tours/Create" class="btn-admin btn-admin-warning"><i class="fas fa-plus"></i> Thêm tour</a>
+                    <a asp-page="/AudioGuides/Create" class="btn-admin btn-admin-outline"><i class="fas fa-plus"></i> Thêm audio guide</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="admin-card">
+            <div class="card-header">
+                <span><i class="fas fa-layer-group me-2"></i>Điều hướng hệ thống</span>
+            </div>
+            <div class="p-3 d-flex flex-wrap gap-2">
+                <a asp-page="/Categories/Index" class="btn-admin btn-admin-outline">Danh mục</a>
+                <a asp-page="/Locations/Index" class="btn-admin btn-admin-outline">Địa điểm</a>
+                <a asp-page="/Tours/Index" class="btn-admin btn-admin-outline">Tours</a>
+                <a asp-page="/AudioGuides/Index" class="btn-admin btn-admin-outline">Audio Guides</a>
+                <a asp-page="/Shop/Index" class="btn-admin btn-admin-success">Qua khu Chủ Shop</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Shop Manager</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/shop.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="shop-topbar">
+        <div class="container-fluid d-flex align-items-center justify-content-between py-2">
+            <a asp-page="/Shop/Index" class="shop-brand text-decoration-none">
+                <i class="fas fa-store me-2"></i> Shop Manager
+            </a>
+            <nav class="d-flex align-items-center gap-3">
+                <a asp-page="/Shop/Index" class="shop-link @(ViewData["ActivePage"]?.ToString() == "ShopDashboard" ? "active" : "")">Dashboard Chủ Shop</a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-page="/Admin/Index" class="shop-link">Qua khu Admin</a>
+                }
+                <a asp-page="/Index" class="shop-link">Cổng hệ thống</a>
+                <span class="shop-link">@User.Identity?.Name</span>
+                <form method="post" asp-page="/Account/Logout" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-light">Đăng xuất</button>
+                </form>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container py-4">
+        @RenderBody()
+    </main>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

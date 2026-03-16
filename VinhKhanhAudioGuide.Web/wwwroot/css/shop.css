@@ -1,0 +1,80 @@
+:root {
+    --shop-bg: #f8fafc;
+    --shop-card: #ffffff;
+    --shop-border: #e2e8f0;
+    --shop-text: #0f172a;
+    --shop-muted: #64748b;
+    --shop-accent: #0ea5e9;
+    --shop-accent-dark: #0284c7;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    background: var(--shop-bg);
+    color: var(--shop-text);
+}
+
+.shop-topbar {
+    background: #0f172a;
+    border-bottom: 1px solid #1e293b;
+}
+
+.shop-brand {
+    color: #f8fafc;
+    font-weight: 700;
+    letter-spacing: .01em;
+}
+
+.shop-brand:hover {
+    color: #e2e8f0;
+}
+
+.shop-link {
+    color: #cbd5e1;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: .92rem;
+}
+
+.shop-link:hover,
+.shop-link.active {
+    color: #ffffff;
+}
+
+.shop-card {
+    background: var(--shop-card);
+    border: 1px solid var(--shop-border);
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+}
+
+.shop-card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--shop-border);
+    font-weight: 700;
+}
+
+.shop-card-body {
+    padding: 20px;
+}
+
+.shop-stat {
+    font-size: 1.75rem;
+    font-weight: 800;
+}
+
+.shop-muted {
+    color: var(--shop-muted);
+}
+
+.btn-shop {
+    background: var(--shop-accent);
+    color: #fff;
+    border: 0;
+}
+
+.btn-shop:hover {
+    background: var(--shop-accent-dark);
+    color: #fff;
+}

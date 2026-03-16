@@ -1,0 +1,64 @@
+@page "{id}"
+@model VinhKhanhAudioGuide.Web.Pages.Shop.AudioGuides.EditModel
+@{
+    ViewData["Title"] = "Sửa Audio Guide";
+    ViewData["ActivePage"] = "ShopDashboard";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <h1 class="h4 mb-0"><i class="fas fa-edit me-2"></i>Sửa Audio Guide</h1>
+    <a asp-page="/Shop/AudioGuides/Index" asp-route-locationId="@Model.AudioGuide.LocationId" class="btn btn-outline-secondary">Quay lại danh sách</a>
+</div>
+
+<div class="shop-card">
+    <div class="shop-card-body">
+        <form method="post" style="max-width:760px;">
+            <input asp-for="AudioGuide.Id" type="hidden" />
+            <input asp-for="AudioGuide.LocationId" type="hidden" />
+
+            <div class="mb-3">
+                <label asp-for="AudioGuide.Title" class="form-label">Tiêu đề</label>
+                <input asp-for="AudioGuide.Title" class="form-control" />
+                <span asp-validation-for="AudioGuide.Title" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="AudioGuide.Description" class="form-label">Mô tả</label>
+                <textarea asp-for="AudioGuide.Description" rows="3" class="form-control"></textarea>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="AudioGuide.AudioUrl" class="form-label">Audio URL</label>
+                    <input asp-for="AudioGuide.AudioUrl" class="form-control" />
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label asp-for="AudioGuide.Duration" class="form-label">Thời lượng (phút)</label>
+                    <input asp-for="AudioGuide.Duration" type="number" class="form-control" />
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label asp-for="AudioGuide.Language" class="form-label">Ngôn ngữ</label>
+                    <select asp-for="AudioGuide.Language" class="form-select">
+                        <option value="vi">Tiếng Việt</option>
+                        <option value="en">English</option>
+                        <option value="fr">Français</option>
+                        <option value="ja">日本語</option>
+                        <option value="ko">한국어</option>
+                        <option value="zh">中文</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="AudioGuide.TranscriptText" class="form-label">Transcript</label>
+                <textarea asp-for="AudioGuide.TranscriptText" rows="5" class="form-control"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-shop">Lưu cập nhật</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,77 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Shop.AudioGuides.IndexModel
+@{
+    ViewData["Title"] = "Audio Guides của Shop";
+    ViewData["ActivePage"] = "ShopDashboard";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <h1 class="h4 mb-0"><i class="fas fa-headphones-alt me-2"></i>Audio Guides theo địa điểm</h1>
+    <a asp-page="/Shop/Index" asp-route-locationId="@Model.LocationId" class="btn btn-outline-secondary">Quay lại Dashboard Shop</a>
+</div>
+
+<div class="shop-card mb-4">
+    <div class="shop-card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-8">
+                <label for="locationId" class="form-label">Địa điểm</label>
+                <select id="locationId" name="locationId" class="form-select">
+                    @foreach (var location in Model.AccessibleLocations)
+                    {
+                        <option value="@location.Id" selected="@(location.Id == Model.LocationId)">@location.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-shop w-100">Xem Audio Guides</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<div class="shop-card">
+    <div class="shop-card-body">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tiêu đề</th>
+                        <th>Ngôn ngữ</th>
+                        <th>Thời lượng</th>
+                        <th>Audio URL</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.AudioGuides)
+                    {
+                        <tr>
+                            <td><code>@item.Id</code></td>
+                            <td>
+                                <strong>@item.Title</strong>
+                                <div class="small text-muted">@item.Description</div>
+                            </td>
+                            <td>@item.Language</td>
+                            <td>@item.Duration phút</td>
+                            <td><small>@item.AudioUrl</small></td>
+                            <td class="text-end">
+                                <a asp-page="/Shop/AudioGuides/Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Sửa</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!Model.AudioGuides.Any())
+        {
+            <p class="shop-muted mt-3 mb-0">Chưa có audio guide nào cho địa điểm này.</p>
+        }
+    </div>
+</div>

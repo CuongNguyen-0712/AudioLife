@@ -1,0 +1,45 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5 col-lg-4">
+        <div class="admin-card">
+            <div class="card-header">
+                <span><i class="fas fa-sign-in-alt me-2"></i>Đăng nhập hệ thống</span>
+            </div>
+            <div class="p-4">
+                @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger">@Model.ErrorMessage</div>
+                }
+
+                <form method="post">
+                    <div class="mb-3">
+                        <label asp-for="Input.Username" class="form-label">Tài khoản</label>
+                        <input asp-for="Input.Username" class="form-control" />
+                        <span asp-validation-for="Input.Username" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Input.Password" class="form-label">Mật khẩu</label>
+                        <input asp-for="Input.Password" type="password" class="form-control" />
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn-admin btn-admin-primary w-100">Đăng nhập</button>
+                </form>
+
+                <hr/>
+                <small class="text-muted d-block mb-1">Demo accounts:</small>
+                <small class="text-muted d-block">Admin: admin / Admin@123</small>
+                <small class="text-muted d-block">Shop: shop1 / Shop@123</small>
+                <small class="text-muted d-block">Shop: shop2 / Shop@123</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
