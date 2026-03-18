@@ -19,6 +19,12 @@ public class AudioGuide
     [MaxLength(500)]
     public string AudioUrl { get; set; } = string.Empty;
 
+    [MaxLength(500)]
+    public string? CloudinaryAudioUrl { get; set; }
+
+    [MaxLength(100)]
+    public string? CloudinaryPublicId { get; set; }
+
     public string TranscriptText { get; set; } = string.Empty;
 
     public int Duration { get; set; }
@@ -31,4 +37,8 @@ public class AudioGuide
 
     [MaxLength(10)]
     public string Language { get; set; } = "vi";
+
+    // Navigations
+    public ICollection<AudioScriptSegment> ScriptSegments { get; set; } = new List<AudioScriptSegment>();
+    public ICollection<ListeningHistory> ListeningHistories { get; set; } = new List<ListeningHistory>();
 }

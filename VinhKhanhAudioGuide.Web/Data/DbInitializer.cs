@@ -19,7 +19,30 @@ public static class DbInitializer
             creator.CreateTables();
         }
 
-        if (context.Categories.Any()) return;
+        var hasVinhKhanhSeed = context.Locations
+            .AsNoTracking()
+            .Any(location => EF.Functions.Like(location.Address, "%Vĩnh Khánh%"));
+
+        if (context.Categories.Any() && hasVinhKhanhSeed)
+        {
+            return;
+        }
+
+        if (context.Categories.Any())
+        {
+            context.Feedbacks.RemoveRange(context.Feedbacks);
+            context.AppUsers.RemoveRange(context.AppUsers);
+            context.TourLocations.RemoveRange(context.TourLocations);
+            context.AudioGuides.RemoveRange(context.AudioGuides);
+            context.Tours.RemoveRange(context.Tours);
+            context.Locations.RemoveRange(context.Locations);
+            context.Categories.RemoveRange(context.Categories);
+            context.SaveChanges();
+        }
+
+        var appUser = new AppUser { Id = "user_1", ScannedQrCode = "loc_001_qr", CreatedAt = DateTime.UtcNow, IsActive = true };
+        context.AppUsers.Add(appUser);
+        context.SaveChanges();
 
         var categories = SampleData.GetCategories();
         context.Categories.AddRange(categories);
@@ -59,5 +82,16 @@ public static class DbInitializer
             }
             context.SaveChanges();
         }
+
+        var feedback = new Feedback 
+        { 
+            UserId = "user_1", 
+            LocationId = "loc_001", 
+            Rating = 5, 
+            Comment = "Rất tuyệt vời, trải nghiệm tốt.", 
+            CreatedAt = DateTime.UtcNow 
+        };
+        context.Feedbacks.Add(feedback);
+        context.SaveChanges();
     }
 }

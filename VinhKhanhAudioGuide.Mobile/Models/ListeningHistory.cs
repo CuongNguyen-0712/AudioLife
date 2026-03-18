@@ -11,4 +11,10 @@ public class ListeningHistory
     public int AudioDuration { get; set; }
     public double Progress { get; set; } // 0.0 - 1.0
     public DateTime ListenedAt { get; set; }
+
+    // DTO equivalent properties from backend db changes
+    public string UserId { get; set; } = string.Empty;
+    public int ListenedSeconds { get; set; }
+    public bool IsCompleted { get; set; }
+    public DateTime LastListenedAt { get; set; }
 }
