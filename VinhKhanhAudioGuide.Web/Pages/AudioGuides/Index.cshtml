@@ -1,12 +1,16 @@
 @page
 @model VinhKhanhAudioGuide.Web.Pages.AudioGuides.IndexModel
 @{
-    ViewData["Title"] = "Audio Guides";
+    ViewData["Title"] = "Hướng dẫn audio";
     ViewData["ActivePage"] = "AudioGuides";
 }
 
-<div class="page-header">
-    <h1><i class="fas fa-headphones-alt me-2"></i>Quản lý Audio Guides</h1>
+<div class="dashboard-hero mb-4">
+    <div>
+        <p class="hero-kicker"><i class="fa-solid fa-headphones"></i> Thư viện audio</p>
+        <h1 class="hero-title">Quản lý audio guide</h1>
+        <p class="hero-subtitle">Theo dõi nội dung audio toàn hệ thống và phân bổ theo điểm đến.</p>
+    </div>
     <a asp-page="Create" class="btn-admin btn-admin-primary"><i class="fas fa-plus"></i> Thêm audio guide</a>
 </div>
 
@@ -15,8 +19,8 @@
     <div class="alert alert-success alert-admin">@TempData["Success"]</div>
 }
 
-<div class="admin-card">
-    <table class="admin-table">
+<div class="admin-card card-v2">
+    <table class="admin-table table-v2">
         <thead>
             <tr>
                 <th>ID</th>

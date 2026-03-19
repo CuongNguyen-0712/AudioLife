@@ -27,7 +27,7 @@
                                        TextColor="{StaticResource Gray500}"/>
                             </VerticalStackLayout>
                             <Image Grid.Column="1" 
-                                   Source="chevron_right"
+                                   Source="chevron_right.png"
                                    HeightRequest="16"/>
                         </Grid>
                         <Frame.GestureRecognizers>
@@ -75,7 +75,7 @@
                                        TextColor="{StaticResource Gray500}"/>
                             </VerticalStackLayout>
                             <Image Grid.Column="1" 
-                                   Source="chevron_right"
+                                   Source="chevron_right.png"
                                    HeightRequest="16"/>
                         </Grid>
                         <Frame.GestureRecognizers>
@@ -96,7 +96,7 @@
                                        TextColor="{StaticResource Gray500}"/>
                             </VerticalStackLayout>
                             <Image Grid.Column="1" 
-                                   Source="chevron_right"
+                                   Source="chevron_right.png"
                                    HeightRequest="16"/>
                         </Grid>
                         <Frame.GestureRecognizers>
@@ -144,7 +144,7 @@
                                        TextColor="{StaticResource Gray500}"/>
                             </VerticalStackLayout>
                             <Image Grid.Column="1" 
-                                   Source="chevron_right"
+                                   Source="chevron_right.png"
                                    HeightRequest="16"/>
                         </Grid>
                         <Frame.GestureRecognizers>
@@ -236,7 +236,7 @@
                                    TextColor="{StaticResource Gray500}"/>
                         </VerticalStackLayout>
                         <Image Grid.Column="1" 
-                               Source="chevron_right"
+                               Source="chevron_right.png"
                                HeightRequest="16"/>
                     </Grid>
                     <Frame.GestureRecognizers>

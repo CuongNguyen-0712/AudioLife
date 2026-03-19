@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VinhKhanhAudioGuide.Mobile.Data;
 using VinhKhanhAudioGuide.Mobile.Services;
@@ -49,7 +49,7 @@ public partial class AudioPlayerViewModel : ObservableObject
     private bool _isPlaying;
 
     [ObservableProperty]
-    private string _playPauseIcon = "play_icon";
+    private string _playPauseIcon = "play_icon.png";
 
     public AudioPlayerViewModel(IAudioService audioService, INavigationService navigationService)
     {
@@ -74,7 +74,7 @@ public partial class AudioPlayerViewModel : ObservableObject
         MainThread.BeginInvokeOnMainThread(() =>
         {
             IsPlaying = e.State == AudioPlaybackState.Playing;
-            PlayPauseIcon = IsPlaying ? "pause_icon" : "play_icon";
+            PlayPauseIcon = IsPlaying ? "pause_icon.png" : "play_icon.png";
         });
     }
 
@@ -96,7 +96,7 @@ public partial class AudioPlayerViewModel : ObservableObject
             LocationName = location.Name;
             Description = location.Description;
             ImageUrl = location.ImageUrl;
-            TranscriptText = $"Audio hướng dẫn tham quan {location.Name}...";
+            TranscriptText = $"Audio hu?ng d?n tham quan {location.Name}...";
             Title = location.Name;
 
             if (location.AudioGuides.Count > 0)
@@ -110,7 +110,7 @@ public partial class AudioPlayerViewModel : ObservableObject
         }
         else
         {
-            LocationName = "Địa điểm";
+            LocationName = "�?a di?m";
             Description = string.Empty;
             ImageUrl = string.Empty;
             Duration = 0;

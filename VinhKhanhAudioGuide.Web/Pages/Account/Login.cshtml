@@ -2,44 +2,200 @@
 @model VinhKhanhAudioGuide.Web.Pages.Account.LoginModel
 @{
     ViewData["Title"] = "Đăng nhập";
+    Layout = null;
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-5 col-lg-4">
-        <div class="admin-card">
-            <div class="card-header">
-                <span><i class="fas fa-sign-in-alt me-2"></i>Đăng nhập hệ thống</span>
-            </div>
-            <div class="p-4">
-                @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
-                {
-                    <div class="alert alert-danger">@Model.ErrorMessage</div>
-                }
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng nhập - Vĩnh Khánh Audio Guide</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --accent: #f97316;
+            --accent-hover: #ea580c;
+            --text: #0f172a;
+            --muted: #64748b;
+        }
 
-                <form method="post">
-                    <div class="mb-3">
-                        <label asp-for="Input.Username" class="form-label">Tài khoản</label>
-                        <input asp-for="Input.Username" class="form-control" />
-                        <span asp-validation-for="Input.Username" class="text-danger"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="Input.Password" class="form-label">Mật khẩu</label>
-                        <input asp-for="Input.Password" type="password" class="form-control" />
-                        <span asp-validation-for="Input.Password" class="text-danger"></span>
-                    </div>
-                    <button type="submit" class="btn-admin btn-admin-primary w-100">Đăng nhập</button>
-                </form>
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; min-height: 100%; }
 
-                <hr/>
-                <small class="text-muted d-block mb-1">Demo accounts:</small>
-                <small class="text-muted d-block">Admin: admin / Admin@123</small>
-                <small class="text-muted d-block">Shop: shop1 / Shop@123</small>
-                <small class="text-muted d-block">Shop: shop2 / Shop@123</small>
+        body {
+            font-family: "Manrope", "Segoe UI", sans-serif;
+            background: linear-gradient(135deg, #f4f6fb 0%, #fef5f0 50%, #f0f9ff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .login-container {
+            max-width: 920px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .login-left {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            color: var(--text);
+        }
+
+        .login-logo {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--accent), #fb923c);
+            color: #fff;
+            font-size: 1.2rem;
+        }
+
+        .login-left h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .login-left p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .login-right {
+            background: #fff;
+            border-radius: 18px;
+            padding: 40px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+        }
+
+        .login-right h2 { font-size: 1.35rem; font-weight: 800; margin: 0 0 8px; }
+        .login-right > p { color: var(--muted); margin: 0 0 24px; }
+        .form-group { margin-bottom: 16px; }
+
+        .form-label {
+            font-weight: 700;
+            color: var(--text);
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            font-family: "Manrope", sans-serif;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+            outline: none;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: "Manrope", sans-serif;
+        }
+
+        .btn-login:hover { background: var(--accent-hover); }
+
+        .alert {
+            border-radius: 10px;
+            background: rgba(239, 68, 68, 0.08);
+            color: #991b1b;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+        }
+
+        .demo-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 14px;
+            margin-top: 20px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .demo-title { font-weight: 700; color: var(--text); font-size: 0.85rem; margin-bottom: 8px; }
+        .demo-item { color: var(--muted); font-size: 0.85rem; margin-bottom: 4px; }
+
+        @@media (max-width: 768px) {
+            .login-container { grid-template-columns: 1fr; gap: 24px; }
+            .login-right { padding: 28px 20px; }
+            .login-left { order: 2; }
+            .login-right { order: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-left">
+            <span class="login-logo"><i class="fas fa-headphones"></i></span>
+            <h1>Vĩnh Khánh Food Audio</h1>
+            <p>Nền tảng quản lý nội dung âm thanh ẩm thực cho hệ thống AudioAdmin.</p>
+        </div>
+        <div class="login-right">
+            <h2>Đăng nhập</h2>
+            <p>Vui lòng nhập thông tin để truy cập hệ thống quản lý.</p>
+
+            @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+            {
+                <div class="alert">@Model.ErrorMessage</div>
+            }
+
+            <form method="post">
+                <div class="form-group">
+                    <label class="form-label">Email hoặc tên đăng nhập</label>
+                    <input asp-for="Input.Username" class="form-control" placeholder="Nhập email hoặc username" />
+                    <span asp-validation-for="Input.Username" class="text-danger" style="font-size: 0.85rem;"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Mật khẩu</label>
+                    <input asp-for="Input.Password" type="password" class="form-control" placeholder="Nhập mật khẩu" />
+                    <span asp-validation-for="Input.Password" class="text-danger" style="font-size: 0.85rem;"></span>
+                </div>
+
+                <button type="submit" class="btn-login">Đăng nhập</button>
+            </form>
+
+            <div class="demo-section">
+                <div class="demo-title">Thông tin thử nghiệm</div>
+                <div class="demo-item"><strong>Admin Hệ Thống:</strong> admin.system / Admin@123</div>
+                <div class="demo-item"><strong>Admin POI:</strong> admin.poi.01 / Poi@123</div>
+                <div class="demo-item"><strong>Admin POI:</strong> admin.poi.02 / Poi@123</div>
             </div>
         </div>
     </div>
-</div>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>

@@ -23,9 +23,17 @@ public class LoginModel : PageModel
     public string? ReturnUrl { get; set; }
     public string? ErrorMessage { get; set; }
 
-    public void OnGet(string? returnUrl = null)
+    public IActionResult OnGet(string? returnUrl = null)
     {
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            return User.IsInRole("Admin")
+                ? RedirectToPage("/Admin/Index")
+                : RedirectToPage("/Shop/Index");
+        }
+
         ReturnUrl = returnUrl;
+        return Page();
     }
 
     public async Task<IActionResult> OnPostAsync(string? returnUrl = null)

@@ -26,7 +26,7 @@
                        BackgroundColor="White"
                        HasShadow="False">
                     <Grid ColumnDefinitions="Auto,*,Auto">
-                        <Image Source="search_icon"
+                        <Image Source="search_icon.png"
                                HeightRequest="20"
                                WidthRequest="20"
                                Margin="5,0"/>
@@ -38,7 +38,7 @@
                                BackgroundColor="Transparent"
                                FontSize="16"/>
                         <ImageButton Grid.Column="2"
-                                     Source="close_icon"
+                                     Source="close_icon.png"
                                      IsVisible="{Binding HasSearchQuery}"
                                      HeightRequest="20"
                                      WidthRequest="20"
@@ -105,7 +105,7 @@
                                  VerticalOptions="Center"
                                  HorizontalOptions="Center"
                                  Padding="40">
-                <Image Source="no_results"
+                <Image Source="no_results.png"
                        HeightRequest="100"
                        WidthRequest="100"
                        Opacity="0.5"/>

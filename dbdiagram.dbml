@@ -1,0 +1,95 @@
+Table Category {
+  Id String [pk]
+  Name String
+  Icon String
+  Description String
+}
+
+Table Location {
+  Id String [pk]
+  Name String
+  Description String
+  ImageUrl String
+  Address String
+  Latitude Float
+  Longitude Float
+  Duration Int
+  CategoryId String
+}
+
+Table AudioGuide {
+  Id String [pk]
+  Title String
+  Description String
+  AudioUrl String
+  CloudinaryAudioUrl String
+  CloudinaryPublicId String
+  TranscriptText String
+  Duration Int
+  LocationId String
+  Language String
+}
+
+Table AudioScriptSegment {
+  Id Int [pk]
+  AudioGuideId String
+  StartTimeSeconds Int
+  EndTimeSeconds Int
+  ScriptText String
+}
+
+Table Tour {
+  Id String [pk]
+  Name String
+  Description String
+  ImageUrl String
+  Duration Int
+  Price Decimal
+  IsFeatured Boolean
+}
+
+Table TourLocation {
+  TourId String
+  LocationId String
+  SortOrder Int
+
+  indexes {
+    (TourId, LocationId) [pk]
+  }
+}
+
+Table AppUser {
+  Id String [pk]
+  ScannedQrCode String
+  CreatedAt DateTime
+  IsActive Boolean
+}
+
+Table ListeningHistory {
+  Id Int [pk]
+  UserId String
+  AudioGuideId String
+  ListenedSeconds Int
+  IsCompleted Boolean
+  LastListenedAt DateTime
+}
+
+Table Feedback {
+  Id Int [pk]
+  UserId String
+  LocationId String
+  Rating Int
+  Comment String
+  CreatedAt DateTime
+}
+
+// Relationships
+Ref: Location.CategoryId > Category.Id
+Ref: AudioGuide.LocationId > Location.Id
+Ref: AudioScriptSegment.AudioGuideId > AudioGuide.Id
+Ref: TourLocation.TourId > Tour.Id
+Ref: TourLocation.LocationId > Location.Id
+Ref: ListeningHistory.UserId > AppUser.Id
+Ref: ListeningHistory.AudioGuideId > AudioGuide.Id
+Ref: Feedback.UserId > AppUser.Id
+Ref: Feedback.LocationId > Location.Id

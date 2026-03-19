@@ -99,14 +99,14 @@
                                    Padding="8"
                                    HeightRequest="40"
                                    WidthRequest="40">
-                                <Image Source="heart_icon" HeightRequest="20" WidthRequest="20"/>
+                                <Image Source="heart_icon.png" HeightRequest="20" WidthRequest="20"/>
                             </Frame>
                             <Label Grid.Column="1" 
                                    Text="Địa điểm yêu thích"
                                    VerticalOptions="Center"
                                    Margin="15,0"/>
                             <Image Grid.Column="2" 
-                                   Source="chevron_right"
+                                   Source="chevron_right.png"
                                    HeightRequest="16"/>
                         </Grid>
                         <Frame.GestureRecognizers>
@@ -128,14 +128,14 @@
                                    Padding="8"
                                    HeightRequest="40"
                                    WidthRequest="40">
-                                <Image Source="download_icon" HeightRequest="20" WidthRequest="20"/>
+                                <Image Source="download_icon.png" HeightRequest="20" WidthRequest="20"/>
                             </Frame>
                             <Label Grid.Column="1" 
                                    Text="Audio đã tải"
                                    VerticalOptions="Center"
                                    Margin="15,0"/>
                             <Image Grid.Column="2" 
-                                   Source="chevron_right"
+                                   Source="chevron_right.png"
                                    HeightRequest="16"/>
                         </Grid>
                         <Frame.GestureRecognizers>
@@ -153,14 +153,14 @@
                                    Padding="8"
                                    HeightRequest="40"
                                    WidthRequest="40">
-                                <Image Source="history_icon" HeightRequest="20" WidthRequest="20"/>
+                                <Image Source="history_icon.png" HeightRequest="20" WidthRequest="20"/>
                             </Frame>
                             <Label Grid.Column="1" 
                                    Text="Lịch sử nghe"
                                    VerticalOptions="Center"
                                    Margin="15,0"/>
                             <Image Grid.Column="2" 
-                                   Source="chevron_right"
+                                   Source="chevron_right.png"
                                    HeightRequest="16"/>
                         </Grid>
                         <Frame.GestureRecognizers>
@@ -209,14 +209,14 @@
                                    Padding="8"
                                    HeightRequest="40"
                                    WidthRequest="40">
-                                <Image Source="settings_icon" HeightRequest="20" WidthRequest="20"/>
+                                <Image Source="settings_icon.png" HeightRequest="20" WidthRequest="20"/>
                             </Frame>
                             <Label Grid.Column="1" 
                                    Text="Cài đặt"
                                    VerticalOptions="Center"
                                    Margin="15,0"/>
                             <Image Grid.Column="2" 
-                                   Source="chevron_right"
+                                   Source="chevron_right.png"
                                    HeightRequest="16"/>
                         </Grid>
                         <Frame.GestureRecognizers>
@@ -234,14 +234,14 @@
                                    Padding="8"
                                    HeightRequest="40"
                                    WidthRequest="40">
-                                <Image Source="help_icon" HeightRequest="20" WidthRequest="20"/>
+                                <Image Source="help_icon.png" HeightRequest="20" WidthRequest="20"/>
                             </Frame>
                             <Label Grid.Column="1" 
                                    Text="Trợ giúp"
                                    VerticalOptions="Center"
                                    Margin="15,0"/>
                             <Image Grid.Column="2" 
-                                   Source="chevron_right"
+                                   Source="chevron_right.png"
                                    HeightRequest="16"/>
                         </Grid>
                         <Frame.GestureRecognizers>
@@ -259,14 +259,14 @@
                                    Padding="8"
                                    HeightRequest="40"
                                    WidthRequest="40">
-                                <Image Source="info_icon" HeightRequest="20" WidthRequest="20"/>
+                                <Image Source="info_icon.png" HeightRequest="20" WidthRequest="20"/>
                             </Frame>
                             <Label Grid.Column="1" 
                                    Text="Về ứng dụng"
                                    VerticalOptions="Center"
                                    Margin="15,0"/>
                             <Image Grid.Column="2" 
-                                   Source="chevron_right"
+                                   Source="chevron_right.png"
                                    HeightRequest="16"/>
                         </Grid>
                         <Frame.GestureRecognizers>

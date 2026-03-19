@@ -3,36 +3,64 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Shop Manager</title>
+    <title>@ViewData["Title"] - POI Admin</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/shop.css" asp-append-version="true" />
 </head>
 <body>
-    <header class="shop-topbar">
-        <div class="container-fluid d-flex align-items-center justify-content-between py-2">
-            <a asp-page="/Shop/Index" class="shop-brand text-decoration-none">
-                <i class="fas fa-store me-2"></i> Shop Manager
-            </a>
-            <nav class="d-flex align-items-center gap-3">
-                <a asp-page="/Shop/Index" class="shop-link @(ViewData["ActivePage"]?.ToString() == "ShopDashboard" ? "active" : "")">Dashboard Chủ Shop</a>
+    <div class="shop-wrapper">
+        <aside class="shop-sidebar">
+            <div class="shop-sidebar-brand-wrap">
+                <div class="shop-sidebar-brand">
+                    <i class="fas fa-store"></i>
+                    <span>POI Admin</span>
+                </div>
+                <div class="shop-sidebar-subtitle">AudioAdmin - Vĩnh Khánh</div>
+            </div>
+
+            <nav class="shop-sidebar-nav">
+                <a asp-page="/Shop/Index" class="shop-side-link @(ViewData["ActivePage"]?.ToString() == "ShopDashboard" ? "active" : "")">
+                    <i class="fas fa-gauge"></i><span>Bảng điều khiển</span>
+                </a>
+                <a asp-page="/Shop/AudioGuides/Index" class="shop-side-link @(ViewData["ActivePage"]?.ToString() == "ShopAudios" ? "active" : "")">
+                    <i class="fas fa-headphones-alt"></i><span>Âm thanh</span>
+                </a>
+                <a asp-page="/Shop/Reviews" class="shop-side-link @(ViewData["ActivePage"]?.ToString() == "ShopReviews" ? "active" : "")">
+                    <i class="fas fa-comments"></i><span>Đánh giá</span>
+                </a>
+                <a asp-page="/Shop/Analytics" class="shop-side-link @(ViewData["ActivePage"]?.ToString() == "ShopAnalytics" ? "active" : "")">
+                    <i class="fas fa-chart-pie"></i><span>Thống kê</span>
+                </a>
                 @if (User.IsInRole("Admin"))
                 {
-                    <a asp-page="/Admin/Index" class="shop-link">Qua khu Admin</a>
+                    <a asp-page="/Admin/Index" class="shop-side-link">
+                        <i class="fas fa-shield-halved"></i><span>Admin hệ thống</span>
+                    </a>
                 }
-                <a asp-page="/Index" class="shop-link">Cổng hệ thống</a>
-                <span class="shop-link">@User.Identity?.Name</span>
-                <form method="post" asp-page="/Account/Logout" class="d-inline">
-                    <button type="submit" class="btn btn-sm btn-outline-light">Đăng xuất</button>
-                </form>
             </nav>
-        </div>
-    </header>
+        </aside>
 
-    <main class="container py-4">
-        @RenderBody()
-    </main>
+        <div class="shop-main">
+            <header class="shop-topbar">
+                <div class="shop-topbar-right d-flex align-items-center gap-2 ms-auto">
+                    <span class="shop-role-pill"><i class="fas fa-map-pin"></i>Admin POI</span>
+                    <span class="shop-link">@User.Identity?.Name</span>
+                    <a asp-page="/Index" class="shop-link">Cổng hệ thống</a>
+                    <form method="post" asp-page="/Account/Logout" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-light">Đăng xuất</button>
+                    </form>
+                </div>
+            </header>
+
+            <main class="shop-content">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)

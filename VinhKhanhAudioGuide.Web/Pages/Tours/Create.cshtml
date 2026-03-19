@@ -5,12 +5,16 @@
     ViewData["ActivePage"] = "Tours";
 }
 
-<div class="page-header">
-    <h1><i class="fas fa-plus me-2"></i>Thêm tour mới</h1>
+<div class="dashboard-hero mb-4">
+    <div>
+        <p class="hero-kicker"><i class="fa-solid fa-square-plus"></i> Thêm tour</p>
+        <h1 class="hero-title">Thêm tour mới</h1>
+        <p class="hero-subtitle">Tạo tour mới và cấu hình điểm đến, giá và thời lượng chuyến đi.</p>
+    </div>
     <a asp-page="Index" class="btn-admin btn-admin-outline"><i class="fas fa-arrow-left"></i> Quay lại</a>
 </div>
 
-<div class="admin-card">
+<div class="admin-card card-v2">
     <div class="p-4">
         <form method="post" class="admin-form" style="max-width:700px;">
             <div class="row">

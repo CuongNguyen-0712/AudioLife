@@ -2,17 +2,21 @@
 @model VinhKhanhAudioGuide.Web.Pages.Shop.AudioGuides.EditModel
 @{
     ViewData["Title"] = "Sửa Audio Guide";
-    ViewData["ActivePage"] = "ShopDashboard";
+    ViewData["ActivePage"] = "ShopAudios";
 }
 
-<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-    <h1 class="h4 mb-0"><i class="fas fa-edit me-2"></i>Sửa Audio Guide</h1>
+<div class="dashboard-hero mb-4">
+    <div>
+        <p class="hero-kicker"><i class="fa-solid fa-pen-to-square"></i> Biên tập audio</p>
+        <h1 class="hero-title">Sửa Audio Guide</h1>
+        <p class="hero-subtitle">Cập nhật metadata, transcript và nguồn phát cho audio nội dung.</p>
+    </div>
     <a asp-page="/Shop/AudioGuides/Index" asp-route-locationId="@Model.AudioGuide.LocationId" class="btn btn-outline-secondary">Quay lại danh sách</a>
 </div>
 
-<div class="shop-card">
+<div class="shop-card card-v2">
     <div class="shop-card-body">
-        <form method="post" style="max-width:760px;">
+        <form method="post" style="max-width: 840px;">
             <input asp-for="AudioGuide.Id" type="hidden" />
             <input asp-for="AudioGuide.LocationId" type="hidden" />
 
@@ -42,9 +46,9 @@
                         <option value="vi">Tiếng Việt</option>
                         <option value="en">English</option>
                         <option value="fr">Français</option>
-                        <option value="ja">日本語</option>
-                        <option value="ko">한국어</option>
-                        <option value="zh">中文</option>
+                        <option value="ja">Japanese</option>
+                        <option value="ko">Korean</option>
+                        <option value="zh">Chinese</option>
                     </select>
                 </div>
             </div>

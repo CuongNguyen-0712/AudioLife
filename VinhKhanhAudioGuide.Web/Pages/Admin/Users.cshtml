@@ -1,0 +1,71 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Admin.UsersModel
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+    ViewData["ActivePage"] = "AdminUsers";
+}
+
+<div class="dashboard-hero mb-4">
+    <div>
+        <p class="hero-kicker"><i class="fa-solid fa-users"></i> Quản lý tài khoản</p>
+        <h1 class="hero-title">Quản lý người dùng</h1>
+        <p class="hero-subtitle">Quản trị tài khoản, vai trò và phạm vi quản lý theo địa điểm POI.</p>
+    </div>
+    <span class="hero-badge"><i class="fa-solid fa-shield-halved"></i> Admin Hệ Thống</span>
+</div>
+
+<div class="admin-card card-v2 mb-4">
+    <div class="card-header">
+        <span><i class="fas fa-shield-halved me-2"></i>Vai trò hệ thống</span>
+    </div>
+    <div class="p-3 d-flex gap-2 flex-wrap">
+        <span class="badge text-bg-danger">Admin Hệ Thống</span>
+        <span class="badge text-bg-primary">Admin POI</span>
+        <span class="badge text-bg-secondary">Trạng thái: Hoạt động</span>
+    </div>
+</div>
+
+<div class="admin-card card-v2">
+    <div class="card-header">
+        <span><i class="fas fa-table me-2"></i>Danh sách tài khoản</span>
+    </div>
+    <div class="table-responsive">
+        <table class="admin-table table-v2">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Tên hiển thị</th>
+                    <th>Tài khoản</th>
+                    <th>Vai trò</th>
+                    <th>Địa điểm quản lý</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var user in Model.Users)
+            {
+                <tr>
+                    <td>@user.No</td>
+                    <td>@user.DisplayName</td>
+                    <td><code>@user.Username</code></td>
+                    <td><span class="badge @user.RoleBadgeClass">@user.RoleLabel</span></td>
+                    <td>
+                        @if (user.ManagedLocations.Any())
+                        {
+                            foreach (var location in user.ManagedLocations)
+                            {
+                                <span class="location-chip me-1 mb-1">@location</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted">Toàn hệ thống</span>
+                        }
+                    </td>
+                    <td><span class="badge text-bg-success">Hoạt động</span></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -60,7 +60,7 @@
                                Spacing="30"
                                Padding="20">
             
-            <ImageButton Source="rewind_icon"
+            <ImageButton Source="rewind_icon.png"
                          Command="{Binding RewindCommand}"
                          HeightRequest="50"
                          WidthRequest="50"/>
@@ -72,7 +72,7 @@
                          BackgroundColor="{StaticResource Primary}"
                          CornerRadius="35"/>
             
-            <ImageButton Source="forward_icon"
+            <ImageButton Source="forward_icon.png"
                          Command="{Binding ForwardCommand}"
                          HeightRequest="50"
                          WidthRequest="50"/>

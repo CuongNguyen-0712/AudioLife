@@ -38,7 +38,7 @@
                         Margin="15,0">
             <CollectionView.EmptyView>
                 <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10" Padding="30">
-                    <Image Source="download_icon" HeightRequest="60" Opacity="0.3"/>
+                    <Image Source="download_icon.png" HeightRequest="60" Opacity="0.3"/>
                     <Label Text="Chưa có audio nào được tải" HorizontalOptions="Center" TextColor="{StaticResource Gray400}"/>
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
@@ -63,7 +63,7 @@
                                        Padding="0"
                                        HeightRequest="50"
                                        WidthRequest="50">
-                                    <Image Source="audio_icon"
+                                    <Image Source="audio_icon.png"
                                            HeightRequest="24"
                                            WidthRequest="24"
                                            HorizontalOptions="Center"
@@ -85,7 +85,7 @@
                                 </VerticalStackLayout>
                                 
                                 <ImageButton Grid.Column="2"
-                                             Source="play_icon"
+                                             Source="play_icon.png"
                                              HeightRequest="40"
                                              WidthRequest="40"
                                              VerticalOptions="Center"

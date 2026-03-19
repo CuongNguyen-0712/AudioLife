@@ -28,7 +28,6 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddRazorPages(options =>
 {
-    options.Conventions.AllowAnonymousToPage("/Index");
     options.Conventions.AllowAnonymousToFolder("/Account");
 
     options.Conventions.AuthorizeFolder("/Admin", "AdminOnly");

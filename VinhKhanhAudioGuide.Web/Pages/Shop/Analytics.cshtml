@@ -1,0 +1,70 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Shop.AnalyticsModel
+@{
+    ViewData["Title"] = "Thống kê và phân tích";
+    ViewData["ActivePage"] = "ShopAnalytics";
+}
+
+<div class="dashboard-hero mb-4">
+    <div>
+        <p class="hero-kicker"><i class="fa-solid fa-chart-pie"></i> Thống kê POI</p>
+        <h1 class="hero-title">Thống kê và phân tích</h1>
+        <p class="hero-subtitle">Địa điểm đang xem: @Model.SelectedLocationName</p>
+    </div>
+    <span class="hero-badge"><i class="fa-solid fa-wave-square"></i> Hiệu suất audio</span>
+</div>
+
+<div class="shop-card card-v2 mb-4">
+    <div class="shop-card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-8">
+                <label class="form-label" for="locationId">Địa điểm</label>
+                <select id="locationId" name="locationId" class="form-select">
+                    @foreach (var location in Model.AccessibleLocations)
+                    {
+                        <option value="@location.Id" selected="@(location.Id == Model.LocationId)">@location.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-shop w-100" type="submit">Xem thống kê</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="shop-card card-v2"><div class="shop-card-body"><div class="shop-muted small">Tổng audio</div><div class="shop-stat">@Model.TotalAudios</div></div></div>
+    </div>
+    <div class="col-md-6">
+        <div class="shop-card card-v2"><div class="shop-card-body"><div class="shop-muted small">Tổng phút nghe</div><div class="shop-stat">@Model.TotalAudioMinutes</div></div></div>
+    </div>
+</div>
+
+<div class="shop-card card-v2">
+    <div class="shop-card-header">Âm thanh phổ biến (ước tính)</div>
+    <div class="shop-card-body">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0 table-v2">
+                <thead>
+                    <tr>
+                        <th>Tiêu đề</th>
+                        <th>Thời lượng</th>
+                        <th>Lượt nghe ước tính</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model.TopAudios)
+                {
+                    <tr>
+                        <td>@item.Title</td>
+                        <td>@item.Duration phút</td>
+                        <td><span class="badge text-bg-primary">@item.EstimatedListens</span></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

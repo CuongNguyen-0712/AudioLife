@@ -1,0 +1,65 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Admin.SettingsModel
+@{
+    ViewData["Title"] = "Cài đặt hệ thống";
+    ViewData["ActivePage"] = "AdminSettings";
+}
+
+<div class="dashboard-hero mb-4">
+    <div>
+        <p class="hero-kicker"><i class="fa-solid fa-sliders"></i> Cấu hình hệ thống</p>
+        <h1 class="hero-title">Cài đặt hệ thống</h1>
+        <p class="hero-subtitle">Cấu hình thương hiệu, file audio và thông báo vận hành cho AudioAdmin.</p>
+    </div>
+    <span class="hero-badge"><i class="fa-solid fa-gear"></i> Cấu hình toàn cục</span>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-admin">@TempData["Success"]</div>
+}
+
+<div class="admin-card card-v2">
+    <div class="card-header"><span><i class="fas fa-gear me-2"></i>Thông số nền tảng</span></div>
+    <div class="p-4">
+        <form method="post" class="admin-form row g-3">
+            <div class="col-md-6">
+                <label asp-for="Input.SiteName" class="form-label"></label>
+                <input asp-for="Input.SiteName" class="form-control" />
+                <span asp-validation-for="Input.SiteName" class="text-danger"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Input.MaxAudioSizeMb" class="form-label">Dung lượng audio tối đa (MB)</label>
+                <input asp-for="Input.MaxAudioSizeMb" class="form-control" />
+                <span asp-validation-for="Input.MaxAudioSizeMb" class="text-danger"></span>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn-admin btn-admin-primary w-100">Lưu cấu hình</button>
+            </div>
+
+            <div class="col-12"><hr /></div>
+
+            <div class="col-md-4 form-check">
+                <input asp-for="Input.AllowMp3" class="form-check-input" />
+                <label asp-for="Input.AllowMp3" class="form-check-label">Cho phép MP3</label>
+            </div>
+            <div class="col-md-4 form-check">
+                <input asp-for="Input.AllowWav" class="form-check-input" />
+                <label asp-for="Input.AllowWav" class="form-check-label">Cho phép WAV</label>
+            </div>
+            <div class="col-md-4 form-check">
+                <input asp-for="Input.AllowAac" class="form-check-input" />
+                <label asp-for="Input.AllowAac" class="form-check-label">Cho phép AAC</label>
+            </div>
+
+            <div class="col-12 form-check mt-3">
+                <input asp-for="Input.NotifyModeration" class="form-check-input" />
+                <label asp-for="Input.NotifyModeration" class="form-check-label">Gửi thông báo khi có audio mới chờ duyệt</label>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

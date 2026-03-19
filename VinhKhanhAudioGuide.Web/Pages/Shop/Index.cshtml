@@ -1,18 +1,27 @@
 @page
 @model VinhKhanhAudioGuide.Web.Pages.Shop.IndexModel
 @{
-    ViewData["Title"] = "Dashboard Chủ Shop";
+    ViewData["Title"] = "Bảng điều khiển Admin POI";
     ViewData["ActivePage"] = "ShopDashboard";
 }
 
-<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-    <h1 class="h3 mb-0"><i class="fas fa-store me-2"></i>Quản trị theo chủ shop</h1>
-    <span class="shop-muted">Mỗi chủ shop chọn địa điểm mình phụ trách để quản trị.</span>
+<div class="dashboard-hero mb-4">
+    <div>
+        <p class="hero-kicker"><i class="fa-solid fa-store"></i> Không gian POI</p>
+        <h1 class="hero-title">Bảng điều khiển Admin POI</h1>
+        <p class="hero-subtitle">Quản trị nội dung audio theo từng địa điểm được cấp quyền.</p>
+    </div>
+    <span class="hero-badge"><i class="fa-solid fa-location-dot"></i> Phạm vi theo địa điểm</span>
+</div>
+
+<div class="alert alert-info mb-4 alert-admin" role="alert">
+    <i class="fas fa-circle-info me-2"></i>
+    Vai trò Admin POI chỉ quản lý nội dung audio tại các địa điểm đã được phân quyền.
 </div>
 
 <div class="row g-4">
-    <div class="col-lg-5">
-        <div class="shop-card">
+    <div class="col-lg-4">
+        <div class="shop-card card-v2">
             <div class="shop-card-header">Chọn địa điểm quản trị</div>
             <div class="shop-card-body">
                 <form method="get">
@@ -24,44 +33,100 @@
                             <option value="@location.Id" selected="@(location.Id == Model.SelectedLocationId)">@location.Name</option>
                         }
                     </select>
-                    <button type="submit" class="btn btn-shop">Mở quản trị địa điểm</button>
+                    <button type="submit" class="btn btn-shop w-100">Mở bảng điều khiển địa điểm</button>
                 </form>
             </div>
         </div>
     </div>
 
-    <div class="col-lg-7">
-        <div class="shop-card h-100">
+    <div class="col-lg-8">
+        <div class="shop-card h-100 card-v2">
             <div class="shop-card-header">Tổng quan</div>
             <div class="shop-card-body">
                 @if (Model.SelectedLocation is null)
                 {
-                    <p class="shop-muted mb-0">Chưa chọn địa điểm. Hãy chọn một địa điểm bên trái để xem dashboard của chủ shop.</p>
+                    <p class="shop-muted mb-0">Chưa chọn địa điểm. Hãy chọn một địa điểm để xem bảng điều khiển Admin POI.</p>
                 }
                 else
                 {
-                    <h5 class="mb-3">@Model.SelectedLocation.Name</h5>
-                    <p class="shop-muted mb-4">@Model.SelectedLocation.Address</p>
+                    <h5 class="mb-2">@Model.SelectedLocation.Name</h5>
+                    <p class="shop-muted mb-1">@Model.SelectedLocation.Address</p>
+                    <p class="shop-muted mb-4">Danh mục: @Model.CategoryName</p>
 
                     <div class="row g-3 mb-4">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="p-3 border rounded">
-                                <div class="shop-muted small">Số Audio Guide</div>
+                                <div class="shop-muted small">Tổng audio</div>
                                 <div class="shop-stat">@Model.AudioGuideCount</div>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="p-3 border rounded">
-                                <div class="shop-muted small">Thời lượng tham quan</div>
-                                <div class="shop-stat">@Model.SelectedLocation.Duration phút</div>
+                                <div class="shop-muted small">Tổng phút audio</div>
+                                <div class="shop-stat">@Model.AudioDurationMinutes</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded">
+                                <div class="shop-muted small">Tour ẩm thực liên quan</div>
+                                <div class="shop-stat">@Model.TourCount</div>
                             </div>
                         </div>
                     </div>
 
+                    <div class="mb-4">
+                        <div class="fw-semibold mb-2">Audio mới nhất</div>
+                        @if (Model.RecentAudioGuides.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle mb-0 table-v2">
+                                    <thead>
+                                        <tr>
+                                            <th>Tiêu đề</th>
+                                            <th>Thời lượng</th>
+                                            <th>Ngôn ngữ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var audio in Model.RecentAudioGuides)
+                                        {
+                                            <tr>
+                                                <td>@audio.Title</td>
+                                                <td>@audio.Duration phút</td>
+                                                <td>@audio.Language</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="shop-muted">Địa điểm chưa có audio nào.</div>
+                        }
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="fw-semibold mb-2">Tours có ghé địa điểm này</div>
+                        @if (Model.RelatedTours.Any())
+                        {
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach (var tour in Model.RelatedTours)
+                                {
+                                    <span class="badge text-bg-light border">@tour.Name</span>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="shop-muted">Chưa có tour nào liên kết.</div>
+                        }
+                    </div>
+
                     <div class="d-flex flex-wrap gap-2">
                         <a class="btn btn-outline-primary" asp-page="/Shop/Locations/Edit" asp-route-id="@Model.SelectedLocation.Id">Sửa thông tin địa điểm</a>
-                        <a class="btn btn-outline-success" asp-page="/Shop/AudioGuides/Index" asp-route-locationId="@Model.SelectedLocation.Id">Quản lý Audio Guides</a>
-                        <a class="btn btn-outline-secondary" asp-page="/Shop/AudioGuides/Index" asp-route-locationId="@Model.SelectedLocation.Id">Xem danh sách audio</a>
+                        <a class="btn btn-outline-success" asp-page="/Shop/AudioGuides/Index" asp-route-locationId="@Model.SelectedLocation.Id">Quản lý audio</a>
+                        <a class="btn btn-outline-secondary" asp-page="/Shop/AudioGuides/Index" asp-route-locationId="@Model.SelectedLocation.Id">Kiểm tra nội dung</a>
                     </div>
                 }
             </div>

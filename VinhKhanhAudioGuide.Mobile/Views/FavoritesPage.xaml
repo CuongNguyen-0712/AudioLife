@@ -15,7 +15,7 @@
                              VerticalOptions="Center"
                              HorizontalOptions="Center"
                              Padding="40">
-            <Image Source="empty_favorites"
+            <Image Source="empty_favorites.png"
                    HeightRequest="150"
                    WidthRequest="150"
                    Opacity="0.5"/>
@@ -72,7 +72,7 @@
                                            LineBreakMode="TailTruncation"
                                            MaxLines="2"/>
                                     <HorizontalStackLayout Spacing="5">
-                                        <Image Source="time_icon"
+                                        <Image Source="time_icon.png"
                                                 HeightRequest="12"
                                                 WidthRequest="12"/>
                                         <Label Text="{Binding Duration, StringFormat='{0} phút'}"
@@ -82,7 +82,7 @@
                                 </VerticalStackLayout>
 
                                 <ImageButton Grid.Column="2"
-                                             Source="heart_filled_icon"
+                                             Source="heart_filled_icon.png"
                                              HeightRequest="30"
                                              WidthRequest="30"
                                              VerticalOptions="Center"

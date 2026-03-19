@@ -10,31 +10,31 @@
     <TabBar>
         <ShellContent
             Title="Trang chủ"
-            Icon="home_icon"
+            Icon="home_icon.png"
             ContentTemplate="{DataTemplate views:MainPage}"
             Route="MainPage" />
         
         <ShellContent
             Title="Khám phá"
-            Icon="search_icon"
+            Icon="search_icon.png"
             ContentTemplate="{DataTemplate views:SearchPage}"
             Route="SearchPage" />
         
         <ShellContent
             Title="Bản đồ"
-            Icon="map_icon"
+            Icon="map_icon.png"
             ContentTemplate="{DataTemplate views:MapPage}"
             Route="MapPage" />
         
         <ShellContent
             Title="Tours"
-            Icon="tour_icon"
+            Icon="tour_icon.png"
             ContentTemplate="{DataTemplate views:ToursPage}"
             Route="ToursPage" />
         
         <ShellContent
             Title="Tài khoản"
-            Icon="profile_icon"
+            Icon="profile_icon.png"
             ContentTemplate="{DataTemplate views:ProfilePage}"
             Route="ProfilePage" />
     </TabBar>

@@ -28,7 +28,7 @@
                                            FontSize="14"
                                            FontAttributes="Bold"/>
                                     <Image Grid.Column="1"
-                                           Source="chevron_right"
+                                           Source="chevron_right.png"
                                            HeightRequest="16"
                                            Rotation="{Binding IsExpanded, Converter={StaticResource BoolToRotationConverter}}"/>
                                 </Grid>
@@ -54,7 +54,7 @@
                             <TapGestureRecognizer Command="{Binding SendEmailCommand}"/>
                         </Frame.GestureRecognizers>
                         <Grid ColumnDefinitions="40,*">
-                            <Image Source="email_icon" HeightRequest="24" WidthRequest="24"/>
+                            <Image Source="email_icon.png" HeightRequest="24" WidthRequest="24"/>
                             <VerticalStackLayout Grid.Column="1" Margin="15,0,0,0">
                                 <Label Text="Email"
                                        FontSize="14"
@@ -73,7 +73,7 @@
                             <TapGestureRecognizer Command="{Binding CallHotlineCommand}"/>
                         </Frame.GestureRecognizers>
                         <Grid ColumnDefinitions="40,*">
-                            <Image Source="phone_icon" HeightRequest="24" WidthRequest="24"/>
+                            <Image Source="phone_icon.png" HeightRequest="24" WidthRequest="24"/>
                             <VerticalStackLayout Grid.Column="1" Margin="15,0,0,0">
                                 <Label Text="Hotline"
                                        FontSize="14"
@@ -89,7 +89,7 @@
                     
                     <Frame Padding="15" BorderColor="Transparent">
                         <Grid ColumnDefinitions="40,*">
-                            <Image Source="chat_icon" HeightRequest="24" WidthRequest="24"/>
+                            <Image Source="chat_icon.png" HeightRequest="24" WidthRequest="24"/>
                             <VerticalStackLayout Grid.Column="1" Margin="15,0,0,0">
                                 <Label Text="Live Chat"
                                        FontSize="14"

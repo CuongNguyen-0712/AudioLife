@@ -5,8 +5,12 @@
     ViewData["ActivePage"] = "Locations";
 }
 
-<div class="page-header">
-    <h1><i class="fas fa-map-marker-alt me-2"></i>Quản lý địa điểm</h1>
+<div class="dashboard-hero mb-4">
+    <div>
+        <p class="hero-kicker"><i class="fa-solid fa-location-dot"></i> Danh bạ POI</p>
+        <h1 class="hero-title">Quản lý địa điểm</h1>
+        <p class="hero-subtitle">Quản trị điểm đến ẩm thực, category mapping và metadata hiển thị.</p>
+    </div>
     <a asp-page="Create" class="btn-admin btn-admin-primary"><i class="fas fa-plus"></i> Thêm địa điểm</a>
 </div>
 
@@ -15,8 +19,8 @@
     <div class="alert alert-success alert-admin">@TempData["Success"]</div>
 }
 
-<div class="admin-card">
-    <table class="admin-table">
+<div class="admin-card card-v2">
+    <table class="admin-table table-v2">
         <thead>
             <tr>
                 <th>ID</th>

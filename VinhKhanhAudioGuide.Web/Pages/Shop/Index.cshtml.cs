@@ -19,6 +19,11 @@ public class IndexModel : PageModel
     public List<Location> Locations { get; set; } = new();
     public Location? SelectedLocation { get; set; }
     public int AudioGuideCount { get; set; }
+    public int AudioDurationMinutes { get; set; }
+    public int TourCount { get; set; }
+    public string CategoryName { get; set; } = string.Empty;
+    public List<AudioGuide> RecentAudioGuides { get; set; } = new();
+    public List<Tour> RelatedTours { get; set; } = new();
 
     [BindProperty(SupportsGet = true)]
     public string? SelectedLocationId { get; set; }
@@ -52,6 +57,7 @@ public class IndexModel : PageModel
 
         SelectedLocation = await _db.Locations
             .AsNoTracking()
+            .Include(location => location.Category)
             .FirstOrDefaultAsync(l => l.Id == SelectedLocationId);
 
         if (SelectedLocation is null)
@@ -62,6 +68,36 @@ public class IndexModel : PageModel
         AudioGuideCount = await _db.AudioGuides
             .AsNoTracking()
             .CountAsync(ag => ag.LocationId == SelectedLocation.Id);
+
+        AudioDurationMinutes = await _db.AudioGuides
+            .AsNoTracking()
+            .Where(ag => ag.LocationId == SelectedLocation.Id)
+            .Select(ag => ag.Duration)
+            .SumAsync();
+
+        RecentAudioGuides = await _db.AudioGuides
+            .AsNoTracking()
+            .Where(ag => ag.LocationId == SelectedLocation.Id)
+            .OrderByDescending(ag => ag.Id)
+            .Take(5)
+            .ToListAsync();
+
+        var relatedToursRaw = await _db.TourLocations
+            .AsNoTracking()
+            .Where(tl => tl.LocationId == SelectedLocation.Id)
+            .OrderBy(tl => tl.SortOrder)
+            .Select(tl => tl.Tour)
+            .ToListAsync();
+
+        RelatedTours = relatedToursRaw
+            .Where(tour => tour != null)
+            .Select(tour => tour!)
+            .GroupBy(tour => tour.Id)
+            .Select(group => group.First())
+            .ToList();
+
+        TourCount = RelatedTours.Count;
+        CategoryName = SelectedLocation.Category?.Name ?? "Chưa phân loại";
 
         return Page();
     }

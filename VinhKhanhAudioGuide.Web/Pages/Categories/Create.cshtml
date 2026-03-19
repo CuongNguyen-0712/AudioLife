@@ -5,12 +5,16 @@
     ViewData["ActivePage"] = "Categories";
 }
 
-<div class="page-header">
-    <h1><i class="fas fa-plus me-2"></i>Thêm danh mục mới</h1>
+<div class="dashboard-hero mb-4">
+    <div>
+        <p class="hero-kicker"><i class="fa-solid fa-square-plus"></i> Thêm danh mục</p>
+        <h1 class="hero-title">Thêm danh mục mới</h1>
+        <p class="hero-subtitle">Khai báo nhóm nội dung mới để gắn địa điểm và audio guide.</p>
+    </div>
     <a asp-page="Index" class="btn-admin btn-admin-outline"><i class="fas fa-arrow-left"></i> Quay lại</a>
 </div>
 
-<div class="admin-card">
+<div class="admin-card card-v2">
     <div class="p-4">
         <form method="post" class="admin-form" style="max-width:600px;">
             <div class="mb-3">

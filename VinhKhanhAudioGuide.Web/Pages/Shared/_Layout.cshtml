@@ -6,25 +6,38 @@
     <title>@ViewData["Title"] - Audio Guide Web</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
 </head>
 <body>
     <div class="admin-wrapper">
-        <!-- Sidebar -->
         <aside class="admin-sidebar" id="adminSidebar">
-            <div class="sidebar-brand">
-                <i class="fas fa-headphones"></i>
-                <span>Audio Guide</span>
+            <div class="sidebar-brand-wrap">
+                <div class="sidebar-brand">
+                    <i class="fas fa-headphones"></i>
+                    <span>AudioAdmin</span>
+                </div>
+                <div class="sidebar-subtitle">Vĩnh Khánh Food Audio</div>
             </div>
             <nav class="sidebar-nav">
                 <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "Dashboard" ? "active" : "")" asp-page="/Admin/Index">
-                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+                    <i class="fas fa-tachometer-alt"></i> <span>Bảng điều khiển</span>
+                </a>
+                <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminUsers" ? "active" : "")" asp-page="/Admin/Users">
+                    <i class="fas fa-users"></i> <span>Người dùng</span>
+                </a>
+                <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminReports" ? "active" : "")" asp-page="/Admin/Reports">
+                    <i class="fas fa-chart-line"></i> <span>Báo cáo</span>
+                </a>
+                <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminSettings" ? "active" : "")" asp-page="/Admin/Settings">
+                    <i class="fas fa-sliders"></i> <span>Cài đặt</span>
                 </a>
                 <a class="sidebar-link" asp-page="/Shop/Index">
-                    <i class="fas fa-store"></i> <span>Khu Chủ Shop</span>
+                    <i class="fas fa-store"></i> <span>Khu Admin POI</span>
                 </a>
-                <div class="sidebar-heading">Quản lý nội dung</div>
+                <div class="sidebar-heading">Nội dung</div>
                 <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "Categories" ? "active" : "")" asp-page="/Categories/Index">
                     <i class="fas fa-folder"></i> <span>Danh mục</span>
                 </a>
@@ -32,22 +45,22 @@
                     <i class="fas fa-map-marker-alt"></i> <span>Địa điểm</span>
                 </a>
                 <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "Tours" ? "active" : "")" asp-page="/Tours/Index">
-                    <i class="fas fa-route"></i> <span>Tours</span>
+                    <i class="fas fa-route"></i> <span>Tour ẩm thực</span>
                 </a>
                 <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AudioGuides" ? "active" : "")" asp-page="/AudioGuides/Index">
-                    <i class="fas fa-headphones-alt"></i> <span>Audio Guides</span>
+                    <i class="fas fa-headphones-alt"></i> <span>Audio</span>
                 </a>
             </nav>
         </aside>
 
-        <!-- Main Content -->
         <div class="admin-main">
             <header class="admin-topbar">
                 <button class="btn btn-link sidebar-toggle" id="sidebarToggle">
                     <i class="fas fa-bars"></i>
                 </button>
-                <div class="topbar-right">
-                    <span class="text-muted me-3"><i class="fas fa-user-shield me-1"></i> @User.Identity?.Name</span>
+                <div class="topbar-right d-flex align-items-center gap-2">
+                    <span class="role-pill role-pill-admin"><i class="fas fa-crown"></i>Admin Hệ Thống</span>
+                    <span class="text-muted"><i class="fas fa-user-shield me-1"></i> @User.Identity?.Name</span>
                     <form method="post" asp-page="/Account/Logout" class="d-inline">
                         <button type="submit" class="btn btn-sm btn-outline-secondary">Đăng xuất</button>
                     </form>
