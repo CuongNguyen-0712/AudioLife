@@ -8,6 +8,8 @@
     <!-- Converters -->
     <converters:BoolToColorConverter x:Key="BoolToColorConverter"/>
     <converters:BoolToTextColorConverter x:Key="BoolToTextColorConverter"/>
+    <converters:BoolToFavoriteColorConverter x:Key="BoolToFavoriteColorConverter"/>
+    <converters:BoolToHeartGlyphConverter x:Key="BoolToHeartGlyphConverter"/>
     <converters:StringNotEmptyConverter x:Key="StringNotEmptyConverter"/>
     <converters:MinutesToHoursConverter x:Key="MinutesToHoursConverter"/>
     <converters:BoolToRotationConverter x:Key="BoolToRotationConverter"/>
@@ -42,15 +44,15 @@
                 Value="16"/>
     </Style>
 
+
     <!-- Header Styles -->
     <Style x:Key="PageHeader"
             TargetType="Label">
         <Setter Property="FontSize"
                 Value="28"/>
-        <Setter Property="FontAttributes"
-                Value="Bold"/>
         <Setter Property="TextColor"
                 Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
+        
     </Style>
 
     <Style x:Key="SectionHeader"
@@ -59,20 +61,22 @@
                 Value="20"/>
         <Setter Property="FontAttributes"
                 Value="Bold"/>
+
         <Setter Property="TextColor"
                 Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
         <Setter Property="Margin"
                 Value="0,15,0,10"/>
+        
     </Style>
 
     <Style x:Key="SubSectionHeader"
             TargetType="Label">
         <Setter Property="FontSize"
                 Value="16"/>
-        <Setter Property="FontAttributes"
-                Value="Bold"/>
+       
         <Setter Property="TextColor"
                 Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
+       
     </Style>
 
     <!-- Text Styles -->
@@ -82,6 +86,7 @@
                 Value="14"/>
         <Setter Property="TextColor"
                 Value="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}"/>
+      
     </Style>
 
     <Style x:Key="CaptionText"
@@ -118,7 +123,7 @@
         <Setter Property="TextColor"
                 Value="White"/>
         <Setter Property="FontFamily"
-                Value="OpenSansSemibold"/>
+                Value="RobotoCondensedSemiBold"/>
         <Setter Property="FontSize"
                 Value="16"/>
         <Setter Property="CornerRadius"
@@ -136,7 +141,7 @@
         <Setter Property="TextColor"
                 Value="{StaticResource Primary}"/>
         <Setter Property="FontFamily"
-                Value="OpenSansSemibold"/>
+                Value="RobotoCondensedSemiBold"/> 
         <Setter Property="FontSize"
                 Value="16"/>
         <Setter Property="CornerRadius"
@@ -158,7 +163,7 @@
         <Setter Property="BorderWidth"
                 Value="2"/>
         <Setter Property="FontFamily"
-                Value="OpenSansSemibold"/>
+                Value="RobotoCondensedSemiBold"/>
         <Setter Property="FontSize"
                 Value="16"/>
         <Setter Property="CornerRadius"
@@ -218,11 +223,11 @@
     <Style x:Key="RoundedSearchBar"
             TargetType="SearchBar">
         <Setter Property="BackgroundColor"
-                Value="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}"/>
+                Value="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray300}}"/>
         <Setter Property="TextColor"
                 Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
         <Setter Property="PlaceholderColor"
-                Value="{StaticResource Gray500}"/>
+                Value="{StaticResource PrimaryDark}"/>
         <Setter Property="FontSize"
                 Value="14"/>
     </Style>
@@ -234,7 +239,7 @@
         <Setter Property="TextColor"
                 Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
         <Setter Property="PlaceholderColor"
-                Value="{StaticResource Gray500}"/>
+                Value="{StaticResource Primary}"/>
         <Setter Property="FontSize"
                 Value="14"/>
     </Style>
@@ -258,8 +263,7 @@
                 Value="White"/>
         <Setter Property="FontSize"
                 Value="10"/>
-        <Setter Property="FontAttributes"
-                Value="Bold"/>
+        
     </Style>
 
     <!-- Separator -->
@@ -385,23 +389,24 @@
     <Style x:Key="StatCard"
             TargetType="Frame">
         <Setter Property="BackgroundColor"
-                Value="#FFFFFF20"/>
+                Value="{StaticResource PrimaryDark}"/>
+
         <Setter Property="CornerRadius"
-                Value="12"/>
+                Value="16"/>
         <Setter Property="Padding"
                 Value="12,8"/>
         <Setter Property="HasShadow"
                 Value="False"/>
         <Setter Property="BorderColor"
-                Value="#FFFFFF30"/>
+                Value="{StaticResource PrimaryDark}"/>
+
     </Style>
 
     <Style x:Key="StatNumber"
             TargetType="Label">
         <Setter Property="FontSize"
                 Value="24"/>
-        <Setter Property="FontAttributes"
-                Value="Bold"/>
+       
         <Setter Property="TextColor"
                 Value="White"/>
         <Setter Property="HorizontalOptions"
@@ -450,8 +455,7 @@
                 Value="White"/>
         <Setter Property="FontSize"
                 Value="13"/>
-        <Setter Property="FontAttributes"
-                Value="Bold"/>
+      
     </Style>
 
     <!-- Timeline Styles (matches web tour route) -->
@@ -489,7 +493,7 @@
         <Setter Property="TextColor"
                 Value="White"/>
         <Setter Property="FontFamily"
-                Value="OpenSansSemibold"/>
+                Value="RobotoCondensedSemiBold"/>
         <Setter Property="FontSize"
                 Value="16"/>
         <Setter Property="CornerRadius"
@@ -499,5 +503,7 @@
         <Setter Property="Padding"
                 Value="30,0"/>
     </Style>
+
+
 
 </ResourceDictionary>

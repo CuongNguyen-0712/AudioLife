@@ -5,14 +5,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
     <!-- Primary Colors -->
-    <Color x:Key="Primary">#512BD4</Color>
-    <Color x:Key="PrimaryDark">#3B1FA0</Color>
+    <Color x:Key="Primary">#70B9BE</Color>
+    <Color x:Key="PrimaryDark">#042628</Color>
     <Color x:Key="PrimaryDarkText">#242424</Color>
     <Color x:Key="Secondary">#DFD8F7</Color>
     <Color x:Key="SecondaryDarkText">#9880e5</Color>
     <Color x:Key="Tertiary">#2B0B98</Color>
     <Color x:Key="Accent">#FF6B35</Color>
-    <Color x:Key="AccentLight">#FFE0CC</Color>
+    <Color x:Key="AccentLight">#E6EBF2</Color>
+    
 
     <!-- Neutral Colors -->
     <Color x:Key="White">White</Color>
@@ -21,10 +22,14 @@
     <Color x:Key="Gray200">#C8C8C8</Color>
     <Color x:Key="Gray300">#ACACAC</Color>
     <Color x:Key="Gray400">#919191</Color>
-    <Color x:Key="Gray500">#6E6E6E</Color>
+    <Color x:Key="Gray500">#748189</Color>
     <Color x:Key="Gray600">#404040</Color>
     <Color x:Key="Gray900">#212121</Color>
     <Color x:Key="Gray950">#141414</Color>
+
+   
+
+
 
     <!-- App Specific Colors -->
     <Color x:Key="AudioGuideBlue">#2196F3</Color>

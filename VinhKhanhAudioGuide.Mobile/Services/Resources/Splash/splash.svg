@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="456" height="456" viewBox="0 0 456 456" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(128, 128)">
+        <!-- Headphones with audio waves -->
+        <path fill="#FFFFFF" d="M100,0C44.8,0,0,44.8,0,100v40c0,11,9,20,20,20h20c11,0,20-9,20-20v-40c0-22,18-40,40-40s40,18,40,40v40c0,11,9,20,20,20h20c11,0,20-9,20-20v-40C200,44.8,155.2,0,100,0z"/>
+    </g>
+</svg>
