@@ -28,6 +28,7 @@
                          HorizontalOptions="Center"
                          Margin="0,0,0,10"/>
 
+                <!--Địa điểm gần đây-->
                 <Label Text="Địa điểm gần đây"
                        FontSize="18"
                        FontAttributes="Bold"/>

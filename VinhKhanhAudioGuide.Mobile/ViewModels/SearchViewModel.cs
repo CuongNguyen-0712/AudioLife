@@ -65,10 +65,10 @@ public partial class SearchViewModel : ObservableObject
     private void LoadRecentSearches()
     {
         // Load from preferences
-        RecentSearches.Add("Chùa Một Cột");
-        RecentSearches.Add("Văn Miếu");
-        RecentSearches.Add("Hồ Gươm");
-        RecentSearches.Add("Bảo tàng");
+        RecentSearches.Add("Bánh xèo miền Tây ");
+        RecentSearches.Add("Trà sữa trân châu");
+        RecentSearches.Add("Ốc xào bơ tỏi");
+        RecentSearches.Add("Tôm nướng muối ớt");
     }
 
     partial void OnSearchQueryChanged(string value)

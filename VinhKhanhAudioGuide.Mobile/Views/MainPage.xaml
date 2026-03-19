@@ -92,7 +92,7 @@
                                         </Frame.GestureRecognizers>
                                         <Grid>
                                             <!-- Full image as background -->
-                                            <Image Source="{Binding ImageUrl}" Aspect="AspectFill" HeightRequest="200"/>
+                                            <Image Source="{Binding ImageUrl}" Aspect="AspectFill" WidthRequest="300" HeightRequest="200"/>
 
                                             <!-- Overlay gradient to improve text contrast (reduced) -->
                                             <BoxView Opacity="0.18" BackgroundColor="Black" />
@@ -149,7 +149,7 @@
                     <CollectionView
                         ItemsSource="{Binding FavoriteLocationsPreview}"
                         SelectionMode="None"
-                        HeightRequest="380">
+                        HeightRequest="450">
 
                         <CollectionView.ItemsLayout>
                             <GridItemsLayout Orientation="Vertical" Span="2" VerticalItemSpacing="10" HorizontalItemSpacing="5" />
@@ -170,6 +170,7 @@
                                             CommandParameter="{Binding .}" />
                                     </Frame.GestureRecognizers>
 
+                                        <!--item-->
                                     <VerticalStackLayout>
                                         <Image
                                             Source="{Binding ImageUrl}"
@@ -228,14 +229,14 @@
 
                     <CollectionView
                         ItemsSource="{Binding FeaturedTours}"
-                        HeightRequest="240"
+                        HeightRequest="220"
                         ItemsLayout="HorizontalList"
                         SelectionMode="None">
 
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="viewmodels:FeaturedTourItem">
 
-                                <Frame Padding="0" Margin="5,0" CornerRadius="12" WidthRequest="260" HeightRequest="220" HasShadow="True">
+                                <Frame Padding="0" Margin="5,0" CornerRadius="12"  HeightRequest="220" HasShadow="True">
 
                                     <Frame.GestureRecognizers>
                                         <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:MainViewModel}}, Path=TourSelectedCommand}" CommandParameter="{Binding .}" />
@@ -243,7 +244,7 @@
 
                                     <Grid>
                                         <!-- full image background -->
-                                        <Image Source="{Binding ImageUrl}" Aspect="AspectFill" />
+                                        <Image Source="{Binding ImageUrl}" Aspect="AspectFill" WidthRequest="300" HeightRequest="200"/>
 
                                         <!-- subtle dark overlay for contrast -->
                                         <BoxView BackgroundColor="#33000000" />
