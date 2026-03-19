@@ -161,6 +161,7 @@
                                     Padding="0"
                                     Margin="6"
                                     CornerRadius="12"
+                                    IsClippedToBounds="True"
                                     HasShadow="True">
 
                                     <Frame.GestureRecognizers>
@@ -170,9 +171,10 @@
                                     </Frame.GestureRecognizers>
 
                                     <VerticalStackLayout>
-                                        <BoxView
-                                            BackgroundColor="{StaticResource PrimaryDark}"
-                                            HeightRequest="140"/>
+                                        <Image
+                                            Source="{Binding ImageUrl}"
+                                            Aspect="AspectFill"
+                                            HeightRequest="140" />
 
                                         <VerticalStackLayout Padding="10" Spacing="4">
                                             <Label

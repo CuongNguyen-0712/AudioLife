@@ -24,24 +24,24 @@ public static class SampleData
         var locations = new List<Models.Location>
     {
         // ===== ĐẶC SẢN (1) =====
-        new() { Id = "loc_001", Name = "Bún mắm Vĩnh Khánh", Description = "Đậm đà hương vị miền Tây", ImageUrl = "bun_mam", Address = "Vĩnh Khánh, Q4", Duration = 30, CategoryId = "1" },
-        new() { Id = "loc_002", Name = "Bánh xèo miền Tây", Description = "Giòn rụm, ăn kèm rau sống", ImageUrl = "banh_xeo", Address = "Vĩnh Khánh, Q4", Duration = 25, CategoryId = "1" },
+        new() { Id = "loc_001", Name = "Bún mắm Vĩnh Khánh", Description = "Đậm đà hương vị miền Tây", ImageUrl = "bun_mam.jpg", Address = "Vĩnh Khánh, Q4", Duration = 30, CategoryId = "1" },
+        new() { Id = "loc_002", Name = "Bánh xèo miền Tây", Description = "Giòn rụm, ăn kèm rau sống", ImageUrl = "banh_xeo.jpg", Address = "Vĩnh Khánh, Q4", Duration = 25, CategoryId = "1" },
 
         // ===== ĂN VẶT (2) =====
-        new() { Id = "loc_003", Name = "Bánh tráng trộn", Description = "Chua cay mặn ngọt", ImageUrl = "banh_trang", Address = "Vĩnh Khánh, Q4", Duration = 15, CategoryId = "2" },
-        new() { Id = "loc_004", Name = "Xiên que nướng", Description = "Đa dạng topping hấp dẫn", ImageUrl = "xien_que", Address = "Vĩnh Khánh, Q4", Duration = 20, CategoryId = "2" },
+        new() { Id = "loc_003", Name = "Bánh tráng trộn", Description = "Chua cay mặn ngọt", ImageUrl = "banh_trang_tron.jpg", Address = "Vĩnh Khánh, Q4", Duration = 15, CategoryId = "2" },
+        new() { Id = "loc_004", Name = "Xiên que nướng", Description = "Đa dạng topping hấp dẫn", ImageUrl = "tom_nuong_muoi_ot.jpg", Address = "Vĩnh Khánh, Q4", Duration = 20, CategoryId = "2" },
 
         // ===== ĂN ĐÊM (3) =====
-        new() { Id = "loc_005", Name = "Cháo sườn đêm", Description = "Nóng hổi, dễ ăn", ImageUrl = "chao_suon", Address = "Vĩnh Khánh, Q4", Duration = 20, CategoryId = "3" },
-        new() { Id = "loc_006", Name = "Phở khuya", Description = "Đậm vị, phục vụ khuya", ImageUrl = "pho_dem", Address = "Vĩnh Khánh, Q4", Duration = 30, CategoryId = "3" },
+        new() { Id = "loc_005", Name = "Cháo sườn đêm", Description = "Nóng hổi, dễ ăn", ImageUrl = "chao_suon.jpg", Address = "Vĩnh Khánh, Q4", Duration = 20, CategoryId = "3" },
+        new() { Id = "loc_006", Name = "Phở khuya", Description = "Đậm vị, phục vụ khuya", ImageUrl = "pho.jpg", Address = "Vĩnh Khánh, Q4", Duration = 30, CategoryId = "3" },
 
         // ===== HẢI SẢN (4) =====
-        new() { Id = "loc_007", Name = "Ốc xào bơ tỏi", Description = "Thơm béo, đậm vị", ImageUrl = "oc_xao", Address = "Vĩnh Khánh, Q4", Duration = 35, CategoryId = "4" },
-        new() { Id = "loc_008", Name = "Tôm nướng muối ớt", Description = "Cay nhẹ, thơm lừng", ImageUrl = "tom_nuong", Address = "Vĩnh Khánh, Q4", Duration = 40, CategoryId = "4" },
+        new() { Id = "loc_007", Name = "Ốc xào bơ tỏi", Description = "Thơm béo, đậm vị", ImageUrl = "oc_xao_bo_toi.jpg", Address = "Vĩnh Khánh, Q4", Duration = 35, CategoryId = "4" },
+        new() { Id = "loc_008", Name = "Tôm nướng muối ớt", Description = "Cay nhẹ, thơm lừng", ImageUrl = "tom_nuong_muoi_ot.jpg", Address = "Vĩnh Khánh, Q4", Duration = 40, CategoryId = "4" },
 
         // ===== ĐỒ UỐNG (5) =====
-        new() { Id = "loc_009", Name = "Trà sữa trân châu", Description = "Ngọt béo, topping đa dạng", ImageUrl = "tra_sua", Address = "Vĩnh Khánh, Q4", Duration = 15, CategoryId = "5" },
-        new() { Id = "loc_010", Name = "Cà phê sữa đá", Description = "Đậm vị truyền thống", ImageUrl = "ca_phe", Address = "Vĩnh Khánh, Q4", Duration = 20, CategoryId = "5" }
+        new() { Id = "loc_009", Name = "Trà sữa trân châu", Description = "Ngọt béo, topping đa dạng", ImageUrl = "ca_phe_sua_da.jpg", Address = "Vĩnh Khánh, Q4", Duration = 15, CategoryId = "5" },
+        new() { Id = "loc_010", Name = "Cà phê sữa đá", Description = "Đậm vị truyền thống", ImageUrl = "ca_phe_sua_da.jpg", Address = "Vĩnh Khánh, Q4", Duration = 20, CategoryId = "5" }
     };
 
         // Attach audio guides to each location for convenience
@@ -119,7 +119,7 @@ public static class SampleData
             Id = "tour_001",
             Name = "Food Tour Vĩnh Khánh",
             Description = "Khám phá thiên đường ẩm thực đường phố",
-            ImageUrl = "tour_food",
+            ImageUrl = "tour_icon.svg",
             Duration = 180,
             LocationIds = new List<string> { "loc_003", "loc_004", "loc_007", "loc_008" },
             Price = 0,
@@ -130,7 +130,7 @@ public static class SampleData
             Id = "tour_002",
             Name = "Ăn đêm Sài Gòn",
             Description = "Trải nghiệm ẩm thực về đêm",
-            ImageUrl = "tour_night",
+            ImageUrl = "tour_craft.svg",
             Duration = 120,
             LocationIds = new List<string> { "loc_005", "loc_006" },
             Price = 0,
@@ -141,7 +141,7 @@ public static class SampleData
             Id = "tour_003",
             Name = "Combo đặc sản miền Tây",
             Description = "Thưởng thức món ngon truyền thống",
-            ImageUrl = "tour_special",
+            ImageUrl = "tour_spiritual.svg",
             Duration = 150,
             LocationIds = new List<string> { "loc_001", "loc_002" },
             Price = 0,
@@ -152,7 +152,7 @@ public static class SampleData
             Id = "tour_004",
             Name = "Ăn vặt & chill",
             Description = "Combo nhẹ nhàng cho giới trẻ",
-            ImageUrl = "tour_snack",
+            ImageUrl = "heritage_icon.svg",
             Duration = 90,
             LocationIds = new List<string> { "loc_003", "loc_004", "loc_009" },
             Price = 0,
