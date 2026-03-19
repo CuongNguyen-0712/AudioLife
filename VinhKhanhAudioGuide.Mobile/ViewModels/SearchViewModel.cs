@@ -55,6 +55,8 @@ public partial class SearchViewModel : ObservableObject
             {
                 Id = cat.Id,
                 Name = cat.Name,
+                Icon = cat.Icon,
+                Description = cat.Description,
                 IsSelected = false
             });
         }
@@ -201,6 +203,8 @@ public class CategoryFilter : ObservableObject
 {
     public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
+    public string Icon { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
 
     private bool _isSelected;
     public bool IsSelected

@@ -26,19 +26,19 @@
     <!-- Label Styles -->
     <Style TargetType="Label">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
-        <Setter Property="FontFamily" Value="OpenSansRegular"/>
+        <Setter Property="FontFamily" Value="RobotoCondensedRegular"/>
         <Setter Property="FontSize" Value="14"/>
     </Style>
 
     <Style TargetType="Label" x:Key="Headline">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
-        <Setter Property="FontFamily" Value="OpenSansSemibold"/>
+        <Setter Property="FontFamily" Value="RobotoCondensedSemiBold"/>
         <Setter Property="FontSize" Value="24"/>
     </Style>
 
     <Style TargetType="Label" x:Key="SubHeadline">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray300}}" />
-        <Setter Property="FontFamily" Value="OpenSansRegular"/>
+        <Setter Property="FontFamily" Value="RobotoCondensedRegular"/>
         <Setter Property="FontSize" Value="16"/>
     </Style>
 
@@ -46,7 +46,7 @@
     <Style TargetType="Button">
         <Setter Property="TextColor" Value="{StaticResource White}"/>
         <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
-        <Setter Property="FontFamily" Value="OpenSansSemibold"/>
+        <Setter Property="FontFamily" Value="RobotoCondensedSemiBold"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="CornerRadius" Value="8"/>
         <Setter Property="Padding" Value="14,10"/>
@@ -71,7 +71,7 @@
     <Style TargetType="Button" x:Key="SecondaryButton">
         <Setter Property="TextColor" Value="{StaticResource Primary}"/>
         <Setter Property="BackgroundColor" Value="{StaticResource Secondary}"/>
-        <Setter Property="FontFamily" Value="OpenSansSemibold"/>
+        <Setter Property="FontFamily" Value="RobotoCondensedSemiBold"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="CornerRadius" Value="8"/>
         <Setter Property="Padding" Value="14,10"/>
@@ -81,7 +81,7 @@
     <Style TargetType="Entry">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
         <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="FontFamily" Value="OpenSansRegular"/>
+        <Setter Property="FontFamily" Value="RobotoCondensedRegular"/>
         <Setter Property="FontSize" Value="14" />
         <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}" />
         <Setter Property="MinimumHeightRequest" Value="44"/>
@@ -90,12 +90,13 @@
 
     <!-- SearchBar Styles -->
     <Style TargetType="SearchBar">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
-        <Setter Property="PlaceholderColor" Value="{StaticResource Gray500}" />
-        <Setter Property="CancelButtonColor" Value="{StaticResource Primary}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource PrimaryDark}, Dark={StaticResource White}}" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource PrimaryDark}" />
+        <Setter Property="CancelButtonColor" Value="{StaticResource PrimaryDark}" />
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}" />
-        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontFamily" Value="RobotoCondensedRegular" />
         <Setter Property="FontSize" Value="14" />
+       
     </Style>
 
     <!-- Frame Styles -->

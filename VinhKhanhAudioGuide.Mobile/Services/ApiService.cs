@@ -40,48 +40,48 @@ public class ApiService : IApiService
             new()
             {
                 Id = "h1",
-                AudioGuideId = "ag_001",
-                AudioTitle = "Lịch sử Chùa Một Cột",
+                AudioGuideId = "ag_001_1",
+                AudioTitle = "Giới thiệu quán",
                 LocationId = "loc_001",
-                LocationName = "Chùa Một Cột",
-                LocationImageUrl = "chua_mot_cot",
-                AudioDuration = 5,
+                LocationName = "Bún mắm Vĩnh Khánh",
+                LocationImageUrl = "bun_mam",
+                AudioDuration = 3,
                 Progress = 0.8,
                 ListenedAt = DateTime.Today.AddHours(-2)
             },
             new()
             {
                 Id = "h2",
-                AudioGuideId = "ag_004",
-                AudioTitle = "Lịch sử Văn Miếu",
+                AudioGuideId = "ag_002_1",
+                AudioTitle = "Giới thiệu quán",
                 LocationId = "loc_002",
-                LocationName = "Văn Miếu - Quốc Tử Giám",
-                LocationImageUrl = "van_mieu",
-                AudioDuration = 8,
+                LocationName = "Bánh xèo miền Tây",
+                LocationImageUrl = "banh_xeo",
+                AudioDuration = 3,
                 Progress = 1.0,
                 ListenedAt = DateTime.Today.AddHours(-5)
             },
             new()
             {
                 Id = "h3",
-                AudioGuideId = "ag_007",
-                AudioTitle = "Tổng quan Hoàng Thành",
-                LocationId = "loc_003",
-                LocationName = "Hoàng Thành Thăng Long",
-                LocationImageUrl = "hoang_thanh",
-                AudioDuration = 10,
+                AudioGuideId = "ag_007_1",
+                AudioTitle = "Giới thiệu quán",
+                LocationId = "loc_007",
+                LocationName = "Ốc xào bơ tỏi",
+                LocationImageUrl = "oc_xao",
+                AudioDuration = 3,
                 Progress = 0.45,
                 ListenedAt = DateTime.Today.AddDays(-1)
             },
             new()
             {
                 Id = "h4",
-                AudioGuideId = "ag_016",
-                AudioTitle = "Giới thiệu Hồ Gươm",
+                AudioGuideId = "ag_006_1",
+                AudioTitle = "Giới thiệu quán",
                 LocationId = "loc_006",
-                LocationName = "Hồ Hoàn Kiếm",
-                LocationImageUrl = "ho_guom",
-                AudioDuration = 6,
+                LocationName = "Phở khuya",
+                LocationImageUrl = "pho_dem",
+                AudioDuration = 3,
                 Progress = 1.0,
                 ListenedAt = DateTime.Today.AddDays(-2)
             }
@@ -89,10 +89,10 @@ public class ApiService : IApiService
 
         _downloads = new List<DownloadedAudio>
         {
-            new() { AudioGuideId = "ag_001", LocalPath = "/audio/ag_001.mp3", DownloadedAt = DateTime.Today.AddDays(-5), FileSize = 3_355_443 },
-            new() { AudioGuideId = "ag_004", LocalPath = "/audio/ag_004.mp3", DownloadedAt = DateTime.Today.AddDays(-3), FileSize = 5_242_880 },
-            new() { AudioGuideId = "ag_007", LocalPath = "/audio/ag_007.mp3", DownloadedAt = DateTime.Today.AddDays(-1), FileSize = 7_340_032 },
-            new() { AudioGuideId = "ag_016", LocalPath = "/audio/ag_016.mp3", DownloadedAt = DateTime.Today, FileSize = 4_194_304 }
+            new() { AudioGuideId = "ag_001_1", LocalPath = "/audio/ag_001_1.mp3", DownloadedAt = DateTime.Today.AddDays(-5), FileSize = 3_355_443 },
+            new() { AudioGuideId = "ag_002_1", LocalPath = "/audio/ag_002_1.mp3", DownloadedAt = DateTime.Today.AddDays(-3), FileSize = 5_242_880 },
+            new() { AudioGuideId = "ag_007_1", LocalPath = "/audio/ag_007_1.mp3", DownloadedAt = DateTime.Today.AddDays(-1), FileSize = 7_340_032 },
+            new() { AudioGuideId = "ag_006_1", LocalPath = "/audio/ag_006_1.mp3", DownloadedAt = DateTime.Today, FileSize = 4_194_304 }
         };
     }
 

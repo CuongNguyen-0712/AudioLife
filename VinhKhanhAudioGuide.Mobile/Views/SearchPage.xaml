@@ -11,17 +11,18 @@
 
         <!-- Search Header -->
         <Frame Grid.Row="0"
-               BackgroundColor="{StaticResource Primary}"
+               BackgroundColor="{StaticResource White}"
+     
                Padding="15,50,15,20"
                CornerRadius="0">
             <VerticalStackLayout Spacing="15">
                 <Label Text="Tìm kiếm"
                        FontSize="24"
                        FontAttributes="Bold"
-                       TextColor="White"/>
+                       TextColor="{StaticResource PrimaryDark}"/>
 
-                <Frame Padding="10"
-                       CornerRadius="25"
+                <Frame Padding="6"
+                       CornerRadius="10"
                        BackgroundColor="White"
                        HasShadow="False">
                     <Grid ColumnDefinitions="Auto,*,Auto">
@@ -30,6 +31,7 @@
                                WidthRequest="20"
                                Margin="5,0"/>
                         <Entry Grid.Column="1"
+                               AutomationId="SearchInput"
                                Placeholder="Tìm địa điểm, tour..."
                                Text="{Binding SearchQuery}"
                                ReturnCommand="{Binding SearchCommand}"
@@ -57,7 +59,7 @@
                        BackgroundColor="{Binding AllSelected, Converter={StaticResource BoolToColorConverter}}"
                        BorderColor="{StaticResource Primary}">
                     <Label Text="Tất cả"
-                           FontSize="13"
+                           FontSize="16"
                            TextColor="{Binding AllSelected, Converter={StaticResource BoolToTextColorConverter}}"/>
                     <Frame.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding SelectAllCommand}"/>
@@ -69,14 +71,16 @@
                                 HeightRequest="40">
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="viewmodels:CategoryFilter">
-                            <Frame Padding="12,8"
+                            <Frame Padding="8,6"
                                    Margin="0,0,10,0"
                                    CornerRadius="20"
                                    BackgroundColor="{Binding IsSelected, Converter={StaticResource BoolToColorConverter}}"
                                    BorderColor="{StaticResource Primary}">
-                                <Label Text="{Binding Name}"
-                                       FontSize="13"
-                                       TextColor="{Binding IsSelected, Converter={StaticResource BoolToTextColorConverter}}"/>
+                                <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                    <Label Text="{Binding Name}"
+                                           FontSize="13"
+                                           TextColor="{Binding IsSelected, Converter={StaticResource BoolToTextColorConverter}}"/>
+                                </HorizontalStackLayout>
                                 <Frame.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:SearchViewModel}}, Path=SelectCategoryCommand}"
                                                           CommandParameter="{Binding .}"/>
@@ -120,33 +124,23 @@
             <VerticalStackLayout IsVisible="{Binding ShowRecentSearches}"
                                  Padding="15">
                 <Label Text="Tìm kiếm gần đây"
-                       FontSize="16"
+                       FontSize="17"
+                       TextColor="{StaticResource PrimaryDark}"
                        FontAttributes="Bold"
                        Margin="0,0,0,10"/>
 
                 <CollectionView ItemsSource="{Binding RecentSearches}">
                     <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="x:String">
-                            <Grid ColumnDefinitions="Auto,*,Auto"
-                                  Padding="10">
-                                <Image Source="history_icon"
-                                       HeightRequest="18"
-                                       WidthRequest="18"
-                                       Opacity="0.5"/>
-                                <Label Grid.Column="1"
-                                       Text="{Binding .}"
-                                       VerticalOptions="Center"
-                                       Margin="15,0"/>
-                                <ImageButton Grid.Column="2"
-                                             Source="close_icon"
-                                             HeightRequest="16"
-                                             WidthRequest="16"
-                                             Opacity="0.5"
+                        <DataTemplate x:DataType="viewmodels:SearchResultItem">
+                            <Grid ColumnDefinitions="Auto,*,Auto" Padding="10" VerticalOptions="Center">
+                                <Image Source="history_icon" HeightRequest="18" WidthRequest="18" Opacity="0.6" />
+                                <Label Grid.Column="1" Text="{Binding Name}" VerticalOptions="Center" Margin="12,0" FontSize="16" />
+                                <ImageButton Grid.Column="2" Source="close_icon" HeightRequest="20" WidthRequest="20" Opacity="0.6"
                                              Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:SearchViewModel}}, Path=RemoveRecentSearchCommand}"
-                                             CommandParameter="{Binding .}"/>
+                                             CommandParameter="{Binding .}" />
                                 <Grid.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:SearchViewModel}}, Path=UseRecentSearchCommand}"
-                                                          CommandParameter="{Binding .}"/>
+                                                      CommandParameter="{Binding .}" />
                                 </Grid.GestureRecognizers>
                             </Grid>
                         </DataTemplate>
@@ -174,13 +168,13 @@
                                                      VerticalOptions="Center"
                                                      Spacing="4">
                                     <Label Text="{Binding Name}"
-                                           FontSize="15"
+                                           FontSize="16"
                                            FontAttributes="Bold"/>
                                     <Label Text="{Binding CategoryName}"
-                                           FontSize="11"
+                                           FontSize="16"
                                            TextColor="{StaticResource Primary}"/>
                                     <Label Text="{Binding Description}"
-                                           FontSize="12"
+                                           FontSize="16"
                                            TextColor="{StaticResource Gray500}"
                                            LineBreakMode="TailTruncation"
                                            MaxLines="2"/>

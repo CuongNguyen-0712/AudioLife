@@ -1,5 +1,9 @@
 using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
+#if ANDROID
+using Android.Widget;
+using Android.Graphics;
+#endif
 
 namespace VinhKhanhAudioGuide.Mobile;
 
@@ -13,8 +17,12 @@ public static class MauiProgram
             .UseMauiCommunityToolkit()
             .ConfigureFonts(fonts =>
             {
-                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+               
+                fonts.AddFont("RobotoCondensed-SemiBold.ttf", "RobotoCondensedSemiBold");
+                fonts.AddFont("RobotoCondensed-Medium.ttf", "RobotoCondensedMedium");
+                fonts.AddFont("RobotoCondensed-Regular.ttf", "RobotoCondensedRegular");
+
+
             });
 
         // Register services
@@ -59,6 +67,48 @@ public static class MauiProgram
 
 #if DEBUG
         builder.Logging.AddDebug();
+#endif
+
+        // Remove Android underline for specific Entry (SearchInput)
+#if ANDROID
+        Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("NoUnderline", (handler, view) =>
+        {
+            try
+            {
+                if (view?.AutomationId == "SearchInput")
+                {
+                    var platformView = handler.PlatformView;
+                    if (platformView != null)
+                    {
+                        try
+                        {
+                            // Try multiple ways to clear native underline/background on Android
+                            platformView.Background = null;
+                        }
+                        catch { }
+
+                        try
+                        {
+                            // Set background color transparent
+                            platformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
+                        }
+                        catch { }
+
+                        try
+                        {
+                            if (platformView is Android.Widget.EditText et)
+                            {
+                                et.SetBackgroundColor(Android.Graphics.Color.Transparent);
+                                // API compatibility: remove background drawable
+                                et.SetBackgroundDrawable(null);
+                            }
+                        }
+                        catch { }
+                    }
+                }
+            }
+            catch { }
+        });
 #endif
 
         return builder.Build();

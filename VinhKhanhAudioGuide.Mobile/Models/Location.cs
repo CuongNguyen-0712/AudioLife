@@ -1,6 +1,8 @@
 namespace VinhKhanhAudioGuide.Mobile.Models;
 
-public class Location
+using CommunityToolkit.Mvvm.ComponentModel;
+
+public partial class Location : ObservableObject
 {
     public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
@@ -16,4 +18,7 @@ public class Location
     // Computed properties for UI binding
     public int AudioGuideCount => AudioGuides.Count;
     public string CategoryName { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    private bool isFavorite;
 }
