@@ -23,6 +23,9 @@ public partial class MapViewModel : ObservableObject
     [ObservableProperty]
     private HtmlWebViewSource? _mapHtmlSource;
 
+    [ObservableProperty]
+    private NearbyLocation? _currentPoiLocation;
+
     public ObservableCollection<MapMarker> MapMarkers { get; } = new();
     public ObservableCollection<NearbyLocation> NearbyLocations { get; } = new();
 
@@ -48,11 +51,14 @@ public partial class MapViewModel : ObservableObject
             });
 
             var distance = CalculateDistance(UserLatitude, UserLongitude, location.Latitude, location.Longitude);
+            var category = categories.FirstOrDefault(c => c.Id == location.CategoryId);
             NearbyLocations.Add(new NearbyLocation
             {
                 Id = location.Id,
                 Name = location.Name,
                 ImageUrl = location.ImageUrl,
+                CategoryName = category?.Name ?? "Khác",
+                Address = location.Address,
                 Distance = Math.Round(distance, 1)
             });
         }
@@ -64,6 +70,8 @@ public partial class MapViewModel : ObservableObject
         {
             NearbyLocations.Add(loc);
         }
+
+        CurrentPoiLocation = NearbyLocations.FirstOrDefault();
 
         // Generate Leaflet map HTML
         GenerateMapHtml(locations, categories);
@@ -94,12 +102,39 @@ public partial class MapViewModel : ObservableObject
         body {{ margin:0; padding:0; }}
         #map {{ width:100%; height:100vh; }}
         .custom-popup .leaflet-popup-content {{ font-family: -apple-system, sans-serif; font-size:13px; }}
+        .custom-zoom {{
+            position: absolute;
+            left: 16px;
+            top: 16px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }}
+        .custom-zoom button {{
+            width: 40px;
+            height: 40px;
+            border: 0;
+            border-radius: 12px;
+            background: #C5E6E8;
+            opacity: 0.8;
+            color: #49686A;
+            font-size: 24px;
+            line-height: 1;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.16);
+            cursor: pointer;
+        }}
     </style>
 </head>
 <body>
 <div id='map'></div>
+<div class='custom-zoom'>
+    <button id='zoomInBtn' type='button'>+</button>
+    <button id='zoomOutBtn' type='button'>-</button>
+</div>
 <script>
-    var map = L.map('map').setView([{UserLatitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}, {UserLongitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}], 13);
+    var map = L.map('map', {{ zoomControl: false }}).setView([{UserLatitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}, {UserLongitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}], 13);
     L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
         maxZoom: 19,
         attribution: '&copy; OpenStreetMap'
@@ -121,6 +156,9 @@ public partial class MapViewModel : ObservableObject
         iconAnchor: [8, 8]
     }});
     L.marker([{UserLatitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}, {UserLongitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}], {{icon: userIcon}}).addTo(map).bindPopup('📍 Vị trí của bạn');
+
+    document.getElementById('zoomInBtn').addEventListener('click', function() {{ map.zoomIn(); }});
+    document.getElementById('zoomOutBtn').addEventListener('click', function() {{ map.zoomOut(); }});
 
     // Location markers
     {markersJs}
@@ -166,5 +204,7 @@ public class NearbyLocation
     public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string ImageUrl { get; set; } = string.Empty;
+    public string CategoryName { get; set; } = string.Empty;
+    public string Address { get; set; } = string.Empty;
     public double Distance { get; set; }
 }

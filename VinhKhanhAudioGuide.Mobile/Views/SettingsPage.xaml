@@ -62,7 +62,7 @@
                         </Grid>
                     </Frame>
                     
-                    <BoxView HeightRequest="1" Color="{StaticResource Gray100}" Margin="15,0"/>
+                    <Grid Style="{StaticResource LayerDivider}" Margin="15,0"/>
                     
                     <!-- Playback Speed -->
                     <Frame Padding="15" BorderColor="Transparent">
@@ -83,7 +83,7 @@
                         </Frame.GestureRecognizers>
                     </Frame>
                     
-                    <BoxView HeightRequest="1" Color="{StaticResource Gray100}" Margin="15,0"/>
+                    <Grid Style="{StaticResource LayerDivider}" Margin="15,0"/>
                     
                     <!-- Skip Interval -->
                     <Frame Padding="15" BorderColor="Transparent">
@@ -131,7 +131,7 @@
                         </Grid>
                     </Frame>
                     
-                    <BoxView HeightRequest="1" Color="{StaticResource Gray100}" Margin="15,0"/>
+                    <Grid Style="{StaticResource LayerDivider}" Margin="15,0"/>
                     
                     <!-- Audio Quality -->
                     <Frame Padding="15" BorderColor="Transparent">
@@ -152,7 +152,7 @@
                         </Frame.GestureRecognizers>
                     </Frame>
                     
-                    <BoxView HeightRequest="1" Color="{StaticResource Gray100}" Margin="15,0"/>
+                    <Grid Style="{StaticResource LayerDivider}" Margin="15,0"/>
                     
                     <!-- Storage Used -->
                     <Frame Padding="15" BorderColor="Transparent">
@@ -199,7 +199,7 @@
                         </Grid>
                     </Frame>
                     
-                    <BoxView HeightRequest="1" Color="{StaticResource Gray100}" Margin="15,0"/>
+                    <Grid Style="{StaticResource LayerDivider}" Margin="15,0"/>
                     
                     <Frame Padding="15" BorderColor="Transparent">
                         <Grid ColumnDefinitions="*,Auto">

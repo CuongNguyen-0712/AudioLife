@@ -1,0 +1,13 @@
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Transformed by: SVG Repo Mixer Tools -->
+<svg fill="#000000" width="800px" height="800px" viewBox="0 0 24 24" id="time-alert-2" data-name="Flat Line" xmlns="http://www.w3.org/2000/svg" class="icon flat-line">
+<g id="SVGRepo_bgCarrier" stroke-width="0"/>
+<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
+<g id="SVGRepo_iconCarrier">
+<circle id="secondary" cx="12" cy="12" r="9" style="fill: #70B9BE; stroke-width: 2;"/>
+<path id="primary" d="M12,21a9,9,0,1,1,9-9" style="fill: none; stroke: #000000; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;"/>
+<line id="primary-2" data-name="primary" x1="17" y1="13" x2="17" y2="16" style="fill: none; stroke: #000000; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;"/>
+<polyline id="primary-3" data-name="primary" points="8 12 12 12 12 7" style="fill: none; stroke: #000000; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;"/>
+<line id="primary-upstroke" x1="16.95" y1="20.5" x2="17.05" y2="20.5" style="fill: none; stroke: #000000; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.5;"/>
+</g>
+</svg>

@@ -5,36 +5,47 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:VinhKhanhAudioGuide.Mobile.Views"
     Shell.FlyoutBehavior="Disabled"
-    Title="Vinh Khanh Audio Guide">
+    >
+
+    <Shell.TitleView>
+        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+            <Image Source="tour.svg" HeightRequest="22" WidthRequest="22" VerticalOptions="Center" />
+            <Label Text="Vinh Khanh Audio Guide"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   TextColor="{StaticResource Primary}"
+                   VerticalOptions="Center" />
+        </HorizontalStackLayout>
+    </Shell.TitleView>
 
     <TabBar>
         <ShellContent
             Title="Trang chủ"
-            Icon="home_icon.png"
+            Icon="compass.svg"
             ContentTemplate="{DataTemplate views:MainPage}"
             Route="MainPage" />
         
-        <ShellContent
+        <!-- <ShellContent
             Title="Khám phá"
             Icon="search_icon.png"
             ContentTemplate="{DataTemplate views:SearchPage}"
-            Route="SearchPage" />
+            Route="SearchPage" /> -->
         
         <ShellContent
             Title="Bản đồ"
-            Icon="map_icon.png"
+            Icon="map.svg"
             ContentTemplate="{DataTemplate views:MapPage}"
             Route="MapPage" />
         
         <ShellContent
             Title="Tours"
-            Icon="tour_icon.png"
+            Icon="tour.svg"
             ContentTemplate="{DataTemplate views:ToursPage}"
             Route="ToursPage" />
         
         <ShellContent
             Title="Tài khoản"
-            Icon="profile_icon.png"
+            Icon="user.svg"
             ContentTemplate="{DataTemplate views:ProfilePage}"
             Route="ProfilePage" />
     </TabBar>

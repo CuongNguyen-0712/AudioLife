@@ -66,7 +66,7 @@
                         </Grid>
                     </Frame>
                     
-                    <BoxView Style="{StaticResource Separator}" Margin="15,0"/>
+                    <Grid Style="{StaticResource LayerDivider}" Margin="15,0"/>
                     
                     <Frame Padding="15" BorderColor="Transparent">
                         <Frame.GestureRecognizers>
@@ -85,7 +85,7 @@
                         </Grid>
                     </Frame>
                     
-                    <BoxView Style="{StaticResource Separator}" Margin="15,0"/>
+                    <Grid Style="{StaticResource LayerDivider}" Margin="15,0"/>
                     
                     <Frame Padding="15" BorderColor="Transparent">
                         <Grid ColumnDefinitions="40,*">

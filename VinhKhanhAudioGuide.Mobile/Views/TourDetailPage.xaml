@@ -106,7 +106,7 @@
                 <Label Text="{Binding Description}"
                        Style="{StaticResource BodyText}"/>
 
-                <BoxView Style="{StaticResource Separator}"/>
+                <Grid Style="{StaticResource LayerDivider}"/>
 
                 <!-- Timeline Section -->
                 <Label Text="Lộ trình chi tiết"

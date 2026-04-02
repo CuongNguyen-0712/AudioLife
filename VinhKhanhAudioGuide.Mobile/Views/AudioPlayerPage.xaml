@@ -27,7 +27,7 @@
                        FontSize="14"
                        TextColor="Gray"/>
                 
-                <BoxView HeightRequest="1" Color="LightGray" Margin="0,10"/>
+                <Grid Style="{StaticResource LayerDivider}" Margin="0,10"/>
                 
                 <Label Text="Nội dung audio"
                        FontSize="18"

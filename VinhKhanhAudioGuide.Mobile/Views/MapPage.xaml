@@ -4,71 +4,177 @@
              xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
              x:Class="VinhKhanhAudioGuide.Mobile.Views.MapPage"
              x:DataType="viewmodels:MapViewModel"
-             Title="Bản đồ">
+             Title="Vĩnh Khánh Bản đồ"
+             BackgroundColor="Transparent">
 
-    <Grid RowDefinitions="*,Auto">
-
-        <!-- Interactive Leaflet Map via WebView -->
-        <WebView Grid.Row="0"
-                 x:Name="MapWebView"
-                 Source="{Binding MapHtmlSource}"/>
-
-        <!-- Bottom Sheet - Nearby Locations -->
-        <Frame Grid.Row="1"
-               CornerRadius="20"
+    <Grid Padding="0">
+        <!-- Map Section (full background) -->
+        <Frame BackgroundColor="Transparent"
                Padding="0"
-               Margin="0,-20,0,0"
-               BackgroundColor="{StaticResource White}">
-            <VerticalStackLayout Padding="15,12">
-                <!-- Drag Handle -->
-                <BoxView HeightRequest="4"
-                         WidthRequest="40"
-                         CornerRadius="2"
-                         BackgroundColor="{StaticResource Gray300}"
-                         HorizontalOptions="Center"
-                         Margin="0,0,0,10"/>
-
-                <!--Địa điểm gần đây-->
-                <Label Text="Địa điểm gần đây"
-                       FontSize="18"
-                       FontAttributes="Bold"/>
-
-                <CollectionView ItemsSource="{Binding NearbyLocations}"
-                                HeightRequest="160"
-                                ItemsLayout="HorizontalList">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="viewmodels:NearbyLocation">
-                            <Frame Padding="0"
-                                   Margin="5,8"
-                                   CornerRadius="12"
-                                   WidthRequest="140"
-                                   HasShadow="True"
-                                   IsClippedToBounds="True">
-                                <Frame.GestureRecognizers>
-                                    <TapGestureRecognizer
-                                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:MapViewModel}}, Path=LocationTappedCommand}"
-                                        CommandParameter="{Binding .}"/>
-                                </Frame.GestureRecognizers>
-                                <Grid RowDefinitions="80,*">
-                                    <BoxView BackgroundColor="{StaticResource Primary}"
-                                             Opacity="0.6"/>
-                                    <VerticalStackLayout Grid.Row="1"
-                                                         Padding="8,6">
-                                        <Label Text="{Binding Name}"
-                                               FontSize="12"
-                                               FontAttributes="Bold"
-                                               LineBreakMode="TailTruncation"/>
-                                        <Label Text="{Binding Distance, StringFormat='{0:F1} km'}"
-                                               FontSize="10"
-                                               TextColor="{StaticResource Primary}"/>
-                                    </VerticalStackLayout>
-                                </Grid>
-                            </Frame>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </VerticalStackLayout>
+               HasShadow="False"
+               Margin="0">
+            <WebView x:Name="MapWebView"
+                     Source="{Binding MapHtmlSource}" />
         </Frame>
+ 
+         <!-- Current POI View (single card from bound data) -->
+         <Border VerticalOptions="End"
+              Margin="14,0,14,250"
+              Stroke="Transparent"
+              StrokeThickness="1"
+              Padding="14,12"
+              Background="{StaticResource SurfaceContainerLowest}"
+              StrokeShape="RoundRectangle 26">
+             <Border.GestureRecognizers>
+              <TapGestureRecognizer
+                  Command="{Binding LocationTappedCommand}"
+                  CommandParameter="{Binding CurrentPoiLocation}" />
+             </Border.GestureRecognizers>
+
+             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                 <Frame Grid.Column="0"
+                        Padding="0"
+                        Margin="0"
+                        HasShadow="False"
+                        CornerRadius="12"
+                        HeightRequest="72"
+                        WidthRequest="72"
+                        BackgroundColor="{StaticResource SurfaceContainerHigh}"
+                        BorderColor="Transparent"
+                        IsClippedToBounds="True">
+                     <Image
+                         Source="{Binding CurrentPoiLocation.ImageUrl}"
+                         Aspect="AspectFill" />
+                 </Frame>
+
+                 <VerticalStackLayout Grid.Column="1"
+                                      Spacing="4"
+                                      VerticalOptions="Center">
+                    <Label Text="{Binding CurrentPoiLocation.Name}"
+                            FontSize="14"
+                            FontAttributes="Bold"
+                            TextColor="{StaticResource OnSurface}"
+                            MaxLines="2"
+                            LineBreakMode="TailTruncation" />
+                 <HorizontalStackLayout Grid.Row="2" Spacing="4" VerticalOptions="Center">
+                    <Image
+                            Source="near_me.svg"
+                            WidthRequest="18"
+                            HeightRequest="18"
+                            VerticalOptions="Center" />
+                    <Label Text="{Binding CurrentPoiLocation.Distance, StringFormat='Cách bạn{0:F1} km'}"
+                            FontSize="12"
+                            TextColor="{StaticResource OnSurfaceVariant}" />
+                    </HorizontalStackLayout>
+                 </VerticalStackLayout>
+
+                 <Button Grid.Column="2"
+                         Text="Đi thôi"
+                         FontSize="12"
+                         FontAttributes="Bold"
+                         TextColor="{StaticResource OnSecondaryContainer}"
+                         BackgroundColor="{StaticResource SecondaryContainer}"
+                         CornerRadius="14"
+                         HeightRequest="34"
+                         Padding="12,0"
+                         VerticalOptions="Center"
+                         Command="{Binding LocationTappedCommand}"
+                         CommandParameter="{Binding CurrentPoiLocation}" />
+             </Grid>
+         </Border>
+
+        <!-- Nearby Locations Section (overlay on map) -->
+        <Border VerticalOptions="End"
+                    StrokeThickness="0"
+                    Background="Transparent"
+                    Padding="0"
+                    StrokeShape="RoundRectangle 28,28,0,0">
+                <Grid RowDefinitions="Auto,Auto,*" Padding="0" RowSpacing="12">
+                    <BoxView Grid.RowSpan="3"
+                             Color="{StaticResource SurfaceContainerLowest}"
+                             Opacity="0.55" />
+                
+
+                    <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="10" Padding="14,0">
+                        <Label Grid.Column="0"
+                               Text="ĐIA ĐIỂM GẦN ĐÂY"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource Secondary}"
+                               VerticalOptions="End" />
+                        <Label Grid.Column="1"
+                               Text="Theo khoảng cách"
+                               FontSize="12"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource Primary}"
+                               VerticalOptions="End" />
+                    </Grid>
+
+                    <CollectionView Grid.Row="2"
+                                    ItemsSource="{Binding NearbyLocations}"
+                                    SelectionMode="Single"
+                                    ItemsLayout="HorizontalList"
+                                    BackgroundColor="Transparent"
+                                    HeightRequest="170"
+                                    Margin="14,12">
+
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="viewmodels:NearbyLocation">
+                                <Border Stroke="Transparent"
+                                        StrokeThickness="1"
+                                        Margin="0,0,20,0"
+                                        Padding="14,12"
+                                        WidthRequest="200"
+                                        Background="#FFFFFF"
+                                        StrokeShape="RoundRectangle 26">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:MapViewModel}}, Path=LocationTappedCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    </Border.GestureRecognizers>
+
+                                    <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                                         <Frame Grid.Row="0"
+                                             Padding="0"
+                                             Margin="0"
+                                             HasShadow="False"
+                                             CornerRadius="12"
+                                             HeightRequest="85"
+                                             BackgroundColor="{StaticResource SurfaceContainerHigh}"
+                                             BorderColor="Transparent"
+                                             IsClippedToBounds="True">
+                                             <Image
+                                                 Source="{Binding ImageUrl}"
+                                                 Aspect="AspectFill" />
+                                         </Frame>
+
+                                         <Label Grid.Row="1"
+                                               Text="{Binding Name}"
+                                               FontSize="14"
+                                               FontAttributes="Bold"
+                                                 TextColor="{StaticResource OnSurface}"
+                                               MaxLines="2"
+                                               LineBreakMode="TailTruncation" />
+
+                                         <HorizontalStackLayout Grid.Row="2" Spacing="4" VerticalOptions="Center">
+                                             <Image
+                                                 Source="near_me.svg"
+                                                 WidthRequest="18"
+                                                 HeightRequest="18"
+                                                 VerticalOptions="Center" />
+                                             <Label
+                                                 Text="{Binding Distance, StringFormat='Cách bạn {0:F1} km'}"
+                                                 FontSize="12"
+                                                 TextColor="{StaticResource OnSurfaceVariant}"
+                                                 VerticalOptions="Center" />
+                                         </HorizontalStackLayout>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Grid>
+        </Border>
     </Grid>
 
 </ContentPage>

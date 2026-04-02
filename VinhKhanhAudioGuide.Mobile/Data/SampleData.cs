@@ -9,11 +9,11 @@ public static class SampleData
         
         return new List<Models.Category>
         {
-            new() { Id = "1", Name = "Đặc sản" },
-            new() { Id = "2", Name = "Ăn vặt" },
-            new() { Id = "3", Name = "Ăn đêm" },
-            new() { Id = "4", Name = "Hải sản" },
-            new() { Id = "5", Name = "Đồ uống" },
+            new() { Id = "1", Name = "Đặc sản", Icon = "specialty.svg" },
+            new() { Id = "2", Name = "Ăn vặt", Icon = "snack.svg" },
+            new() { Id = "3", Name = "Ăn đêm", Icon = "night_food.svg" },
+            new() { Id = "4", Name = "Hải sản", Icon = "seafood.svg" },
+            new() { Id = "5", Name = "Đồ uống", Icon = "drink.svg" },
             
         };
     }

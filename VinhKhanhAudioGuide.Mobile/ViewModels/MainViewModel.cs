@@ -34,6 +34,9 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private int _categoryCount;
 
+    [ObservableProperty]
+    private string _heroImageUrl = "hero_image.jpg";
+
     public ObservableCollection<Category> Categories { get; } = new();
     public ObservableCollection<Location> FeaturedLocations { get; } = new();
     public ObservableCollection<Location> MoreLocations { get; } = new();
@@ -170,6 +173,12 @@ public partial class MainViewModel : ObservableObject
     private async Task CategorySelectedAsync(Category? category)
     {
         if (category is null) return;
+
+        // Toggle selected state and deselect others
+        foreach (var cat in Categories)
+        {
+            cat.IsSelected = (cat.Id == category.Id);
+        }
 
         await _navigationService.NavigateToAsync("//SearchPage");
     }
