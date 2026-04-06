@@ -33,7 +33,7 @@ public static class SampleData
 
         // ===== ĂN ĐÊM (3) =====
         new() { Id = "loc_005", Name = "Cháo sườn đêm", Description = "Nóng hổi, dễ ăn", ImageUrl = "chao_suon.jpg", Address = "Vĩnh Khánh, Q4", Duration = 20, CategoryId = "3" },
-        new() { Id = "loc_006", Name = "Phở khuya", Description = "Đậm vị, phục vụ khuya", ImageUrl = "pho.jpg", Address = "Vĩnh Khánh, Q4", Duration = 30, CategoryId = "3" },
+        new() { Id = "loc_006", Name = "Phở khuya", Description = "Đậm vị, phục vụ khuya", ImageUrl = "pho.png", Address = "Vĩnh Khánh, Q4", Duration = 30, CategoryId = "3" },
 
         // ===== HẢI SẢN (4) =====
         new() { Id = "loc_007", Name = "Ốc xào bơ tỏi", Description = "Thơm béo, đậm vị", ImageUrl = "oc_xao_bo_toi.jpg", Address = "Vĩnh Khánh, Q4", Duration = 35, CategoryId = "4" },

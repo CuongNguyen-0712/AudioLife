@@ -129,7 +129,7 @@
                                         HorizontalOptions="Center"
                                         Spacing="0">
                                     <Frame Style="{StaticResource TimelineNumber}">
-                                        <Label Text="{Binding Order}"
+                                        <Label Text="{Binding Order, StringFormat='{0}'}"
                                                TextColor="White"
                                                FontSize="13"
                                                FontAttributes="Bold"

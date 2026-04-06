@@ -83,12 +83,12 @@
                         </VerticalStackLayout>
                     </Grid>
                 </Frame>
-
+ 
                 <!-- Search row -->
                 <Grid ColumnDefinitions="*">
                     <Frame
                         Style="{StaticResource SurfaceHighlightFrame}"
-                        Padding="{StaticResource Space3}">
+                        Padding="{StaticResource Space2}">
                         <SearchBar
                             Text="{Binding SearchText}"
                             SearchCommand="{Binding SearchCommand}"
@@ -101,10 +101,11 @@
 
                 <!-- Category chips -->
                 <ScrollView
+                    Margin="0,-10,0,0"
                     Orientation="Horizontal"
                     HorizontalScrollBarVisibility="Never">
                     <HorizontalStackLayout
-                        Spacing="{StaticResource Space3}"
+                        Spacing="{StaticResource Space2}"
                         Padding="{StaticResource ChipRowPadding}"
                         BindableLayout.ItemsSource="{Binding Categories}">
 
@@ -147,14 +148,14 @@
                         <VerticalStackLayout Spacing="{StaticResource Space2}">
                             <Label 
                                 Text="Nhất Định Phải Thử" 
-                                TextColor="{StaticResource Secondary}"
-                                FontSize="20"
+                                TextColor="{StaticResource OnPrimaryContainer}"
+                                FontSize="22"
                                 FontAttributes="Bold"
                                 LineHeight="1.2"
                                 Margin="0" />
                             <Label 
                                 Text="Những món ăn đặc trưng không thể bỏ qua" 
-                                FontSize="12"
+                                FontSize="16"
                                 TextColor="{StaticResource OnSurfaceVariant}"
                                 Opacity="0.7" />
                         </VerticalStackLayout>
@@ -197,13 +198,14 @@
                                         <Grid>
                                             <Frame
                                                 Style="{StaticResource SurfaceHighlightFrame}"
-                                                MinimumHeightRequest="180"
+                                                HeightRequest="180"
                                                 Padding="0"
                                                 Margin="0"
                                                 BackgroundColor="{StaticResource SurfaceContainerHigh}"
                                                 IsClippedToBounds="True">
                                                 <Image
                                                     Source="{Binding ImageUrl}"
+                                                    HeightRequest="180"
                                                     Aspect="AspectFill" />
                                             </Frame>
 
@@ -266,14 +268,14 @@
                     <VerticalStackLayout Spacing="{StaticResource Space2}">
                         <Label 
                             Text="Địa điểm phổ biến" 
-                            TextColor="{StaticResource Secondary}"
-                            FontSize="20"
+                            TextColor="{StaticResource OnPrimaryContainer}"
+                            FontSize="22"
                             FontAttributes="Bold"
                             LineHeight="1.2"
                             Margin="0" />
                         <Label 
                             Text="Những địa điểm được yêu thích nhất bởi cộng đồng" 
-                            FontSize="12"
+                            FontSize="16"
                             TextColor="{StaticResource OnSurfaceVariant}"
                             Opacity="0.7" />
                     </VerticalStackLayout>

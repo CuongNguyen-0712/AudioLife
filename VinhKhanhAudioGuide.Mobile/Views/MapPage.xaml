@@ -14,8 +14,28 @@
                HasShadow="False"
                Margin="0">
             <WebView x:Name="MapWebView"
-                     Source="{Binding MapHtmlSource}" />
+                            Source="{Binding MapHtmlSource}"
+                            Navigating="MapWebView_OnNavigating" />
         </Frame>
+
+        <!-- GPS button (bottom-right) -->
+        <Border
+            HorizontalOptions="End"
+            VerticalOptions="End"
+            Margin="0,0,16,370"
+            ZIndex="20"
+            Background="{StaticResource SecondaryContainer}"
+            StrokeThickness="0"
+            Padding="0"
+            StrokeShape="RoundRectangle 12">
+            <ImageButton
+                Source="gps.svg"
+                BackgroundColor="Transparent"
+                HeightRequest="40"
+                WidthRequest="40"
+                Padding="8"
+                Command="{Binding MoveToCurrentLocationCommand}" />
+        </Border>
  
          <!-- Current POI View (single card from bound data) -->
          <Border VerticalOptions="End"
@@ -62,24 +82,39 @@
                             WidthRequest="18"
                             HeightRequest="18"
                             VerticalOptions="Center" />
-                    <Label Text="{Binding CurrentPoiLocation.Distance, StringFormat='Cách bạn{0:F1} km'}"
+                    <Label Text="{Binding CurrentPoiLocation.Distance, StringFormat='Cách bạn {0:F1} km'}"
                             FontSize="12"
                             TextColor="{StaticResource OnSurfaceVariant}" />
                     </HorizontalStackLayout>
+                 <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
+                    <Image
+                        Source="audio.svg"
+                        WidthRequest="18"
+                        HeightRequest="18"
+                        VerticalOptions="Center" />
+                    <Label Text="{Binding CurrentPoiLocation.AudioCount, StringFormat='{0} audio'}"
+                        FontSize="12"
+                        TextColor="{StaticResource OnSurfaceVariant}" />
+                    </HorizontalStackLayout>
                  </VerticalStackLayout>
 
-                 <Button Grid.Column="2"
-                         Text="Đi thôi"
-                         FontSize="12"
-                         FontAttributes="Bold"
-                         TextColor="{StaticResource OnSecondaryContainer}"
-                         BackgroundColor="{StaticResource SecondaryContainer}"
-                         CornerRadius="14"
-                         HeightRequest="34"
-                         Padding="12,0"
+                 <Border Grid.Column="2"
+                         Background="{StaticResource SecondaryContainer}"
+                         StrokeThickness="0"
+                         Padding="0"
                          VerticalOptions="Center"
+                         StrokeShape="RoundRectangle 17"
+                         HeightRequest="34"
+                         WidthRequest="34">
+                     <ImageButton
+                         Source="show_more.svg"
+                         BackgroundColor="Transparent"
+                         HeightRequest="34"
+                         WidthRequest="34"
+                         Padding="8"
                          Command="{Binding LocationTappedCommand}"
                          CommandParameter="{Binding CurrentPoiLocation}" />
+                 </Border>
              </Grid>
          </Border>
 
@@ -120,13 +155,20 @@
 
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="viewmodels:NearbyLocation">
-                                <Border Stroke="Transparent"
+                                <Border Stroke="{StaticResource OutlineVariant}"
                                         StrokeThickness="1"
                                         Margin="0,0,20,0"
                                         Padding="14,12"
                                         WidthRequest="200"
-                                        Background="#FFFFFF"
+                                        Background="#CCFFFFFF"
                                         StrokeShape="RoundRectangle 26">
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding IsNearest}" Value="True">
+                                            <Setter Property="Background" Value="{StaticResource SecondaryContainer}" />
+                                            <Setter Property="Stroke" Value="{StaticResource Secondary}" />
+                                            <Setter Property="StrokeThickness" Value="2" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
                                     <Border.GestureRecognizers>
                                         <TapGestureRecognizer
                                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:MapViewModel}}, Path=LocationTappedCommand}"
@@ -155,6 +197,16 @@
                                                  TextColor="{StaticResource OnSurface}"
                                                MaxLines="2"
                                                LineBreakMode="TailTruncation" />
+
+                                             <Label Grid.Row="1"
+                                                 Text="Gần nhất"
+                                                 FontSize="10"
+                                                 FontAttributes="Bold"
+                                                 HorizontalOptions="End"
+                                                 VerticalOptions="Start"
+                                                 Margin="0,0,0,0"
+                                                     TextColor="{StaticResource OnSecondaryContainer}"
+                                                 IsVisible="{Binding IsNearest}" />
 
                                          <HorizontalStackLayout Grid.Row="2" Spacing="4" VerticalOptions="Center">
                                              <Image

@@ -28,7 +28,6 @@ public partial class IntroPage : ContentPage
     private void CompleteIntro()
     {
         Preferences.Default.Set("IsFirstLaunch_v2", false);
-
-        Application.Current!.MainPage = new AppShell();
+        App.NavigateToShellRoot();
     }
 }
