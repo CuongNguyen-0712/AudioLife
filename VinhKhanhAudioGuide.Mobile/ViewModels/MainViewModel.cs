@@ -44,34 +44,7 @@ public partial class MainViewModel : ObservableObject
     private int _categoryCount;
 
     [ObservableProperty]
-    private string _footerStatusText = "Chế độ chờ: Đang tìm POI gần nhất...";
-
-    [ObservableProperty]
-    private string _footerHintText = "Mở ứng dụng để tự động phát audio POI gần bạn nhất";
-
-    [ObservableProperty]
-    private string _footerActionText = "Đang chờ";
-
-    [ObservableProperty]
-    private bool _isFooterActionEnabled;
-
-    [ObservableProperty]
-    private bool _isFooterVisible = true;
-
-    [ObservableProperty]
-    private string _footerModeText = "Standby: ON";
-
-    [ObservableProperty]
-    private string _autoLocationId = string.Empty;
-
-    [ObservableProperty]
-    private string _autoLocationName = string.Empty;
-
-    [ObservableProperty]
-    private string _autoAudioGuideId = string.Empty;
-
-    [ObservableProperty]
-    private string _autoAudioUrl = string.Empty;
+    private string _heroImageUrl = "hero_image.jpg";
 
     public ObservableCollection<Category> Categories { get; } = new();
     public ObservableCollection<Location> FeaturedLocations { get; } = new();
@@ -224,6 +197,12 @@ public partial class MainViewModel : ObservableObject
     private async Task CategorySelectedAsync(Category? category)
     {
         if (category is null) return;
+
+        // Toggle selected state and deselect others
+        foreach (var cat in Categories)
+        {
+            cat.IsSelected = (cat.Id == category.Id);
+        }
 
         await _navigationService.NavigateToAsync("//SearchPage");
     }

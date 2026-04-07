@@ -7,17 +7,19 @@
              Title="Về ứng dụng">
 
     <ScrollView>
-        <VerticalStackLayout Spacing="0">
+        <VerticalStackLayout Spacing="0"> 
+              
 
             <!-- Hero gradient header -->
             <Grid HeightRequest="200">
-                <BoxView BackgroundColor="{StaticResource Primary}"/>
+                <BoxView BackgroundColor="{StaticResource Secondary}"/>
                 <VerticalStackLayout HorizontalOptions="Center"
                         VerticalOptions="Center"
                         Spacing="5">
-                    <Label Text="🎧"
+                        <Image Source="tour_color.svg" WidthRequest="64" HeightRequest="64" HorizontalOptions="Center"/>
+                    <!-- <Label Text="🎧"
                             FontSize="40"
-                            HorizontalOptions="Center"/>
+                            HorizontalOptions="Center"/> -->
                     <Label Text="Vinh Khanh Audio Guide"
                            FontSize="22"
                            FontAttributes="Bold"
@@ -39,10 +41,10 @@
                         ColumnSpacing="10">
                     <Frame Grid.Column="0"
                             Style="{StaticResource StatCard}"
-                            BackgroundColor="{StaticResource Primary}">
+                            BackgroundColor="{StaticResource SecondaryContainer}">
                         <VerticalStackLayout HorizontalOptions="Center"
                                 Spacing="2">
-                            <Label Text="{Binding LocationCount}"
+                            <Label Text="{Binding LocationCount, StringFormat='{0}'}"
                                     Style="{StaticResource StatNumber}"/>
                             <Label Text="Địa điểm"
                                     Style="{StaticResource StatLabel}"/>
@@ -50,10 +52,10 @@
                     </Frame>
                     <Frame Grid.Column="1"
                             Style="{StaticResource StatCard}"
-                            BackgroundColor="{StaticResource Primary}">
+                            BackgroundColor="{StaticResource SecondaryContainer}">
                         <VerticalStackLayout HorizontalOptions="Center"
                                 Spacing="2">
-                            <Label Text="{Binding AudioCount}"
+                            <Label Text="{Binding AudioCount, StringFormat='{0}'}"
                                     Style="{StaticResource StatNumber}"/>
                             <Label Text="Audio"
                                     Style="{StaticResource StatLabel}"/>
@@ -61,10 +63,10 @@
                     </Frame>
                     <Frame Grid.Column="2"
                             Style="{StaticResource StatCard}"
-                            BackgroundColor="{StaticResource Primary}">
+                            BackgroundColor="{StaticResource SecondaryContainer}">
                         <VerticalStackLayout HorizontalOptions="Center"
                                 Spacing="2">
-                            <Label Text="{Binding TourCount}"
+                            <Label Text="{Binding TourCount, StringFormat='{0}'}"
                                     Style="{StaticResource StatNumber}"/>
                             <Label Text="Tours"
                                     Style="{StaticResource StatLabel}"/>
@@ -78,8 +80,7 @@
                        TextColor="{StaticResource Gray600}"
                        HorizontalTextAlignment="Center"/>
 
-                <BoxView HeightRequest="1"
-                        Color="LightGray"/>
+                <Grid Style="{StaticResource LayerDivider}"/>
 
                 <!-- How It Works Steps -->
                 <Label Text="Cách sử dụng"
@@ -166,8 +167,7 @@
                     </Grid>
                 </VerticalStackLayout>
 
-                <BoxView HeightRequest="1"
-                        Color="LightGray"/>
+                <Grid Style="{StaticResource LayerDivider}"/>
 
                 <!-- Feature Grid -->
                 <Label Text="Tính năng nổi bật"
@@ -182,7 +182,7 @@
                             Grid.Column="0"
                             CornerRadius="12"
                             Padding="15"
-                            BackgroundColor="{StaticResource Secondary}"
+                            BackgroundColor="{StaticResource SecondaryContainer}"
                             HasShadow="False">
                         <VerticalStackLayout HorizontalOptions="Center"
                                 Spacing="5">
@@ -199,7 +199,7 @@
                             Grid.Column="1"
                             CornerRadius="12"
                             Padding="15"
-                            BackgroundColor="{StaticResource Secondary}"
+                            BackgroundColor="{StaticResource SecondaryContainer}"
                             HasShadow="False">
                         <VerticalStackLayout HorizontalOptions="Center"
                                 Spacing="5">
@@ -216,7 +216,7 @@
                             Grid.Column="0"
                             CornerRadius="12"
                             Padding="15"
-                            BackgroundColor="{StaticResource Secondary}"
+                            BackgroundColor="{StaticResource SecondaryContainer}"
                             HasShadow="False">
                         <VerticalStackLayout HorizontalOptions="Center"
                                 Spacing="5">
@@ -233,7 +233,7 @@
                             Grid.Column="1"
                             CornerRadius="12"
                             Padding="15"
-                            BackgroundColor="{StaticResource Secondary}"
+                            BackgroundColor="{StaticResource SecondaryContainer}"
                             HasShadow="False">
                         <VerticalStackLayout HorizontalOptions="Center"
                                 Spacing="5">
@@ -250,7 +250,7 @@
                             Grid.Column="0"
                             CornerRadius="12"
                             Padding="15"
-                            BackgroundColor="{StaticResource Secondary}"
+                            BackgroundColor="{StaticResource SecondaryContainer}"
                             HasShadow="False">
                         <VerticalStackLayout HorizontalOptions="Center"
                                 Spacing="5">
@@ -267,7 +267,7 @@
                             Grid.Column="1"
                             CornerRadius="12"
                             Padding="15"
-                            BackgroundColor="{StaticResource Secondary}"
+                            BackgroundColor="{StaticResource SecondaryContainer}"
                             HasShadow="False">
                         <VerticalStackLayout HorizontalOptions="Center"
                                 Spacing="5">
