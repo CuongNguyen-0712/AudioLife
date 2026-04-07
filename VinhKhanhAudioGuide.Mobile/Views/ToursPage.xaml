@@ -14,27 +14,34 @@
 
                 <!-- Header -->
                 <Label Text="Lộ trình tham quan"
-                       FontSize="24"
-                       FontAttributes="Bold"/>
+                        TextColor="{StaticResource OnPrimaryContainer}"
+                        FontSize="24"
+                        FontAttributes="Bold"
+                        LineHeight="1.2"/>
                 <Label Text="Khám phá Vĩnh Khánh theo lộ trình của bạn"
-                       FontSize="14"
-                       TextColor="{StaticResource Gray500}"/>
+                        FontSize="16"
+                        TextColor="{StaticResource OnSurfaceVariant}"
+                        Opacity="0.7"/>
 
                 <!-- Featured Tours -->
                 <Label Text="Lộ trình nổi bật"
-                       FontSize="18"
-                       FontAttributes="Bold"
-                       Margin="0,10,0,0"/>
+                        TextColor="{StaticResource OnPrimaryContainer}"
+                        FontSize="22"
+                        FontAttributes="Bold"
+                        LineHeight="1.2"
+                        Margin="0,10,0,0"/>
 
                 <CollectionView ItemsSource="{Binding FeaturedTours}"
                                 HeightRequest="220"
-                                ItemsLayout="HorizontalList"
                                 SelectionMode="None">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Horizontal" ItemSpacing="12" />
+                    </CollectionView.ItemsLayout>
 
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="viewmodels:TourDisplayModel">
 
-                            <Frame Padding="0" Margin="5" CornerRadius="15" HeightRequest="220" HasShadow="True">
+                            <Frame Padding="0" Margin="0" CornerRadius="15" HeightRequest="220" WidthRequest="285" HasShadow="True">
 
                                 <Frame.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ToursViewModel}}, Path=TourTappedCommand}" CommandParameter="{Binding .}" />
@@ -42,29 +49,47 @@
 
                                 <Grid>
                                     <!-- full image background -->
-                                    <Image Source="{Binding ImageUrl}" Aspect="AspectFill" WidthRequest="300" HeightRequest="200" />
+                                    <Image Source="{Binding ImageUrl}" Aspect="AspectFill" WidthRequest="285" HeightRequest="220" />
 
                                     <!-- subtle dark overlay for contrast -->
                                     <BoxView BackgroundColor="#33000000" />
 
-                                    <!-- top-left featured badge -->
-                                    <Frame BackgroundColor="{StaticResource Primary}" CornerRadius="10" Padding="8,4" Margin="10" HorizontalOptions="Start" VerticalOptions="Start">
-                                        <Label Text="NỔI BẬT" TextColor="White" FontSize="10" FontAttributes="Bold" />
+                                    <!-- top-left fire icon -->
+                                    <Frame BackgroundColor="{StaticResource SecondaryContainer}"
+                                           HeightRequest="34"
+                                           WidthRequest="34"
+                                           Padding="7"
+                                           CornerRadius="17"
+                                           Margin="10"
+                                           HorizontalOptions="Start"
+                                           VerticalOptions="Start"
+                                           HasShadow="False"
+                                           BorderColor="Transparent">
+                                        <Image Source="fire.svg"
+                                               Aspect="AspectFit"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center" />
                                     </Frame>
 
 
                                     <!-- bottom overlay content -->
                                         <VerticalStackLayout Padding="12" Spacing="6" VerticalOptions="End">
-                                            <Label Text="{Binding Name}" FontSize="15" FontAttributes="Bold" TextColor="White" />
-                                            <Label Text="{Binding Description}" FontSize="11" TextColor="#DDFFFFFF" MaxLines="2" />
+                                            <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" TextColor="White" />
+                                            <Label Text="{Binding Description}" FontSize="12" TextColor="#DDFFFFFF" MaxLines="2" />
 
                                             <HorizontalStackLayout Spacing="10">
-                                                <Frame BackgroundColor="#AAFFFFFF" CornerRadius="20" Padding="10,6" HasShadow="False" BorderColor="Transparent">
-                                                    <Label Text="{Binding DurationText}" FontSize="11" TextColor="{StaticResource PrimaryDark}" />
+                                                <Frame BackgroundColor="#7EFFFFFF" CornerRadius="20" Padding="10,6" HasShadow="False" BorderColor="Transparent">
+                                                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                                        <Image Source="time.svg" WidthRequest="12" HeightRequest="12" VerticalOptions="Center" />
+                                                        <Label Text="{Binding DurationText}" FontSize="14" TextColor="{StaticResource PrimaryDark}" VerticalOptions="Center" />
+                                                    </HorizontalStackLayout>
                                                 </Frame>
 
-                                                <Frame BackgroundColor="#AAFFFFFF" CornerRadius="20" Padding="10,6" HasShadow="False" BorderColor="Transparent">
-                                                    <Label Text="{Binding LocationCount, StringFormat='{0} điểm'}" FontSize="11" TextColor="{StaticResource PrimaryDark}" />
+                                                <Frame BackgroundColor="#7EFFFFFF" CornerRadius="20" Padding="10,6" HasShadow="False" BorderColor="Transparent">
+                                                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                                        <Image Source="near_me.svg" WidthRequest="12" HeightRequest="12" VerticalOptions="Center" />
+                                                        <Label Text="{Binding LocationCount, StringFormat='{0} điểm'}" FontSize="14" TextColor="{StaticResource PrimaryDark}" VerticalOptions="Center" />
+                                                    </HorizontalStackLayout>
                                                 </Frame>
                                             </HorizontalStackLayout>
                                         </VerticalStackLayout>
@@ -76,23 +101,34 @@
 
                 <!-- All Tours -->
                 <Label Text="Tất cả lộ trình"
-                       FontSize="18"
-                       FontAttributes="Bold"
+                        TextColor="{StaticResource OnPrimaryContainer}"
+                        FontSize="22"
+                        FontAttributes="Bold"
+                        LineHeight="1.2"
                        Margin="0,10,0,0"/>
 
                 <CollectionView ItemsSource="{Binding AllTours}">
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="viewmodels:TourDisplayModel">
                             <Frame Padding="0"
-                                   Margin="0,5"
-                                   CornerRadius="12"
+                            Margin="0,5"
+                            CornerRadius="16"
                                    HasShadow="True">
-                                <Grid ColumnDefinitions="100,*">
-                                    <Image Source="{Binding ImageUrl}"
-                                           Aspect="AspectFill"
-                                           HeightRequest="100"/>
+                            <Grid ColumnDefinitions="100,*,Auto"
+                               ColumnSpacing="12"
+                               Padding="12">
+                                 <Frame Style="{StaticResource SurfaceHighlightFrame}"
+                                     WidthRequest="100"
+                                     HeightRequest="100"
+                                     Padding="0"
+                                     Margin="0"
+                                     BackgroundColor="{StaticResource SurfaceContainerHigh}"
+                                     IsClippedToBounds="True">
+                                     <Image Source="{Binding ImageUrl}"
+                                         Aspect="AspectFill" />
+                                 </Frame>
                                     <VerticalStackLayout Grid.Column="1"
-                                                         Padding="15"
+                                         Padding="0"
                                                          VerticalOptions="Center"
                                                          Spacing="5">
                                         <Label Text="{Binding Name}"
@@ -103,16 +139,44 @@
                                                TextColor="{StaticResource Gray500}"
                                                LineBreakMode="TailTruncation"
                                                MaxLines="2"/>
-                                        <HorizontalStackLayout Spacing="15">
-                                            <Label Text="{Binding DurationText}"
-                                                   FontSize="11"
-                                                   TextColor="{StaticResource Primary}"/>
-                                            <Label Text="{Binding LocationCount, StringFormat='{0} điểm'}"
-                                                   FontSize="11"
-                                                   TextColor="{StaticResource Primary}"/>
-                                        
-                                        </HorizontalStackLayout>
+                                     <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                                      <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                          <Image Source="time.svg"
+                                              WidthRequest="18"
+                                              HeightRequest="18"
+                                              VerticalOptions="Center" />
+                                          <Label Text="{Binding DurationText}"
+                                              FontSize="14"
+                                              TextColor="{StaticResource OnSurfaceVariant}"
+                                              Opacity="0.7"
+                                              VerticalOptions="Center" />
+                                      </HorizontalStackLayout>
+
+                                      <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                          <Image Source="near_me.svg"
+                                              WidthRequest="18"
+                                              HeightRequest="18"
+                                              VerticalOptions="Center" />
+                                          <Label Text="{Binding LocationCount, StringFormat='{0} điểm'}"
+                                              FontSize="14"
+                                              TextColor="{StaticResource OnSurfaceVariant}"
+                                              Opacity="0.7"
+                                              VerticalOptions="Center" />
+                                      </HorizontalStackLayout>
+                                     </HorizontalStackLayout>
                                     </VerticalStackLayout>
+                             <Frame Grid.Column="2"
+                                 Style="{StaticResource CardFrameSmall}"
+                                 BackgroundColor="{StaticResource SecondaryContainer}"
+                                 VerticalOptions="Center"
+                                 Padding="8">
+                                 <Image Source="chevron_right.svg"
+                                     WidthRequest="16"
+                                     HeightRequest="16"
+                                     Aspect="AspectFit"
+                                     HorizontalOptions="Center"
+                                     VerticalOptions="Center" />
+                             </Frame>
                                 </Grid>
                                 <Frame.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ToursViewModel}}, Path=TourTappedCommand}"
