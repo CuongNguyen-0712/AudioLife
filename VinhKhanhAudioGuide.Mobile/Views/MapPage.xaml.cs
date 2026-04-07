@@ -13,10 +13,10 @@ public partial class MapPage : ContentPage
         _viewModel = viewModel;
     }
 
-    protected override async void OnAppearing()
+    protected override void OnAppearing()
     {
         base.OnAppearing();
-        await _viewModel.LoadMapDataAsync();
+        _viewModel.LoadMapData();
     }
 
     private async void MapWebView_OnNavigating(object? sender, WebNavigatingEventArgs e)

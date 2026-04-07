@@ -85,7 +85,7 @@
                        FontSize="18"
                        FontAttributes="Bold"/>
                 
-                <Label Text="{Binding TranscriptText}"
+                <Label Text="{Binding CurrentScriptText}"
                        FontSize="14"
                        LineBreakMode="WordWrap"/>
             </VerticalStackLayout>

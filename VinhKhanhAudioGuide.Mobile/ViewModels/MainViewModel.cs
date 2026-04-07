@@ -46,6 +46,33 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _heroImageUrl = "hero_image.jpg";
 
+    [ObservableProperty]
+    private string _autoLocationId = string.Empty;
+
+    [ObservableProperty]
+    private string _autoLocationName = string.Empty;
+
+    [ObservableProperty]
+    private string _autoAudioGuideId = string.Empty;
+
+    [ObservableProperty]
+    private string _autoAudioUrl = string.Empty;
+
+    [ObservableProperty]
+    private string _footerStatusText = string.Empty;
+
+    [ObservableProperty]
+    private string _footerHintText = string.Empty;
+
+    [ObservableProperty]
+    private string _footerActionText = string.Empty;
+
+    [ObservableProperty]
+    private bool _isFooterActionEnabled;
+
+    [ObservableProperty]
+    private string _footerModeText = string.Empty;
+
     public ObservableCollection<Category> Categories { get; } = new();
     public ObservableCollection<Location> FeaturedLocations { get; } = new();
     public ObservableCollection<Location> MoreLocations { get; } = new();

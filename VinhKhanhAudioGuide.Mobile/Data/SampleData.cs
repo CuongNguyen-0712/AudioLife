@@ -8,41 +8,140 @@ public static class SampleData
     {
         return new List<Category>
         {
-            new() { Id = "1", Name = "Đặc sản", Icon = "specialty.svg" },
-            new() { Id = "2", Name = "Ăn vặt", Icon = "snack.svg" },
-            new() { Id = "3", Name = "Ăn đêm", Icon = "night_food.svg" },
-            new() { Id = "4", Name = "Hải sản", Icon = "seafood.svg" },
-            new() { Id = "5", Name = "Đồ uống", Icon = "drink.svg" },
-            
+            new() { Id = "1", Name = "Đặc sản", Icon = "fa-bowl-food", Description = "Các món đặc sản đặc trưng mang hương vị truyền thống." },
+            new() { Id = "2", Name = "Ăn vặt", Icon = "fa-cookie-bite", Description = "Bánh tráng, xiên que và các món ăn chơi hấp dẫn." },
+            new() { Id = "3", Name = "Ăn đêm", Icon = "fa-moon", Description = "Cháo sườn, phở và các món phục vụ khuya." },
+            new() { Id = "4", Name = "Hải sản", Icon = "fa-fish", Description = "Ốc, tôm, cua, mực tươi sống nướng, xào." },
+            new() { Id = "5", Name = "Đồ uống", Icon = "fa-mug-hot", Description = "Cà phê, trà sữa và đồ uống giải khát." }
         };
     }
 
     public static List<Location> GetLocations()
     {
-        var locations = new List<Models.Location>
-    {
-        // ===== ĐẶC SẢN (1) =====
-        new() { Id = "loc_001", Name = "Bún mắm Vĩnh Khánh", Description = "Đậm đà hương vị miền Tây", ImageUrl = "bun_mam.jpg", Address = "Vĩnh Khánh, Q4", Duration = 30, CategoryId = "1" },
-        new() { Id = "loc_002", Name = "Bánh xèo miền Tây", Description = "Giòn rụm, ăn kèm rau sống", ImageUrl = "banh_xeo.jpg", Address = "Vĩnh Khánh, Q4", Duration = 25, CategoryId = "1" },
+        var locations = new List<Location>
+        {
+            new()
+            {
+                Id = "loc_001",
+                Name = "Bún mắm Vĩnh Khánh",
+                Description = "Đậm đà hương vị miền Tây, nước lèo thơm phức với đa dạng topping tôm, heo quay, chả vịt.",
+                ImageUrl = "bun_mam.jpg",
+                Address = "Vĩnh Khánh, Q4, TP.HCM",
+                Latitude = 10.7595,
+                Longitude = 106.7038,
+                Duration = 30,
+                CategoryId = "1"
+            },
+            new()
+            {
+                Id = "loc_002",
+                Name = "Bánh xèo miền Tây",
+                Description = "Giòn rụm, ăn kèm rau sống phong phú. Bánh xèo đúc chảo gang truyền thống.",
+                ImageUrl = "banh_xeo.jpg",
+                Address = "Vĩnh Khánh, Q4, TP.HCM",
+                Latitude = 10.7611,
+                Longitude = 106.7051,
+                Duration = 25,
+                CategoryId = "1"
+            },
+            new()
+            {
+                Id = "loc_003",
+                Name = "Bánh tráng trộn",
+                Description = "Chua cay mặn ngọt hài hòa, topping khô bò, trứng cút, xoài băm cực kỳ hấp dẫn.",
+                ImageUrl = "banh_trang_tron.jpg",
+                Address = "Vĩnh Khánh, Q4, TP.HCM",
+                Latitude = 10.7608,
+                Longitude = 106.7046,
+                Duration = 15,
+                CategoryId = "2"
+            },
+            new()
+            {
+                Id = "loc_004",
+                Name = "Xiên que nướng",
+                Description = "Đa dạng topping hấp dẫn từ thịt xiên, xúc xích, đậu bắp nướng than hoa nóng hổi.",
+                ImageUrl = "tom_nuong_muoi_ot.jpg",
+                Address = "Vĩnh Khánh, Q4, TP.HCM",
+                Latitude = 10.7599,
+                Longitude = 106.7029,
+                Duration = 20,
+                CategoryId = "2"
+            },
+            new()
+            {
+                Id = "loc_005",
+                Name = "Cháo sườn đêm",
+                Description = "Cháo sườn nóng hổi, thịt sụn mềm nhừ, rắc thêm tiêu và quẩy giòn tan.",
+                ImageUrl = "chao_suon.jpg",
+                Address = "Vĩnh Khánh, Q4, TP.HCM",
+                Latitude = 10.7604,
+                Longitude = 106.7041,
+                Duration = 20,
+                CategoryId = "3"
+            },
+            new()
+            {
+                Id = "loc_006",
+                Name = "Phở khuya",
+                Description = "Phở đậm vị, nước dùng thanh ngọt nấu từ xương bò, phục vụ khách đi chơi khuya.",
+                ImageUrl = "pho.jpg",
+                Address = "Vĩnh Khánh, Q4, TP.HCM",
+                Latitude = 10.7601,
+                Longitude = 106.7036,
+                Duration = 30,
+                CategoryId = "3"
+            },
+            new()
+            {
+                Id = "loc_007",
+                Name = "Ốc xào bơ tỏi",
+                Description = "Thơm béo, đậm vị bơ tỏi, chấm bánh mì cực cuốn tại phố ốc Vĩnh Khánh.",
+                ImageUrl = "oc_xao_bo_toi.jpg",
+                Address = "Vĩnh Khánh, Q4, TP.HCM",
+                Latitude = 10.7597,
+                Longitude = 106.7032,
+                Duration = 35,
+                CategoryId = "4"
+            },
+            new()
+            {
+                Id = "loc_008",
+                Name = "Tôm nướng muối ớt",
+                Description = "Tôm sú tươi rói, tẩm ướp muối ớt cay nhẹ, nướng xém vỏ thơm lừng.",
+                ImageUrl = "tom_nuong_muoi_ot.jpg",
+                Address = "Vĩnh Khánh, Q4, TP.HCM",
+                Latitude = 10.7614,
+                Longitude = 106.7056,
+                Duration = 40,
+                CategoryId = "4"
+            },
+            new()
+            {
+                Id = "loc_009",
+                Name = "Trà sữa trân châu",
+                Description = "Trà sữa vị ngọt béo, đa dạng các loại topping từ trân châu đường đen đến thạch phô mai.",
+                ImageUrl = "ca_phe_sua_da.jpg",
+                Address = "Vĩnh Khánh, Q4, TP.HCM",
+                Latitude = 10.7609,
+                Longitude = 106.7049,
+                Duration = 15,
+                CategoryId = "5"
+            },
+            new()
+            {
+                Id = "loc_010",
+                Name = "Cà phê sữa đá",
+                Description = "Cà phê pha phin truyền thống, sữa đặc thơm béo, món giải khát không thể thiếu ở Sài Gòn.",
+                ImageUrl = "ca_phe_sua_da.jpg",
+                Address = "Vĩnh Khánh, Q4, TP.HCM",
+                Latitude = 10.7593,
+                Longitude = 106.7026,
+                Duration = 20,
+                CategoryId = "5"
+            }
+        };
 
-        // ===== ĂN VẶT (2) =====
-        new() { Id = "loc_003", Name = "Bánh tráng trộn", Description = "Chua cay mặn ngọt", ImageUrl = "banh_trang_tron.jpg", Address = "Vĩnh Khánh, Q4", Duration = 15, CategoryId = "2" },
-        new() { Id = "loc_004", Name = "Xiên que nướng", Description = "Đa dạng topping hấp dẫn", ImageUrl = "tom_nuong_muoi_ot.jpg", Address = "Vĩnh Khánh, Q4", Duration = 20, CategoryId = "2" },
-
-        // ===== ĂN ĐÊM (3) =====
-        new() { Id = "loc_005", Name = "Cháo sườn đêm", Description = "Nóng hổi, dễ ăn", ImageUrl = "chao_suon.jpg", Address = "Vĩnh Khánh, Q4", Duration = 20, CategoryId = "3" },
-        new() { Id = "loc_006", Name = "Phở khuya", Description = "Đậm vị, phục vụ khuya", ImageUrl = "pho.png", Address = "Vĩnh Khánh, Q4", Duration = 30, CategoryId = "3" },
-
-        // ===== HẢI SẢN (4) =====
-        new() { Id = "loc_007", Name = "Ốc xào bơ tỏi", Description = "Thơm béo, đậm vị", ImageUrl = "oc_xao_bo_toi.jpg", Address = "Vĩnh Khánh, Q4", Duration = 35, CategoryId = "4" },
-        new() { Id = "loc_008", Name = "Tôm nướng muối ớt", Description = "Cay nhẹ, thơm lừng", ImageUrl = "tom_nuong_muoi_ot.jpg", Address = "Vĩnh Khánh, Q4", Duration = 40, CategoryId = "4" },
-
-        // ===== ĐỒ UỐNG (5) =====
-        new() { Id = "loc_009", Name = "Trà sữa trân châu", Description = "Ngọt béo, topping đa dạng", ImageUrl = "ca_phe_sua_da.jpg", Address = "Vĩnh Khánh, Q4", Duration = 15, CategoryId = "5" },
-        new() { Id = "loc_010", Name = "Cà phê sữa đá", Description = "Đậm vị truyền thống", ImageUrl = "ca_phe_sua_da.jpg", Address = "Vĩnh Khánh, Q4", Duration = 20, CategoryId = "5" }
-    };
-
-        // Attach audio guides to each location for convenience
         var audioGuides = GetAudioGuides();
         foreach (var location in locations)
         {

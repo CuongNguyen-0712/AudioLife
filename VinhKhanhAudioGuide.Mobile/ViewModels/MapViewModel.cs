@@ -41,7 +41,7 @@ public partial class MapViewModel : ObservableObject
         LoadMapData();
     }
 
-    private void LoadMapData()
+    public void LoadMapData()
     {
         MapMarkers.Clear();
         NearbyLocations.Clear();
