@@ -44,6 +44,9 @@
                 <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "Locations" ? "active" : "")" asp-page="/Locations/Index">
                     <i class="fas fa-map-marker-alt"></i> <span>Địa điểm</span>
                 </a>
+                <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "Map" ? "active" : "")" asp-page="/Locations/MapView">
+                    <i class="fas fa-map"></i> <span>Bản đồ POI</span>
+                </a>
                 <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "Tours" ? "active" : "")" asp-page="/Tours/Index">
                     <i class="fas fa-route"></i> <span>Tour ẩm thực</span>
                 </a>

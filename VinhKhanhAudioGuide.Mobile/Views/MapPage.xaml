@@ -33,6 +33,24 @@
                        FontSize="18"
                        FontAttributes="Bold"/>
 
+                <Label Text="{Binding LocationStatusText}"
+                       FontSize="12"
+                       Margin="0,2,0,8"
+                       LineBreakMode="WordWrap">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label"
+                                     Binding="{Binding IsLocationConfirmed}"
+                                     Value="True">
+                            <Setter Property="TextColor" Value="#0F9D58"/>
+                        </DataTrigger>
+                        <DataTrigger TargetType="Label"
+                                     Binding="{Binding IsLocationConfirmed}"
+                                     Value="False">
+                            <Setter Property="TextColor" Value="#B45309"/>
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+
                 <CollectionView ItemsSource="{Binding NearbyLocations}"
                                 HeightRequest="160"
                                 ItemsLayout="HorizontalList">
@@ -50,15 +68,16 @@
                                         CommandParameter="{Binding .}"/>
                                 </Frame.GestureRecognizers>
                                 <Grid RowDefinitions="80,*">
-                                    <BoxView BackgroundColor="{StaticResource Primary}"
-                                             Opacity="0.6"/>
+                                    <Image Source="{Binding ImageUrl}" Aspect="AspectFill" HeightRequest="80" WidthRequest="140" />
+                                    <!-- Optional overlay for text readability if needed -->
+                                    <BoxView BackgroundColor="Black" Opacity="0.2"/>
                                     <VerticalStackLayout Grid.Row="1"
                                                          Padding="8,6">
                                         <Label Text="{Binding Name}"
                                                FontSize="12"
                                                FontAttributes="Bold"
                                                LineBreakMode="TailTruncation"/>
-                                        <Label Text="{Binding Distance, StringFormat='{0:F1} km'}"
+                                        <Label Text="{Binding DistanceString}"
                                                FontSize="10"
                                                TextColor="{StaticResource Primary}"/>
                                     </VerticalStackLayout>

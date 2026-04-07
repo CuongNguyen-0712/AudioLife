@@ -45,6 +45,7 @@ public partial class DownloadsViewModel : ObservableObject
                 Downloads.Add(new DownloadItem
                 {
                     AudioGuideId = dl.AudioGuideId,
+                    LocalPath = dl.LocalPath,
                     Title = audio?.Title ?? "Unknown",
                     LocationName = audio?.LocationId != null
                         ? (await _apiService.GetLocationByIdAsync(audio.LocationId))?.Name ?? ""
@@ -65,7 +66,8 @@ public partial class DownloadsViewModel : ObservableObject
     private async Task PlayDownloadAsync(DownloadItem? item)
     {
         if (item == null) return;
-        await _audioService.PlayAsync(item.AudioGuideId);
+        var source = string.IsNullOrWhiteSpace(item.LocalPath) ? item.AudioGuideId : item.LocalPath;
+        await _audioService.PlayAsync(source);
     }
 
     [RelayCommand]
@@ -118,6 +120,7 @@ public partial class DownloadsViewModel : ObservableObject
 public class DownloadItem
 {
     public string AudioGuideId { get; set; } = string.Empty;
+    public string LocalPath { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public string LocationName { get; set; } = string.Empty;
     public string FileSize { get; set; } = string.Empty;

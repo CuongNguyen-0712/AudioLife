@@ -1,22 +1,29 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VinhKhanhAudioGuide.Mobile.Data;
+using VinhKhanhAudioGuide.Mobile.Models;
 using VinhKhanhAudioGuide.Mobile.Services;
 
 namespace VinhKhanhAudioGuide.Mobile.ViewModels;
 
 [QueryProperty(nameof(LocationId), "LocationId")]
 [QueryProperty(nameof(AudioUrl), "AudioUrl")]
+[QueryProperty(nameof(AudioGuideId), "AudioGuideId")]
 public partial class AudioPlayerViewModel : ObservableObject
 {
     private readonly IAudioService _audioService;
-    private readonly INavigationService _navigationService;
+    private readonly List<AudioScriptSegment> _scriptSegments = new();
+    private int _activeScriptSegmentId = -1;
+    private bool _isSubscribedToAudioEvents;
 
     [ObservableProperty]
     private string _locationId = string.Empty;
 
     [ObservableProperty]
     private string _audioUrl = string.Empty;
+
+    [ObservableProperty]
+    private string _audioGuideId = string.Empty;
 
     [ObservableProperty]
     private string _title = "Audio Guide";
@@ -31,7 +38,22 @@ public partial class AudioPlayerViewModel : ObservableObject
     private string _imageUrl = string.Empty;
 
     [ObservableProperty]
-    private string _transcriptText = string.Empty;
+    private string _audioTranslationText = string.Empty;
+
+    [ObservableProperty]
+    private string _audioTranslationSummary = string.Empty;
+
+    [ObservableProperty]
+    private string _currentScriptText = string.Empty;
+
+    [ObservableProperty]
+    private string _playPauseGlyph = "▶";
+
+    [ObservableProperty]
+    private string _rewindGlyph = "⟲10";
+
+    [ObservableProperty]
+    private string _forwardGlyph = "10⟳";
 
     [ObservableProperty]
     private double _duration;
@@ -49,23 +71,56 @@ public partial class AudioPlayerViewModel : ObservableObject
     private bool _isPlaying;
 
     [ObservableProperty]
-    private string _playPauseIcon = "play_icon.png";
+    private bool _isSliderDragging;
 
-    public AudioPlayerViewModel(IAudioService audioService, INavigationService navigationService)
+    public AudioPlayerViewModel(IAudioService audioService)
     {
         _audioService = audioService;
-        _navigationService = navigationService;
+    }
 
-        _audioService.PositionChanged += OnPositionChanged;
-        _audioService.StateChanged += OnStateChanged;
+    public void OnAppearing()
+    {
+        if (!_isSubscribedToAudioEvents)
+        {
+            _audioService.PositionChanged += OnPositionChanged;
+            _audioService.StateChanged += OnStateChanged;
+            _isSubscribedToAudioEvents = true;
+        }
+
+        SyncPlaybackStateFromService();
+    }
+
+    public void OnDisappearing()
+    {
+        if (!_isSubscribedToAudioEvents)
+        {
+            return;
+        }
+
+        _audioService.PositionChanged -= OnPositionChanged;
+        _audioService.StateChanged -= OnStateChanged;
+        _isSubscribedToAudioEvents = false;
     }
 
     private void OnPositionChanged(object? sender, AudioPositionChangedEventArgs e)
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            if (IsSliderDragging)
+            {
+                return;
+            }
+
             CurrentPosition = e.Position.TotalSeconds;
             CurrentPositionText = FormatTime(e.Position);
+
+            if (e.Duration > TimeSpan.Zero)
+            {
+                Duration = e.Duration.TotalSeconds;
+                DurationText = FormatTime(e.Duration);
+            }
+
+            UpdateCurrentTranslationText(e.Position);
         });
     }
 
@@ -73,8 +128,18 @@ public partial class AudioPlayerViewModel : ObservableObject
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            if (!IsCurrentAudio(e.AudioUrl))
+            {
+                return;
+            }
+
             IsPlaying = e.State == AudioPlaybackState.Playing;
-            PlayPauseIcon = IsPlaying ? "pause_icon.png" : "play_icon.png";
+            PlayPauseGlyph = e.State switch
+            {
+                AudioPlaybackState.Loading => "⏳",
+                AudioPlaybackState.Playing => "⏸",
+                _ => "▶"
+            };
         });
     }
 
@@ -83,6 +148,22 @@ public partial class AudioPlayerViewModel : ObservableObject
         if (!string.IsNullOrEmpty(value))
         {
             LoadLocationData(value);
+        }
+    }
+
+    partial void OnAudioGuideIdChanged(string value)
+    {
+        if (!string.IsNullOrEmpty(LocationId))
+        {
+            LoadLocationData(LocationId);
+        }
+    }
+
+    partial void OnAudioUrlChanged(string value)
+    {
+        if (!string.IsNullOrEmpty(LocationId))
+        {
+            LoadLocationData(LocationId);
         }
     }
 
@@ -96,27 +177,162 @@ public partial class AudioPlayerViewModel : ObservableObject
             LocationName = location.Name;
             Description = location.Description;
             ImageUrl = location.ImageUrl;
-            TranscriptText = $"Audio hu?ng d?n tham quan {location.Name}...";
+            AudioTranslationSummary = $"Bản dịch audio của {location.Name}";
+            AudioTranslationText = $"Đang chờ phát nội dung của {location.Name}...";
+            CurrentScriptText = AudioTranslationText;
             Title = location.Name;
 
             if (location.AudioGuides.Count > 0)
             {
-                var guide = location.AudioGuides[0];
+                var guide = SelectGuide(location.AudioGuides);
                 Duration = guide.Duration * 60; // minutes to seconds
                 DurationText = FormatTime(TimeSpan.FromSeconds(Duration));
-                if (string.IsNullOrEmpty(AudioUrl))
-                    AudioUrl = guide.AudioUrl;
+
+                AudioTranslationText = !string.IsNullOrWhiteSpace(guide.TranscriptText)
+                    ? guide.TranscriptText
+                    : guide.Description;
+
+                AudioTranslationSummary = !string.IsNullOrWhiteSpace(guide.Description)
+                    ? guide.Description
+                    : AudioTranslationSummary;
+
+                Title = !string.IsNullOrWhiteSpace(guide.Title)
+                    ? guide.Title
+                    : location.Name;
+
+                AudioGuideId = guide.Id;
+                AudioUrl = !string.IsNullOrWhiteSpace(guide.CloudinaryAudioUrl)
+                    ? guide.CloudinaryAudioUrl
+                    : guide.AudioUrl;
+
+                LoadScriptSegments(guide);
+                SyncPlaybackStateFromService();
             }
         }
         else
         {
-            LocationName = "�?a di?m";
+            LocationName = "Địa điểm";
             Description = string.Empty;
             ImageUrl = string.Empty;
             Duration = 0;
             DurationText = "0:00";
             Title = LocationName;
+            AudioTranslationSummary = string.Empty;
+            AudioTranslationText = string.Empty;
+            CurrentScriptText = string.Empty;
+            _scriptSegments.Clear();
+            _activeScriptSegmentId = -1;
         }
+    }
+
+    private void LoadScriptSegments(AudioGuide guide)
+    {
+        _scriptSegments.Clear();
+        _activeScriptSegmentId = -1;
+
+        var segments = guide.ScriptSegments
+            .OrderBy(s => s.StartTimeSeconds)
+            .ToList();
+
+        if (segments.Count == 0)
+        {
+            _scriptSegments.Add(new AudioScriptSegment
+            {
+                Id = 1,
+                AudioGuideId = guide.Id,
+                StartTimeSeconds = 0,
+                EndTimeSeconds = Math.Max(1, (int)Duration),
+                ScriptText = !string.IsNullOrWhiteSpace(guide.TranscriptText) ? guide.TranscriptText : guide.Description
+            });
+            return;
+        }
+
+        _scriptSegments.AddRange(segments);
+    }
+
+    private void UpdateCurrentTranslationText(TimeSpan position)
+    {
+        if (_scriptSegments.Count == 0)
+        {
+            CurrentScriptText = AudioTranslationText;
+            return;
+        }
+
+        var currentSeconds = position.TotalSeconds;
+        var activeSegment = _scriptSegments
+            .LastOrDefault(segment => currentSeconds >= segment.StartTimeSeconds && currentSeconds < segment.EndTimeSeconds)
+            ?? (currentSeconds >= _scriptSegments.Last().EndTimeSeconds ? _scriptSegments.Last() : _scriptSegments.First());
+
+        if (activeSegment.Id == _activeScriptSegmentId)
+        {
+            return;
+        }
+
+        _activeScriptSegmentId = activeSegment.Id;
+        CurrentScriptText = activeSegment.ScriptText;
+    }
+
+    private void SyncPlaybackStateFromService()
+    {
+        var currentAudioMatches = IsCurrentAudio(_audioService.CurrentAudioUrl);
+
+        IsPlaying = currentAudioMatches && _audioService.IsPlaying;
+        PlayPauseGlyph = IsPlaying ? "⏸" : "▶";
+
+        if (!currentAudioMatches)
+        {
+            CurrentPosition = 0;
+            CurrentPositionText = "0:00";
+            UpdateCurrentTranslationText(TimeSpan.Zero);
+            return;
+        }
+
+        var servicePosition = _audioService.CurrentPosition;
+        CurrentPosition = Math.Max(0, servicePosition.TotalSeconds);
+        CurrentPositionText = FormatTime(servicePosition);
+
+        if (_audioService.Duration > TimeSpan.Zero)
+        {
+            Duration = _audioService.Duration.TotalSeconds;
+            DurationText = FormatTime(_audioService.Duration);
+        }
+
+        UpdateCurrentTranslationText(servicePosition);
+    }
+
+    private bool IsCurrentAudio(string? audioUrl)
+    {
+        if (string.IsNullOrWhiteSpace(AudioUrl) || string.IsNullOrWhiteSpace(audioUrl))
+        {
+            return false;
+        }
+
+        return string.Equals(AudioUrl, audioUrl, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private AudioGuide SelectGuide(IReadOnlyList<AudioGuide> guides)
+    {
+        if (!string.IsNullOrWhiteSpace(AudioGuideId))
+        {
+            var byId = guides.FirstOrDefault(g => g.Id == AudioGuideId);
+            if (byId != null)
+            {
+                return byId;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(AudioUrl))
+        {
+            var byUrl = guides.FirstOrDefault(g =>
+                string.Equals(g.AudioUrl, AudioUrl, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(g.CloudinaryAudioUrl, AudioUrl, StringComparison.OrdinalIgnoreCase));
+            if (byUrl != null)
+            {
+                return byUrl;
+            }
+        }
+
+        return guides[0];
     }
 
     [RelayCommand]
@@ -149,7 +365,22 @@ public partial class AudioPlayerViewModel : ObservableObject
     [RelayCommand]
     private async Task ForwardAsync()
     {
-        await _audioService.SeekAsync(TimeSpan.FromSeconds(Math.Min(Duration, CurrentPosition + 10)));
+        var nextPosition = Math.Min(Duration, CurrentPosition + 10);
+        await _audioService.SeekAsync(TimeSpan.FromSeconds(nextPosition));
+    }
+
+    [RelayCommand]
+    private void BeginSeek()
+    {
+        IsSliderDragging = true;
+    }
+
+    [RelayCommand]
+    private async Task CompleteSeekAsync()
+    {
+        IsSliderDragging = false;
+        await _audioService.SeekAsync(TimeSpan.FromSeconds(CurrentPosition));
+        CurrentPositionText = FormatTime(TimeSpan.FromSeconds(CurrentPosition));
     }
 
     private static string FormatTime(TimeSpan time)

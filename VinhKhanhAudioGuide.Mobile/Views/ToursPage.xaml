@@ -54,21 +54,21 @@
 
 
                                     <!-- bottom overlay content -->
-                                    <VerticalStackLayout Padding="12" Spacing="6" VerticalOptions="End">
-                                        <Label Text="{Binding Name}" FontSize="15" FontAttributes="Bold" TextColor="White" />
-                                        <Label Text="{Binding Description}" FontSize="11" TextColor="#DDFFFFFF" MaxLines="2" />
+                                        <VerticalStackLayout Padding="12" Spacing="6" VerticalOptions="End">
+                                            <Label Text="{Binding Name}" FontSize="15" FontAttributes="Bold" TextColor="White" />
+                                            <Label Text="{Binding Description}" FontSize="11" TextColor="#DDFFFFFF" MaxLines="2" />
 
-                                        <HorizontalStackLayout Spacing="10">
-                                            <Frame BackgroundColor="#AAFFFFFF" CornerRadius="20" Padding="10,6" HasShadow="False" BorderColor="Transparent">
-                                                <Label Text="{Binding DurationText}" FontSize="11" TextColor="{StaticResource PrimaryDark}" />
-                                            </Frame>
+                                            <HorizontalStackLayout Spacing="10">
+                                                <Frame BackgroundColor="#AAFFFFFF" CornerRadius="20" Padding="10,6" HasShadow="False" BorderColor="Transparent">
+                                                    <Label Text="{Binding DurationText}" FontSize="11" TextColor="{StaticResource PrimaryDark}" />
+                                                </Frame>
 
-                                            <Frame BackgroundColor="#AAFFFFFF" CornerRadius="20" Padding="10,6" HasShadow="False" BorderColor="Transparent">
-                                                <Label Text="{Binding LocationCount, StringFormat='{0} điểm'}" FontSize="11" TextColor="{StaticResource PrimaryDark}" />
-                                            </Frame>
-                                        </HorizontalStackLayout>
-                                    </VerticalStackLayout>
-                                </Grid>
+                                                <Frame BackgroundColor="#AAFFFFFF" CornerRadius="20" Padding="10,6" HasShadow="False" BorderColor="Transparent">
+                                                    <Label Text="{Binding LocationCount, StringFormat='{0} điểm'}" FontSize="11" TextColor="{StaticResource PrimaryDark}" />
+                                                </Frame>
+                                            </HorizontalStackLayout>
+                                        </VerticalStackLayout>
+                                    </Grid>
                             </Frame>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>

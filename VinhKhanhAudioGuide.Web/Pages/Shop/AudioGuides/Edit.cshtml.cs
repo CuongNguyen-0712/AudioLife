@@ -10,14 +10,19 @@ namespace VinhKhanhAudioGuide.Web.Pages.Shop.AudioGuides;
 public class EditModel : PageModel
 {
     private readonly AppDbContext _db;
+    private readonly IAudioStorageService _audioStorageService;
 
-    public EditModel(AppDbContext db)
+    public EditModel(AppDbContext db, IAudioStorageService audioStorageService)
     {
         _db = db;
+        _audioStorageService = audioStorageService;
     }
 
     [BindProperty]
     public AudioGuide AudioGuide { get; set; } = new();
+
+    [BindProperty]
+    public IFormFile? AudioFile { get; set; }
 
     public async Task<IActionResult> OnGetAsync(string id)
     {
@@ -39,6 +44,9 @@ public class EditModel : PageModel
     public async Task<IActionResult> OnPostAsync()
     {
         ModelState.Remove("AudioGuide.Location");
+        ModelState.Remove("AudioGuide.AudioUrl");
+        ModelState.Remove("AudioGuide.Description");
+        ModelState.Remove("AudioGuide.TranscriptText");
 
         if (!ModelState.IsValid)
         {
@@ -58,7 +66,27 @@ public class EditModel : PageModel
 
         entity.Title = AudioGuide.Title;
         entity.Description = AudioGuide.Description;
-        entity.AudioUrl = AudioGuide.AudioUrl;
+
+        if (AudioFile is not null)
+        {
+            try
+            {
+                var uploadResult = await _audioStorageService.UploadAudioAsync(AudioFile, entity.Id);
+                entity.AudioUrl = uploadResult.AudioUrl;
+                entity.CloudinaryAudioUrl = uploadResult.CloudinaryAudioUrl;
+                entity.CloudinaryPublicId = uploadResult.CloudinaryPublicId;
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return Page();
+            }
+        }
+        else
+        {
+            entity.AudioUrl = AudioGuide.AudioUrl;
+        }
+
         entity.Duration = AudioGuide.Duration;
         entity.Language = AudioGuide.Language;
         entity.TranscriptText = AudioGuide.TranscriptText;

@@ -64,7 +64,7 @@ public partial class HistoryViewModel : ObservableObject
             new Dictionary<string, object>
             {
                 { "LocationId", item.LocationId },
-                { "AudioUrl", item.AudioGuideId }
+                { "AudioGuideId", item.AudioGuideId }
             });
     }
 

@@ -16,7 +16,8 @@
 
 <div class="shop-card card-v2">
     <div class="shop-card-body">
-        <form method="post" style="max-width: 840px;">
+        <form method="post" enctype="multipart/form-data" style="max-width: 840px;">
+            <div asp-validation-summary="All" class="alert alert-danger"></div>
             <input asp-for="AudioGuide.Id" type="hidden" />
             <input asp-for="AudioGuide.LocationId" type="hidden" />
 
@@ -35,6 +36,7 @@
                 <div class="col-md-6 mb-3">
                     <label asp-for="AudioGuide.AudioUrl" class="form-label">Audio URL</label>
                     <input asp-for="AudioGuide.AudioUrl" class="form-control" />
+                    <small class="text-muted">Nếu upload file thì URL sẽ tự động được thay thế.</small>
                 </div>
                 <div class="col-md-3 mb-3">
                     <label asp-for="AudioGuide.Duration" class="form-label">Thời lượng (phút)</label>
@@ -51,6 +53,23 @@
                         <option value="zh">Chinese</option>
                     </select>
                 </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="AudioFile" class="form-label">Upload file audio (Cloudinary)</label>
+                @if (!string.IsNullOrEmpty(Model.AudioGuide.CloudinaryAudioUrl) || !string.IsNullOrEmpty(Model.AudioGuide.AudioUrl))
+                {
+                    var audioSrc = !string.IsNullOrEmpty(Model.AudioGuide.AudioUrl) ? Model.AudioGuide.AudioUrl : Model.AudioGuide.CloudinaryAudioUrl;
+                    <div class="audio-preview-box mb-2">
+                        <small class="text-muted d-block mb-1">Audio hiện tại:</small>
+                        <audio controls class="audio-preview-player audio-preview-player-form">
+                            <source src="@audioSrc" type="audio/mpeg">
+                        </audio>
+                        <small class="audio-preview-url" title="@audioSrc">@audioSrc</small>
+                    </div>
+                }
+                <input asp-for="AudioFile" type="file" class="form-control" accept="audio/*" />
+                <span asp-validation-for="AudioFile" class="text-danger"></span>
             </div>
 
             <div class="mb-3">

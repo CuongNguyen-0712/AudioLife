@@ -1,227 +1,252 @@
 # PRD - Vinh Khanh Audio Guide
 
 ## 1. Thông tin tài liệu
-- Product: Vinh Khanh Audio Guide (Mobile + Web Admin)
-- Phiên bản PRD: 1.0
-- Ngày cập nhật: 2026-03-19
+- Product: Vinh Khanh Audio Guide
+- Phạm vi: Mobile App + Web Admin
+- Phiên bản: 2.0
+- Ngày cập nhật: 2026-03-20
 - Trạng thái: Draft for implementation
 - Owner: Product/Engineering Team
 
-## 2. Tóm tắt sản phẩm
-Vinh Khanh Audio Guide là hệ sinh thái gồm:
-- Ứng dụng mobile MAUI cho người dùng cuối để khám phá địa điểm ẩm thực và nghe audio guide.
-- Web Admin ASP.NET Core Razor Pages cho vận hành nội dung, phân quyền và quản trị theo mô hình:
-  - Admin Hệ Thống
-  - Admin POI (quản lý theo địa điểm được phân quyền)
+## 2. Tổng quan sản phẩm
+Vinh Khanh Audio Guide là hệ thống hướng dẫn khám phá ẩm thực đường phố, tập trung vào khu vực Vĩnh Khánh và các điểm đến liên quan tại TP.HCM.
 
-Mục tiêu là chuẩn hóa trải nghiệm khám phá ẩm thực bằng audio, đồng thời cung cấp nền tảng quản trị nội dung hiệu quả, trực quan và hoàn toàn tiếng Việt.
+Hệ thống gồm 2 thành phần:
+- Mobile App (.NET MAUI): dành cho người dùng cuối để tìm địa điểm, xem tour, nghe audio guide, lưu yêu thích, theo dõi lịch sử, quản lý audio tải về.
+- Web Admin (ASP.NET Core Razor Pages): dành cho vận hành nội dung và phân quyền theo 2 vai trò chính:
+  - Admin
+  - ShopOwner
 
 ## 3. Bài toán cần giải quyết
 ### 3.1 Vấn đề hiện tại
-- Nội dung audio/địa điểm cần quản trị tập trung và phân quyền rõ theo khu vực POI.
-- Trải nghiệm khám phá ẩm thực cho người dùng cần có lộ trình rõ ràng, dễ tìm kiếm, dễ nghe.
-- Giao diện quản trị cần thống nhất ngôn ngữ, đúng định hướng thiết kế, hạn chế mismatch content.
+- Nội dung địa điểm ẩm thực và audio guide cần quản lý tập trung, đúng cấu trúc dữ liệu.
+- Cần tách rõ quyền quản trị toàn hệ thống (Admin) và quyền theo cửa hàng (ShopOwner).
+- Trải nghiệm mobile cần liền mạch từ tìm kiếm đến nghe audio, không rời rạc giữa các màn hình.
 
 ### 3.2 Cơ hội
-- Tăng thời gian tương tác qua audio guide theo từng điểm đến.
-- Tối ưu vận hành bằng dashboard, báo cáo, kiểm duyệt, và workflow quản trị nội dung.
-- Mở rộng dữ liệu địa điểm/tour/audio theo từng giai đoạn mà không phá vỡ cấu trúc hệ thống.
+- Tăng mức độ khám phá thực tế thông qua map, gợi ý tour và audio hướng dẫn.
+- Nâng cao hiệu quả vận hành qua dashboard, CRUD theo module, báo cáo và analytics.
+- Chuẩn hóa bộ dữ liệu để dễ dàng mở rộng sang nhiều cụm ẩm thực trong tương lai.
 
 ## 4. Mục tiêu sản phẩm
 ### 4.1 Mục tiêu kinh doanh
-- Chuẩn hóa quy trình quản lý nội dung audio theo địa điểm và danh mục.
-- Rút ngắn thời gian cập nhật nội dung từ lúc tạo đến lúc hiển thị.
-- Tăng mức độ sử dụng tính năng tìm kiếm, tour, và nghe audio trên mobile.
+- Chuẩn hóa quy trình quản trị nội dung địa điểm, danh mục, tour và audio.
+- Rút ngắn thời gian cập nhật nội dung từ admin đến app người dùng.
+- Tăng tần suất sử dụng các chức năng search, map, audio player.
 
 ### 4.2 Mục tiêu người dùng
-- Tìm địa điểm nhanh, hiểu nội dung nhanh, nghe audio mượt.
-- Theo dõi tour dễ, chọn điểm ăn phù hợp sở thích.
-- Trải nghiệm tiếng Việt rõ ràng, nhất quán.
+- Tìm được địa điểm phù hợp nhanh.
+- Nghe audio giới thiệu ngắn gọn, rõ ràng.
+- Theo dõi lộ trình tour để khám phá khu ẩm thực có định hướng.
 
 ### 4.3 KPI đề xuất
 - Mobile:
-  - Tỷ lệ user phát ít nhất 1 audio/session >= 45%
-  - Tỷ lệ hoàn thành nghe audio >= 30%
-  - Tỷ lệ dùng Search trước khi mở chi tiết địa điểm >= 40%
+  - Tỷ lệ người dùng mở audio ít nhất 1 lần mỗi session >= 45%
+  - Tỷ lệ hoàn tất nghe > 70% độ dài audio >= 30%
+  - Tỷ lệ người dùng sử dụng Search trước khi vào chi tiết địa điểm >= 40%
 - Web Admin:
-  - Thời gian cập nhật 1 audio guide < 3 phút
-  - Tỷ lệ dữ liệu có đủ metadata (title, description, language, duration, location) >= 95%
-  - Tỷ lệ địa điểm có ít nhất 1 audio >= 90%
+  - Thời gian tạo/cập nhật 1 audio guide <= 3 phút
+  - Tỷ lệ location có ít nhất 1 audio guide >= 90%
+  - Tỷ lệ dữ liệu đầy đủ metadata (tên, mô tả, duration, address, image, category) >= 95%
 
 ## 5. Personas
-### 5.1 Người dùng cuối (Khách khám phá ẩm thực)
-- Nhu cầu: tìm món/địa điểm nhanh, nghe giới thiệu ngắn gọn, xem tour gợi ý.
-- Thiết bị chính: mobile.
+### 5.1 Khách khám phá ẩm thực
+- Dùng mobile là chính.
+- Muốn tìm quán ngon nhanh, xem vị trí và nghe giới thiệu.
 
-### 5.2 Admin Hệ Thống
-- Nhu cầu: quản trị toàn cục danh mục, địa điểm, tour, audio, user/role, báo cáo, cài đặt.
+### 5.2 Admin
+- Quản trị toàn bộ dữ liệu, users, reports, settings.
+- Chịu trách nhiệm chất lượng nội dung và vận hành hệ thống.
 
-### 5.3 Admin POI
-- Nhu cầu: cập nhật nội dung audio và thông tin địa điểm thuộc phạm vi được phân quyền.
+### 5.3 ShopOwner
+- Quản lý thông tin cửa hàng được phân quyền.
+- Cập nhật audio guide, theo dõi reviews và analytics của cửa hàng.
 
 ## 6. Phạm vi sản phẩm
-## 6.1 In-scope
-### Mobile App (MAUI)
-- Home: địa điểm nổi bật, danh mục, đề xuất.
-- Search: tìm kiếm, lọc danh mục, gợi ý.
-- Map: xem địa điểm trên bản đồ.
-- Tours: danh sách tour, chi tiết tour.
-- Audio Player: phát/tạm dừng/seek, hiển thị tiến độ.
-- Profile: yêu thích, lịch sử nghe, downloads, cài đặt, chỉnh sửa thông tin.
+### 6.1 In-scope
+#### Mobile App (MAUI)
+- Main/Home: địa điểm nổi bật, danh mục, gợi ý.
+- Search: tìm kiếm địa điểm theo tên/mô tả/địa chỉ.
+- Map: hiển thị vị trí địa điểm và khoảng cách.
+- Tours: danh sách tour, chi tiết tour, các điểm trong tour.
+- Audio Player: play/pause/seek, hiển thị progress.
+- Profile: thông tin cá nhân, favorites, history, downloads, settings, edit profile.
+- Favorites/History/Downloads/Help/About: các trang bổ trợ trải nghiệm đầy đủ.
 
-### Web Admin (ASP.NET Core Razor Pages)
-- Auth: login/logout, điều hướng theo role.
-- Admin Hệ Thống:
-  - Dashboard tổng quan
-  - User & Role Management
+#### Web Admin (ASP.NET Core Razor Pages)
+- Account:
+  - Login/Logout
+  - AccessDenied
+- Admin zone (role Admin):
+  - Dashboard
+  - Users
   - Categories CRUD
   - Locations CRUD
   - Tours CRUD
   - AudioGuides CRUD
   - Reports
   - Settings
-- Admin POI:
-  - Dashboard theo location
-  - Audio Management theo location
+- Shop zone (role Admin, ShopOwner):
+  - Shop dashboard
+  - Shop Locations
+  - Shop AudioGuides
   - Reviews
   - Analytics
-  - Cập nhật thông tin location thuộc quyền
 
-### Design/Content
-- Đồng bộ UI theo ngôn ngữ thiết kế đã triển khai trong repo (dashboard-hero, card-v2, table-v2).
-- Toàn bộ content chính trên web sử dụng tiếng Việt có dấu, nhất quán thuật ngữ.
+#### Data và backend
+- SQL Server + EF Core cho dữ liệu nghiệp vụ.
+- Cookie authentication + role policies:
+  - AdminOnly
+  - ShopAccess
 
-## 6.2 Out-of-scope (giai đoạn hiện tại)
-- Thanh toán, booking, loyalty points.
-- CMS headless riêng biệt.
-- AI recommendation phức tạp theo hành vi real-time.
+### 6.2 Out-of-scope (giai đoạn hiện tại)
+- Đặt chỗ/booking, thanh toán, loyalty points.
+- Recommendation AI theo hành vi real-time.
 - Multi-tenant đa thương hiệu.
 
 ## 7. Yêu cầu chức năng
-### 7.1 Authentication & Authorization
-- User chưa đăng nhập phải vào màn hình login trước.
-- Đăng nhập thành công:
-  - Admin -> Admin Dashboard
-  - ShopOwner -> POI Dashboard
-- Logout trả về login.
-- Policy phân quyền theo folder/page.
+### 7.1 Authentication và Authorization
+- Người dùng chưa đăng nhập phải vào trang login.
+- Đăng nhập đúng role:
+  - Admin -> /Admin/Index
+  - ShopOwner -> /Shop/Index
+- Kiểm soát quyền truy cập bằng Razor Pages conventions + policy.
 
-### 7.2 Quản trị danh mục (Categories)
-- Tạo/sửa/xóa/xem danh mục.
-- Thuộc tính: Id, Name, Icon, Description.
-- Chặn xóa nếu còn dữ liệu liên kết (locations).
+### 7.2 Quản trị Categories
+- Tạo/sửa/xóa/xem category.
+- Thuộc tính tối thiểu: Id, Name, Icon, Description.
+- Chặn xóa nếu đang có location liên kết.
 
-### 7.3 Quản trị địa điểm (Locations)
-- CRUD địa điểm, map category.
-- Thuộc tính: Id, Name, Description, Address, Lat, Long, Duration, ImageUrl, Category.
-- Hiển thị số audio theo địa điểm.
+### 7.3 Quản trị Locations
+- CRUD location.
+- Thuộc tính tối thiểu: Id, Name, Description, Address, Latitude, Longitude, Duration, ImageUrl, CategoryId.
+- Hiển thị số audio guides và thông tin liên quan.
 
-### 7.4 Quản trị tour (Tours)
-- CRUD tour, cấu hình location trong tour.
+### 7.4 Quản trị Tours
+- CRUD tour.
+- Cấu hình danh sách địa điểm trong tour.
 - Thuộc tính: Id, Name, Description, Duration, Price, IsFeatured, ImageUrl.
 
-### 7.5 Quản trị audio guide
+### 7.5 Quản trị Audio Guides
 - CRUD audio guide theo location.
-- Thuộc tính: Id, Title, Description, AudioUrl, Duration, Language, TranscriptText.
-- Admin POI chỉ thấy và sửa dữ liệu trong location được phân quyền.
+- Thuộc tính: Id, Title, Description, AudioUrl, TranscriptText, Duration, LocationId, Language.
+- Hỗ trợ Cloudinary URL/public id khi cần quản lý lưu trữ audio.
 
-### 7.6 User & Role Management
-- Danh sách user, role, trạng thái hoạt động.
-- Mapping Admin POI với danh sách địa điểm quản lý.
+### 7.6 User và role management
+- Xem danh sách users từ cấu hình xác thực.
+- Quản lý role Admin/ShopOwner.
+- Gán LocationIds cho ShopOwner để giới hạn phạm vi thao tác.
 
-### 7.7 Reports & Analytics
-- Chỉ số tổng quan: tổng địa điểm, tổng audio, tổng tour, audio/location.
-- Breakdown theo danh mục.
-- Top location theo số lượng audio.
-- Analytics POI theo location được chọn.
+### 7.7 Reports và Analytics
+- Dashboard tổng hợp số lượng categories/locations/tours/audio.
+- Báo cáo theo location và theo role.
+- ShopOwner có analytics theo các location được cấp quyền.
 
-### 7.8 Mobile trải nghiệm người dùng
-- Search trả kết quả nhanh, ưu tiên đúng danh mục/món liên quan.
+### 7.8 Mobile user experience
+- Search theo tên/mô tả/địa chỉ.
+- Nearby locations theo vị trí và bán kính.
 - Audio player ổn định khi chuyển trang.
-- Lưu lịch sử nghe và danh sách yêu thích.
+- Lưu lịch sử nghe và quản lý download offline.
+- Toggle favorite và đồng bộ theo user profile.
 
 ## 8. Yêu cầu phi chức năng
 ### 8.1 Performance
-- Web page TTFB mục tiêu < 500ms trong môi trường nội bộ.
-- Search mobile phản hồi < 1 giây với dữ liệu mẫu hiện tại.
+- Search mobile trả kết quả trong <= 1 giây với tập dữ liệu hiện tại.
+- Chuyển trang chính trong mobile (Main/Search/Map/Tours/Profile) mượt, không giật.
+- Trang admin chính render trong <= 2 giây với dữ liệu mẫu.
 
 ### 8.2 Reliability
-- Không crash khi dữ liệu trống.
-- Mọi trang CRUD xử lý trạng thái empty-state rõ ràng.
+- Không crash khi dữ liệu rỗng.
+- Các trang CRUD có empty state và validation message rõ ràng.
+- Download/history/favorites xử lý an toàn khi item không tồn tại.
 
 ### 8.3 Security
-- Cookie auth + role policy bắt buộc cho web admin.
-- Không lộ credential thật trong production config.
+- Cookie auth bắt buộc cho Web Admin.
+- Không để lộ thông tin nhạy cảm trong appsettings production.
+- Chỉ cho phép role đúng thao tác đúng folder được authorize.
 
 ### 8.4 Localization
-- Giao diện chính web dùng tiếng Việt có dấu.
-- Thuật ngữ chuẩn: Admin Hệ Thống, Admin POI, Bảng điều khiển, Thống kê, Quản lý audio.
+- Content hướng người dùng cuối ưu tiên tiếng Việt.
+- Thuật ngữ giao diện quản trị nhất quán: Admin, ShopOwner, Dashboard, Reports, Audio Guides.
 
 ### 8.5 Maintainability
-- Tách ViewModels/Services theo module.
-- Tiêu chuẩn UI tái sử dụng class hệ thống (hero/card/table).
+- Mobile theo MVVM, tách ViewModels/Services rõ ràng.
+- Web theo module pages và conventions để dễ mở rộng.
+- ApiService mobile hiện tại dùng sample data phải giữ contract ổn định để dễ thay bằng HTTP backend.
 
-## 9. Luồng người dùng chính
-### 9.1 Luồng người dùng mobile
-1. Mở app -> Home
-2. Search hoặc chọn category
-3. Xem chi tiết địa điểm
-4. Play audio guide
-5. Lưu yêu thích hoặc xem tour liên quan
+## 9. Luồng nghiệp vụ chính
+### 9.1 Luồng mobile
+1. Mở app -> vào Main/Home.
+2. Tìm địa điểm qua Search hoặc Map.
+3. Mở Location Detail.
+4. Phát audio guide tại Audio Player.
+5. Lưu favorite, theo dõi history, hoặc download audio.
 
-### 9.2 Luồng Admin Hệ Thống
-1. Login
-2. Vào dashboard tổng
-3. Quản lý danh mục/địa điểm/tour/audio
-4. Kiểm tra báo cáo và settings
+### 9.2 Luồng Admin
+1. Login với role Admin.
+2. Vào /Admin/Index.
+3. Quản trị categories/locations/tours/audio guides.
+4. Theo dõi reports, users, settings.
 
-### 9.3 Luồng Admin POI
-1. Login
-2. Chọn location trong phạm vi
-3. Quản lý audio và cập nhật thông tin location
-4. Theo dõi review và analytics
+### 9.3 Luồng ShopOwner
+1. Login với role ShopOwner.
+2. Vào /Shop/Index.
+3. Quản lý locations/audio guides thuộc phạm vi được cấp.
+4. Xem reviews và analytics.
 
 ## 10. Data model mức cao
 - Category (1) - (n) Location
 - Location (1) - (n) AudioGuide
 - Tour (n) - (n) Location qua TourLocation
-- User (role-based) - (n) LocationIds (với ShopOwner)
+- Location (1) - (n) Feedback
+- User (Admin/ShopOwner) - (n) LocationIds
+- AudioGuide (1) - (n) AudioScriptSegment
+- AudioGuide (1) - (n) ListeningHistory
 
 ## 11. Kế hoạch phát hành đề xuất
 ### Phase 1 - Foundation
-- Auth + Role routing
-- CRUD cơ bản Categories/Locations/Tours/AudioGuides
-- Mobile browse/play cơ bản
+- Auth + role routing (Admin/ShopOwner).
+- CRUD cơ bản Categories/Locations/Tours/AudioGuides.
+- Mobile browse + audio playback cơ bản.
 
-### Phase 2 - Operational Quality
-- User & Role Management
-- Reports + Settings
-- Reviews + Analytics cho POI
-- Chuẩn hóa UI/content tiếng Việt toàn web
+### Phase 2 - Operational quality
+- Reports + settings + users management đầy đủ.
+- Shop workflow: reviews + analytics + location scope.
+- Hoàn thiện profile/favorites/history/downloads trên mobile.
 
 ### Phase 3 - Optimization
-- Cải tiến search relevance
-- Theo dõi KPI, tối ưu conversion nghe audio
-- Tinh chỉnh UX mobile và dashboard theo dữ liệu thực tế
+- Tối ưu search relevance và nearby ranking.
+- Tích hợp backend API thật sự thay cho sample data trong mobile.
+- Tối ưu UX audio player và map theo dữ liệu thực tế.
 
 ## 12. Rủi ro và giảm thiểu
-- Rủi ro lệch content giữa module -> chuẩn hóa glossary + review checklist trước release.
-- Rủi ro phân quyền sai phạm vi -> test matrix role/location bắt buộc.
-- Rủi ro dữ liệu mẫu không đại diện -> thêm seed theo vùng/nhóm món thực tế.
-- Rủi ro nợ UI do chỉnh rời rạc -> bắt buộc dùng design classes chuẩn.
+- Rủi ro sai phạm vi ShopOwner:
+  - Bắt buộc test role + LocationIds matrix.
+- Rủi ro dữ liệu không đồng nhất giữa mobile và web:
+  - Chuẩn hóa model contract và migration scripts.
+- Rủi ro nợ UI do cập nhật rời rạc:
+  - Dùng bộ style chung và review UI checklist trước release.
+- Rủi ro sample data khác dữ liệu thật:
+  - Lập kế hoạch thay thế ApiService local bằng HTTP API theo từng module.
 
 ## 13. Tiêu chí nghiệm thu (UAT)
-- Login-first flow hoạt động đúng với mọi role.
-- Tất cả trang quản trị chính hiển thị tiếng Việt đúng dấu.
-- Admin POI không truy cập được location ngoài scope.
-- CRUD quan trọng chạy ổn định, không lỗi validation cơ bản.
-- Build solution thành công, không error.
+- Login flow đúng với 2 role Admin/ShopOwner.
+- Admin không bị chặn các module /Admin; ShopOwner không vào được module AdminOnly.
+- CRUD chính (categories, locations, tours, audio guides) hoạt động ổn định.
+- Mobile thực hiện được luồng tìm kiếm -> chi tiết địa điểm -> phát audio.
+- Favorites/history/downloads cập nhật đúng dữ liệu.
+- Build solution thành công cho cả Mobile và Web.
 
 ## 14. Phụ lục
 ### 14.1 Tech stack
-- Mobile: .NET MAUI, MVVM
+- Mobile: .NET MAUI, MVVM, CommunityToolkit.Mvvm, MediaElement
 - Web: ASP.NET Core Razor Pages (.NET 8)
-- DB: SQL Server (EF Core)
+- Data: SQL Server + EF Core
+- Auth: Cookie Authentication + Role Policies
 
-### 14.2 Tên file PRD trong repo
+### 14.2 Tài liệu liên quan trong repo
 - PRD_VinhKhanh_AudioGuide.md
+- dbdiagram.dbml
+
+### 14.3 Database diagram
+![Audio database diagram](AudioLife.png)

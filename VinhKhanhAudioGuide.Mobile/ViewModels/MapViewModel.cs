@@ -4,12 +4,18 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VinhKhanhAudioGuide.Mobile.Models;
 using VinhKhanhAudioGuide.Mobile.Services;
+using LocationModel = VinhKhanhAudioGuide.Mobile.Models.Location;
 
 namespace VinhKhanhAudioGuide.Mobile.ViewModels;
 
 public partial class MapViewModel : ObservableObject
 {
+    private const double NearbyRadiusKm = 0.1;
+    private const int MaxSuggestions = 10;
+
     private readonly INavigationService _navigationService;
+    private readonly IApiService _apiService;
+    private readonly IGeolocationService _geolocationService;
 
     [ObservableProperty]
     private string _searchQuery = string.Empty;
@@ -23,46 +29,112 @@ public partial class MapViewModel : ObservableObject
     [ObservableProperty]
     private HtmlWebViewSource? _mapHtmlSource;
 
+    [ObservableProperty]
+    private string _locationStatusText = "Đang xác định vị trí...";
+
+    [ObservableProperty]
+    private bool _isLocationConfirmed = false;
+
     public ObservableCollection<MapMarker> MapMarkers { get; } = new();
     public ObservableCollection<NearbyLocation> NearbyLocations { get; } = new();
 
-    public MapViewModel(INavigationService navigationService)
+    public MapViewModel(INavigationService navigationService, IApiService apiService, IGeolocationService geolocationService)
     {
         _navigationService = navigationService;
-        LoadMapData();
+        _apiService = apiService;
+        _geolocationService = geolocationService;
     }
 
-    private void LoadMapData()
+    [RelayCommand]
+    public async Task LoadMapDataAsync()
     {
-        var locations = Data.SampleData.GetLocations();
-        var categories = Data.SampleData.GetCategories();
+        await _geolocationService.StartTrackingAsync();
 
-        foreach (var location in locations)
+        // Try getting real current location
+        var location = await _geolocationService.GetCurrentLocationAsync();
+        if (location.HasValue)
+        {
+            UserLatitude = location.Value.Latitude;
+            UserLongitude = location.Value.Longitude;
+            IsLocationConfirmed = true;
+            LocationStatusText = $"Vị trí hiện tại: {location.Value.Latitude:F6}, {location.Value.Longitude:F6}";
+        }
+        else if (_geolocationService.CurrentLatitude.HasValue && _geolocationService.CurrentLongitude.HasValue)
+        {
+            UserLatitude = _geolocationService.CurrentLatitude.Value;
+            UserLongitude = _geolocationService.CurrentLongitude.Value;
+            IsLocationConfirmed = true;
+            LocationStatusText = $"Vị trí hiện tại: {UserLatitude:F6}, {UserLongitude:F6}";
+        }
+        else
+        {
+            IsLocationConfirmed = false;
+            LocationStatusText = "Không thể xác định vị trí. Sử dụng vị trí mặc định.";
+        }
+
+        var locations = await _apiService.GetLocationsAsync();
+        var categories = await _apiService.GetCategoriesAsync();
+
+        MapMarkers.Clear();
+        NearbyLocations.Clear();
+
+        foreach (var loc in locations)
         {
             MapMarkers.Add(new MapMarker
             {
-                Id = location.Id,
-                Name = location.Name,
-                Latitude = location.Latitude,
-                Longitude = location.Longitude
-            });
-
-            var distance = CalculateDistance(UserLatitude, UserLongitude, location.Latitude, location.Longitude);
-            NearbyLocations.Add(new NearbyLocation
-            {
-                Id = location.Id,
-                Name = location.Name,
-                ImageUrl = location.ImageUrl,
-                Distance = Math.Round(distance, 1)
+                Id = loc.Id,
+                Name = loc.Name,
+                Latitude = loc.Latitude,
+                Longitude = loc.Longitude
             });
         }
 
-        // Sort by distance
-        var sorted = NearbyLocations.OrderBy(x => x.Distance).ToList();
-        NearbyLocations.Clear();
-        foreach (var loc in sorted.Take(5))
+        var sortedByDistance = locations
+            .Select(loc => new
+            {
+                Location = loc,
+                DistanceKm = CalculateDistance(UserLatitude, UserLongitude, loc.Latitude, loc.Longitude)
+            })
+            .OrderBy(x => x.DistanceKm)
+            .ToList();
+
+        var nearby = sortedByDistance
+            .Where(x => x.DistanceKm <= NearbyRadiusKm)
+            .Take(MaxSuggestions)
+            .ToList();
+
+        if (nearby.Count > 0)
         {
-            NearbyLocations.Add(loc);
+            foreach (var item in nearby)
+            {
+                NearbyLocations.Add(new NearbyLocation
+                {
+                    Id = item.Location.Id,
+                    Name = item.Location.Name,
+                    ImageUrl = item.Location.ImageUrl,
+                    Distance = Math.Round(item.DistanceKm, 3),
+                    DistanceString = FormatDistance(item.DistanceKm)
+                });
+            }
+
+            LocationStatusText = $"{LocationStatusText} • {nearby.Count} POI trong bán kính 100m";
+        }
+        else
+        {
+            var hotLocations = GetHotLocations(locations).Take(MaxSuggestions).ToList();
+            foreach (var hot in hotLocations)
+            {
+                NearbyLocations.Add(new NearbyLocation
+                {
+                    Id = hot.Id,
+                    Name = hot.Name,
+                    ImageUrl = hot.ImageUrl,
+                    Distance = 0,
+                    DistanceString = "🔥 POI hot"
+                });
+            }
+
+            LocationStatusText = $"{LocationStatusText} • Không có POI trong 100m, đang gợi ý POI hot";
         }
 
         // Generate Leaflet map HTML
@@ -99,7 +171,7 @@ public partial class MapViewModel : ObservableObject
 <body>
 <div id='map'></div>
 <script>
-    var map = L.map('map').setView([{UserLatitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}, {UserLongitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}], 13);
+    var map = L.map('map').setView([{UserLatitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}, {UserLongitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}], 14);
     L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
         maxZoom: 19,
         attribution: '&copy; OpenStreetMap'
@@ -120,7 +192,17 @@ public partial class MapViewModel : ObservableObject
         iconSize: [16, 16],
         iconAnchor: [8, 8]
     }});
-    L.marker([{UserLatitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}, {UserLongitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}], {{icon: userIcon}}).addTo(map).bindPopup('📍 Vị trí của bạn');
+    
+    var userMarker = L.marker([{UserLatitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}, {UserLongitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}], {{icon: userIcon}}).addTo(map).bindPopup('Vị trí của bạn');
+    
+    // Draw 100m radius circle
+    var radiusCircle = L.circle([{UserLatitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}, {UserLongitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}], {{
+        radius: 100,
+        color: '#4285F4',
+        weight: 1,
+        fillColor: '#4285F4',
+        fillOpacity: 0.2
+    }}).addTo(map);
 
     // Location markers
     {markersJs}
@@ -141,6 +223,53 @@ public partial class MapViewModel : ObservableObject
                 Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
         var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
         return R * c;
+    }
+
+    private static string FormatDistance(double distanceKm)
+    {
+        if (distanceKm < 1)
+        {
+            return $"{Math.Round(distanceKm * 1000)} m";
+        }
+
+        return $"{distanceKm:F2} km";
+    }
+
+    private static List<LocationModel> GetHotLocations(IEnumerable<LocationModel> locations)
+    {
+        var locationList = locations.ToList();
+        var featuredTours = Data.SampleData.GetFeaturedTours();
+        var scoreByLocationId = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var tour in featuredTours)
+        {
+            foreach (var locationId in tour.LocationIds)
+            {
+                scoreByLocationId[locationId] = scoreByLocationId.TryGetValue(locationId, out var score)
+                    ? score + 3
+                    : 3;
+            }
+        }
+
+        foreach (var location in locationList)
+        {
+            if (location.IsFavorite)
+            {
+                scoreByLocationId[location.Id] = scoreByLocationId.TryGetValue(location.Id, out var score)
+                    ? score + 2
+                    : 2;
+            }
+
+            // Boost locations with more audio guides.
+            scoreByLocationId[location.Id] = scoreByLocationId.TryGetValue(location.Id, out var current)
+                ? current + Math.Max(1, location.AudioGuideCount)
+                : Math.Max(1, location.AudioGuideCount);
+        }
+
+        return locationList
+            .OrderByDescending(loc => scoreByLocationId.TryGetValue(loc.Id, out var score) ? score : 0)
+            .ThenBy(loc => loc.Name)
+            .ToList();
     }
 
     [RelayCommand]
@@ -167,4 +296,5 @@ public class NearbyLocation
     public string Name { get; set; } = string.Empty;
     public string ImageUrl { get; set; } = string.Empty;
     public double Distance { get; set; }
+    public string DistanceString { get; set; } = string.Empty;
 }

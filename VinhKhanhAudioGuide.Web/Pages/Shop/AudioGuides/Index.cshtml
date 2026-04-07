@@ -63,7 +63,22 @@
                             </td>
                             <td>@item.Language</td>
                             <td>@item.Duration phút</td>
-                            <td><small>@item.AudioUrl</small></td>
+                            <td class="audio-preview-cell">
+                                @{ var selectedAudioUrl = !string.IsNullOrWhiteSpace(item.AudioUrl) ? item.AudioUrl : item.CloudinaryAudioUrl; }
+                                @if (!string.IsNullOrEmpty(item.CloudinaryAudioUrl) || !string.IsNullOrEmpty(item.AudioUrl))
+                                {
+                                    <div class="audio-preview-box">
+                                        <audio controls class="audio-preview-player">
+                                            <source src="@selectedAudioUrl" type="audio/mpeg">
+                                        </audio>
+                                        <small class="audio-preview-url" title="@selectedAudioUrl">@selectedAudioUrl</small>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">Chưa có file audio</span>
+                                }
+                            </td>
                             <td class="text-end">
                                 <a asp-page="/Shop/AudioGuides/Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Sửa</a>
                             </td>

@@ -4,8 +4,8 @@ namespace VinhKhanhAudioGuide.Mobile.Services;
 
 public class GeolocationService : IGeolocationService, IDisposable
 {
-    private const double NearbyRadiusKm = 1.0; // 1km radius like web
-    private const int TrackingIntervalSeconds = 300; // 5 minutes like web
+    private const double NearbyRadiusKm = 0.1; // 100m radius
+    private const int TrackingIntervalSeconds = 60; // 1 minute like web
     private readonly HashSet<string> _notifiedLocationIds = new();
     private CancellationTokenSource? _cts;
     private bool _isTracking;

@@ -39,9 +39,30 @@
                     <td><code>@ag.Id</code></td>
                     <td><strong>@ag.Title</strong><br/><small class="text-muted">@ag.Description</small></td>
                     <td><span class="badge-admin badge-category">@(ag.Location?.Name ?? "N/A")</span></td>
-                    <td>@ag.Language.ToUpper()</td>
+                    <td>
+                        @ag.Language.ToUpper()
+                        @if (ag.GeneratedFromTts)
+                        {
+                            <span class="badge bg-success ms-1" title="Tạo từ TTS"><i class="fas fa-robot"></i> TTS</span>
+                        }
+                    </td>
                     <td>@ag.Duration phút</td>
-                    <td style="max-width:150px;word-break:break-all;"><small>@ag.AudioUrl</small></td>
+                    <td class="audio-preview-cell">
+                        @{ var selectedAudioUrl = !string.IsNullOrWhiteSpace(ag.AudioUrl) ? ag.AudioUrl : ag.CloudinaryAudioUrl; }
+                        @if (!string.IsNullOrEmpty(ag.CloudinaryAudioUrl) || !string.IsNullOrEmpty(ag.AudioUrl))
+                        {
+                            <div class="audio-preview-box">
+                                <audio controls class="audio-preview-player">
+                                    <source src="@selectedAudioUrl" type="audio/mpeg">
+                                </audio>
+                                <small class="audio-preview-url" title="@selectedAudioUrl">@selectedAudioUrl</small>
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="text-muted small">Chưa có file audio</span>
+                        }
+                    </td>
                     <td>
                         <a asp-page="Edit" asp-route-id="@ag.Id" class="btn-admin btn-sm-admin btn-admin-warning"><i class="fas fa-edit"></i></a>
                         <a asp-page="Delete" asp-route-id="@ag.Id" class="btn-admin btn-sm-admin btn-admin-danger"><i class="fas fa-trash"></i></a>

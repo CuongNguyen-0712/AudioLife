@@ -1,9 +1,10 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VinhKhanhAudioGuide.Mobile.Models;
 using VinhKhanhAudioGuide.Mobile.Services;
-using Location = VinhKhanhAudioGuide.Mobile.Models.Location;
 
 namespace VinhKhanhAudioGuide.Mobile.ViewModels;
 
@@ -31,9 +32,6 @@ public partial class SearchViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _allSelected = true;
-
-    [ObservableProperty]
-    private Location? _selectedLocation;
 
     public ObservableCollection<CategoryFilter> Categories { get; } = new();
     public ObservableCollection<string> RecentSearches { get; } = new();
@@ -65,7 +63,7 @@ public partial class SearchViewModel : ObservableObject
     private void LoadRecentSearches()
     {
         // Load from preferences
-        RecentSearches.Add("Bánh xèo miền Tây ");
+        RecentSearches.Add("Bánh xèo miền Tây");
         RecentSearches.Add("Trà sữa trân châu");
         RecentSearches.Add("Ốc xào bơ tỏi");
         RecentSearches.Add("Tôm nướng muối ớt");
@@ -73,7 +71,7 @@ public partial class SearchViewModel : ObservableObject
 
     partial void OnSearchQueryChanged(string value)
     {
-        HasSearchQuery = !string.IsNullOrWhiteSpace(value);
+        HasSearchQuery = !string.IsNullOrWhiteSpace(value?.Trim());
         ShowRecentSearches = !HasSearchQuery;
 
         if (!HasSearchQuery)
@@ -86,7 +84,8 @@ public partial class SearchViewModel : ObservableObject
     [RelayCommand]
     private async Task SearchAsync()
     {
-        if (string.IsNullOrWhiteSpace(SearchQuery))
+        var normalizedQuery = NormalizeSearchText(SearchQuery);
+        if (string.IsNullOrWhiteSpace(normalizedQuery))
             return;
 
         IsLoading = true;
@@ -98,7 +97,6 @@ public partial class SearchViewModel : ObservableObject
 
         var allLocations = Data.SampleData.GetLocations();
         var categories = Data.SampleData.GetCategories();
-        var query = SearchQuery.ToLowerInvariant();
 
         SearchResults.Clear();
 
@@ -106,8 +104,11 @@ public partial class SearchViewModel : ObservableObject
 
         foreach (var location in allLocations)
         {
-            if (location.Name.ToLowerInvariant().Contains(query) ||
-                location.Description.ToLowerInvariant().Contains(query))
+            var normalizedName = NormalizeSearchText(location.Name);
+            var normalizedDescription = NormalizeSearchText(location.Description);
+
+            if (normalizedName.Contains(normalizedQuery, StringComparison.Ordinal) ||
+                normalizedDescription.Contains(normalizedQuery, StringComparison.Ordinal))
             {
                 if (!AllSelected && selectedCategoryIds.Any() && !selectedCategoryIds.Contains(location.CategoryId))
                     continue;
@@ -125,9 +126,10 @@ public partial class SearchViewModel : ObservableObject
         }
 
         // Add to recent searches
-        if (!RecentSearches.Contains(SearchQuery))
+        var cleanedQuery = SearchQuery.Trim().Normalize(NormalizationForm.FormC);
+        if (!RecentSearches.Any(existing => NormalizeSearchText(existing) == normalizedQuery))
         {
-            RecentSearches.Insert(0, SearchQuery);
+            RecentSearches.Insert(0, cleanedQuery);
             if (RecentSearches.Count > 10)
                 RecentSearches.RemoveAt(RecentSearches.Count - 1);
         }
@@ -176,7 +178,7 @@ public partial class SearchViewModel : ObservableObject
     {
         if (string.IsNullOrEmpty(query)) return;
 
-        SearchQuery = query;
+        SearchQuery = query.Trim().Normalize(NormalizationForm.FormC);
         await SearchAsync();
     }
 
@@ -188,14 +190,46 @@ public partial class SearchViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task LocationSelectedAsync()
+    private async Task LocationSelectedAsync(SearchResultItem? item)
     {
-        if (SelectedLocation is null) return;
+        if (item is null) return;
 
         await _navigationService.NavigateToAsync(nameof(Views.LocationDetailPage),
-            new Dictionary<string, object> { { "LocationId", SelectedLocation.Id } });
+            new Dictionary<string, object> { { "LocationId", item.Id } });
+    }
 
-        SelectedLocation = null;
+    private static string NormalizeSearchText(string? input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return string.Empty;
+
+        var formC = input.Trim().Normalize(NormalizationForm.FormC).ToLowerInvariant();
+        var noDiacritics = RemoveDiacritics(formC);
+
+        return string.Concat(noDiacritics.Where(ch => !char.IsControl(ch)));
+    }
+
+    private static string RemoveDiacritics(string input)
+    {
+        var normalized = input.Normalize(NormalizationForm.FormD);
+        var builder = new StringBuilder(normalized.Length);
+
+        foreach (var ch in normalized)
+        {
+            var category = CharUnicodeInfo.GetUnicodeCategory(ch);
+            if (category != UnicodeCategory.NonSpacingMark &&
+                category != UnicodeCategory.SpacingCombiningMark &&
+                category != UnicodeCategory.EnclosingMark)
+            {
+                builder.Append(ch);
+            }
+        }
+
+        return builder
+            .ToString()
+            .Normalize(NormalizationForm.FormC)
+            .Replace('đ', 'd')
+            .Replace('Đ', 'D');
     }
 }
 

@@ -28,6 +28,8 @@ Table AudioGuide {
   Duration Int
   LocationId String
   Language String
+  GeneratedFromTts Boolean
+  TtsSourceText String
 }
 
 Table AudioScriptSegment {

@@ -14,7 +14,7 @@ public interface IApiService
     Task<Location?> GetLocationByIdAsync(string locationId);
     Task<List<Location>> SearchLocationsAsync(string query);
     Task<List<Location>> GetLocationsByCategoryAsync(string categoryId);
-    Task<List<Location>> GetNearbyLocationsAsync(double latitude, double longitude, double radiusKm = 5);
+    Task<List<Location>> GetNearbyLocationsAsync(double latitude, double longitude, double radiusKm = 0.1);
 
     // Categories
     Task<List<Category>> GetCategoriesAsync();

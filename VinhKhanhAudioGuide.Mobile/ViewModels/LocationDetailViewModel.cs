@@ -150,11 +150,16 @@ L.marker([{latStr},{lngStr}],{{icon:icon}}).addTo(map).bindPopup('{name.Replace(
         if (audioGuide is null)
             return;
 
+        var audioSource = !string.IsNullOrWhiteSpace(audioGuide.CloudinaryAudioUrl)
+            ? audioGuide.CloudinaryAudioUrl
+            : audioGuide.AudioUrl;
+
         await _navigationService.NavigateToAsync(nameof(Views.AudioPlayerPage),
             new Dictionary<string, object>
             {
                 { "LocationId", LocationId },
-                { "AudioUrl", audioGuide.AudioUrl }
+                { "AudioGuideId", audioGuide.Id },
+                { "AudioUrl", audioSource }
             });
     }
 

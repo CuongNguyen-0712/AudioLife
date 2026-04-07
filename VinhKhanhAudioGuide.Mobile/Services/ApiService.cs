@@ -10,6 +10,9 @@ namespace VinhKhanhAudioGuide.Mobile.Services;
 /// </summary>
 public class ApiService : IApiService
 {
+    private static readonly HttpClient HttpClient = new();
+    private static readonly string DownloadDirectory = Path.Combine(FileSystem.AppDataDirectory, "downloads", "audio");
+
     private readonly List<Location> _locations;
     private readonly List<Category> _categories;
     private readonly List<Tour> _tours;
@@ -44,7 +47,7 @@ public class ApiService : IApiService
                 AudioTitle = "Giới thiệu quán",
                 LocationId = "loc_001",
                 LocationName = "Bún mắm Vĩnh Khánh",
-                LocationImageUrl = "bun_mam",
+                LocationImageUrl = "bun_mam.jpg",
                 AudioDuration = 3,
                 Progress = 0.8,
                 ListenedAt = DateTime.Today.AddHours(-2)
@@ -56,7 +59,7 @@ public class ApiService : IApiService
                 AudioTitle = "Giới thiệu quán",
                 LocationId = "loc_002",
                 LocationName = "Bánh xèo miền Tây",
-                LocationImageUrl = "banh_xeo",
+                LocationImageUrl = "banh_xeo.jpg",
                 AudioDuration = 3,
                 Progress = 1.0,
                 ListenedAt = DateTime.Today.AddHours(-5)
@@ -68,7 +71,7 @@ public class ApiService : IApiService
                 AudioTitle = "Giới thiệu quán",
                 LocationId = "loc_007",
                 LocationName = "Ốc xào bơ tỏi",
-                LocationImageUrl = "oc_xao",
+                LocationImageUrl = "oc_xao_bo_toi.jpg",
                 AudioDuration = 3,
                 Progress = 0.45,
                 ListenedAt = DateTime.Today.AddDays(-1)
@@ -80,20 +83,14 @@ public class ApiService : IApiService
                 AudioTitle = "Giới thiệu quán",
                 LocationId = "loc_006",
                 LocationName = "Phở khuya",
-                LocationImageUrl = "pho_dem",
+                LocationImageUrl = "pho.jpg",
                 AudioDuration = 3,
                 Progress = 1.0,
                 ListenedAt = DateTime.Today.AddDays(-2)
             }
         };
 
-        _downloads = new List<DownloadedAudio>
-        {
-            new() { AudioGuideId = "ag_001_1", LocalPath = "/audio/ag_001_1.mp3", DownloadedAt = DateTime.Today.AddDays(-5), FileSize = 3_355_443 },
-            new() { AudioGuideId = "ag_002_1", LocalPath = "/audio/ag_002_1.mp3", DownloadedAt = DateTime.Today.AddDays(-3), FileSize = 5_242_880 },
-            new() { AudioGuideId = "ag_007_1", LocalPath = "/audio/ag_007_1.mp3", DownloadedAt = DateTime.Today.AddDays(-1), FileSize = 7_340_032 },
-            new() { AudioGuideId = "ag_006_1", LocalPath = "/audio/ag_006_1.mp3", DownloadedAt = DateTime.Today, FileSize = 4_194_304 }
-        };
+        _downloads = new List<DownloadedAudio>();
     }
 
     // ──────── Locations ────────
@@ -118,7 +115,7 @@ public class ApiService : IApiService
     public Task<List<Location>> GetLocationsByCategoryAsync(string categoryId)
         => Task.FromResult(_locations.Where(l => l.CategoryId == categoryId).ToList());
 
-    public Task<List<Location>> GetNearbyLocationsAsync(double latitude, double longitude, double radiusKm = 5)
+    public Task<List<Location>> GetNearbyLocationsAsync(double latitude, double longitude, double radiusKm = 0.1)
     {
         var nearby = _locations.Where(l =>
         {
@@ -225,21 +222,59 @@ public class ApiService : IApiService
     // ──────── Downloads ────────
 
     public Task<List<DownloadedAudio>> GetDownloadedAudiosAsync()
-        => Task.FromResult(_downloads.OrderByDescending(d => d.DownloadedAt).ToList());
+    {
+        _downloads.RemoveAll(download => !File.Exists(download.LocalPath));
+        return Task.FromResult(_downloads.OrderByDescending(d => d.DownloadedAt).ToList());
+    }
 
-    public Task<bool> DownloadAudioAsync(string audioGuideId)
+    public async Task<bool> DownloadAudioAsync(string audioGuideId)
     {
         if (_downloads.Any(d => d.AudioGuideId == audioGuideId))
-            return Task.FromResult(false);
+            return false;
+
+        var audioGuide = await GetAudioGuideByIdAsync(audioGuideId);
+        if (audioGuide == null)
+            return false;
+
+        var sourceUrl = !string.IsNullOrWhiteSpace(audioGuide.CloudinaryAudioUrl)
+            ? audioGuide.CloudinaryAudioUrl
+            : audioGuide.AudioUrl;
+
+        if (string.IsNullOrWhiteSpace(sourceUrl) || !Uri.TryCreate(sourceUrl, UriKind.Absolute, out var uri))
+            return false;
+
+        Directory.CreateDirectory(DownloadDirectory);
+        var extension = Path.GetExtension(uri.AbsolutePath);
+        if (string.IsNullOrWhiteSpace(extension))
+        {
+            extension = ".mp3";
+        }
+
+        var localPath = Path.Combine(DownloadDirectory, $"{audioGuideId}{extension}");
+
+        using var response = await HttpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
+        if (!response.IsSuccessStatusCode)
+            return false;
+
+        await using (var networkStream = await response.Content.ReadAsStreamAsync())
+        await using (var fileStream = File.Create(localPath))
+        {
+            await networkStream.CopyToAsync(fileStream);
+        }
+
+        var fileInfo = new FileInfo(localPath);
+        if (!fileInfo.Exists || fileInfo.Length == 0)
+            return false;
 
         _downloads.Add(new DownloadedAudio
         {
             AudioGuideId = audioGuideId,
-            LocalPath = $"/audio/{audioGuideId}.mp3",
+            LocalPath = localPath,
             DownloadedAt = DateTime.Now,
-            FileSize = Random.Shared.Next(2_000_000, 10_000_000)
+            FileSize = fileInfo.Length
         });
-        return Task.FromResult(true);
+
+        return true;
     }
 
     public Task<bool> DeleteDownloadedAudioAsync(string audioGuideId)
@@ -247,6 +282,10 @@ public class ApiService : IApiService
         var item = _downloads.FirstOrDefault(d => d.AudioGuideId == audioGuideId);
         if (item != null)
         {
+            if (File.Exists(item.LocalPath))
+            {
+                File.Delete(item.LocalPath);
+            }
             _downloads.Remove(item);
             return Task.FromResult(true);
         }

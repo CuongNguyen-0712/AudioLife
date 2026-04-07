@@ -334,6 +334,34 @@ button {
     background: #f8fafc;
 }
 
+.audio-preview-cell {
+    max-width: 320px;
+    min-width: 220px;
+}
+
+.audio-preview-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.audio-preview-player {
+    width: 100%;
+    height: 34px;
+}
+
+.audio-preview-player-form {
+    max-width: 460px;
+}
+
+.audio-preview-url {
+    display: block;
+    font-size: 0.76rem;
+    color: var(--text-secondary);
+    word-break: break-all;
+    line-height: 1.35;
+}
+
 .btn-admin {
     display: inline-flex;
     align-items: center;

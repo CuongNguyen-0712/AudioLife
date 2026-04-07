@@ -38,6 +38,10 @@ public class AudioGuide
     [MaxLength(10)]
     public string Language { get; set; } = "vi";
 
+    public bool GeneratedFromTts { get; set; } = false;
+
+    public string? TtsSourceText { get; set; }
+
     // Navigations
     public ICollection<AudioScriptSegment> ScriptSegments { get; set; } = new List<AudioScriptSegment>();
     public ICollection<ListeningHistory> ListeningHistories { get; set; } = new List<ListeningHistory>();

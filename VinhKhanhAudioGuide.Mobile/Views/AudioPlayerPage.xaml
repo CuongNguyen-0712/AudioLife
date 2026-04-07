@@ -6,77 +6,172 @@
              x:Class="VinhKhanhAudioGuide.Mobile.Views.AudioPlayerPage"
              x:DataType="viewmodels:AudioPlayerViewModel"
              Title="{Binding Title}"
-             Shell.NavBarIsVisible="True">
+             Shell.NavBarIsVisible="True"
+             BackgroundColor="{StaticResource Gray100}">
 
-    <Grid RowDefinitions="Auto,*,Auto,Auto">
-        
-        <!-- Header Image -->
-        <Image Grid.Row="0"
-               Source="{Binding ImageUrl}"
-               Aspect="AspectFill"
-               HeightRequest="250"/>
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- Hero -->
+         <Frame Grid.Row="0"
+             Margin="16,16,16,0"
+             Padding="0"
+             CornerRadius="28"
+             HasShadow="True"
+             IsClippedToBounds="True">
+            <Grid HeightRequest="265">
+                <Image Source="{Binding ImageUrl}"
+                       Aspect="AspectFill" />
+                <BoxView BackgroundColor="#6A000000" />
+
+                <VerticalStackLayout Padding="18,20,18,18"
+                                     VerticalOptions="Fill"
+                                     Spacing="12">
+                    <HorizontalStackLayout HorizontalOptions="Fill" Spacing="8">
+                        <Frame Padding="10,5"
+                               CornerRadius="16"
+                               HasShadow="False"
+                               BackgroundColor="#D9FFFFFF"
+                               BorderColor="Transparent">
+                            <Label Text="{Binding LocationName}"
+                                   FontFamily="RobotoCondensedMedium"
+                                   FontSize="11"
+                                   TextColor="{StaticResource PrimaryDark}" />
+                        </Frame>
+
+                        <Frame Padding="10,5"
+                               CornerRadius="16"
+                               HasShadow="False"
+                               BackgroundColor="#33FFFFFF"
+                               BorderColor="Transparent">
+                            <Label Text="{Binding DurationText}"
+                                   FontFamily="RobotoCondensedMedium"
+                                   FontSize="11"
+                                   TextColor="White" />
+                        </Frame>
+                    </HorizontalStackLayout>
+
+                    <VerticalStackLayout VerticalOptions="EndAndExpand" Spacing="6">
+                        <Label Text="{Binding Title}"
+                               TextColor="White"
+                               FontFamily="RobotoCondensedSemiBold"
+                               FontSize="30"
+                               FontAttributes="Bold"
+                               LineBreakMode="TailTruncation" />
+                        <Label Text="{Binding Description}"
+                               TextColor="#E8FFFFFF"
+                               FontFamily="RobotoCondensedRegular"
+                               FontSize="14"
+                               LineBreakMode="WordWrap"
+                               MaxLines="3" />
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Grid>
+        </Frame>
 
         <!-- Content -->
-        <ScrollView Grid.Row="1" Padding="20">
-            <VerticalStackLayout Spacing="15">
-                <Label Text="{Binding LocationName}"
-                       FontSize="28"
-                       FontAttributes="Bold"/>
-                
-                <Label Text="{Binding Description}"
-                       FontSize="14"
-                       TextColor="Gray"/>
-                
-                <BoxView HeightRequest="1" Color="LightGray" Margin="0,10"/>
-                
-                <Label Text="Nội dung audio"
-                       FontSize="18"
-                       FontAttributes="Bold"/>
-                
-                <Label Text="{Binding TranscriptText}"
-                       FontSize="14"
-                       LineBreakMode="WordWrap"/>
+        <ScrollView Grid.Row="1"
+                    Padding="16,16,16,12">
+            <VerticalStackLayout Spacing="14">
+                  <Frame Padding="14,12"
+                      CornerRadius="20"
+                      HasShadow="False"
+                      BorderColor="Transparent"
+                      BackgroundColor="{StaticResource White}">
+                      <Grid ColumnDefinitions="4,*" ColumnSpacing="12">
+                       <BoxView Color="{StaticResource Primary}"
+                             CornerRadius="2" />
+                       <VerticalStackLayout Grid.Column="1" Spacing="4">
+                        <Label Text="Bản dịch audio đang phát"
+                            FontFamily="RobotoCondensedSemiBold"
+                            FontSize="12"
+                            TextColor="{StaticResource Gray500}" />
+                        <Label Text="{Binding CurrentScriptText}"
+                            FontFamily="RobotoCondensedRegular"
+                            FontSize="17"
+                            LineHeight="1.25"
+                            TextColor="{StaticResource PrimaryDark}"
+                            LineBreakMode="WordWrap" />
+                       </VerticalStackLayout>
+                      </Grid>
+                  </Frame>
+
+                <Label Text="Nội dung sẽ tự cập nhật theo câu audio đang phát."
+                       FontFamily="RobotoCondensedRegular"
+                       FontSize="12"
+                       TextColor="{StaticResource Gray500}" />
             </VerticalStackLayout>
         </ScrollView>
 
-        <!-- Progress Bar -->
-        <VerticalStackLayout Grid.Row="2" Padding="20,10">
-            <Slider Minimum="0"
-                    Maximum="{Binding Duration}"
-                    Value="{Binding CurrentPosition}"
-                    MinimumTrackColor="{StaticResource Primary}"
-                    MaximumTrackColor="LightGray"/>
-            <Grid>
-                <Label Text="{Binding CurrentPositionText}" 
-                       HorizontalOptions="Start"/>
-                <Label Text="{Binding DurationText}" 
-                       HorizontalOptions="End"/>
-            </Grid>
-        </VerticalStackLayout>
-
         <!-- Player Controls -->
-        <HorizontalStackLayout Grid.Row="3" 
-                               HorizontalOptions="Center"
-                               Spacing="30"
-                               Padding="20">
-            
-            <ImageButton Source="rewind_icon.png"
-                         Command="{Binding RewindCommand}"
-                         HeightRequest="50"
-                         WidthRequest="50"/>
-            
-            <ImageButton Source="{Binding PlayPauseIcon}"
-                         Command="{Binding PlayPauseCommand}"
-                         HeightRequest="70"
-                         WidthRequest="70"
-                         BackgroundColor="{StaticResource Primary}"
-                         CornerRadius="35"/>
-            
-            <ImageButton Source="forward_icon.png"
-                         Command="{Binding ForwardCommand}"
-                         HeightRequest="50"
-                         WidthRequest="50"/>
-        </HorizontalStackLayout>
+        <Frame Grid.Row="2"
+               Margin="16,4,16,16"
+             Padding="16"
+             CornerRadius="24"
+               HasShadow="True"
+               BackgroundColor="{StaticResource White}">
+            <VerticalStackLayout Spacing="12">
+                <Slider Minimum="0"
+                        Maximum="{Binding Duration}"
+                        Value="{Binding CurrentPosition}"
+                        Style="{StaticResource AudioSlider}">
+                    <Slider.Behaviors>
+                        <toolkit:EventToCommandBehavior EventName="DragStarted"
+                                                        Command="{Binding BeginSeekCommand}" />
+                        <toolkit:EventToCommandBehavior EventName="DragCompleted"
+                                                        Command="{Binding CompleteSeekCommand}" />
+                    </Slider.Behaviors>
+                </Slider>
+
+                <Grid ColumnDefinitions="Auto,*,Auto" VerticalOptions="Center">
+                    <Label Text="{Binding CurrentPositionText}"
+                           FontFamily="RobotoCondensedMedium"
+                           FontSize="11"
+                           TextColor="{StaticResource Gray500}" />
+                    <Label Grid.Column="2"
+                           Text="{Binding DurationText}"
+                           FontFamily="RobotoCondensedMedium"
+                           FontSize="11"
+                           TextColor="{StaticResource Gray500}"
+                           HorizontalOptions="End" />
+                </Grid>
+
+                <Grid ColumnDefinitions="*,Auto,*"
+                      HorizontalOptions="Fill"
+                      VerticalOptions="Center"
+                      ColumnSpacing="14">
+                    <Button Grid.Column="0"
+                            Text="{Binding RewindGlyph}"
+                            Command="{Binding RewindCommand}"
+                            Style="{StaticResource SecondaryButton}"
+                            BackgroundColor="#F1F4F4"
+                            TextColor="{StaticResource PrimaryDark}"
+                            FontSize="18"
+                            Padding="0"
+                            HeightRequest="56"
+                            WidthRequest="72" />
+
+                    <Button Grid.Column="1"
+                            Text="{Binding PlayPauseGlyph}"
+                            Command="{Binding PlayPauseCommand}"
+                            Style="{StaticResource PrimaryButton}"
+                            FontSize="22"
+                            Padding="0"
+                            HeightRequest="68"
+                            WidthRequest="68" />
+
+                    <Button Grid.Column="2"
+                        Text="{Binding ForwardGlyph}"
+                        Command="{Binding ForwardCommand}"
+                            Style="{StaticResource SecondaryButton}"
+                        BackgroundColor="#F1F4F4"
+                        TextColor="{StaticResource PrimaryDark}"
+                        FontSize="18"
+                            Padding="0"
+                            HeightRequest="56"
+                            WidthRequest="72" />
+                </Grid>
+            </VerticalStackLayout>
+        </Frame>
 
     </Grid>
 

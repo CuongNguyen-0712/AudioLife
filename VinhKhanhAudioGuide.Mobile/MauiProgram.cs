@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
+using Plugin.Maui.Audio;
 #if ANDROID
 using Android.Widget;
 using Android.Graphics;
@@ -17,6 +18,8 @@ public static class MauiProgram
             .UseMauiCommunityToolkit()
             .ConfigureFonts(fonts =>
             {
+                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                
                 fonts.AddFont("RobotoCondensed-SemiBold.ttf", "RobotoCondensedSemiBold");
                 fonts.AddFont("RobotoCondensed-Medium.ttf", "RobotoCondensedMedium");
@@ -26,9 +29,11 @@ public static class MauiProgram
             });
 
         // Register services
+        builder.Services.AddSingleton(AudioManager.Current);
         builder.Services.AddSingleton<Services.IAudioService, Services.AudioService>();
         builder.Services.AddSingleton<Services.INavigationService, Services.NavigationService>();
-        builder.Services.AddSingleton<Services.IApiService, Services.ApiService>();
+        builder.Services.AddSingleton<Services.ApiService>();
+        builder.Services.AddSingleton<Services.IApiService, Services.RemoteApiService>();
         builder.Services.AddSingleton<Services.IGeolocationService, Services.GeolocationService>();
 
         // Register ViewModels
@@ -100,7 +105,6 @@ public static class MauiProgram
                             {
                                 et.SetBackgroundColor(Android.Graphics.Color.Transparent);
                                 // API compatibility: remove background drawable
-                                et.SetBackgroundDrawable(null);
                             }
                         }
                         catch { }

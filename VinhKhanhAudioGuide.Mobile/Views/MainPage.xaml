@@ -9,9 +9,12 @@
     x:Name="PageRoot"
     Title="Vinh Khanh Audio Guide">
 
-    <RefreshView
-        IsRefreshing="{Binding IsRefreshing}"
-        Command="{Binding RefreshCommand}">
+    <Grid RowDefinitions="*,Auto">
+
+        <RefreshView
+            Grid.Row="0"
+            IsRefreshing="{Binding IsRefreshing}"
+            Command="{Binding RefreshCommand}">
 
         <ScrollView>
             <VerticalStackLayout Spacing="0">
@@ -275,6 +278,45 @@
                 </VerticalStackLayout>
             </VerticalStackLayout>
         </ScrollView>
-    </RefreshView>
+        </RefreshView>
+
+        <Frame
+            Grid.Row="1"
+            Margin="12,6,12,10"
+            Padding="12,10"
+            CornerRadius="14"
+            HasShadow="True"
+            IsVisible="{Binding IsFooterVisible}"
+            BackgroundColor="{StaticResource White}">
+
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                <VerticalStackLayout Spacing="2">
+                    <Label
+                        Text="{Binding FooterModeText}"
+                        FontSize="10"
+                        TextColor="{StaticResource Gray500}" />
+                    <Label
+                        Text="{Binding FooterStatusText}"
+                        FontSize="13"
+                        FontAttributes="Bold"
+                        TextColor="{StaticResource PrimaryDark}" />
+                    <Label
+                        Text="{Binding FooterHintText}"
+                        FontSize="11"
+                        TextColor="{StaticResource Gray500}" />
+                </VerticalStackLayout>
+
+                <Button
+                    Grid.Column="1"
+                    Text="{Binding FooterActionText}"
+                    Command="{Binding OpenAutoAudioPlayerCommand}"
+                    IsEnabled="{Binding IsFooterActionEnabled}"
+                    FontSize="12"
+                    Padding="12,8"
+                    MinimumHeightRequest="36"
+                    VerticalOptions="Center" />
+            </Grid>
+        </Frame>
+    </Grid>
 
 </ContentPage>

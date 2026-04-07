@@ -3,12 +3,17 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using VinhKhanhAudioGuide.Web.Configuration;
 using VinhKhanhAudioGuide.Web.Data;
+using VinhKhanhAudioGuide.Web.Endpoints;
 using VinhKhanhAudioGuide.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth"));
+builder.Services.Configure<CloudinaryOptions>(builder.Configuration.GetSection("Cloudinary"));
+builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IAuthUserStore, AuthUserStore>();
+builder.Services.AddScoped<IAudioStorageService, CloudinaryAudioStorageService>();
+builder.Services.AddScoped<ITextToSpeechService, EdgeTextToSpeechService>();
 
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -65,5 +70,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
+app.MapMobileApi();
 
 app.Run();
