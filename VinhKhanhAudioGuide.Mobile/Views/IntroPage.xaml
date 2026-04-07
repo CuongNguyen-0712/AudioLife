@@ -1,0 +1,125 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="VinhKhanhAudioGuide.Mobile.Views.IntroPage"
+             Title="Camera Access"
+             BackgroundColor="{StaticResource Surface}"
+             Shell.NavBarIsVisible="False">
+    
+    <Grid>
+        <!-- Organic Background Elements (Simulated with faint ellipses) -->
+        <Ellipse Fill="{StaticResource PrimaryContainer}" Opacity="0.1" WidthRequest="300" HeightRequest="300"
+                 HorizontalOptions="Start" VerticalOptions="Start" TranslationX="-80" TranslationY="-80" InputTransparent="True"/>
+        
+        <Ellipse Fill="{StaticResource TertiaryContainer}" Opacity="0.1" WidthRequest="350" HeightRequest="350"
+                 HorizontalOptions="End" VerticalOptions="End" TranslationX="100" TranslationY="100" InputTransparent="True"/>
+
+        <!-- Main Layout -->
+        <Grid RowDefinitions="Auto, *, Auto, Auto" Padding="20">
+            
+            <!-- Top Bar / Header -->
+            <Grid Grid.Row="0" Margin="0,10,0,0">
+                <Label Text="Camera Access" 
+                       FontFamily="RobotoCondensed-SemiBold" 
+                       FontSize="20" 
+                       TextColor="{StaticResource Primary}" 
+                       HorizontalOptions="Center" VerticalOptions="Center" />
+            </Grid>
+
+            <!-- Center Content (Illustration + Text) -->
+            <VerticalStackLayout Grid.Row="1" VerticalOptions="Center" Spacing="30">
+                
+                <!-- Illustration Section Base -->
+                <Grid WidthRequest="260" HeightRequest="260" HorizontalOptions="Center" Margin="0,0,0,20">
+                    <!-- Decorative Asymmetric Element Background border -->
+                    <Border Stroke="{StaticResource Primary}" StrokeThickness="2" Opacity="0.2" 
+                            Background="#00A32F2F"
+                            Rotation="-6" Margin="-10,-10,10,10">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="40" />
+                        </Border.StrokeShape>
+                    </Border>
+                    
+                    <!-- Main Image Box -->
+                    <Frame BackgroundColor="{StaticResource SurfaceContainerLow}" 
+                           CornerRadius="40" Padding="0" HasShadow="False"
+                           Rotation="3" IsClippedToBounds="True">
+                        <Grid>
+                            <!-- Placeholder image -->
+                            <Image Source="intro_bg.jpg" Opacity="0.5" Aspect="AspectFill" />
+                            
+                            <!-- Scanner Icon simulation -->
+                            <Frame BackgroundColor="#1A13696D" CornerRadius="60" WidthRequest="120" HeightRequest="120"
+                                   HorizontalOptions="Center" VerticalOptions="Center" HasShadow="False" Padding="0">
+                                <Image Source="qr.svg" WidthRequest="60" HeightRequest="60" 
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Frame>
+                        </Grid>
+                    </Frame>
+                    
+                    <!-- Small accent icon -->
+                    <Frame BackgroundColor="{StaticResource SecondaryContainer}" CornerRadius="16" 
+                           WidthRequest="48" HeightRequest="48" Padding="0" HasShadow="True"
+                           HorizontalOptions="End" VerticalOptions="End" Rotation="-12"
+                           TranslationX="10" TranslationY="10">
+                            <Image Source="camera.svg" WidthRequest="24" HeightRequest="24"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Frame>
+                </Grid>
+
+                <!-- Text Section -->
+                <VerticalStackLayout Spacing="16" Margin="0,10,0,0">
+                    <Label HorizontalOptions="Center" HorizontalTextAlignment="Center">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="Mở khóa trải nghiệm " FontFamily="RobotoCondensed-SemiBold" FontSize="32" TextColor="{StaticResource OnSurface}"/>
+                                <Span Text="Vĩnh Khánh" FontFamily="RobotoCondensed-SemiBold" FontSize="32" TextColor="{StaticResource Primary}"/>
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+
+                    <Label Text="Chúng tôi cần quyền truy cập camera để bạn có thể quét mã QR tại các sạp hàng và khám phá những câu chuyện thú vị đằng sau mỗi món ăn." 
+                           FontFamily="RobotoCondensed-Regular"
+                           FontSize="16" 
+                           TextColor="{StaticResource OnSurfaceVariant}" 
+                           HorizontalOptions="Center" 
+                           HorizontalTextAlignment="Center" 
+                           LineHeight="1.5" />
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+
+            <!-- Action Cluster -->
+            <VerticalStackLayout Grid.Row="2" Spacing="12">
+                <Button Text="Cho phép truy cập Camera"
+                        Clicked="OnAllowClicked"
+                        Style="{StaticResource PrimaryButton}"
+                        Margin="0,0,0,8" />
+
+                <Button Text="Để sau"
+                        Clicked="OnLaterClicked"
+                        Style="{StaticResource SecondaryButton}" />
+            </VerticalStackLayout>
+
+            <!-- Semantic Meta Info (Privacy string) -->
+            <Grid Grid.Row="3" Margin="0,30,0,10" HorizontalOptions="Center">
+                <Border BackgroundColor="{StaticResource SurfaceContainerHigh}" 
+                        StrokeThickness="0"
+                        Padding="16,8">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="20" />
+                    </Border.StrokeShape>
+                    <HorizontalStackLayout Spacing="8">
+                        <Image Source="shield.svg" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
+                        <Label Text="QUYỀN RIÊNG TƯ ĐƯỢC BẢO MẬT" 
+                               FontFamily="RobotoCondensed-SemiBold"
+                               FontSize="11"
+                               CharacterSpacing="1"
+                               TextColor="{StaticResource Secondary}"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Border>
+            </Grid>
+            
+        </Grid>
+    </Grid>
+</ContentPage>

@@ -4,12 +4,16 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
     xmlns:models="clr-namespace:VinhKhanhAudioGuide.Mobile.Models"
+    xmlns:converters="clr-namespace:VinhKhanhAudioGuide.Mobile.Converters"
     x:Class="VinhKhanhAudioGuide.Mobile.Views.MainPage"
     x:DataType="viewmodels:MainViewModel"
     x:Name="PageRoot"
     Title="Vinh Khanh Audio Guide">
 
-    <Grid RowDefinitions="*,Auto">
+    <ContentPage.Resources>
+        <converters:BoolToChipBackgroundConverter x:Key="BoolToChipBackgroundConverter" />
+        <converters:BoolToChipTextColorConverter x:Key="BoolToChipTextColorConverter" />
+    </ContentPage.Resources>
 
         <RefreshView
             Grid.Row="0"
@@ -17,187 +21,240 @@
             Command="{Binding RefreshCommand}">
 
         <ScrollView>
-            <VerticalStackLayout Spacing="0">
+            <VerticalStackLayout
+                Padding="{StaticResource Space5}"
+                Spacing="{StaticResource Space8}">
 
-                <!-- HERO -->
-                <Grid BackgroundColor="{StaticResource Primary}">
+                <!-- Hero feature -->
+                <Frame
+                    Style="{StaticResource CardFrameLarge}"
+                    IsClippedToBounds="True"
+                    Padding="0">
 
-                    <Image
-                        Source="background.svg"
-                        Aspect="AspectFill"
-                        ZIndex="0" />
+                    <Grid RowDefinitions="320,Auto">
+                        <!-- Hero image placeholder -->
+                        <Frame
+                            Grid.Row="0"
+                            Style="{StaticResource SurfaceHighlightFrame}"
+                            MinimumHeightRequest="320"
+                            BackgroundColor="{StaticResource SurfaceContainerHigh}"
+                            Padding="0"
+                            Margin="0"
+                            IsClippedToBounds="True">
+                            <Grid>
+                                <Image
+                                    Source="{Binding HeroImageUrl}"
+                                    Aspect="AspectFill" />
+                                <BoxView
+                                    Color="#8A000000"
+                                    InputTransparent="True" />
+                            </Grid>
+                        </Frame>
 
-                    <BoxView
-                        BackgroundColor="#33000000"
-                        ZIndex="1" />
+                        <!-- Hero content overlay -->
+                        <VerticalStackLayout
+                            Grid.Row="0"
+                            Padding="{StaticResource Space4}"
+                            VerticalOptions="End"
+                            Spacing="{StaticResource Space3}">
 
-                    <VerticalStackLayout
-                        Padding="20,30,20,20"
-                        Spacing="10"
-                        ZIndex="2">
+                            <Frame
+                                Style="{StaticResource ChipSelected}"
+                                HorizontalOptions="Start">
+                                <Label Text="Món ăn nổi bật" Style="{StaticResource ChipTextSelected}" FontSize="12" FontAttributes="Bold" />
+                            </Frame>
 
-                        <Label
-                            Text="Khám phá ẩm thực Vĩnh Khánh"
-                            TextColor="White"
-                            FontSize="28"
-                            FontAttributes="Bold"
-                            CharacterSpacing="-0.5"
-                            FontFamily="NotoSansSemiBold" />
+                            <Label
+                                Text="Khám phá Vĩnh Khánh"
+                                FontSize="32"
+                                FontAttributes="Bold"
+                                LineHeight="1.2"
+                                TextColor="#FFFFFF" />
 
-                        <Label
-                            Text="Mỗi bước chân, một câu chuyện"
-                            TextColor="White"
-                            FontSize="16"
-                            FontAttributes="Italic"
-                            CharacterSpacing="-0.5"
-                            Opacity="0.9" />
+                            <Label
+                                Text="Mỗi món ăn là một câu chuyện đường phố"
+                                FontSize="16"
+                                LineHeight="1.4"
+                                TextColor="#FFFFFF" />
 
-                    </VerticalStackLayout>
+                            <Label
+                                Text="{Binding LocationCount, StringFormat='{0} địa điểm khám phá'}"
+                                FontSize="14"
+                                TextColor="#F2F7F7" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Frame>
+ 
+                <!-- Search row -->
+                <Grid ColumnDefinitions="*">
+                    <Frame
+                        Style="{StaticResource SurfaceHighlightFrame}"
+                        Padding="{StaticResource Space2}">
+                        <SearchBar
+                            Text="{Binding SearchText}"
+                            SearchCommand="{Binding SearchCommand}"
+                            Placeholder="Tìm kiếm món ăn, địa điểm..."
+                            BackgroundColor="Transparent"
+                            CancelButtonColor="{StaticResource SecondaryContainer}"
+                            Style="{StaticResource RoundedSearchBar}" />
+                    </Frame>
                 </Grid>
 
-                <!-- CONTENT -->
-                <VerticalStackLayout Padding="20,15" Spacing="10">
+                <!-- Category chips -->
+                <ScrollView
+                    Margin="0,-10,0,0"
+                    Orientation="Horizontal"
+                    HorizontalScrollBarVisibility="Never">
+                    <HorizontalStackLayout
+                        Spacing="{StaticResource Space2}"
+                        Padding="{StaticResource ChipRowPadding}"
+                        BindableLayout.ItemsSource="{Binding Categories}">
 
-                    <!-- FEATURED -->
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="models:Category">
+                                <Frame
+                                    Style="{StaticResource Chip}"
+                                    BackgroundColor="{Binding IsSelected, Converter={StaticResource BoolToChipBackgroundConverter}}">
+                                    <Frame.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={x:Reference PageRoot}, Path=BindingContext.CategorySelectedCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    </Frame.GestureRecognizers>
+                                    <HorizontalStackLayout  VerticalOptions="Center">
+                                        <Image
+                                            Source="{Binding Icon}"
+                                            WidthRequest="20"
+                                            HeightRequest="20"
+                                            VerticalOptions="Center">
+                                            <Image.Triggers>
+                                                <DataTrigger TargetType="Image" Binding="{Binding Icon}" Value="">
+                                                    <Setter Property="IsVisible" Value="False" />
+                                                </DataTrigger>
+                                            </Image.Triggers>
+                                        </Image>
+                                        <Label
+                                            Text="{Binding Name}"
+                                            Style="{StaticResource ChipText}"
+                                            TextColor="{Binding IsSelected, Converter={StaticResource BoolToChipTextColorConverter}}" />
+                                    </HorizontalStackLayout>
+                                </Frame>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </ScrollView>
+
+                <!-- Must Try section -->
+                <VerticalStackLayout Spacing="{StaticResource Space4}">
                     <Grid ColumnDefinitions="*,Auto">
-                        <Label Text="Nghe nổi bật" Style="{StaticResource SectionHeader}" />
+                        <VerticalStackLayout Spacing="{StaticResource Space2}">
+                            <Label 
+                                Text="Nhất Định Phải Thử" 
+                                TextColor="{StaticResource OnPrimaryContainer}"
+                                FontSize="22"
+                                FontAttributes="Bold"
+                                LineHeight="1.2"
+                                Margin="0" />
+                            <Label 
+                                Text="Những món ăn đặc trưng không thể bỏ qua" 
+                                FontSize="16"
+                                TextColor="{StaticResource OnSurfaceVariant}"
+                                Opacity="0.7" />
+                        </VerticalStackLayout>
 
                         <Label
                             Grid.Column="1"
-                            Text="Xem tất cả >"
-                            TextColor="{StaticResource Primary}"
-                            FontSize="13"
+                            Text="Xem tất cả"
+                            Style="{StaticResource LinkText}"
+                            FontSize="14"
                             FontAttributes="Bold"
                             VerticalOptions="Center">
-
                             <Label.GestureRecognizers>
-                                <TapGestureRecognizer
-                                    Command="{Binding ViewAllLocationsCommand}" />
+                                <TapGestureRecognizer Command="{Binding ViewAllLocationsCommand}" />
                             </Label.GestureRecognizers>
-
                         </Label>
                     </Grid>
 
                     <CollectionView
                         ItemsSource="{Binding FeaturedLocations}"
-                        HeightRequest="220"
                         ItemsLayout="HorizontalList"
-                        SelectionMode="None">
-
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="models:Location">
-                                <Grid Padding="8">
-                                    <Frame CornerRadius="14" HasShadow="True" Padding="0" IsClippedToBounds="True" BackgroundColor="Transparent">
-                                        <Frame.GestureRecognizers>
-                                            <TapGestureRecognizer
-                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.LocationSelectedCommand}"
-                                                CommandParameter="{Binding .}" />
-                                        </Frame.GestureRecognizers>
-                                        <Grid>
-                                            <!-- Full image as background -->
-                                            <Image Source="{Binding ImageUrl}" Aspect="AspectFill" WidthRequest="300" HeightRequest="200"/>
-
-                                            <!-- Overlay gradient to improve text contrast (reduced) -->
-                                            <BoxView Opacity="0.18" BackgroundColor="Black" />
-
-                                            <!-- Top-right favorite circular badge only (no border) -->
-                                            <Frame BackgroundColor="#CCFFFFFF"
-                                                   CornerRadius="18"
-                                                   Padding="0"
-                                                   WidthRequest="36"
-                                                   HeightRequest="36"
-                                                   HorizontalOptions="End"
-                                                   VerticalOptions="Start"
-                                                   Margin="0,8,8,0"
-                                                   BorderColor="Transparent">
-                                                <Button Text="{Binding IsFavorite, Converter={StaticResource BoolToHeartGlyphConverter}}"
-                                                        BackgroundColor="Transparent"
-                                                        FontSize="14"
-                                                        TextColor="{Binding IsFavorite, Converter={StaticResource BoolToFavoriteColorConverter}}"
-                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:MainViewModel}}, Path=ToggleFavoriteCommand}"
-                                                        CommandParameter="{Binding .}"
-                                                        Padding="0"
-                                                        HeightRequest="36"
-                                                        WidthRequest="36"/>
-                                            </Frame>
-
-                                            <!-- Bottom content overlayed on image -->
-                                            <VerticalStackLayout VerticalOptions="End" Padding="12" Spacing="6">
-                                                <Label Text="{Binding Name}"
-                                                       FontSize="16"
-                                                       FontAttributes="Bold"
-                                                       TextColor="White"/>
-
-                                                <HorizontalStackLayout Spacing="10">
-                                                    <Frame BackgroundColor="#AAFFFFFF" CornerRadius="6" Padding="8,4" HasShadow="False" BorderColor="Transparent">
-                                                        <Label Text="{Binding Duration, StringFormat='⏱ {0} phút'}" FontSize="12" TextColor="{StaticResource PrimaryDark}"/>
-                                                    </Frame>
-                                                    <Frame BackgroundColor="#AAFFFFFF" CornerRadius="6" Padding="8,4" HasShadow="False" BorderColor="Transparent">
-                                                        <Label Text="{Binding AudioGuideCount, StringFormat='🎧 {0}'}" FontSize="12" TextColor="{StaticResource PrimaryDark}"/>
-                                                    </Frame>
-                                                </HorizontalStackLayout>
-                                            </VerticalStackLayout>
-                                        </Grid>
-                                    </Frame>
-                                </Grid>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-
-                    
-
-                    <!-- Near By -->
-                    <Label Text="Gần bạn có gì ngon" Style="{StaticResource SectionHeader}" />
-
-                    <CollectionView
-                        ItemsSource="{Binding FavoriteLocationsPreview}"
                         SelectionMode="None"
-                        HeightRequest="450">
-
-                        <CollectionView.ItemsLayout>
-                            <GridItemsLayout Orientation="Vertical" Span="2" VerticalItemSpacing="10" HorizontalItemSpacing="5" />
-                        </CollectionView.ItemsLayout>
+                        HeightRequest="280">
 
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="models:Location">
                                 <Frame
-                                    Padding="0"
-                                    Margin="6"
-                                    CornerRadius="12"
-                                    IsClippedToBounds="True"
-                                    HasShadow="True">
+                                    Style="{StaticResource CardFrameLarge}"
+                                    WidthRequest="280"
+                                    Margin="0,0,12,0"
+                                    Padding="{StaticResource Space3}">
 
                                     <Frame.GestureRecognizers>
                                         <TapGestureRecognizer
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:MainViewModel}}, Path=LocationSelectedCommand}"
+                                            Command="{Binding Source={x:Reference PageRoot}, Path=BindingContext.LocationSelectedCommand}"
                                             CommandParameter="{Binding .}" />
                                     </Frame.GestureRecognizers>
 
-                                        <!--item-->
-                                    <VerticalStackLayout>
-                                        <Image
-                                            Source="{Binding ImageUrl}"
-                                            Aspect="AspectFill"
-                                            HeightRequest="140" />
+                                    <VerticalStackLayout Spacing="{StaticResource Space3}">
+                                        <!-- Item image placeholder -->
+                                        <Grid>
+                                            <Frame
+                                                Style="{StaticResource SurfaceHighlightFrame}"
+                                                HeightRequest="180"
+                                                Padding="0"
+                                                Margin="0"
+                                                BackgroundColor="{StaticResource SurfaceContainerHigh}"
+                                                IsClippedToBounds="True">
+                                                <Image
+                                                    Source="{Binding ImageUrl}"
+                                                    HeightRequest="180"
+                                                    Aspect="AspectFill" />
+                                            </Frame>
 
-                                        <VerticalStackLayout Padding="10" Spacing="4">
+                                            <ImageButton
+                                                Source="heart_no_fill.svg"
+                                                BackgroundColor="{StaticResource SecondaryContainer}"
+                                                HeightRequest="34"
+                                                WidthRequest="34"
+                                                Padding="7"
+                                                CornerRadius="17"
+                                                Margin="10"
+                                                HorizontalOptions="End"
+                                                VerticalOptions="Start"
+                                                Command="{Binding Source={x:Reference PageRoot}, Path=BindingContext.ToggleFavoriteCommand}"
+                                                CommandParameter="{Binding .}">
+                                                <ImageButton.Triggers>
+                                                    <DataTrigger TargetType="ImageButton" Binding="{Binding IsFavorite}" Value="True">
+                                                        <Setter Property="Source" Value="heart_filled.svg" />
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="ImageButton" Binding="{Binding IsFavorite}" Value="False">
+                                                        <Setter Property="Source" Value="heart_no_fill.svg" />
+                                                    </DataTrigger>
+                                                </ImageButton.Triggers>
+                                            </ImageButton>
+                                        </Grid>
+
+                                        <VerticalStackLayout Spacing="{StaticResource Space2}">
                                             <Label
                                                 Text="{Binding Name}"
-                                                FontSize="14"
+                                                FontSize="16"
                                                 FontAttributes="Bold"
-                                           
-                                                MaxLines="1" />
-
-                                            <HorizontalStackLayout Spacing="8">
+                                                LineHeight="1.2"
+                                                MaxLines="2"
+                                                Margin="0" />
+                                            <HorizontalStackLayout Spacing="{StaticResource Space2}">
+                                                <Image Source="time.svg" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" />
                                                 <Label
-                                                    Text="{Binding Duration, StringFormat='⏱ {0} phút'}"
-                                                    FontSize="12"
-                                                    TextColor="{StaticResource Gray400}" />
-
+                                                    Text="{Binding Duration, StringFormat='{0} phút'}"
+                                                    FontSize="13"
+                                                    TextColor="{StaticResource OnSurfaceVariant}"
+                                                    Opacity="0.7" />
+                                                
+                                                <Image Source="audio.svg" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" />
                                                 <Label
-                                                    Text="{Binding AudioGuideCount, StringFormat='🎧 {0}'}"
-                                                    FontSize="12"
-                                                    TextColor="{StaticResource Gray400}" />
+                                                    Text="{Binding AudioGuideCount, StringFormat='{0} audio'}"
+                                                    FontSize="13"
+                                                    TextColor="{StaticResource OnSurfaceVariant}"
+                                                    Opacity="0.7" />
                                             </HorizontalStackLayout>
                                         </VerticalStackLayout>
                                     </VerticalStackLayout>
@@ -205,118 +262,124 @@
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
+                </VerticalStackLayout>
 
-
-             
-
-                    <!-- TOURS -->
-                    <Grid ColumnDefinitions="*,Auto" Margin="0,6,0,0">
-
-                        <Label Text="Food tour gợi ý" Style="{StaticResource SectionHeader}" />
-
-                        <Label
-                            Grid.Column="1"
-                            Text="Xem tất cả >"
-                            TextColor="{StaticResource Primary}"
-                            FontSize="13"
+                <!-- Popular Eateries section -->
+                <VerticalStackLayout Spacing="{StaticResource Space4}">
+                    <VerticalStackLayout Spacing="{StaticResource Space2}">
+                        <Label 
+                            Text="Địa điểm phổ biến" 
+                            TextColor="{StaticResource OnPrimaryContainer}"
+                            FontSize="22"
                             FontAttributes="Bold"
-                            VerticalOptions="Center">
+                            LineHeight="1.2"
+                            Margin="0" />
+                        <Label 
+                            Text="Những địa điểm được yêu thích nhất bởi cộng đồng" 
+                            FontSize="16"
+                            TextColor="{StaticResource OnSurfaceVariant}"
+                            Opacity="0.7" />
+                    </VerticalStackLayout>
 
-                            <Label.GestureRecognizers>
-                                <TapGestureRecognizer
-                                    Command="{Binding ViewAllToursCommand}" />
-                            </Label.GestureRecognizers>
+                    <VerticalStackLayout
+                        Spacing="{StaticResource Space4}"
+                        BindableLayout.ItemsSource="{Binding FavoriteLocationsPreview}">
 
-                        </Label>
-                    </Grid>
-
-                    <CollectionView
-                        ItemsSource="{Binding FeaturedTours}"
-                        HeightRequest="220"
-                        ItemsLayout="HorizontalList"
-                        SelectionMode="None">
-
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="viewmodels:FeaturedTourItem">
-
-                                <Frame Padding="0" Margin="5,0" CornerRadius="12"  HeightRequest="220" HasShadow="True">
-
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="models:Location">
+                                <Frame Style="{StaticResource CardFrame}" Padding="{StaticResource Space3}">
                                     <Frame.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:MainViewModel}}, Path=TourSelectedCommand}" CommandParameter="{Binding .}" />
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={x:Reference PageRoot}, Path=BindingContext.LocationSelectedCommand}"
+                                            CommandParameter="{Binding .}" />
                                     </Frame.GestureRecognizers>
 
-                                    <Grid>
-                                        <!-- full image background -->
-                                        <Image Source="{Binding ImageUrl}" Aspect="AspectFill" WidthRequest="300" HeightRequest="200"/>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="{StaticResource Space3}">
+                                        <!-- Row image placeholder -->
+                                        <Frame
+                                            Style="{StaticResource SurfaceHighlightFrame}"
+                                            WidthRequest="80"
+                                            HeightRequest="80"
+                                            Padding="0"
+                                            Margin="0"
+                                            BackgroundColor="{StaticResource SurfaceContainerHigh}"
+                                            IsClippedToBounds="True">
+                                            <Image
+                                                Source="{Binding ImageUrl}"
+                                                Aspect="AspectFill" />
+                                        </Frame>
 
-                                        <!-- subtle dark overlay for contrast -->
-                                        <BoxView BackgroundColor="#33000000" />
+                                        <VerticalStackLayout
+                                            Grid.Column="1"
+                                            Spacing="{StaticResource Space2}"
+                                            VerticalOptions="Center">
 
-                                      
-                                        <!-- bottom overlay content -->
-                                        <VerticalStackLayout Padding="12" Spacing="6" VerticalOptions="End">
-                                            <Label Text="{Binding Name}" FontSize="15" FontAttributes="Bold" TextColor="White" />
-                                            <Label Text="{Binding Description}" FontSize="11" TextColor="#DDFFFFFF" MaxLines="2" />
+                                            <Label
+                                                Text="{Binding Name}"
+                                                FontSize="16"
+                                                FontAttributes="Bold"
+                                                LineHeight="1.2"
+                                                MaxLines="2"
+                                                Margin="0" />
 
-                                            <HorizontalStackLayout Spacing="10">
-                                                <Frame BackgroundColor="#AAFFFFFF" CornerRadius="20" Padding="10,6" HasShadow="False" BorderColor="Transparent">
-                                                    <Label Text="{Binding DurationText}" FontSize="11" TextColor="{StaticResource PrimaryDark}" />
-                                                </Frame>
-
-                                                <Frame BackgroundColor="#AAFFFFFF" CornerRadius="20" Padding="10,6" HasShadow="False" BorderColor="Transparent">
-                                                    <Label Text="{Binding LocationCount, StringFormat='{0} điểm'}" FontSize="11" TextColor="{StaticResource PrimaryDark}" />
-                                                </Frame>
+                                            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                                <Image Source="time.svg" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" />
+                                                <Label
+                                                    Text="{Binding Duration, StringFormat='{0} phút'}"
+                                                    FontSize="13"
+                                                    TextColor="{StaticResource OnSurfaceVariant}"
+                                                    Opacity="0.7"
+                                                    VerticalOptions="Center" />
                                             </HorizontalStackLayout>
 
+                                            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                                <Image Source="audio.svg" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" />
+                                                <Label
+                                                    Text="{Binding AudioGuideCount, StringFormat='{0} audio guides'}"
+                                                    FontSize="13"
+                                                    TextColor="{StaticResource OnSurfaceVariant}"
+                                                    Opacity="0.7"
+                                                    VerticalOptions="Center" />
+                                            </HorizontalStackLayout>
                                         </VerticalStackLayout>
+
+                                        <!-- Action placeholder (no icon) -->
+                                        <Frame
+                                            Grid.Column="2"
+                                            Style="{StaticResource CardFrameSmall}"
+                                            BackgroundColor="{StaticResource SecondaryContainer}"
+                                            VerticalOptions="Center"
+                                            Padding="8">
+                                            <Image
+                                                Source="chevron_right.svg"
+                                                WidthRequest="16"
+                                                HeightRequest="16"
+                                                Aspect="AspectFit"
+                                                HorizontalOptions="Center"
+                                                VerticalOptions="Center" />
+                                        </Frame>
                                     </Grid>
                                 </Frame>
                             </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
                 </VerticalStackLayout>
+
+                <!-- Floating action placeholder -->
+                <!-- <Grid ColumnDefinitions="*,Auto" Margin="0,16,0,0">
+                    <Frame
+                        Grid.Column="1"
+                        Style="{StaticResource CardFrameLarge}"
+                        BackgroundColor="{StaticResource Primary}"
+                        CornerRadius="28"
+                        HeightRequest="56"
+                        WidthRequest="56"
+                        Padding="0">
+                        <Label Text="" Style="{StaticResource CaptionText}" TextColor="{StaticResource OnPrimary}" />
+                    </Frame>
+                </Grid> -->
             </VerticalStackLayout>
         </ScrollView>
-        </RefreshView>
-
-        <Frame
-            Grid.Row="1"
-            Margin="12,6,12,10"
-            Padding="12,10"
-            CornerRadius="14"
-            HasShadow="True"
-            IsVisible="{Binding IsFooterVisible}"
-            BackgroundColor="{StaticResource White}">
-
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                <VerticalStackLayout Spacing="2">
-                    <Label
-                        Text="{Binding FooterModeText}"
-                        FontSize="10"
-                        TextColor="{StaticResource Gray500}" />
-                    <Label
-                        Text="{Binding FooterStatusText}"
-                        FontSize="13"
-                        FontAttributes="Bold"
-                        TextColor="{StaticResource PrimaryDark}" />
-                    <Label
-                        Text="{Binding FooterHintText}"
-                        FontSize="11"
-                        TextColor="{StaticResource Gray500}" />
-                </VerticalStackLayout>
-
-                <Button
-                    Grid.Column="1"
-                    Text="{Binding FooterActionText}"
-                    Command="{Binding OpenAutoAudioPlayerCommand}"
-                    IsEnabled="{Binding IsFooterActionEnabled}"
-                    FontSize="12"
-                    Padding="12,8"
-                    MinimumHeightRequest="36"
-                    VerticalOptions="Center" />
-            </Grid>
-        </Frame>
-    </Grid>
-
+    </RefreshView>
 </ContentPage>
+

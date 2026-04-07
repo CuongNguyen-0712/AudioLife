@@ -128,3 +128,39 @@ public class InvertedBoolConverter : IValueConverter
         return value is bool b ? !b : false;
     }
 }
+
+/// <summary>Chip background color: Primary if selected, SurfaceContainerHigh if not</summary>
+public class BoolToChipBackgroundConverter : IValueConverter
+{
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is bool isSelected && isSelected)
+        {
+            return Application.Current?.Resources["Primary"] as Color ?? Colors.Gray;
+        }
+        return Application.Current?.Resources["SurfaceContainerHigh"] as Color ?? Colors.LightGray;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>Chip text color: OnPrimary (white) if selected, OnSurfaceVariant (dark gray) if not</summary>
+public class BoolToChipTextColorConverter : IValueConverter
+{
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is bool isSelected && isSelected)
+        {
+            return Application.Current?.Resources["OnPrimary"] as Color ?? Colors.White;
+        }
+        return Application.Current?.Resources["OnSurfaceVariant"] as Color ?? Colors.DarkGray;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}

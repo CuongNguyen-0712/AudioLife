@@ -225,6 +225,12 @@ public partial class MainViewModel : ObservableObject
     {
         if (category is null) return;
 
+        // Toggle selected state and deselect others
+        foreach (var cat in Categories)
+        {
+            cat.IsSelected = (cat.Id == category.Id);
+        }
+
         await _navigationService.NavigateToAsync("//SearchPage");
     }
 
