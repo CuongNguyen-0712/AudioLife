@@ -83,7 +83,7 @@ public class ApiService : IApiService
                 AudioTitle = "Giới thiệu quán",
                 LocationId = "loc_006",
                 LocationName = "Phở khuya",
-                LocationImageUrl = "pho.jpg",
+                LocationImageUrl = "pho.png",
                 AudioDuration = 3,
                 Progress = 1.0,
                 ListenedAt = DateTime.Today.AddDays(-2)

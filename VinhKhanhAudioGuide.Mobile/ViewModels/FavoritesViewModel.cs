@@ -10,6 +10,7 @@ namespace VinhKhanhAudioGuide.Mobile.ViewModels;
 public partial class FavoritesViewModel : ObservableObject
 {
     private readonly INavigationService _navigationService;
+    private readonly IApiService _apiService;
 
     [ObservableProperty]
     private bool _isEmpty = true;
@@ -22,27 +23,21 @@ public partial class FavoritesViewModel : ObservableObject
 
     public ObservableCollection<Location> FavoriteLocations { get; } = new();
 
-    public FavoritesViewModel(INavigationService navigationService)
+    public FavoritesViewModel(INavigationService navigationService, IApiService apiService)
     {
         _navigationService = navigationService;
-        LoadFavorites();
+        _apiService = apiService;
+        _ = LoadFavoritesAsync();
     }
 
-    private void LoadFavorites()
+    private async Task LoadFavoritesAsync()
     {
-        // Load favorites from local storage
-        var allLocations = Data.SampleData.GetLocations();
+        FavoriteLocations.Clear();
+        var favorites = await _apiService.GetFavoriteLocationsAsync();
 
-        // Simulate some favorites
-        var favoriteIds = new[] { "loc_001", "loc_002", "loc_006", "loc_008" };
-
-        foreach (var id in favoriteIds)
+        foreach (var location in favorites)
         {
-            var location = allLocations.FirstOrDefault(l => l.Id == id);
-            if (location != null)
-            {
-                FavoriteLocations.Add(location);
-            }
+            FavoriteLocations.Add(location);
         }
 
         UpdateEmptyState();

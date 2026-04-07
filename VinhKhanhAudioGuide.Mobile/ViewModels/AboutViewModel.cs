@@ -1,10 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using VinhKhanhAudioGuide.Mobile.Services;
 
 namespace VinhKhanhAudioGuide.Mobile.ViewModels;
 
 public partial class AboutViewModel : ObservableObject
 {
+    private readonly IApiService _apiService;
+
     [ObservableProperty]
     private string _appVersion = "1.0.0";
 
@@ -17,10 +20,20 @@ public partial class AboutViewModel : ObservableObject
     [ObservableProperty]
     private int _tourCount;
 
-    public AboutViewModel()
+    public AboutViewModel(IApiService apiService)
     {
-        var locations = Data.SampleData.GetLocations();
-        var tours = Data.SampleData.GetTours();
+        _apiService = apiService;
+        _ = LoadStatsAsync();
+    }
+
+    private async Task LoadStatsAsync()
+    {
+        var locationsTask = _apiService.GetLocationsAsync();
+        var toursTask = _apiService.GetToursAsync();
+        await Task.WhenAll(locationsTask, toursTask);
+
+        var locations = locationsTask.Result;
+        var tours = toursTask.Result;
         LocationCount = locations.Count;
         AudioCount = locations.Sum(l => l.AudioGuides.Count);
         TourCount = tours.Count;

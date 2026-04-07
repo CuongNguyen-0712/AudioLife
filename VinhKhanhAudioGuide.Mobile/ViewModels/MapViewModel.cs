@@ -4,17 +4,14 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VinhKhanhAudioGuide.Mobile.Models;
 using VinhKhanhAudioGuide.Mobile.Services;
-using LocationModel = VinhKhanhAudioGuide.Mobile.Models.Location;
 
 namespace VinhKhanhAudioGuide.Mobile.ViewModels;
 
 public partial class MapViewModel : ObservableObject
 {
-    private const double NearbyRadiusKm = 0.1;
-    private const int MaxSuggestions = 10;
-
     private readonly INavigationService _navigationService;
     private readonly IGeolocationService _geolocationService;
+    private readonly IApiService _apiService;
 
     [ObservableProperty]
     private string _searchQuery = string.Empty;
@@ -34,20 +31,36 @@ public partial class MapViewModel : ObservableObject
     public ObservableCollection<MapMarker> MapMarkers { get; } = new();
     public ObservableCollection<NearbyLocation> NearbyLocations { get; } = new();
 
-    public MapViewModel(INavigationService navigationService, IGeolocationService geolocationService)
+    public MapViewModel(INavigationService navigationService, IGeolocationService geolocationService, IApiService apiService)
     {
         _navigationService = navigationService;
         _geolocationService = geolocationService;
+        _apiService = apiService;
         LoadMapData();
     }
 
     public void LoadMapData()
     {
+        _ = LoadMapDataAsync();
+    }
+
+    public async Task LoadMapDataAsync()
+    {
         MapMarkers.Clear();
         NearbyLocations.Clear();
 
-        var locations = Data.SampleData.GetLocations();
-        var categories = Data.SampleData.GetCategories();
+        var locationsTask = _apiService.GetLocationsAsync();
+        var categoriesTask = _apiService.GetCategoriesAsync();
+        var featuredToursTask = _apiService.GetFeaturedToursAsync();
+        await Task.WhenAll(locationsTask, categoriesTask, featuredToursTask);
+
+        var locations = locationsTask.Result;
+        var categories = categoriesTask.Result;
+        var featuredTours = featuredToursTask.Result;
+        var featuredLocationIds = featuredTours
+            .SelectMany(t => t.LocationIds)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
         var locationPoints = locations
             .Select((location, index) => BuildLocationPoint(location, index))
             .ToList();
@@ -73,7 +86,8 @@ public partial class MapViewModel : ObservableObject
                 CategoryName = category?.Name ?? "Khác",
                 Address = location.Address,
                 Distance = Math.Round(distance, 1),
-                AudioCount = location.AudioGuides?.Count ?? 0
+                AudioCount = location.AudioGuides?.Count ?? 0,
+                IsHot = featuredLocationIds.Contains(location.Id)
             });
         }
 
@@ -306,53 +320,6 @@ public partial class MapViewModel : ObservableObject
         return R * c;
     }
 
-    private static string FormatDistance(double distanceKm)
-    {
-        if (distanceKm < 1)
-        {
-            return $"{Math.Round(distanceKm * 1000)} m";
-        }
-
-        return $"{distanceKm:F2} km";
-    }
-
-    private static List<LocationModel> GetHotLocations(IEnumerable<LocationModel> locations)
-    {
-        var locationList = locations.ToList();
-        var featuredTours = Data.SampleData.GetFeaturedTours();
-        var scoreByLocationId = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var tour in featuredTours)
-        {
-            foreach (var locationId in tour.LocationIds)
-            {
-                scoreByLocationId[locationId] = scoreByLocationId.TryGetValue(locationId, out var score)
-                    ? score + 3
-                    : 3;
-            }
-        }
-
-        foreach (var location in locationList)
-        {
-            if (location.IsFavorite)
-            {
-                scoreByLocationId[location.Id] = scoreByLocationId.TryGetValue(location.Id, out var score)
-                    ? score + 2
-                    : 2;
-            }
-
-            // Boost locations with more audio guides.
-            scoreByLocationId[location.Id] = scoreByLocationId.TryGetValue(location.Id, out var current)
-                ? current + Math.Max(1, location.AudioGuideCount)
-                : Math.Max(1, location.AudioGuideCount);
-        }
-
-        return locationList
-            .OrderByDescending(loc => scoreByLocationId.TryGetValue(loc.Id, out var score) ? score : 0)
-            .ThenBy(loc => loc.Name)
-            .ToList();
-    }
-
     [RelayCommand]
     private async Task LocationTappedAsync(NearbyLocation? location)
     {
@@ -512,5 +479,6 @@ public class NearbyLocation
     public string Address { get; set; } = string.Empty;
     public double Distance { get; set; }
     public int AudioCount { get; set; }
+    public bool IsHot { get; set; }
     public bool IsNearest { get; set; }
 }

@@ -9,6 +9,7 @@ namespace VinhKhanhAudioGuide.Mobile.ViewModels;
 public partial class ToursViewModel : ObservableObject
 {
     private readonly INavigationService _navigationService;
+    private readonly IApiService _apiService;
 
     [ObservableProperty]
     private bool _isRefreshing;
@@ -16,15 +17,19 @@ public partial class ToursViewModel : ObservableObject
     public ObservableCollection<TourDisplayModel> FeaturedTours { get; } = new();
     public ObservableCollection<TourDisplayModel> AllTours { get; } = new();
 
-    public ToursViewModel(INavigationService navigationService)
+    public ToursViewModel(INavigationService navigationService, IApiService apiService)
     {
         _navigationService = navigationService;
-        LoadTours();
+        _apiService = apiService;
+        _ = LoadToursAsync();
     }
 
-    private void LoadTours()
+    private async Task LoadToursAsync()
     {
-        var tours = Data.SampleData.GetTours();
+        FeaturedTours.Clear();
+        AllTours.Clear();
+
+        var tours = await _apiService.GetToursAsync();
 
         foreach (var tour in tours)
         {
@@ -63,10 +68,7 @@ public partial class ToursViewModel : ObservableObject
     private async Task RefreshAsync()
     {
         IsRefreshing = true;
-        await Task.Delay(1000);
-        FeaturedTours.Clear();
-        AllTours.Clear();
-        LoadTours();
+        await LoadToursAsync();
         IsRefreshing = false;
     }
 
