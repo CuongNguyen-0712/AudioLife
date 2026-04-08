@@ -11,7 +11,12 @@
         <h1 class="hero-title">Quản lý âm thanh</h1>
         <p class="hero-subtitle">Quản trị thư viện audio theo từng POI và cập nhật nội dung nhanh.</p>
     </div>
-    <a asp-page="/Shop/Index" asp-route-locationId="@Model.LocationId" class="btn btn-outline-secondary">Về bảng điều khiển POI</a>
+    <div class="d-flex gap-2 flex-wrap">
+        <a asp-page="/Shop/AudioGuides/Create" asp-route-locationId="@Model.LocationId" class="btn btn-shop">
+            <i class="fas fa-plus"></i> Thêm audio (gửi duyệt)
+        </a>
+        <a asp-page="/Shop/Index" asp-route-locationId="@Model.LocationId" class="btn btn-outline-secondary">Về bảng điều khiển POI</a>
+    </div>
 </div>
 
 <div class="shop-card card-v2 mb-4">
@@ -33,9 +38,9 @@
     </div>
 </div>
 
-@if (TempData["Success"] != null)
+@if (TempData["Success"] is string successMessage && !string.IsNullOrWhiteSpace(successMessage))
 {
-    <div class="alert alert-success">@TempData["Success"]</div>
+    <div class="alert alert-success alert-admin mb-4">@successMessage</div>
 }
 
 <div class="shop-card card-v2">
@@ -48,7 +53,7 @@
                         <th>Tiêu đề</th>
                         <th>Ngôn ngữ</th>
                         <th>Thời lượng</th>
-                        <th>Audio URL</th>
+                        <th>Audio</th>
                         <th class="text-end">Thao tác</th>
                     </tr>
                 </thead>
@@ -71,7 +76,6 @@
                                         <audio controls class="audio-preview-player">
                                             <source src="@selectedAudioUrl" type="audio/mpeg">
                                         </audio>
-                                        <small class="audio-preview-url" title="@selectedAudioUrl">@selectedAudioUrl</small>
                                     </div>
                                 }
                                 else
@@ -80,7 +84,9 @@
                                 }
                             </td>
                             <td class="text-end">
-                                <a asp-page="/Shop/AudioGuides/Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Sửa</a>
+                                <div class="shop-table-actions">
+                                    <a asp-page="/Shop/AudioGuides/Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Sửa</a>
+                                </div>
                             </td>
                         </tr>
                     }

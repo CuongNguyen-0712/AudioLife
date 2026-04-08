@@ -1,0 +1,80 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Admin.ChangeRequestsModel
+@using VinhKhanhAudioGuide.Web.Services
+@{
+    ViewData["Title"] = "Yêu cầu thay đổi từ POI";
+    ViewData["ActivePage"] = "AdminRequests";
+}
+
+<div class="dashboard-hero mb-4">
+    <div>
+        <p class="hero-kicker"><i class="fa-solid fa-inbox"></i> Hàng chờ hệ thống</p>
+        <h1 class="hero-title">Yêu cầu thay đổi từ Admin POI</h1>
+        <p class="hero-subtitle">System Admin chỉ xử lý ở chế độ duyệt đề xuất, không thao tác trực tiếp trong khu POI.</p>
+    </div>
+    <span class="hero-badge"><i class="fa-solid fa-shield"></i> Không gian System</span>
+</div>
+
+@if (TempData["Success"] is string message)
+{
+    <div class="alert alert-success alert-admin mb-4">@message</div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="stat-card stat-card-v2"><div class="stat-icon bg-secondary"><i class="fa-solid fa-hourglass-start"></i></div><div><div class="stat-value">@Model.PendingCount</div><div class="stat-label">Chờ xử lý</div></div></div></div>
+    <div class="col-md-3"><div class="stat-card stat-card-v2"><div class="stat-icon bg-warning"><i class="fa-solid fa-magnifying-glass"></i></div><div><div class="stat-value">@Model.InReviewCount</div><div class="stat-label">Đang review</div></div></div></div>
+    <div class="col-md-3"><div class="stat-card stat-card-v2"><div class="stat-icon bg-success"><i class="fa-solid fa-check"></i></div><div><div class="stat-value">@Model.ApprovedCount</div><div class="stat-label">Đã duyệt</div></div></div></div>
+    <div class="col-md-3"><div class="stat-card stat-card-v2"><div class="stat-icon bg-danger"><i class="fa-solid fa-xmark"></i></div><div><div class="stat-value">@Model.RejectedCount</div><div class="stat-label">Từ chối</div></div></div></div>
+</div>
+
+<div class="admin-card card-v2">
+    <div class="card-header"><span><i class="fa-solid fa-list-check me-2"></i>Danh sách yêu cầu</span></div>
+    <div class="table-responsive">
+        <table class="admin-table table-v2 mb-0">
+            <thead>
+            <tr>
+                <th>Thời gian</th>
+                <th>Người gửi</th>
+                <th>POI</th>
+                <th>Nội dung</th>
+                <th>Trạng thái</th>
+                <th>Xử lý</th>
+            </tr>
+            </thead>
+            <tbody>
+            @if (!Model.Requests.Any())
+            {
+                <tr><td colspan="6" class="text-center text-muted py-4">Chưa có yêu cầu thay đổi.</td></tr>
+            }
+            else
+            {
+                @foreach (var item in Model.Requests)
+                {
+                    <tr>
+                        <td>@item.SubmittedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            <div class="fw-semibold">@item.SubmittedByName</div>
+                            <div class="small text-muted">@item.SubmittedByUsername</div>
+                        </td>
+                        <td>@item.LocationName</td>
+                        <td>
+                            <div class="fw-semibold">@item.Title</div>
+                            <div class="small text-muted mb-1">@item.Topic</div>
+                            <div class="small">@item.Details</div>
+                        </td>
+                        <td><span class="badge text-bg-secondary">@item.Status</span></td>
+                        <td class="action-cell">
+                            <form method="post" asp-page-handler="UpdateStatus" class="action-buttons-stack">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button type="submit" name="status" value="@PoiChangeRequestStatus.InReview" class="btn-admin btn-sm-admin btn-admin-outline">Review</button>
+                                <button type="submit" name="status" value="@PoiChangeRequestStatus.Approved" class="btn-admin btn-sm-admin btn-admin-success">Duyệt</button>
+                                <button type="submit" name="status" value="@PoiChangeRequestStatus.Rejected" class="btn-admin btn-sm-admin btn-admin-danger">Từ chối</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

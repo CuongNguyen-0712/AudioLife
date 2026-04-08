@@ -24,13 +24,10 @@ public class IndexModel : PageModel
 
     public async Task<IActionResult> OnGetAsync()
     {
-        IQueryable<Location> locationQuery = _db.Locations.AsNoTracking();
-
-        if (!UserAccessService.IsAdmin(User))
-        {
-            var ownedLocationIds = UserAccessService.GetOwnedLocationIds(User);
-            locationQuery = locationQuery.Where(location => ownedLocationIds.Contains(location.Id));
-        }
+        var ownedLocationIds = await UserAccessService.GetOwnedLocationIdsAsync(User, _db);
+        IQueryable<Location> locationQuery = _db.Locations
+            .AsNoTracking()
+            .Where(location => ownedLocationIds.Contains(location.Id));
 
         AccessibleLocations = await locationQuery.OrderBy(location => location.Name).ToListAsync();
 
@@ -44,7 +41,7 @@ public class IndexModel : PageModel
             LocationId = AccessibleLocations[0].Id;
         }
 
-        if (!UserAccessService.CanAccessLocation(User, LocationId))
+        if (!await UserAccessService.CanAccessLocationAsync(User, _db, LocationId))
         {
             return Forbid();
         }

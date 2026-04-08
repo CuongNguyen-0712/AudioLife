@@ -15,7 +15,10 @@ public class AppDbContext : DbContext
     public DbSet<AudioScriptSegment> AudioScriptSegments => Set<AudioScriptSegment>();
     public DbSet<ListeningHistory> ListeningHistories => Set<ListeningHistory>();
     public DbSet<AppUser> AppUsers => Set<AppUser>();
+    public DbSet<AuthUserAccount> AuthUserAccounts => Set<AuthUserAccount>();
     public DbSet<Feedback> Feedbacks => Set<Feedback>();
+    public DbSet<PoiChangeRequest> PoiChangeRequests => Set<PoiChangeRequest>();
+    public DbSet<PoiAdminLocationAssignment> PoiAdminLocationAssignments => Set<PoiAdminLocationAssignment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -84,6 +87,27 @@ public class AppDbContext : DbContext
                 .WithMany(l => l.Feedbacks)
                 .HasForeignKey(f => f.LocationId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<PoiChangeRequest>(entity =>
+        {
+            entity.HasIndex(item => item.Status);
+            entity.HasIndex(item => item.SubmittedByUsername);
+            entity.HasIndex(item => item.LocationId);
+            entity.HasIndex(item => item.SubmittedAtUtc);
+        });
+
+        modelBuilder.Entity<PoiAdminLocationAssignment>(entity =>
+        {
+            entity.HasIndex(item => item.Username);
+            entity.HasIndex(item => item.LocationId);
+            entity.HasIndex(item => new { item.Username, item.LocationId }).IsUnique();
+        });
+
+        modelBuilder.Entity<AuthUserAccount>(entity =>
+        {
+            entity.HasIndex(item => item.Username).IsUnique();
+            entity.HasIndex(item => new { item.Role, item.IsActive });
         });
     }
 }

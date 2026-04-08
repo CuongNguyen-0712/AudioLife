@@ -8,76 +8,51 @@
 <div class="dashboard-hero mb-4">
     <div>
         <p class="hero-kicker"><i class="fa-solid fa-pen-to-square"></i> Biên tập audio</p>
-        <h1 class="hero-title">Sửa Audio Guide</h1>
-        <p class="hero-subtitle">Cập nhật metadata, transcript và nguồn phát cho audio nội dung.</p>
+        <h1 class="hero-title">Cập nhật transcript</h1>
+        <p class="hero-subtitle">POI Admin chỉ chỉnh transcript. Hệ thống sẽ gửi yêu cầu duyệt trước khi áp dụng chính thức.</p>
     </div>
     <a asp-page="/Shop/AudioGuides/Index" asp-route-locationId="@Model.AudioGuide.LocationId" class="btn btn-outline-secondary">Quay lại danh sách</a>
 </div>
 
 <div class="shop-card card-v2">
     <div class="shop-card-body">
-        <form method="post" enctype="multipart/form-data" style="max-width: 840px;">
-            <div asp-validation-summary="All" class="alert alert-danger"></div>
+        <form method="post" enctype="multipart/form-data" class="form-shell-xl">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="error-log-panel mb-3">
+                    <div class="fw-semibold"><i class="fas fa-triangle-exclamation me-1"></i>Không thể gửi yêu cầu cập nhật</div>
+                    <ul>
+                        @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).Where(msg => !string.IsNullOrWhiteSpace(msg)))
+                        {
+                            <li>@err</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div asp-validation-summary="All" class="d-none"></div>
             <input asp-for="AudioGuide.Id" type="hidden" />
             <input asp-for="AudioGuide.LocationId" type="hidden" />
+            <input asp-for="AudioGuide.Title" type="hidden" />
+            <input asp-for="AudioGuide.Language" type="hidden" />
 
-            <div class="mb-3">
-                <label asp-for="AudioGuide.Title" class="form-label">Tiêu đề</label>
-                <input asp-for="AudioGuide.Title" class="form-control" />
-                <span asp-validation-for="AudioGuide.Title" class="text-danger"></span>
+            <div class="approval-note mb-3">
+                <i class="fas fa-shield-check me-1"></i>
+                Mọi thay đổi tại khu POI sẽ được gửi đến Admin Hệ thống để duyệt trước khi cập nhật dữ liệu chính thức.
             </div>
 
-            <div class="mb-3">
-                <label asp-for="AudioGuide.Description" class="form-label">Mô tả</label>
-                <textarea asp-for="AudioGuide.Description" rows="3" class="form-control"></textarea>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label asp-for="AudioGuide.AudioUrl" class="form-label">Audio URL</label>
-                    <input asp-for="AudioGuide.AudioUrl" class="form-control" />
-                    <small class="text-muted">Nếu upload file thì URL sẽ tự động được thay thế.</small>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <label asp-for="AudioGuide.Duration" class="form-label">Thời lượng (phút)</label>
-                    <input asp-for="AudioGuide.Duration" type="number" class="form-control" />
-                </div>
-                <div class="col-md-3 mb-3">
-                    <label asp-for="AudioGuide.Language" class="form-label">Ngôn ngữ</label>
-                    <select asp-for="AudioGuide.Language" class="form-select">
-                        <option value="vi">Tiếng Việt</option>
-                        <option value="en">English</option>
-                        <option value="fr">Français</option>
-                        <option value="ja">Japanese</option>
-                        <option value="ko">Korean</option>
-                        <option value="zh">Chinese</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="AudioFile" class="form-label">Upload file audio (Cloudinary)</label>
-                @if (!string.IsNullOrEmpty(Model.AudioGuide.CloudinaryAudioUrl) || !string.IsNullOrEmpty(Model.AudioGuide.AudioUrl))
-                {
-                    var audioSrc = !string.IsNullOrEmpty(Model.AudioGuide.AudioUrl) ? Model.AudioGuide.AudioUrl : Model.AudioGuide.CloudinaryAudioUrl;
-                    <div class="audio-preview-box mb-2">
-                        <small class="text-muted d-block mb-1">Audio hiện tại:</small>
-                        <audio controls class="audio-preview-player audio-preview-player-form">
-                            <source src="@audioSrc" type="audio/mpeg">
-                        </audio>
-                        <small class="audio-preview-url" title="@audioSrc">@audioSrc</small>
-                    </div>
-                }
-                <input asp-for="AudioFile" type="file" class="form-control" accept="audio/*" />
-                <span asp-validation-for="AudioFile" class="text-danger"></span>
+            <div class="shop-card border mb-3 p-3 bg-light-subtle">
+                <div class="small text-muted">Audio đang chỉnh sửa</div>
+                <div class="fw-semibold">@Model.AudioGuide.Title</div>
+                <div class="small text-muted">Ngôn ngữ: @Model.AudioGuide.Language.ToUpper()</div>
             </div>
 
             <div class="mb-3">
                 <label asp-for="AudioGuide.TranscriptText" class="form-label">Transcript</label>
-                <textarea asp-for="AudioGuide.TranscriptText" rows="5" class="form-control"></textarea>
+                <textarea asp-for="AudioGuide.TranscriptText" rows="10" class="form-control" placeholder="Nhập transcript cần cập nhật..."></textarea>
             </div>
 
-            <button type="submit" class="btn btn-shop">Lưu cập nhật</button>
+            <button type="submit" class="btn btn-shop">Gửi yêu cầu cập nhật</button>
         </form>
     </div>
 </div>

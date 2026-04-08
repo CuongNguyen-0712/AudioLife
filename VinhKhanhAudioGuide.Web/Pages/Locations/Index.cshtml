@@ -39,12 +39,14 @@
                     <td><code>@loc.Id</code></td>
                     <td><strong>@loc.Name</strong></td>
                     <td><span class="badge-admin badge-category"><i class="fas @(loc.Category?.Icon ?? "fa-folder") me-1"></i>@(loc.Category?.Name ?? "N/A")</span></td>
-                    <td style="max-width:200px;">@loc.Address</td>
+                    <td class="address-cell">@loc.Address</td>
                     <td>@loc.Duration phút</td>
                     <td><span class="badge-admin badge-count">@loc.AudioGuides.Count</span></td>
-                    <td>
-                        <a asp-page="Edit" asp-route-id="@loc.Id" class="btn-admin btn-sm-admin btn-admin-warning"><i class="fas fa-edit"></i></a>
-                        <a asp-page="Delete" asp-route-id="@loc.Id" class="btn-admin btn-sm-admin btn-admin-danger"><i class="fas fa-trash"></i></a>
+                    <td class="action-cell">
+                        <div class="action-buttons">
+                            <a asp-page="Edit" asp-route-id="@loc.Id" class="btn-admin btn-sm-admin btn-sm-icon btn-admin-warning" title="Chỉnh sửa"><i class="fas fa-edit"></i></a>
+                            <a asp-page="Delete" asp-route-id="@loc.Id" class="btn-admin btn-sm-admin btn-sm-icon btn-admin-danger" title="Xóa"><i class="fas fa-trash"></i></a>
+                        </div>
                     </td>
                 </tr>
             }

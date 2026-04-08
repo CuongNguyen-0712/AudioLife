@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using VinhKhanhAudioGuide.Web.Configuration;
 using VinhKhanhAudioGuide.Web.Data;
+using VinhKhanhAudioGuide.Web.Models;
+using VinhKhanhAudioGuide.Web.Services;
 
 namespace VinhKhanhAudioGuide.Web.Pages.Admin;
 
@@ -10,11 +12,13 @@ public class IndexModel : PageModel
 {
     private readonly AppDbContext _db;
     private readonly AuthOptions _authOptions;
+    private readonly IPoiChangeRequestService _changeRequestService;
 
-    public IndexModel(AppDbContext db, IOptions<AuthOptions> authOptions)
+    public IndexModel(AppDbContext db, IOptions<AuthOptions> authOptions, IPoiChangeRequestService changeRequestService)
     {
         _db = db;
         _authOptions = authOptions.Value;
+        _changeRequestService = changeRequestService;
     }
 
     public int LocationCount { get; set; }
@@ -22,6 +26,8 @@ public class IndexModel : PageModel
     public int TourCount { get; set; }
     public int AudioGuideCount { get; set; }
     public int PoiAdminCount { get; set; }
+    public int PendingRequestCount { get; set; }
+    public int InReviewRequestCount { get; set; }
     public int UnassignedLocationCount { get; set; }
     public int LocationsWithAudioCount { get; set; }
     public double AverageAudioPerLocation { get; set; }
@@ -38,6 +44,10 @@ public class IndexModel : PageModel
 
         PoiAdminSummaries = await BuildPoiAdminSummariesAsync();
         PoiAdminCount = PoiAdminSummaries.Count;
+
+        var requests = await _changeRequestService.GetAllAsync();
+        PendingRequestCount = requests.Count(item => item.Status == PoiChangeRequestStatus.Pending);
+        InReviewRequestCount = requests.Count(item => item.Status == PoiChangeRequestStatus.InReview);
 
         var assignedLocationIds = PoiAdminSummaries
             .SelectMany(summary => summary.LocationIds)
@@ -85,13 +95,23 @@ public class IndexModel : PageModel
 
     private async Task<List<PoiAdminSummary>> BuildPoiAdminSummariesAsync()
     {
+        var assignmentMap = await _db.PoiAdminLocationAssignments
+            .AsNoTracking()
+            .GroupBy(item => item.Username)
+            .ToDictionaryAsync(
+                group => group.Key,
+                group => group.Select(item => item.LocationId).Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
+                StringComparer.OrdinalIgnoreCase);
+
         var poiAdmins = _authOptions.Users
-            .Where(user => string.Equals(user.Role, "ShopOwner", StringComparison.OrdinalIgnoreCase))
+            .Where(user => string.Equals(user.Role, RoleNames.PoiAdmin, StringComparison.OrdinalIgnoreCase))
             .Select(user => new PoiAdminSummary
             {
                 DisplayName = string.IsNullOrWhiteSpace(user.DisplayName) ? user.Username : user.DisplayName,
                 Username = user.Username,
-                LocationIds = user.LocationIds.Distinct(StringComparer.OrdinalIgnoreCase).ToList()
+                LocationIds = (assignmentMap.TryGetValue(user.Username, out var assignedIds) ? assignedIds : user.LocationIds)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList()
             })
             .OrderBy(user => user.DisplayName)
             .ToList();

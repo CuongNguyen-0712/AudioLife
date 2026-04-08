@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using VinhKhanhAudioGuide.Web.Data;
 using VinhKhanhAudioGuide.Web.Models;
 using VinhKhanhAudioGuide.Web.Services;
@@ -10,19 +11,18 @@ namespace VinhKhanhAudioGuide.Web.Pages.Shop.AudioGuides;
 public class EditModel : PageModel
 {
     private readonly AppDbContext _db;
-    private readonly IAudioStorageService _audioStorageService;
+    private readonly IPoiChangeRequestService _changeRequestService;
 
-    public EditModel(AppDbContext db, IAudioStorageService audioStorageService)
+    public EditModel(
+        AppDbContext db,
+        IPoiChangeRequestService changeRequestService)
     {
         _db = db;
-        _audioStorageService = audioStorageService;
+        _changeRequestService = changeRequestService;
     }
 
     [BindProperty]
     public AudioGuide AudioGuide { get; set; } = new();
-
-    [BindProperty]
-    public IFormFile? AudioFile { get; set; }
 
     public async Task<IActionResult> OnGetAsync(string id)
     {
@@ -32,7 +32,7 @@ public class EditModel : PageModel
             return NotFound();
         }
 
-        if (!UserAccessService.CanAccessLocation(User, entity.LocationId))
+        if (!await UserAccessService.CanAccessLocationAsync(User, _db, entity.LocationId))
         {
             return Forbid();
         }
@@ -45,54 +45,67 @@ public class EditModel : PageModel
     {
         ModelState.Remove("AudioGuide.Location");
         ModelState.Remove("AudioGuide.AudioUrl");
-        ModelState.Remove("AudioGuide.Description");
         ModelState.Remove("AudioGuide.TranscriptText");
+        ModelState.Remove("AudioGuide.Description");
+        ModelState.Remove("AudioGuide.Duration");
+        ModelState.Remove("AudioGuide.Language");
 
         if (!ModelState.IsValid)
         {
             return Page();
         }
 
-        var entity = await _db.AudioGuides.FirstOrDefaultAsync(item => item.Id == AudioGuide.Id);
+        var entity = await _db.AudioGuides
+            .AsNoTracking()
+            .FirstOrDefaultAsync(item => item.Id == AudioGuide.Id);
         if (entity is null)
         {
             return NotFound();
         }
 
-        if (!UserAccessService.CanAccessLocation(User, entity.LocationId))
+        if (!await UserAccessService.CanAccessLocationAsync(User, _db, entity.LocationId))
         {
             return Forbid();
         }
 
-        entity.Title = AudioGuide.Title;
-        entity.Description = AudioGuide.Description;
+        var changedFields = new Dictionary<string, string?>();
+        AddIfChanged(changedFields, nameof(AudioGuide.TranscriptText), entity.TranscriptText, AudioGuide.TranscriptText);
 
-        if (AudioFile is not null)
+        if (changedFields.Count == 0)
         {
-            try
-            {
-                var uploadResult = await _audioStorageService.UploadAudioAsync(AudioFile, entity.Id);
-                entity.AudioUrl = uploadResult.AudioUrl;
-                entity.CloudinaryAudioUrl = uploadResult.CloudinaryAudioUrl;
-                entity.CloudinaryPublicId = uploadResult.CloudinaryPublicId;
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError(string.Empty, ex.Message);
-                return Page();
-            }
-        }
-        else
-        {
-            entity.AudioUrl = AudioGuide.AudioUrl;
+            TempData["Success"] = "Không có thay đổi mới để gửi duyệt.";
+            return RedirectToPage("/Shop/AudioGuides/Index", new { locationId = entity.LocationId });
         }
 
-        entity.Duration = AudioGuide.Duration;
-        entity.Language = AudioGuide.Language;
-        entity.TranscriptText = AudioGuide.TranscriptText;
+        var username = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                       ?? User.Identity?.Name
+                       ?? string.Empty;
 
-        await _db.SaveChangesAsync();
-        TempData["Success"] = "Đã cập nhật audio guide.";
+        var changeSet = new PoiChangeSet { Fields = changedFields };
+
+        await _changeRequestService.SubmitAsync(new PoiChangeRequest
+        {
+            SubmittedByUsername = username,
+            SubmittedByName = User.Identity?.Name ?? username,
+            LocationId = entity.LocationId,
+            LocationName = (await _db.Locations.AsNoTracking().Where(item => item.Id == entity.LocationId).Select(item => item.Name).FirstOrDefaultAsync()) ?? entity.LocationId,
+            Topic = "Transcript audio",
+            Title = $"Cập nhật transcript: {entity.Title}",
+            Details = "Đề xuất cập nhật transcript audio guide.",
+            TargetType = PoiChangeTargetType.AudioGuide,
+            TargetEntityId = entity.Id,
+            ChangeSetJson = JsonSerializer.Serialize(changeSet)
+        });
+
+        TempData["Success"] = "Đã gửi yêu cầu cập nhật audio cho Admin Hệ thống duyệt.";
         return RedirectToPage("/Shop/AudioGuides/Index", new { locationId = entity.LocationId });
+    }
+
+    private static void AddIfChanged(IDictionary<string, string?> changes, string key, string? original, string? incoming)
+    {
+        if (!string.Equals((original ?? string.Empty).Trim(), (incoming ?? string.Empty).Trim(), StringComparison.Ordinal))
+        {
+            changes[key] = incoming;
+        }
     }
 }
