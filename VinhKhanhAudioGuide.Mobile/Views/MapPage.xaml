@@ -152,7 +152,7 @@
                                     BackgroundColor="Transparent"
                                     HeightRequest="170"
                                     Margin="14,12">
-
+    
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="viewmodels:NearbyLocation">
                                 <Border Stroke="{StaticResource OutlineVariant}"
