@@ -102,14 +102,16 @@ public static class DbInitializer
 
     private static void EnsurePoiAdminAssignments(AppDbContext context)
     {
+        if (context.PoiAdminLocationAssignments.Any())
+        {
+            return;
+        }
+
         var defaultAssignments = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
         {
             ["admin.poi.01"] = new[] { "loc_001", "loc_002", "loc_003", "loc_004", "loc_005" },
             ["admin.poi.02"] = new[] { "loc_006", "loc_007", "loc_008", "loc_009", "loc_010" }
         };
-
-        context.PoiAdminLocationAssignments.RemoveRange(context.PoiAdminLocationAssignments);
-        context.SaveChanges();
 
         foreach (var (username, locationIds) in defaultAssignments)
         {

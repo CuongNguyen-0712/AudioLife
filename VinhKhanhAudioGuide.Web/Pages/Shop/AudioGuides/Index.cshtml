@@ -38,9 +38,9 @@
     </div>
 </div>
 
-@if (TempData["Success"] != null)
+@if (TempData["Success"] is string successMessage && !string.IsNullOrWhiteSpace(successMessage))
 {
-    <div class="alert alert-success">@TempData["Success"]</div>
+    <div class="alert alert-success alert-admin mb-4">@successMessage</div>
 }
 
 <div class="shop-card card-v2">
