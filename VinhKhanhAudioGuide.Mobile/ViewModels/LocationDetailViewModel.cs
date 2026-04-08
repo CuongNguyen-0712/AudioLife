@@ -18,6 +18,7 @@ public class RelatedTourItem
 public partial class LocationDetailViewModel : ObservableObject
 {
     private readonly INavigationService _navigationService;
+    private readonly IApiService _apiService;
 
     [ObservableProperty]
     private string _locationId = string.Empty;
@@ -55,26 +56,27 @@ public partial class LocationDetailViewModel : ObservableObject
     public ObservableCollection<AudioGuide> AudioGuides { get; } = new();
     public ObservableCollection<RelatedTourItem> RelatedTours { get; } = new();
 
-    public LocationDetailViewModel(INavigationService navigationService)
+    public LocationDetailViewModel(INavigationService navigationService, IApiService apiService)
     {
         _navigationService = navigationService;
+        _apiService = apiService;
     }
 
     partial void OnLocationIdChanged(string value)
     {
         if (!string.IsNullOrEmpty(value))
         {
-            LoadLocationDetails(value);
+            _ = LoadLocationDetailsAsync(value);
         }
     }
 
-    private void LoadLocationDetails(string locationId)
+    private async Task LoadLocationDetailsAsync(string locationId)
     {
-        var locations = Data.SampleData.GetLocations();
-        var location = locations.FirstOrDefault(l => l.Id == locationId);
+        var location = await _apiService.GetLocationByIdAsync(locationId);
 
         if (location == null)
         {
+            var locations = await _apiService.GetLocationsAsync();
             location = locations.ElementAtOrDefault(int.TryParse(locationId, out var idx) ? idx - 1 : -1);
         }
 
@@ -88,7 +90,7 @@ public partial class LocationDetailViewModel : ObservableObject
         Duration = location.Duration;
 
         // Category name
-        var categories = Data.SampleData.GetCategories();
+        var categories = await _apiService.GetCategoriesAsync();
         var cat = categories.FirstOrDefault(c => c.Id == location.CategoryId);
         CategoryName = cat?.Name ?? "Di tích";
 
@@ -103,7 +105,7 @@ public partial class LocationDetailViewModel : ObservableObject
         BuildMapHtml(location.Latitude, location.Longitude, location.Name);
 
         // Related Tours
-        var tours = Data.SampleData.GetTours();
+        var tours = await _apiService.GetToursAsync();
         RelatedTours.Clear();
         foreach (var tour in tours)
         {

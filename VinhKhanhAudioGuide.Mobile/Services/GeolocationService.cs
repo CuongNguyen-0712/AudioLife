@@ -6,9 +6,15 @@ public class GeolocationService : IGeolocationService, IDisposable
 {
     private const double NearbyRadiusKm = 0.1; // 100m radius
     private const int TrackingIntervalSeconds = 60; // 1 minute like web
+    private readonly IApiService _apiService;
     private readonly HashSet<string> _notifiedLocationIds = new();
     private CancellationTokenSource? _cts;
     private bool _isTracking;
+
+    public GeolocationService(IApiService apiService)
+    {
+        _apiService = apiService;
+    }
 
     public event EventHandler<NearbyLocationEventArgs>? NearbyLocationDetected;
     public double? CurrentLatitude { get; private set; }
@@ -55,7 +61,7 @@ public class GeolocationService : IGeolocationService, IDisposable
                     {
                         CurrentLatitude = location.Latitude;
                         CurrentLongitude = location.Longitude;
-                        CheckNearbyLocations(location.Latitude, location.Longitude);
+                        await CheckNearbyLocationsAsync(location.Latitude, location.Longitude);
                     }
                 }
                 catch (FeatureNotSupportedException)
@@ -117,9 +123,9 @@ public class GeolocationService : IGeolocationService, IDisposable
         return null;
     }
 
-    private void CheckNearbyLocations(double userLat, double userLng)
+    private async Task CheckNearbyLocationsAsync(double userLat, double userLng)
     {
-        var locations = Data.SampleData.GetLocations();
+        var locations = await _apiService.GetLocationsAsync();
         foreach (var loc in locations)
         {
             if (_notifiedLocationIds.Contains(loc.Id)) continue;

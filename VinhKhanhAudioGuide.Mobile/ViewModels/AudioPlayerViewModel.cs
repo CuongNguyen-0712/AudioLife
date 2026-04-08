@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using VinhKhanhAudioGuide.Mobile.Data;
 using VinhKhanhAudioGuide.Mobile.Models;
 using VinhKhanhAudioGuide.Mobile.Services;
 
@@ -12,9 +11,11 @@ namespace VinhKhanhAudioGuide.Mobile.ViewModels;
 public partial class AudioPlayerViewModel : ObservableObject
 {
     private readonly IAudioService _audioService;
+    private readonly IApiService _apiService;
     private readonly List<AudioScriptSegment> _scriptSegments = new();
     private int _activeScriptSegmentId = -1;
     private bool _isSubscribedToAudioEvents;
+    private bool _isLoadingLocationData;
 
     [ObservableProperty]
     private string _locationId = string.Empty;
@@ -73,9 +74,10 @@ public partial class AudioPlayerViewModel : ObservableObject
     [ObservableProperty]
     private bool _isSliderDragging;
 
-    public AudioPlayerViewModel(IAudioService audioService)
+    public AudioPlayerViewModel(IAudioService audioService, IApiService apiService)
     {
         _audioService = audioService;
+        _apiService = apiService;
     }
 
     public void OnAppearing()
@@ -145,83 +147,97 @@ public partial class AudioPlayerViewModel : ObservableObject
 
     partial void OnLocationIdChanged(string value)
     {
-        if (!string.IsNullOrEmpty(value))
+        if (!string.IsNullOrEmpty(value) && !_isLoadingLocationData)
         {
-            LoadLocationData(value);
+            _ = LoadLocationDataAsync(value);
         }
     }
 
     partial void OnAudioGuideIdChanged(string value)
     {
-        if (!string.IsNullOrEmpty(LocationId))
+        if (!string.IsNullOrEmpty(LocationId) && !_isLoadingLocationData)
         {
-            LoadLocationData(LocationId);
+            _ = LoadLocationDataAsync(LocationId);
         }
     }
 
     partial void OnAudioUrlChanged(string value)
     {
-        if (!string.IsNullOrEmpty(LocationId))
+        if (!string.IsNullOrEmpty(LocationId) && !_isLoadingLocationData)
         {
-            LoadLocationData(LocationId);
+            _ = LoadLocationDataAsync(LocationId);
         }
     }
 
-    private void LoadLocationData(string locationId)
+    private async Task LoadLocationDataAsync(string locationId)
     {
-        var location = SampleData.GetLocations()
-            .FirstOrDefault(l => l.Id == locationId);
+        _isLoadingLocationData = true;
 
-        if (location != null)
+        try
         {
-            LocationName = location.Name;
-            Description = location.Description;
-            ImageUrl = location.ImageUrl;
-            AudioTranslationSummary = $"Bản dịch audio của {location.Name}";
-            AudioTranslationText = $"Đang chờ phát nội dung của {location.Name}...";
-            CurrentScriptText = AudioTranslationText;
-            Title = location.Name;
+            var location = await _apiService.GetLocationByIdAsync(locationId);
 
-            if (location.AudioGuides.Count > 0)
+            if (location == null)
             {
-                var guide = SelectGuide(location.AudioGuides);
-                Duration = guide.Duration * 60; // minutes to seconds
-                DurationText = FormatTime(TimeSpan.FromSeconds(Duration));
+                var allLocations = await _apiService.GetLocationsAsync();
+                location = allLocations.ElementAtOrDefault(int.TryParse(locationId, out var idx) ? idx - 1 : -1);
+            }
 
-                AudioTranslationText = !string.IsNullOrWhiteSpace(guide.TranscriptText)
-                    ? guide.TranscriptText
-                    : guide.Description;
+            if (location != null)
+            {
+                LocationName = location.Name;
+                Description = location.Description;
+                ImageUrl = location.ImageUrl;
+                AudioTranslationSummary = $"Bản dịch audio của {location.Name}";
+                AudioTranslationText = $"Đang chờ phát nội dung của {location.Name}...";
+                CurrentScriptText = AudioTranslationText;
+                Title = location.Name;
 
-                AudioTranslationSummary = !string.IsNullOrWhiteSpace(guide.Description)
-                    ? guide.Description
-                    : AudioTranslationSummary;
+                if (location.AudioGuides.Count > 0)
+                {
+                    var guide = SelectGuide(location.AudioGuides);
+                    Duration = guide.Duration * 60; // minutes to seconds
+                    DurationText = FormatTime(TimeSpan.FromSeconds(Duration));
 
-                Title = !string.IsNullOrWhiteSpace(guide.Title)
-                    ? guide.Title
-                    : location.Name;
+                    AudioTranslationText = !string.IsNullOrWhiteSpace(guide.TranscriptText)
+                        ? guide.TranscriptText
+                        : guide.Description;
 
-                AudioGuideId = guide.Id;
-                AudioUrl = !string.IsNullOrWhiteSpace(guide.CloudinaryAudioUrl)
-                    ? guide.CloudinaryAudioUrl
-                    : guide.AudioUrl;
+                    AudioTranslationSummary = !string.IsNullOrWhiteSpace(guide.Description)
+                        ? guide.Description
+                        : AudioTranslationSummary;
 
-                LoadScriptSegments(guide);
-                SyncPlaybackStateFromService();
+                    Title = !string.IsNullOrWhiteSpace(guide.Title)
+                        ? guide.Title
+                        : location.Name;
+
+                    AudioGuideId = guide.Id;
+                    AudioUrl = !string.IsNullOrWhiteSpace(guide.CloudinaryAudioUrl)
+                        ? guide.CloudinaryAudioUrl
+                        : guide.AudioUrl;
+
+                    LoadScriptSegments(guide);
+                    SyncPlaybackStateFromService();
+                }
+            }
+            else
+            {
+                LocationName = "Địa điểm";
+                Description = string.Empty;
+                ImageUrl = string.Empty;
+                Duration = 0;
+                DurationText = "0:00";
+                Title = LocationName;
+                AudioTranslationSummary = string.Empty;
+                AudioTranslationText = string.Empty;
+                CurrentScriptText = string.Empty;
+                _scriptSegments.Clear();
+                _activeScriptSegmentId = -1;
             }
         }
-        else
+        finally
         {
-            LocationName = "Địa điểm";
-            Description = string.Empty;
-            ImageUrl = string.Empty;
-            Duration = 0;
-            DurationText = "0:00";
-            Title = LocationName;
-            AudioTranslationSummary = string.Empty;
-            AudioTranslationText = string.Empty;
-            CurrentScriptText = string.Empty;
-            _scriptSegments.Clear();
-            _activeScriptSegmentId = -1;
+            _isLoadingLocationData = false;
         }
     }
 

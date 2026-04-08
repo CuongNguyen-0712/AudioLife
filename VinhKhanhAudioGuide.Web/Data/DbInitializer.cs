@@ -19,12 +19,15 @@ public static class DbInitializer
             creator.CreateTables();
         }
 
+        EnsureApprovalTables(context);
+
         var hasVinhKhanhSeed = context.Locations
             .AsNoTracking()
             .Any(location => EF.Functions.Like(location.Address, "%Vĩnh Khánh%"));
 
         if (context.Categories.Any() && hasVinhKhanhSeed)
         {
+            EnsurePoiAdminAssignments(context);
             return;
         }
 
@@ -93,5 +96,100 @@ public static class DbInitializer
         };
         context.Feedbacks.Add(feedback);
         context.SaveChanges();
+
+        EnsurePoiAdminAssignments(context);
+    }
+
+    private static void EnsurePoiAdminAssignments(AppDbContext context)
+    {
+        var defaultAssignments = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["admin.poi.01"] = new[] { "loc_001", "loc_002", "loc_003", "loc_004", "loc_005" },
+            ["admin.poi.02"] = new[] { "loc_006", "loc_007", "loc_008", "loc_009", "loc_010" }
+        };
+
+        context.PoiAdminLocationAssignments.RemoveRange(context.PoiAdminLocationAssignments);
+        context.SaveChanges();
+
+        foreach (var (username, locationIds) in defaultAssignments)
+        {
+            foreach (var locationId in locationIds.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                context.PoiAdminLocationAssignments.Add(new PoiAdminLocationAssignment
+                {
+                    Username = username,
+                    LocationId = locationId
+                });
+            }
+        }
+
+        context.SaveChanges();
+    }
+
+    private static void EnsureApprovalTables(AppDbContext context)
+    {
+        context.Database.ExecuteSqlRaw(@"
+IF OBJECT_ID(N'dbo.PoiChangeRequests', N'U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[PoiChangeRequests](
+        [Id] uniqueidentifier NOT NULL,
+        [SubmittedByUsername] nvarchar(100) NOT NULL,
+        [SubmittedByName] nvarchar(150) NOT NULL,
+        [LocationId] nvarchar(50) NOT NULL,
+        [LocationName] nvarchar(200) NOT NULL,
+        [Topic] nvarchar(100) NOT NULL,
+        [Title] nvarchar(200) NOT NULL,
+        [Details] nvarchar(2000) NOT NULL,
+        [TargetType] int NOT NULL,
+        [TargetEntityId] nvarchar(50) NOT NULL,
+        [ChangeSetJson] nvarchar(max) NOT NULL,
+        [Status] int NOT NULL,
+        [SubmittedAtUtc] datetime2 NOT NULL,
+        [UpdatedAtUtc] datetime2 NULL,
+        [UpdatedBy] nvarchar(100) NULL,
+        [ReviewNote] nvarchar(500) NULL,
+        CONSTRAINT [PK_PoiChangeRequests] PRIMARY KEY ([Id])
+    );
+
+    CREATE INDEX [IX_PoiChangeRequests_Status] ON [dbo].[PoiChangeRequests]([Status]);
+    CREATE INDEX [IX_PoiChangeRequests_SubmittedByUsername] ON [dbo].[PoiChangeRequests]([SubmittedByUsername]);
+    CREATE INDEX [IX_PoiChangeRequests_LocationId] ON [dbo].[PoiChangeRequests]([LocationId]);
+    CREATE INDEX [IX_PoiChangeRequests_SubmittedAtUtc] ON [dbo].[PoiChangeRequests]([SubmittedAtUtc]);
+END
+");
+
+        context.Database.ExecuteSqlRaw(@"
+IF OBJECT_ID(N'dbo.PoiAdminLocationAssignments', N'U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[PoiAdminLocationAssignments](
+        [Id] int IDENTITY(1,1) NOT NULL,
+        [Username] nvarchar(100) NOT NULL,
+        [LocationId] nvarchar(50) NOT NULL,
+        CONSTRAINT [PK_PoiAdminLocationAssignments] PRIMARY KEY ([Id])
+    );
+
+    CREATE INDEX [IX_PoiAdminLocationAssignments_Username] ON [dbo].[PoiAdminLocationAssignments]([Username]);
+    CREATE INDEX [IX_PoiAdminLocationAssignments_LocationId] ON [dbo].[PoiAdminLocationAssignments]([LocationId]);
+    CREATE UNIQUE INDEX [IX_PoiAdminLocationAssignments_Username_LocationId] ON [dbo].[PoiAdminLocationAssignments]([Username], [LocationId]);
+END
+;
+
+IF OBJECT_ID(N'dbo.AuthUserAccounts', N'U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[AuthUserAccounts](
+        [Id] int IDENTITY(1,1) NOT NULL,
+        [Username] nvarchar(100) NOT NULL,
+        [Password] nvarchar(200) NOT NULL,
+        [DisplayName] nvarchar(150) NOT NULL,
+        [Role] nvarchar(30) NOT NULL,
+        [IsActive] bit NOT NULL,
+        [CreatedAtUtc] datetime2 NOT NULL,
+        CONSTRAINT [PK_AuthUserAccounts] PRIMARY KEY ([Id])
+    );
+
+    CREATE UNIQUE INDEX [IX_AuthUserAccounts_Username] ON [dbo].[AuthUserAccounts]([Username]);
+    CREATE INDEX [IX_AuthUserAccounts_Role_IsActive] ON [dbo].[AuthUserAccounts]([Role], [IsActive]);
+END
+");
     }
 }

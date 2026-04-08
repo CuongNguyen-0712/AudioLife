@@ -3,124 +3,88 @@
 @{
     ViewData["Title"] = "Bảng điều khiển Admin Hệ Thống";
     ViewData["ActivePage"] = "Dashboard";
+
+    var assignmentRate = Model.LocationCount == 0
+        ? 0
+        : Math.Round(((double)(Model.LocationCount - Model.UnassignedLocationCount) / Model.LocationCount) * 100, 1);
 }
 
 <div class="dashboard-admin-v2">
-    <div class="dashboard-hero">
+    <div class="dashboard-hero mb-4">
         <div>
-            <p class="hero-kicker"><i class="fa-solid fa-sparkles"></i> Điều khiển hệ thống</p>
-            <h1 class="hero-title">Bảng điều khiển Admin</h1>
-            <p class="hero-subtitle">Toàn cảnh dữ liệu nội dung Audio Ẩm thực Vĩnh Khánh theo thời gian thực.</p>
+            <p class="hero-kicker"><i class="fa-solid fa-sparkles"></i> Điều hành hệ thống</p>
+            <h1 class="hero-title">Dashboard Admin</h1>
+            <p class="hero-subtitle">Tổng quan nội dung Audio Vĩnh Khánh theo thời gian thực.</p>
         </div>
-        <span class="hero-badge"><i class="fa-solid fa-shield-halved"></i> Admin Hệ Thống</span>
+        <div class="hero-actions">
+            <span class="hero-badge"><i class="fa-solid fa-shield-halved"></i> Admin Hệ Thống</span>
+            <button type="button" class="hero-close-btn" id="closeDashboardHero"><i class="fas fa-xmark"></i> Đóng</button>
+        </div>
     </div>
 
     <div class="row g-4 mb-4">
         <div class="col-sm-6 col-xl-3">
             <div class="stat-card stat-card-v2">
                 <div class="stat-icon bg-primary"><i class="fa-solid fa-location-dot"></i></div>
-                <div>
-                    <div class="stat-value">@Model.LocationCount</div>
-                    <div class="stat-label">Địa điểm</div>
-                </div>
+                <div><div class="stat-value">@Model.LocationCount</div><div class="stat-label">POI</div></div>
             </div>
         </div>
         <div class="col-sm-6 col-xl-3">
             <div class="stat-card stat-card-v2">
                 <div class="stat-icon bg-success"><i class="fa-solid fa-layer-group"></i></div>
-                <div>
-                    <div class="stat-value">@Model.CategoryCount</div>
-                    <div class="stat-label">Danh mục</div>
-                </div>
+                <div><div class="stat-value">@Model.CategoryCount</div><div class="stat-label">Danh mục</div></div>
             </div>
         </div>
         <div class="col-sm-6 col-xl-3">
             <div class="stat-card stat-card-v2">
                 <div class="stat-icon bg-warning"><i class="fa-solid fa-route"></i></div>
-                <div>
-                    <div class="stat-value">@Model.TourCount</div>
-                    <div class="stat-label">Tour</div>
-                </div>
+                <div><div class="stat-value">@Model.TourCount</div><div class="stat-label">Tour</div></div>
             </div>
         </div>
         <div class="col-sm-6 col-xl-3">
             <div class="stat-card stat-card-v2">
                 <div class="stat-icon bg-info"><i class="fa-solid fa-wave-square"></i></div>
-                <div>
-                    <div class="stat-value">@Model.AudioGuideCount</div>
-                    <div class="stat-label">Audio</div>
-                </div>
+                <div><div class="stat-value">@Model.AudioGuideCount</div><div class="stat-label">Audio</div></div>
             </div>
         </div>
     </div>
 
-    <div class="row g-4 mb-4">
-        <div class="col-12 col-xxl-5">
-            <div class="admin-card h-100 card-v2">
-                <div class="card-header">
-                    <span><i class="fa-solid fa-user-shield me-2"></i>Tổng quan phân công Admin POI</span>
+    <div class="row g-4 mb-4 compact-row">
+        <div class="col-12 col-xxl-7">
+            <div class="admin-card h-100 card-v2 compact-card">
+                <div class="card-header"><span><i class="fa-solid fa-chart-column me-2"></i>Phân bổ audio theo danh mục</span></div>
+                <div class="p-3 p-md-4">
+                    <div class="chart-wrap"><canvas id="categoryChart"></canvas></div>
                 </div>
-                <div class="card-body p-3 p-md-4">
-                    <div class="summary-grid">
-                        <div class="summary-item">
-                            <span>Admin POI</span>
-                            <strong>@Model.PoiAdminCount</strong>
-                        </div>
-                        <div class="summary-item">
-                            <span>Địa điểm có audio</span>
-                            <strong>@Model.LocationsWithAudioCount / @Model.LocationCount</strong>
-                        </div>
-                        <div class="summary-item">
-                            <span>Địa điểm chưa gán</span>
-                            <strong>@Model.UnassignedLocationCount</strong>
-                        </div>
-                        <div class="summary-item">
-                            <span>Audio trung bình / địa điểm</span>
-                            <strong>@Model.AverageAudioPerLocation</strong>
+            </div>
+        </div>
+        <div class="col-12 col-xxl-5">
+            <div class="admin-card h-100 card-v2 compact-card">
+                <div class="card-header"><span><i class="fa-solid fa-user-shield me-2"></i>Tổng quan vận hành</span></div>
+                <div class="p-3 p-md-4">
+                    <div class="summary-grid mb-3">
+                        <div class="summary-item"><span>Admin POI</span><strong>@Model.PoiAdminCount</strong></div>
+                        <div class="summary-item"><span>POI có audio</span><strong>@Model.LocationsWithAudioCount / @Model.LocationCount</strong></div>
+                        <div class="summary-item"><span>Yêu cầu chờ duyệt</span><strong>@Model.PendingRequestCount</strong></div>
+                        <div class="summary-item"><span>Yêu cầu đang review</span><strong>@Model.InReviewRequestCount</strong></div>
+                        <div class="summary-item"><span>Audio TB / POI</span><strong>@Model.AverageAudioPerLocation</strong></div>
+                        <div class="summary-item"><span>POI chưa gán</span><strong>@Model.UnassignedLocationCount</strong></div>
+                    </div>
+
+                    <div class="metric-tile">
+                        <div class="k">Tỷ lệ phân công POI</div>
+                        <div class="v">@assignmentRate%</div>
+                        <div class="progress mt-2" role="progressbar" aria-label="assignment">
+                            <div class="progress-bar bg-success" style="width:@assignmentRate%"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-12 col-xxl-7">
-            <div class="admin-card h-100 card-v2">
-                <div class="card-header">
-                    <span><i class="fa-solid fa-table-list me-2"></i>Tóm tắt danh mục</span>
-                </div>
-                <div class="table-responsive">
-                    <table class="admin-table table-v2 mb-0">
-                        <thead>
-                            <tr>
-                                <th>Danh mục</th>
-                                <th class="text-end">Số địa điểm</th>
-                                <th class="text-end">Số audio</th>
-                                <th class="text-end">Tỉ trọng audio</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var category in Model.CategorySummaries)
-                            {
-                                var categoryShare = Model.AudioGuideCount == 0
-                                    ? 0
-                                    : Math.Round(((double)category.AudioCount / Model.AudioGuideCount) * 100, 1);
-                                <tr>
-                                    <td class="fw-semibold">@category.CategoryName</td>
-                                    <td class="text-end">@category.LocationCount</td>
-                                    <td class="text-end">@category.AudioCount</td>
-                                    <td class="text-end"><span class="badge-soft">@categoryShare%</span></td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <div class="admin-card card-v2 mb-4">
-        <div class="card-header">
-            <span><i class="fa-solid fa-ranking-star me-2"></i>Top địa điểm theo sản lượng audio</span>
-        </div>
+    <div class="admin-card card-v2 compact-card mb-4">
+        <div class="card-header"><span><i class="fa-solid fa-ranking-star me-2"></i>Top POI theo sản lượng audio</span></div>
         <div class="table-responsive">
             <table class="admin-table table-v2 mb-0">
                 <thead>
@@ -157,19 +121,15 @@
                     }
                     else
                     {
-                        <tr>
-                            <td colspan="7" class="text-center text-muted py-4">Chưa có dữ liệu địa điểm để thống kê.</td>
-                        </tr>
+                        <tr><td colspan="7" class="text-center text-muted py-4">Chưa có dữ liệu để thống kê.</td></tr>
                     }
                 </tbody>
             </table>
         </div>
     </div>
 
-    <div class="admin-card card-v2 mb-4">
-        <div class="card-header">
-            <span><i class="fa-solid fa-users-gear me-2"></i>Danh sách Admin POI</span>
-        </div>
+    <div class="admin-card card-v2 compact-card mb-4">
+        <div class="card-header"><span><i class="fa-solid fa-users-gear me-2"></i>Danh sách Admin POI</span></div>
         <div class="table-responsive">
             <table class="admin-table table-v2 mb-0">
                 <thead>
@@ -177,7 +137,7 @@
                         <th>#</th>
                         <th>Admin</th>
                         <th>Username</th>
-                        <th>Địa điểm quản lý</th>
+                        <th>POI quản lý</th>
                         <th class="text-end">Số điểm</th>
                     </tr>
                 </thead>
@@ -206,9 +166,7 @@
                     }
                     else
                     {
-                        <tr>
-                            <td colspan="5" class="text-center text-muted py-4">Chưa có Admin POI nào được cấu hình.</td>
-                        </tr>
+                        <tr><td colspan="5" class="text-center text-muted py-4">Chưa có Admin POI được cấu hình.</td></tr>
                     }
                 </tbody>
             </table>
@@ -216,173 +174,50 @@
     </div>
 </div>
 
-<style>
-    .dashboard-admin-v2 {
-        --accent-color: #f97316;
-    }
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const categoryLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CategorySummaries.Select(x => x.CategoryName)));
+        const categoryValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CategorySummaries.Select(x => x.AudioCount)));
 
-    .dashboard-hero {
-        background: linear-gradient(135deg, #ffffff 0%, #fff8f3 65%, #ffedd5 100%);
-        border: 1px solid #fed7aa;
-        border-radius: 18px;
-        padding: 1.4rem 1.6rem;
-        margin-bottom: 1.35rem;
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 1rem;
-        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.05);
-    }
-
-    .hero-kicker {
-        margin: 0 0 0.35rem;
-        color: #c2410c;
-        font-size: 0.78rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        font-weight: 800;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.45rem;
-    }
-
-    .hero-title {
-        font-size: 1.8rem;
-        margin: 0;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        color: #0f172a;
-    }
-
-    .hero-subtitle {
-        margin: 0.35rem 0 0;
-        color: #64748b;
-        font-weight: 600;
-        max-width: 640px;
-    }
-
-    .hero-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.45rem;
-        padding: 0.45rem 0.8rem;
-        border-radius: 999px;
-        border: 1px solid #fdba74;
-        background: #fff7ed;
-        color: #9a3412;
-        font-size: 0.78rem;
-        font-weight: 800;
-        white-space: nowrap;
-    }
-
-    .stat-card-v2 {
-        border-radius: 16px;
-        transition: transform 0.18s ease, box-shadow 0.18s ease;
-    }
-
-    .stat-card-v2:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
-    }
-
-    .card-v2 {
-        border-radius: 16px;
-        box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
-    }
-
-    .card-v2 .card-header {
-        background: linear-gradient(180deg, #fcfdff 0%, #f8fafc 100%);
-        border-bottom: 1px solid #e2e8f0;
-    }
-
-    .summary-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.75rem;
-    }
-
-    .summary-item {
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 0.8rem 0.9rem;
-        background: #ffffff;
-    }
-
-    .summary-item span {
-        display: block;
-        color: #64748b;
-        font-size: 0.8rem;
-        margin-bottom: 0.2rem;
-        font-weight: 700;
-    }
-
-    .summary-item strong {
-        font-size: 1.06rem;
-        color: #0f172a;
-    }
-
-    .table-v2 thead th {
-        font-size: 0.72rem;
-        background: #f8fafc;
-        color: #475569;
-    }
-
-    .table-v2 tbody tr {
-        transition: background-color 0.14s ease;
-    }
-
-    .table-v2 tbody tr:hover {
-        background: #fff7ed;
-    }
-
-    .badge-soft {
-        display: inline-flex;
-        align-items: center;
-        border-radius: 999px;
-        padding: 0.28rem 0.55rem;
-        background: #fff1e7;
-        color: #9a3412;
-        font-weight: 800;
-        font-size: 0.74rem;
-    }
-
-    .index-pill {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 1.65rem;
-        height: 1.65rem;
-        border-radius: 999px;
-        border: 1px solid #fdba74;
-        background: #fff7ed;
-        color: #9a3412;
-        font-size: 0.76rem;
-        font-weight: 800;
-    }
-
-    .location-chip {
-        border-radius: 999px;
-        padding: 0.22rem 0.55rem;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        font-size: 0.74rem;
-        color: #334155;
-        font-weight: 700;
-    }
-
-    @@media (max-width: 767.98px) {
-        .dashboard-hero {
-            padding: 1.15rem 1.1rem;
-            flex-direction: column;
-            align-items: flex-start;
+        const categoryCtx = document.getElementById('categoryChart');
+        if (categoryCtx) {
+            new Chart(categoryCtx, {
+                type: 'bar',
+                data: {
+                    labels: categoryLabels,
+                    datasets: [{
+                        label: 'Số audio',
+                        data: categoryValues,
+                        borderRadius: 8,
+                        backgroundColor: [
+                            '#f97316', '#fb923c', '#fdba74', '#fed7aa', '#fbbf24', '#a3e635', '#38bdf8'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        }
+                    }
+                }
+            });
         }
 
-        .hero-title {
-            font-size: 1.45rem;
-        }
+        const closeHeroButton = document.getElementById('closeDashboardHero');
+        const dashboardHero = document.querySelector('.dashboard-admin-v2 .dashboard-hero');
 
-        .summary-grid {
-            grid-template-columns: 1fr;
+        if (closeHeroButton && dashboardHero) {
+            closeHeroButton.addEventListener('click', function () {
+                dashboardHero.classList.add('is-closed');
+            });
         }
-    }
-</style>
+    </script>
+}

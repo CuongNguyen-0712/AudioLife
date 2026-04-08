@@ -11,7 +11,10 @@
         <h1 class="hero-title">Bảng điều khiển Admin POI</h1>
         <p class="hero-subtitle">Quản trị nội dung audio theo từng địa điểm được cấp quyền.</p>
     </div>
-    <span class="hero-badge"><i class="fa-solid fa-location-dot"></i> Phạm vi theo địa điểm</span>
+    <div class="hero-actions-shop">
+        <span class="hero-badge"><i class="fa-solid fa-location-dot"></i> Phạm vi theo địa điểm</span>
+        <button type="button" class="hero-close-btn-shop" id="closePoiDashboardHero"><i class="fas fa-xmark"></i> Đóng</button>
+    </div>
 </div>
 
 <div class="alert alert-info mb-4 alert-admin" role="alert">
@@ -19,18 +22,31 @@
     Vai trò Admin POI chỉ quản lý nội dung audio tại các địa điểm đã được phân quyền.
 </div>
 
+@section Scripts {
+    <script>
+        const closePoiHeroButton = document.getElementById('closePoiDashboardHero');
+        const poiDashboardHero = document.querySelector('.dashboard-hero');
+
+        if (closePoiHeroButton && poiDashboardHero) {
+            closePoiHeroButton.addEventListener('click', function () {
+                poiDashboardHero.classList.add('is-closed');
+            });
+        }
+    </script>
+}
+
 <div class="row g-4">
     <div class="col-lg-4">
         <div class="shop-card card-v2">
             <div class="shop-card-header">Chọn địa điểm quản trị</div>
             <div class="shop-card-body">
                 <form method="get">
-                    <label for="locationId" class="form-label">Địa điểm</label>
-                    <select id="locationId" name="locationId" class="form-select mb-3">
+                    <label asp-for="SelectedLocationId" class="form-label">Địa điểm</label>
+                    <select asp-for="SelectedLocationId" class="form-select mb-3">
                         <option value="">-- Chọn một địa điểm --</option>
                         @foreach (var location in Model.Locations)
                         {
-                            <option value="@location.Id" selected="@(location.Id == Model.SelectedLocationId)">@location.Name</option>
+                            <option value="@location.Id">@location.Name</option>
                         }
                     </select>
                     <button type="submit" class="btn btn-shop w-100">Mở bảng điều khiển địa điểm</button>
@@ -110,7 +126,7 @@
                         <div class="fw-semibold mb-2">Tours có ghé địa điểm này</div>
                         @if (Model.RelatedTours.Any())
                         {
-                            <div class="d-flex flex-wrap gap-2">
+                            <div class="shop-action-buttons">
                                 @foreach (var tour in Model.RelatedTours)
                                 {
                                     <span class="badge text-bg-light border">@tour.Name</span>
@@ -123,11 +139,11 @@
                         }
                     </div>
 
-                    <div class="d-flex flex-wrap gap-2">
+                    <div class="shop-action-buttons">
                         <a class="btn btn-outline-primary" asp-page="/Shop/Locations/Edit" asp-route-id="@Model.SelectedLocation.Id">Sửa thông tin địa điểm</a>
                         <a class="btn btn-outline-success" asp-page="/Shop/AudioGuides/Index" asp-route-locationId="@Model.SelectedLocation.Id">Quản lý audio</a>
-                        <a class="btn btn-outline-secondary" asp-page="/Shop/AudioGuides/Index" asp-route-locationId="@Model.SelectedLocation.Id">Kiểm tra nội dung</a>
                     </div>
+                    <p class="shop-muted small mt-2 mb-0">Mọi chỉnh sửa tại khu POI sẽ tự động gửi về Admin Hệ thống để duyệt trước khi áp dụng.</p>
                 }
             </div>
         </div>

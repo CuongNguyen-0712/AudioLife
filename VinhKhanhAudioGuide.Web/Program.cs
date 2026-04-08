@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth"));
 builder.Services.Configure<CloudinaryOptions>(builder.Configuration.GetSection("Cloudinary"));
 builder.Services.AddHttpClient();
-builder.Services.AddSingleton<IAuthUserStore, AuthUserStore>();
+builder.Services.AddScoped<IAuthUserStore, AuthUserStore>();
 builder.Services.AddScoped<IAudioStorageService, CloudinaryAudioStorageService>();
 builder.Services.AddScoped<ITextToSpeechService, EdgeTextToSpeechService>();
 
@@ -27,25 +27,28 @@ builder.Services
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("ShopAccess", policy => policy.RequireRole("Admin", "ShopOwner"));
+    options.AddPolicy("SystemAdminOnly", policy => policy.RequireRole(RoleNames.SystemAdmin));
+    options.AddPolicy("PoiAdminOnly", policy => policy.RequireRole(RoleNames.PoiAdmin));
 });
 
 builder.Services.AddRazorPages(options =>
 {
     options.Conventions.AllowAnonymousToFolder("/Account");
 
-    options.Conventions.AuthorizeFolder("/Admin", "AdminOnly");
-    options.Conventions.AuthorizeFolder("/Categories", "AdminOnly");
-    options.Conventions.AuthorizeFolder("/Locations", "AdminOnly");
-    options.Conventions.AuthorizeFolder("/Tours", "AdminOnly");
-    options.Conventions.AuthorizeFolder("/AudioGuides", "AdminOnly");
+    options.Conventions.AuthorizeFolder("/Admin", "SystemAdminOnly");
+    options.Conventions.AuthorizeFolder("/Categories", "SystemAdminOnly");
+    options.Conventions.AuthorizeFolder("/Locations", "SystemAdminOnly");
+    options.Conventions.AuthorizeFolder("/Tours", "SystemAdminOnly");
+    options.Conventions.AuthorizeFolder("/AudioGuides", "SystemAdminOnly");
 
-    options.Conventions.AuthorizeFolder("/Shop", "ShopAccess");
+    options.Conventions.AuthorizeFolder("/Shop", "PoiAdminOnly");
 });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IPoiChangeRequestService, DbPoiChangeRequestService>();
+builder.Services.AddScoped<IPoiAdminAssignmentService, PoiAdminAssignmentService>();
 
 var app = builder.Build();
 

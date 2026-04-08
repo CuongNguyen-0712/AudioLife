@@ -11,6 +11,7 @@ namespace VinhKhanhAudioGuide.Mobile.ViewModels;
 public partial class TourDetailViewModel : ObservableObject
 {
     private readonly INavigationService _navigationService;
+    private readonly IApiService _apiService;
 
     [ObservableProperty]
     private string _tourId = string.Empty;
@@ -38,23 +39,29 @@ public partial class TourDetailViewModel : ObservableObject
 
     public ObservableCollection<TourLocationItem> TourLocations { get; } = new();
 
-    public TourDetailViewModel(INavigationService navigationService)
+    public TourDetailViewModel(INavigationService navigationService, IApiService apiService)
     {
         _navigationService = navigationService;
+        _apiService = apiService;
     }
 
     partial void OnTourIdChanged(string value)
     {
         if (!string.IsNullOrEmpty(value))
         {
-            LoadTourDetails(value);
+            _ = LoadTourDetailsAsync(value);
         }
     }
 
-    private void LoadTourDetails(string tourId)
+    private async Task LoadTourDetailsAsync(string tourId)
     {
-        var tours = Data.SampleData.GetTours();
-        var tour = tours.FirstOrDefault(t => t.Id == tourId);
+        var tour = await _apiService.GetTourByIdAsync(tourId);
+
+        if (tour == null)
+        {
+            var tours = await _apiService.GetToursAsync();
+            tour = tours.ElementAtOrDefault(int.TryParse(tourId, out var idx) ? idx - 1 : -1);
+        }
 
         if (tour == null) return;
 
@@ -65,8 +72,12 @@ public partial class TourDetailViewModel : ObservableObject
         LocationCount = tour.LocationIds.Count;
         PriceText = tour.Price <= 0 ? "Miễn phí" : $"{tour.Price:N0} VNĐ";
 
-        var allLocations = Data.SampleData.GetLocations();
-        var categories = Data.SampleData.GetCategories();
+        var allLocationsTask = _apiService.GetLocationsAsync();
+        var categoriesTask = _apiService.GetCategoriesAsync();
+        await Task.WhenAll(allLocationsTask, categoriesTask);
+
+        var allLocations = allLocationsTask.Result;
+        var categories = categoriesTask.Result;
         TourLocations.Clear();
 
         int order = 1;

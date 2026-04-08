@@ -44,22 +44,7 @@ public partial class MainViewModel : ObservableObject
     private int _categoryCount;
 
     [ObservableProperty]
-    private string _footerStatusText = "Chế độ chờ: Đang tìm POI gần nhất...";
-
-    [ObservableProperty]
-    private string _footerHintText = "Mở ứng dụng để tự động phát audio POI gần bạn nhất";
-
-    [ObservableProperty]
-    private string _footerActionText = "Đang chờ";
-
-    [ObservableProperty]
-    private bool _isFooterActionEnabled;
-
-    [ObservableProperty]
-    private bool _isFooterVisible = true;
-
-    [ObservableProperty]
-    private string _footerModeText = "Standby: ON";
+    private string _heroImageUrl = "hero_image.jpg";
 
     [ObservableProperty]
     private string _autoLocationId = string.Empty;
@@ -72,6 +57,21 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private string _autoAudioUrl = string.Empty;
+
+    [ObservableProperty]
+    private string _footerStatusText = string.Empty;
+
+    [ObservableProperty]
+    private string _footerHintText = string.Empty;
+
+    [ObservableProperty]
+    private string _footerActionText = string.Empty;
+
+    [ObservableProperty]
+    private bool _isFooterActionEnabled;
+
+    [ObservableProperty]
+    private string _footerModeText = string.Empty;
 
     public ObservableCollection<Category> Categories { get; } = new();
     public ObservableCollection<Location> FeaturedLocations { get; } = new();

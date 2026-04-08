@@ -11,6 +11,7 @@ namespace VinhKhanhAudioGuide.Mobile.ViewModels;
 public partial class SearchViewModel : ObservableObject
 {
     private readonly INavigationService _navigationService;
+    private readonly IApiService _apiService;
 
     [ObservableProperty]
     private string _searchQuery = string.Empty;
@@ -37,16 +38,18 @@ public partial class SearchViewModel : ObservableObject
     public ObservableCollection<string> RecentSearches { get; } = new();
     public ObservableCollection<SearchResultItem> SearchResults { get; } = new();
 
-    public SearchViewModel(INavigationService navigationService)
+    public SearchViewModel(INavigationService navigationService, IApiService apiService)
     {
         _navigationService = navigationService;
-        LoadCategories();
+        _apiService = apiService;
+        _ = LoadCategoriesAsync();
         LoadRecentSearches();
     }
 
-    private void LoadCategories()
+    private async Task LoadCategoriesAsync()
     {
-        var categories = Data.SampleData.GetCategories();
+        var categories = await _apiService.GetCategoriesAsync();
+        Categories.Clear();
         foreach (var cat in categories)
         {
             Categories.Add(new CategoryFilter
@@ -95,8 +98,12 @@ public partial class SearchViewModel : ObservableObject
 
         await Task.Delay(500); // Simulate search
 
-        var allLocations = Data.SampleData.GetLocations();
-        var categories = Data.SampleData.GetCategories();
+        var allLocationsTask = _apiService.GetLocationsAsync();
+        var categoriesTask = _apiService.GetCategoriesAsync();
+        await Task.WhenAll(allLocationsTask, categoriesTask);
+
+        var allLocations = allLocationsTask.Result;
+        var categories = categoriesTask.Result;
 
         SearchResults.Clear();
 
