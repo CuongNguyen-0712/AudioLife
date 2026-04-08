@@ -8,11 +8,11 @@ public static class SampleData
     {
         return new List<Category>
         {
-            new() { Id = "1", Name = "Đặc sản", Icon = "fa-bowl-food", Description = "Các món đặc sản đặc trưng mang hương vị truyền thống." },
-            new() { Id = "2", Name = "Ăn vặt", Icon = "fa-cookie-bite", Description = "Bánh tráng, xiên que và các món ăn chơi hấp dẫn." },
-            new() { Id = "3", Name = "Ăn đêm", Icon = "fa-moon", Description = "Cháo sườn, phở và các món phục vụ khuya." },
-            new() { Id = "4", Name = "Hải sản", Icon = "fa-fish", Description = "Ốc, tôm, cua, mực tươi sống nướng, xào." },
-            new() { Id = "5", Name = "Đồ uống", Icon = "fa-mug-hot", Description = "Cà phê, trà sữa và đồ uống giải khát." }
+            new() { Id = "1", Name = "Đặc sản", Icon = "specialty.svg", Description = "Các món đặc sản đặc trưng mang hương vị truyền thống." },
+            new() { Id = "2", Name = "Ăn vặt", Icon = "snack.svg", Description = "Bánh tráng, xiên que và các món ăn chơi hấp dẫn." },
+            new() { Id = "3", Name = "Ăn đêm", Icon = "night_food.svg", Description = "Cháo sườn, phở và các món phục vụ khuya." },
+            new() { Id = "4", Name = "Hải sản", Icon = "seafood.svg", Description = "Ốc, tôm, cua, mực tươi sống nướng, xào." },
+            new() { Id = "5", Name = "Đồ uống", Icon = "drink.svg", Description = "Cà phê, trà sữa và đồ uống giải khát." }
         };
     }
 

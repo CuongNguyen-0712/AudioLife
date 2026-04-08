@@ -321,11 +321,11 @@ public partial class MainViewModel : ObservableObject
             }
 
             // Step 4: Trigger auto-play for the nearest POI
-            var (location, distanceKm) = nearestPoi.Value;
+            var (location, distanceMeters) = nearestPoi.Value;
             await PlayAutoAudioForLocationAsync(
                 location.Id,
-                distanceKm * 1000,
-                $"POI gần nhất • {FormatDistance(distanceKm)}"
+                distanceMeters,
+                $"POI gần nhất • {Math.Round(distanceMeters)} m"
             );
         }
         catch
@@ -368,7 +368,7 @@ public partial class MainViewModel : ObservableObject
     /// <summary>
     /// Step 2: Find the nearest POI from the user's current location.
     /// </summary>
-    private async Task<(Location Location, double DistanceKm)?> FindNearestPoiAsync(double userLatitude, double userLongitude)
+    private async Task<(Location Location, double DistanceMeters)?> FindNearestPoiAsync(double userLatitude, double userLongitude)
     {
         try
         {
@@ -386,16 +386,16 @@ public partial class MainViewModel : ObservableObject
                 .Select(loc => new
                 {
                     Location = loc,
-                    DistanceKm = CalculateDistanceKm(
+                    DistanceMeters = CalculateDistanceMeters(
                         userLatitude,
                         userLongitude,
                         loc.Latitude,
                         loc.Longitude)
                 })
-                .OrderBy(x => x.DistanceKm)
+                .OrderBy(x => x.DistanceMeters)
                 .First();
 
-            return (nearest.Location, nearest.DistanceKm);
+            return (nearest.Location, nearest.DistanceMeters);
         }
         catch
         {
@@ -433,6 +433,8 @@ public partial class MainViewModel : ObservableObject
                 return;
             }
 
+            var previousLocationId = AutoLocationId;
+
             AutoLocationId = location.Id;
             AutoLocationName = location.Name;
             AutoAudioGuideId = payload.Value.AudioGuideId;
@@ -446,7 +448,15 @@ public partial class MainViewModel : ObservableObject
             _currentPoiDistanceMeters = distanceMeters;
             _lastAutoSwitchAt = DateTimeOffset.UtcNow;
 
-            // Start playing audio
+            // Ensure only one auto audio is active: stop old POI audio before playing new POI audio.
+            var isSwitchingPoi = !string.IsNullOrWhiteSpace(previousLocationId) &&
+                                 !string.Equals(previousLocationId, locationId, StringComparison.OrdinalIgnoreCase);
+            if (isSwitchingPoi)
+            {
+                await _audioService.StopAsync();
+            }
+
+            // Start playing nearest POI audio.
             if (!string.Equals(_audioService.CurrentAudioUrl, AutoAudioUrl, StringComparison.OrdinalIgnoreCase) || !_audioService.IsPlaying)
             {
                 await _audioService.PlayAsync(AutoAudioUrl);
@@ -465,33 +475,30 @@ public partial class MainViewModel : ObservableObject
     {
         await MainThread.InvokeOnMainThreadAsync(async () =>
         {
-            if (string.IsNullOrWhiteSpace(e.LocationId) || string.Equals(AutoLocationId, e.LocationId, StringComparison.OrdinalIgnoreCase))
+            var latitude = _geolocationService.CurrentLatitude;
+            var longitude = _geolocationService.CurrentLongitude;
+            if (!latitude.HasValue || !longitude.HasValue)
             {
                 return;
             }
 
-            // Check auto-switch cooldown to prevent frequent switching
-            var elapsedSinceLastSwitch = DateTimeOffset.UtcNow - _lastAutoSwitchAt;
-            if (_lastAutoSwitchAt != DateTimeOffset.MinValue && elapsedSinceLastSwitch.TotalSeconds < AutoSwitchCooldownSeconds)
+            var nearestPoi = await FindNearestPoiAsync(latitude.Value, longitude.Value);
+            if (!nearestPoi.HasValue)
             {
-                FooterHintText = $"Giữ POI hiện tại để ổn định phát • chờ {AutoSwitchCooldownSeconds - (int)elapsedSinceLastSwitch.TotalSeconds}s";
                 return;
             }
 
-            // Check minimum distance improvement to avoid GPS jitter
-            if (_currentPoiDistanceMeters < double.MaxValue)
+            var (nearestLocation, nearestDistanceMeters) = nearestPoi.Value;
+            if (string.Equals(AutoLocationId, nearestLocation.Id, StringComparison.OrdinalIgnoreCase))
             {
-                var requiredDistance = _currentPoiDistanceMeters - MinDistanceImprovementMeters;
-                if (e.DistanceMeters >= requiredDistance)
-                {
-                    FooterHintText = "Đang giữ POI hiện tại để tránh đổi bài do GPS dao động";
-                    return;
-                }
+                FooterHintText = $"POI gần nhất • {Math.Round(nearestDistanceMeters)} m";
+                _currentPoiDistanceMeters = nearestDistanceMeters;
+                return;
             }
 
-            // Trigger auto-play for the newly detected nearby location
-            var hint = $"POI mới trong vùng gần • {Math.Round(e.DistanceMeters)} m";
-            await PlayAutoAudioForLocationAsync(e.LocationId, e.DistanceMeters, hint);
+            // Trigger nearest POI auto-audio and stop old POI audio before switching.
+            var hint = $"POI mới trong vùng gần • {Math.Round(nearestDistanceMeters)} m";
+            await PlayAutoAudioForLocationAsync(nearestLocation.Id, nearestDistanceMeters, hint);
         });
     }
 
@@ -555,7 +562,7 @@ public partial class MainViewModel : ObservableObject
         });
     }
 
-    private static double CalculateDistanceKm(double lat1, double lon1, double lat2, double lon2)
+    private static double CalculateDistanceMeters(double lat1, double lon1, double lat2, double lon2)
     {
         const double EarthRadiusKm = 6371;
         var dLat = ToRadians(lat2 - lat1);
@@ -564,18 +571,10 @@ public partial class MainViewModel : ObservableObject
                 Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
                 Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
         var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-        return EarthRadiusKm * c;
+        return EarthRadiusKm * c * 1000;
     }
 
     private static double ToRadians(double angle) => angle * Math.PI / 180.0;
-
-    private static string FormatDistance(double distanceKm)
-    {
-        if (distanceKm < 1)
-            return $"{Math.Round(distanceKm * 1000)} m";
-
-        return $"{distanceKm:F2} km";
-    }
 }
 
 public class FeaturedTourItem
