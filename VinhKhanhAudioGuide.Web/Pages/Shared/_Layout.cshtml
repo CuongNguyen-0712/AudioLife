@@ -15,27 +15,33 @@
     <div class="admin-wrapper">
         <aside class="admin-sidebar" id="adminSidebar">
             <div class="sidebar-brand-wrap">
-                <div class="sidebar-brand">
-                    <i class="fas fa-headphones"></i>
-                    <span>AudioAdmin</span>
+                <div class="sidebar-brand-row">
+                    <div class="sidebar-brand">
+                        <i class="fas fa-headphones"></i>
+                        <span>AudioAdmin</span>
+                    </div>
+                    <button type="button" class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Đóng thanh bên">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
                 <div class="sidebar-subtitle">Vĩnh Khánh Food Audio</div>
             </div>
             <nav class="sidebar-nav">
+                <div class="sidebar-heading">Điều hành</div>
                 <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "Dashboard" ? "active" : "")" asp-page="/Admin/Index">
                     <i class="fas fa-tachometer-alt"></i> <span>Bảng điều khiển</span>
                 </a>
                 <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminUsers" ? "active" : "")" asp-page="/Admin/Users">
-                    <i class="fas fa-users"></i> <span>Người dùng</span>
+                    <i class="fas fa-users"></i> <span>Tài khoản POI</span>
+                </a>
+                <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminRequests" ? "active" : "")" asp-page="/Admin/ChangeRequests">
+                    <i class="fas fa-inbox"></i> <span>Yêu cầu từ POI</span>
                 </a>
                 <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminReports" ? "active" : "")" asp-page="/Admin/Reports">
-                    <i class="fas fa-chart-line"></i> <span>Báo cáo</span>
+                    <i class="fas fa-chart-line"></i> <span>Báo cáo trực quan</span>
                 </a>
                 <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminSettings" ? "active" : "")" asp-page="/Admin/Settings">
-                    <i class="fas fa-sliders"></i> <span>Cài đặt</span>
-                </a>
-                <a class="sidebar-link" asp-page="/Shop/Index">
-                    <i class="fas fa-store"></i> <span>Khu Admin POI</span>
+                    <i class="fas fa-sliders"></i> <span>Thiết lập hệ thống</span>
                 </a>
                 <div class="sidebar-heading">Nội dung</div>
                 <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "Categories" ? "active" : "")" asp-page="/Categories/Index">
@@ -55,6 +61,7 @@
                 </a>
             </nav>
         </aside>
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
         <div class="admin-main">
             <header class="admin-topbar">
@@ -78,9 +85,51 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.getElementById('sidebarToggle')?.addEventListener('click', function() {
-            document.querySelector('.admin-wrapper').classList.toggle('sidebar-collapsed');
-        });
+        (function () {
+            var wrapper = document.querySelector('.admin-wrapper');
+            var toggleBtn = document.getElementById('sidebarToggle');
+            var closeBtn = document.getElementById('sidebarCloseBtn');
+            var backdrop = document.getElementById('sidebarBackdrop');
+
+            if (!wrapper) {
+                return;
+            }
+
+            function isMobileViewport() {
+                return window.matchMedia('(max-width: 991px)').matches;
+            }
+
+            function openSidebar() {
+                wrapper.classList.add('sidebar-collapsed');
+            }
+
+            function closeSidebar() {
+                wrapper.classList.remove('sidebar-collapsed');
+            }
+
+            toggleBtn?.addEventListener('click', function () {
+                wrapper.classList.toggle('sidebar-collapsed');
+            });
+
+            closeBtn?.addEventListener('click', function () {
+                if (isMobileViewport()) {
+                    closeSidebar();
+                    return;
+                }
+
+                openSidebar();
+            });
+
+            backdrop?.addEventListener('click', function () {
+                closeSidebar();
+            });
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && isMobileViewport()) {
+                    closeSidebar();
+                }
+            });
+        })();
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

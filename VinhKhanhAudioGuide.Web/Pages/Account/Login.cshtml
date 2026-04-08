@@ -16,142 +16,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-    <style>
-        :root {
-            --accent: #f97316;
-            --accent-hover: #ea580c;
-            --text: #0f172a;
-            --muted: #64748b;
-        }
-
-        * { box-sizing: border-box; }
-        html, body { margin: 0; padding: 0; min-height: 100%; }
-
-        body {
-            font-family: "Manrope", "Segoe UI", sans-serif;
-            background: linear-gradient(135deg, #f4f6fb 0%, #fef5f0 50%, #f0f9ff 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            min-height: 100vh;
-        }
-
-        .login-container {
-            max-width: 920px;
-            width: 100%;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            align-items: center;
-        }
-
-        .login-left {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            color: var(--text);
-        }
-
-        .login-logo {
-            width: 52px;
-            height: 52px;
-            border-radius: 12px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, var(--accent), #fb923c);
-            color: #fff;
-            font-size: 1.2rem;
-        }
-
-        .login-left h1 {
-            margin: 0;
-            font-size: 2rem;
-            font-weight: 800;
-            line-height: 1.2;
-        }
-
-        .login-left p {
-            margin: 0;
-            color: var(--muted);
-            font-size: 0.95rem;
-        }
-
-        .login-right {
-            background: #fff;
-            border-radius: 18px;
-            padding: 40px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
-        }
-
-        .login-right h2 { font-size: 1.35rem; font-weight: 800; margin: 0 0 8px; }
-        .login-right > p { color: var(--muted); margin: 0 0 24px; }
-        .form-group { margin-bottom: 16px; }
-
-        .form-label {
-            font-weight: 700;
-            color: var(--text);
-            display: block;
-            margin-bottom: 6px;
-            font-size: 0.9rem;
-        }
-
-        .form-control {
-            border-radius: 10px;
-            border: 1px solid #e2e8f0;
-            padding: 10px 14px;
-            font-size: 0.9rem;
-            font-family: "Manrope", sans-serif;
-        }
-
-        .form-control:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
-            outline: none;
-        }
-
-        .btn-login {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: none;
-            background: var(--accent);
-            color: #fff;
-            font-weight: 800;
-            cursor: pointer;
-            font-family: "Manrope", sans-serif;
-        }
-
-        .btn-login:hover { background: var(--accent-hover); }
-
-        .alert {
-            border-radius: 10px;
-            background: rgba(239, 68, 68, 0.08);
-            color: #991b1b;
-            padding: 12px 14px;
-            margin-bottom: 16px;
-        }
-
-        .demo-section {
-            background: #f8fafc;
-            border-radius: 12px;
-            padding: 14px;
-            margin-top: 20px;
-            border-left: 4px solid var(--accent);
-        }
-
-        .demo-title { font-weight: 700; color: var(--text); font-size: 0.85rem; margin-bottom: 8px; }
-        .demo-item { color: var(--muted); font-size: 0.85rem; margin-bottom: 4px; }
-
-        @@media (max-width: 768px) {
-            .login-container { grid-template-columns: 1fr; gap: 24px; }
-            .login-right { padding: 28px 20px; }
-            .login-left { order: 2; }
-            .login-right { order: 1; }
-        }
-    </style>
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
 </head>
 <body>
     <div class="login-container">
@@ -173,13 +38,13 @@
                 <div class="form-group">
                     <label class="form-label">Email hoặc tên đăng nhập</label>
                     <input asp-for="Input.Username" class="form-control" placeholder="Nhập tên đăng nhập" />
-                    <span asp-validation-for="Input.Username" class="text-danger" style="font-size: 0.85rem;"></span>
+                    <span asp-validation-for="Input.Username" class="text-danger validation-text"></span>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Mật khẩu</label>
                     <input asp-for="Input.Password" type="password" class="form-control" placeholder="Nhập mật khẩu" />
-                    <span asp-validation-for="Input.Password" class="text-danger" style="font-size: 0.85rem;"></span>
+                    <span asp-validation-for="Input.Password" class="text-danger validation-text"></span>
                 </div>
 
                 <button type="submit" class="btn-login">Đăng nhập</button>

@@ -1,0 +1,61 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Shop.ChangeRequestsModel
+@{
+    ViewData["Title"] = "Theo dõi yêu cầu thay đổi";
+    ViewData["ActivePage"] = "ShopRequests";
+}
+
+<div class="dashboard-hero mb-4">
+    <div>
+        <p class="hero-kicker"><i class="fa-solid fa-paper-plane"></i> Kết nối hệ thống</p>
+        <h1 class="hero-title">Theo dõi yêu cầu thay đổi</h1>
+        <p class="hero-subtitle">Mọi chỉnh sửa từ khu POI được gửi tự động để Admin Hệ thống duyệt trước khi áp dụng.</p>
+    </div>
+    <span class="hero-badge"><i class="fa-solid fa-lock"></i> Luồng duyệt tự động</span>
+</div>
+
+@if (TempData["Success"] is string message)
+{
+    <div class="alert alert-success alert-admin mb-4">@message</div>
+}
+
+<div class="shop-card card-v2">
+    <div class="shop-card-header">Yêu cầu đã gửi gần đây</div>
+    <div class="shop-card-body p-0">
+        @if (!Model.SubmittedRequests.Any())
+        {
+            <div class="p-4 shop-muted">Chưa có yêu cầu nào được gửi từ tài khoản của bạn.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0 table-v2">
+                    <thead>
+                        <tr>
+                            <th>Thời gian</th>
+                            <th>POI</th>
+                            <th>Tiêu đề</th>
+                            <th>Nhóm</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var item in Model.SubmittedRequests)
+                    {
+                        <tr>
+                            <td>@item.SubmittedAtUtc.ToLocalTime().ToString("dd/MM HH:mm")</td>
+                            <td>@item.LocationName</td>
+                            <td>
+                                <div class="fw-semibold">@item.Title</div>
+                                <div class="small text-muted">@item.Details</div>
+                            </td>
+                            <td>@item.Topic</td>
+                            <td><span class="badge text-bg-secondary">@item.Status</span></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

@@ -4,12 +4,16 @@
     ViewData["Title"] = "Cổng Quản Trị";
 }
 
-<div class="page-header">
-    <h1><i class="fas fa-network-wired me-2"></i>Cổng quản trị hệ thống</h1>
-    <div class="d-flex gap-2">
+<div class="dashboard-hero mb-4">
+    <div>
+        <p class="hero-kicker"><i class="fa-solid fa-compass"></i> Control Center</p>
+        <h1 class="hero-title">Cổng quản trị hệ thống</h1>
+        <p class="hero-subtitle">Chọn không gian làm việc phù hợp: quản trị hệ thống hoặc quản trị POI.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
         @if (User.Identity?.IsAuthenticated == true)
         {
-            <span class="text-muted align-self-center"><i class="fas fa-user me-1"></i>@User.Identity.Name</span>
+            <span class="role-pill role-pill-admin"><i class="fas fa-user"></i>@User.Identity.Name</span>
             <form method="post" asp-page="/Account/Logout" class="d-inline">
                 <button type="submit" class="btn-admin btn-admin-outline"><i class="fas fa-sign-out-alt"></i> Đăng xuất</button>
             </form>
@@ -28,9 +32,9 @@
                 <span><i class="fas fa-user-shield me-2"></i>Khu Admin Hệ Thống</span>
             </div>
             <div class="p-4">
-                <p class="text-muted mb-4">Quản trị toàn bộ nội dung: danh mục, địa điểm, tour và audio guide trên toàn hệ thống.</p>
+                <p class="text-muted mb-4">Quản trị danh mục, địa điểm, tour, audio và xử lý yêu cầu thay đổi từ Admin POI.</p>
                 <a asp-page="/Admin/Index" class="btn-admin btn-admin-primary">
-                    <i class="fas fa-arrow-right me-1"></i> Vào khu Admin Hệ Thống
+                    <i class="fas fa-arrow-right me-1"></i> Vào khu System Admin
                 </a>
             </div>
         </div>
@@ -41,9 +45,9 @@
                 <span><i class="fas fa-store me-2"></i>Khu Admin POI</span>
             </div>
             <div class="p-4">
-                <p class="text-muted mb-4">Mỗi Admin POI quản trị các điểm ẩm thực được phân quyền: cập nhật thông tin địa điểm và quản lý audio liên quan.</p>
+                <p class="text-muted mb-4">Quản trị nội dung audio theo các POI được phân quyền và gửi đề xuất thay đổi lên hệ thống.</p>
                 <a asp-page="/Shop/Index" class="btn-admin btn-admin-success">
-                    <i class="fas fa-arrow-right me-1"></i> Vào khu Admin POI
+                    <i class="fas fa-arrow-right me-1"></i> Vào khu POI Admin
                 </a>
             </div>
         </div>

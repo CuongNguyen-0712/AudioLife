@@ -1,0 +1,117 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Shop.AudioGuides.CreateModel
+@{
+    ViewData["Title"] = "Thêm Audio Guide";
+    ViewData["ActivePage"] = "ShopAudios";
+}
+
+<div class="dashboard-hero mb-4">
+    <div>
+        <p class="hero-kicker"><i class="fa-solid fa-square-plus"></i> Tạo audio mới</p>
+        <h1 class="hero-title">Đề xuất thêm Audio Guide</h1>
+        <p class="hero-subtitle">POI Admin có thể thêm audio bằng upload hoặc TTS. Nội dung chỉ được tạo chính thức sau khi Admin Hệ thống duyệt.</p>
+    </div>
+    <a asp-page="/Shop/AudioGuides/Index" asp-route-locationId="@Model.Input.LocationId" class="btn btn-outline-secondary">Quay lại danh sách</a>
+</div>
+
+<div class="shop-card card-v2">
+    <div class="shop-card-body">
+        <form method="post" enctype="multipart/form-data" class="form-shell-xl">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="approval-note mb-3">
+                <i class="fas fa-shield-check me-1"></i>
+                Yêu cầu này sẽ được đưa vào hàng chờ duyệt của Admin Hệ thống.
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="Input.Id" class="form-label">Mã audio</label>
+                    <input asp-for="Input.Id" class="form-control" />
+                    <span asp-validation-for="Input.Id" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Input.LocationId" class="form-label">Địa điểm</label>
+                    <select asp-for="Input.LocationId" asp-items="Model.LocationList" class="form-select">
+                        <option value="">-- Chọn địa điểm --</option>
+                    </select>
+                    <span asp-validation-for="Input.LocationId" class="text-danger"></span>
+                </div>
+                <div class="col-md-8">
+                    <label asp-for="Input.Title" class="form-label">Tiêu đề</label>
+                    <input asp-for="Input.Title" class="form-control" />
+                    <span asp-validation-for="Input.Title" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Input.Duration" class="form-label">Thời lượng (phút)</label>
+                    <input asp-for="Input.Duration" type="number" min="0" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Input.Language" class="form-label">Ngôn ngữ</label>
+                    <select asp-for="Input.Language" class="form-select">
+                        <option value="vi">Tiếng Việt</option>
+                        <option value="en">English</option>
+                        <option value="fr">Français</option>
+                        <option value="ja">日本語</option>
+                        <option value="ko">한국어</option>
+                        <option value="zh">中文</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Input.AudioUrl" class="form-label">Audio URL (tuỳ chọn)</label>
+                    <input asp-for="Input.AudioUrl" class="form-control" placeholder="https://..." />
+                    <span class="small text-muted">Dùng khi không upload file.</span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="Input.Description" class="form-label">Mô tả</label>
+                    <textarea asp-for="Input.Description" rows="3" class="form-control"></textarea>
+                </div>
+            </div>
+
+            <div class="mt-3 mb-3">
+                <label class="form-label fw-semibold">Nguồn audio</label>
+                <div class="btn-group w-100" role="group">
+                    <input type="radio" class="btn-check" name="AudioMode" id="modeUpload" value="upload" checked="@(Model.AudioMode == "upload")" onchange="toggleAudioMode()">
+                    <label class="btn btn-outline-primary" for="modeUpload"><i class="fas fa-upload"></i> Upload audio</label>
+                    <input type="radio" class="btn-check" name="AudioMode" id="modeTts" value="tts" checked="@(Model.AudioMode == "tts")" onchange="toggleAudioMode()">
+                    <label class="btn btn-outline-success" for="modeTts"><i class="fas fa-robot"></i> Tạo bằng TTS</label>
+                </div>
+            </div>
+
+            <div id="uploadSection">
+                <div class="mb-3">
+                    <label asp-for="AudioFile" class="form-label">Upload file audio</label>
+                    <input asp-for="AudioFile" type="file" class="form-control" accept="audio/*" />
+                    <span asp-validation-for="AudioFile" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div id="ttsSection" class="tts-section">
+                <div class="alert alert-info py-2 mb-3">
+                    <i class="fas fa-circle-info me-1"></i>
+                    Ở chế độ TTS, hệ thống dùng trực tiếp nội dung từ ô <strong>Transcript</strong> bên dưới để tạo audio.
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Input.TranscriptText" class="form-label">Transcript (dùng chung cho TTS)</label>
+                <textarea asp-for="Input.TranscriptText" rows="6" class="form-control"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-shop">Gửi yêu cầu thêm audio</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function toggleAudioMode() {
+            const isUpload = document.getElementById('modeUpload').checked;
+            document.getElementById('uploadSection').style.display = isUpload ? '' : 'none';
+            document.getElementById('ttsSection').style.display = isUpload ? 'none' : '';
+        }
+
+        document.addEventListener('DOMContentLoaded', toggleAudioMode);
+    </script>
+}

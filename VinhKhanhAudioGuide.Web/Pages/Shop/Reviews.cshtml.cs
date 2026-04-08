@@ -24,12 +24,10 @@ public class ReviewsModel : PageModel
 
     public async Task<IActionResult> OnGetAsync()
     {
-        IQueryable<Location> query = _db.Locations.AsNoTracking();
-        if (!UserAccessService.IsAdmin(User))
-        {
-            var ownedLocationIds = UserAccessService.GetOwnedLocationIds(User);
-            query = query.Where(location => ownedLocationIds.Contains(location.Id));
-        }
+        var ownedLocationIds = await UserAccessService.GetOwnedLocationIdsAsync(User, _db);
+        IQueryable<Location> query = _db.Locations
+            .AsNoTracking()
+            .Where(location => ownedLocationIds.Contains(location.Id));
 
         AccessibleLocations = await query.OrderBy(location => location.Name).ToListAsync();
         if (!AccessibleLocations.Any()) return Page();
@@ -45,7 +43,7 @@ public class ReviewsModel : PageModel
             return Page();
         }
 
-        if (!UserAccessService.CanAccessLocation(User, selectedLocationId)) return Forbid();
+        if (!await UserAccessService.CanAccessLocationAsync(User, _db, selectedLocationId)) return Forbid();
 
         var audios = await _db.AudioGuides
             .AsNoTracking()

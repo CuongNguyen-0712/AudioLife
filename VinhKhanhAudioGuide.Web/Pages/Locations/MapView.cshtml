@@ -3,85 +3,372 @@
 @{
     ViewData["Title"] = "Bản đồ POI";
     ViewData["ActivePage"] = "Map";
+
+    string NormalizeImageUrl(string? value)
+    {
+        var url = value?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return string.Empty;
+        }
+
+        if (url.StartsWith("~/", StringComparison.Ordinal))
+        {
+            return "/" + url[2..];
+        }
+
+        if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+            || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+            || url.StartsWith("data:", StringComparison.OrdinalIgnoreCase)
+            || url.StartsWith("blob:", StringComparison.OrdinalIgnoreCase)
+            || url.StartsWith("/", StringComparison.Ordinal))
+        {
+            return url;
+        }
+
+        return "/" + url.TrimStart('.', '/');
+    }
+
+    var poiCount = Model.Locations.Count;
+    var categoryCount = Model.Locations
+        .Select(location => location.Category?.Name ?? "Khác")
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .Count();
+    var totalAudio = Model.Locations.Sum(location => location.AudioGuides.Count);
+    var avgAudioPerPoi = poiCount == 0 ? 0 : Math.Round((double)totalAudio / poiCount, 1);
 }
 
 @section Scripts {
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <style>
-        #map { height: 600px; width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .poi-popup img { width: 100%; height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; }
-        .poi-popup h5 { margin: 0 0 5px 0; font-size: 16px; font-weight: 600; }
-        .poi-popup p { margin: 0; font-size: 13px; color: #666; }
-        .poi-popup .badge { margin-top: 5px; }
-    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var defaultCenter = [10.7600, 106.7040];
+            var map = L.map('map', { zoomControl: false }).setView(defaultCenter, 16);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            var locations = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Locations.Select(l => new {
+                id = l.Id,
+                name = l.Name,
+                lat = l.Latitude,
+                lng = l.Longitude,
+                address = l.Address,
+                image = NormalizeImageUrl(l.ImageUrl),
+                cat = l.Category != null ? l.Category.Name : "Khác",
+                audioCount = l.AudioGuides.Count
+            })));
+
+            var bounds = [];
+            var markerMap = {};
+            var markerVisibleMap = {};
+
+            var poiListItems = Array.from(document.querySelectorAll('.poi-list-item'));
+            var searchInput = document.getElementById('poiSearchInput');
+            var emptyHint = document.getElementById('mapEmptyHint');
+            var fitPoiButton = document.getElementById('fitPoiBtn');
+            var centerPoiButton = document.getElementById('centerPoiBtn');
+            var zoomInButton = document.getElementById('zoomInPoiBtn');
+            var zoomOutButton = document.getElementById('zoomOutPoiBtn');
+            var selectedPoiId = '';
+
+            function escapeHtml(value) {
+                if (!value) return '';
+                return value
+                    .replaceAll('&', '&amp;')
+                    .replaceAll('<', '&lt;')
+                    .replaceAll('>', '&gt;')
+                    .replaceAll('"', '&quot;')
+                    .replaceAll("'", '&#39;');
+            }
+
+            function createPoiPointStyle(isActive, isVisible) {
+                return {
+                    radius: isActive ? 13 : 10,
+                    color: isActive ? '#7c2d12' : '#ffffff',
+                    weight: isActive ? 4 : 3,
+                    fillColor: isActive ? '#ea580c' : '#f97316',
+                    fillOpacity: isVisible ? (isActive ? 0.96 : 0.88) : 0.24,
+                    opacity: isVisible ? 1 : 0.24
+                };
+            }
+
+            function applyPoiPointStyle(poiId) {
+                var marker = markerMap[poiId];
+                if (!marker) {
+                    return;
+                }
+
+                var isActive = poiId === selectedPoiId;
+                var isVisible = markerVisibleMap[poiId] !== false;
+
+                marker.setStyle(createPoiPointStyle(isActive, isVisible));
+                if (isActive) {
+                    marker.bringToFront();
+                }
+            }
+
+            locations.forEach(function (loc) {
+                var lat = Number(loc.lat);
+                var lng = Number(loc.lng);
+
+                if (Number.isFinite(lat) && Number.isFinite(lng)) {
+                    var poiId = String(loc.id);
+                    var imageSrc = (loc.image || '').trim();
+                    var imageSection = imageSrc
+                        ? `<div class="image-shell">
+                                <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(loc.name)}" loading="lazy" decoding="async" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                                <div class="image-fallback"><i class="fas fa-image"></i><span>Không có ảnh</span></div>
+                           </div>`
+                        : `<div class="image-shell"><div class="image-fallback" style="display:flex"><i class="fas fa-image"></i><span>Không có ảnh</span></div></div>`;
+
+                    var popupContent = `
+                        <div class="poi-popup">
+                            ${imageSection}
+                            <h5>${escapeHtml(loc.name)}</h5>
+                            <p><i class="fas fa-map-marker-alt text-danger me-1"></i> ${escapeHtml(loc.address || '')}</p>
+                            <div class="poi-popup-tags">
+                                <span class="badge bg-primary">${escapeHtml(loc.cat || 'Khác')}</span>
+                                <span class="badge bg-secondary"><i class="fas fa-headphones me-1"></i> ${loc.audioCount} audio</span>
+                            </div>
+                            <div class="mt-2 text-end">
+                                <a href="/Locations/Edit/${loc.id}" class="btn btn-sm btn-outline-primary map-action-btn">Cập nhật</a>
+                            </div>
+                        </div>`;
+
+                    var marker = L.circleMarker([lat, lng], Object.assign({ className: 'poi-point' }, createPoiPointStyle(false, true)))
+                        .addTo(map)
+                        .bindPopup(popupContent);
+
+                    marker.on('click', function () {
+                        setActivePoi(poiId);
+                    });
+
+                    marker.on('popupopen', function () {
+                        setActivePoi(poiId);
+                    });
+
+                    markerMap[poiId] = marker;
+                    markerVisibleMap[poiId] = true;
+
+                    bounds.push([lat, lng]);
+                }
+            });
+
+            function setActivePoi(poiId) {
+                var normalizedPoiId = String(poiId);
+                selectedPoiId = normalizedPoiId;
+
+                poiListItems.forEach(function (item) {
+                    item.classList.toggle('active', item.dataset.poiId === normalizedPoiId);
+                });
+
+                Object.keys(markerMap).forEach(function (id) {
+                    applyPoiPointStyle(id);
+                });
+            }
+
+            function updateZoomButtonsState() {
+                if (zoomInButton) {
+                    zoomInButton.disabled = map.getZoom() >= map.getMaxZoom();
+                }
+
+                if (zoomOutButton) {
+                    zoomOutButton.disabled = map.getZoom() <= map.getMinZoom();
+                }
+            }
+
+            poiListItems.forEach(function (item) {
+                item.addEventListener('click', function () {
+                    var poiId = item.dataset.poiId;
+                    var marker = markerMap[poiId];
+                    if (!marker) {
+                        return;
+                    }
+
+                    map.setView(marker.getLatLng(), Math.max(map.getZoom(), 17), { animate: true });
+                    marker.openPopup();
+                    setActivePoi(poiId);
+                });
+            });
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function () {
+                    var keyword = searchInput.value.trim().toLowerCase();
+                    var hasActiveVisible = false;
+
+                    poiListItems.forEach(function (item) {
+                        var name = (item.dataset.poiName || '').toLowerCase();
+                        var address = (item.dataset.poiAddress || '').toLowerCase();
+                        var matched = !keyword || name.includes(keyword) || address.includes(keyword);
+                        item.classList.toggle('d-none', !matched);
+
+                        if (matched && item.dataset.poiId === selectedPoiId) {
+                            hasActiveVisible = true;
+                        }
+
+                        markerVisibleMap[item.dataset.poiId] = matched;
+                        applyPoiPointStyle(item.dataset.poiId);
+                    });
+
+                    if (!hasActiveVisible) {
+                        var firstVisible = poiListItems.find(function (item) { return !item.classList.contains('d-none'); });
+                        if (firstVisible) {
+                            setActivePoi(firstVisible.dataset.poiId);
+                        }
+                    }
+                });
+            }
+
+            if (bounds.length > 0) {
+                map.fitBounds(bounds, { padding: [50, 50] });
+                var firstId = Object.keys(markerMap)[0];
+                if (firstId) {
+                    setActivePoi(firstId);
+                }
+            } else if (emptyHint) {
+                emptyHint.classList.remove('d-none');
+            }
+
+            if (fitPoiButton) {
+                fitPoiButton.addEventListener('click', function () {
+                    if (bounds.length > 0) {
+                        map.fitBounds(bounds, { padding: [50, 50] });
+                    }
+                });
+            }
+
+            if (centerPoiButton) {
+                centerPoiButton.addEventListener('click', function () {
+                    map.setView(defaultCenter, 16, { animate: true });
+                });
+            }
+
+            if (zoomInButton) {
+                zoomInButton.addEventListener('click', function () {
+                    map.zoomIn();
+                });
+            }
+
+            if (zoomOutButton) {
+                zoomOutButton.addEventListener('click', function () {
+                    map.zoomOut();
+                });
+            }
+
+            map.on('zoomend', updateZoomButtonsState);
+            updateZoomButtonsState();
+
+            setTimeout(function () {
+                map.invalidateSize({ debounceMoveend: true });
+            }, 80);
+        });
+    </script>
 }
 
 <div class="dashboard-hero mb-4">
     <div>
-        <p class="hero-kicker"><i class="fa-solid fa-map"></i> Xem Bản Đồ</p>
-        <h1 class="hero-title">Bản Đồ Địa Điểm</h1>
-        <p class="hero-subtitle">Trực quan hóa vị trí của tất cả POI trên bản đồ.</p>
+        <p class="hero-kicker"><i class="fa-solid fa-map"></i> Điều hướng POI</p>
+        <h1 class="hero-title">Bản đồ địa điểm</h1>
+        <p class="hero-subtitle">Xem toàn bộ POI, tìm nhanh theo tên hoặc địa chỉ và mở chi tiết trực tiếp trên bản đồ.</p>
     </div>
-    <div>
-        <a asp-page="Index" class="btn-admin btn-admin-outline me-2"><i class="fas fa-list"></i> Xem danh sách</a>
-        <a asp-page="Create" class="btn-admin btn-admin-primary"><i class="fas fa-plus"></i> Thêm địa điểm</a>
+    <div class="map-toolbar">
+        <a asp-page="Index" class="btn-admin btn-admin-outline"><i class="fas fa-list"></i> Danh sách POI</a>
+        <a asp-page="Create" class="btn-admin btn-admin-primary"><i class="fas fa-plus"></i> Thêm POI mới</a>
     </div>
 </div>
 
-<div class="admin-card card-v2 p-3">
-    <div id="map"></div>
+<div class="row g-3 map-workspace">
+    <div class="col-xl-4 col-xxl-3">
+        <div class="admin-card card-v2 map-side-panel">
+            <div class="card-header"><span><i class="fa-solid fa-location-dot me-2"></i>Bộ lọc POI</span></div>
+            <div class="p-3">
+                <div class="map-kpi-grid mb-3">
+                    <div class="map-kpi-tile"><span>Tổng POI</span><strong>@poiCount</strong></div>
+                    <div class="map-kpi-tile"><span>Danh mục</span><strong>@categoryCount</strong></div>
+                    <div class="map-kpi-tile"><span>Tổng audio</span><strong>@totalAudio</strong></div>
+                    <div class="map-kpi-tile"><span>TB audio/POI</span><strong>@avgAudioPerPoi</strong></div>
+                </div>
+
+                <label class="form-label" for="poiSearchInput">Tìm POI</label>
+                <input id="poiSearchInput" class="form-control poi-search-input" type="search" placeholder="Nhập tên hoặc địa chỉ..." />
+
+                <div id="poiList" class="poi-list mt-3">
+                    @if (!Model.Locations.Any())
+                    {
+                        <div class="text-muted small">Chưa có POI để hiển thị.</div>
+                    }
+                    else
+                    {
+                        @foreach (var location in Model.Locations.OrderBy(item => item.Name))
+                        {
+                            <button type="button"
+                                    class="poi-list-item"
+                                    data-poi-id="@location.Id"
+                                    data-poi-name="@location.Name"
+                                    data-poi-address="@location.Address">
+                                <span class="poi-list-top">
+                                    <span class="poi-list-thumb-wrap">
+                                        @{
+                                            var thumbUrl = NormalizeImageUrl(location.ImageUrl);
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(thumbUrl))
+                                        {
+                                            <img class="poi-list-thumb"
+                                                 src="@thumbUrl"
+                                                 alt="@location.Name"
+                                                 loading="lazy"
+                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                                            <span class="poi-list-thumb-fallback"><i class="fas fa-image"></i></span>
+                                        }
+                                        else
+                                        {
+                                            <span class="poi-list-thumb-fallback" style="display:flex;"><i class="fas fa-image"></i></span>
+                                        }
+                                    </span>
+                                    <span class="poi-list-main">
+                                        <span class="poi-list-title">@location.Name</span>
+                                        <span class="poi-list-address">@location.Address</span>
+                                        <span class="poi-list-meta">@(location.Category?.Name ?? "Khác") · @location.AudioGuides.Count audio</span>
+                                    </span>
+                                </span>
+                            </button>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-8 col-xxl-9">
+        <div class="admin-card card-v2 p-3">
+            <div class="map-shell">
+                <div id="map" class="poi-map"></div>
+                <div id="mapEmptyHint" class="map-empty-hint d-none">
+                    <i class="fas fa-map-pin me-1"></i> Chưa có POI hợp lệ để hiển thị trên bản đồ.
+                </div>
+                <div class="map-floating-tools">
+                    <div class="map-tool-group">
+                        <button type="button" id="fitPoiBtn" class="btn-admin btn-admin-outline btn-sm-admin">
+                            <i class="fas fa-expand"></i> Vừa khung
+                        </button>
+                        <button type="button" id="centerPoiBtn" class="btn-admin btn-admin-outline btn-sm-admin">
+                            <i class="fas fa-crosshairs"></i> Về trung tâm
+                        </button>
+                    </div>
+                    <div class="map-tool-group map-tool-group-zoom">
+                        <button type="button" id="zoomInPoiBtn" class="btn-admin btn-admin-outline btn-sm-admin map-zoom-btn" aria-label="Phóng to bản đồ">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button type="button" id="zoomOutPoiBtn" class="btn-admin btn-admin-outline btn-sm-admin map-zoom-btn" aria-label="Thu nhỏ bản đồ">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Khởi tạo bản đồ với tâm là TP.HCM
-        var map = L.map('map').setView([10.7600, 106.7040], 16);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-
-        // Nạp dữ liệu POI từ Model
-        var locations = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Locations.Select(l => new {
-            id = l.Id,
-            name = l.Name,
-            lat = l.Latitude,
-            lng = l.Longitude,
-            address = l.Address,
-            image = l.ImageUrl,
-            cat = l.Category != null ? l.Category.Name : "Khác",
-            audioCount = l.AudioGuides.Count
-        })));
-
-        var bounds = [];
-        
-        locations.forEach(function(loc) {
-            if (loc.lat && loc.lng) {
-                var popupContent = `
-                    <div class="poi-popup">
-                        <img src="${loc.image}" alt="${loc.name}" onerror="this.src='/images/placeholder.jpg'" />
-                        <h5>${loc.name}</h5>
-                        <p><i class="fas fa-map-marker-alt text-danger me-1"></i> ${loc.address}</p>
-                        <span class="badge bg-primary mt-2">${loc.cat}</span>
-                        <span class="badge bg-secondary mt-2 ms-1"><i class="fas fa-headphones me-1"></i> ${loc.audioCount} audio</span>
-                        <div class="mt-2 text-end">
-                            <a href="/Locations/Edit/${loc.id}" class="btn btn-sm btn-outline-primary" style="font-size: 12px; padding: 2px 8px;">Cập nhật</a>
-                        </div>
-                    </div>`;
-
-                L.marker([loc.lat, loc.lng])
-                    .addTo(map)
-                    .bindPopup(popupContent);
-                    
-                bounds.push([loc.lat, loc.lng]);
-            }
-        });
-
-        // Tự động zoom để thấy hết tất cả markers
-        if (bounds.length > 0) {
-            map.fitBounds(bounds, { padding: [50, 50] });
-        }
-    });
-</script>

@@ -16,7 +16,7 @@
 
 <div class="admin-card card-v2">
     <div class="p-4">
-        <form method="post" enctype="multipart/form-data" class="admin-form" style="max-width:700px;">
+        <form method="post" enctype="multipart/form-data" class="admin-form form-shell-lg">
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label asp-for="AudioGuide.Id" class="form-label">Mã audio guide</label>
@@ -89,7 +89,7 @@
             </div>
 
             <!-- TTS Mode -->
-            <div id="ttsSection" style="display:none;">
+            <div id="ttsSection" class="tts-section">
                 <div class="mb-3">
                     <label for="TtsText" class="form-label">
                         <i class="fas fa-keyboard"></i> Nhập văn bản để tạo audio

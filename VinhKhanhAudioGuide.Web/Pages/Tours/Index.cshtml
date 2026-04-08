@@ -49,9 +49,11 @@
                         }
                     </td>
                     <td><span class="badge-admin badge-count">@tour.TourLocations.Count</span></td>
-                    <td>
-                        <a asp-page="Edit" asp-route-id="@tour.Id" class="btn-admin btn-sm-admin btn-admin-warning"><i class="fas fa-edit"></i></a>
-                        <a asp-page="Delete" asp-route-id="@tour.Id" class="btn-admin btn-sm-admin btn-admin-danger"><i class="fas fa-trash"></i></a>
+                    <td class="action-cell">
+                        <div class="action-buttons">
+                            <a asp-page="Edit" asp-route-id="@tour.Id" class="btn-admin btn-sm-admin btn-sm-icon btn-admin-warning" title="Chỉnh sửa"><i class="fas fa-edit"></i></a>
+                            <a asp-page="Delete" asp-route-id="@tour.Id" class="btn-admin btn-sm-admin btn-sm-icon btn-admin-danger" title="Xóa"><i class="fas fa-trash"></i></a>
+                        </div>
                     </td>
                 </tr>
             }
