@@ -16,7 +16,7 @@ public partial class MapPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        _viewModel.LoadMapData();
+        _viewModel.RefreshMapWithLocation();
     }
 
     private async void MapWebView_OnNavigating(object? sender, WebNavigatingEventArgs e)

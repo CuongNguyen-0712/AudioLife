@@ -296,6 +296,7 @@ public partial class MainViewModel : ObservableObject
         IsFooterActionEnabled = false;
         FooterModeText = "Standby: ON";
 
+        // Step 1: Start geolocation tracking
         await _geolocationService.StartTrackingAsync();
         if (!_isGeoTrackingSubscribed)
         {
@@ -305,6 +306,44 @@ public partial class MainViewModel : ObservableObject
 
         try
         {
+            // Step 2: Get user location
+            var userLocation = await GetUserLocationAsync();
+            if (!userLocation.HasValue)
+            {
+                return;
+            }
+
+            // Step 3: Find nearest POI
+            var nearestPoi = await FindNearestPoiAsync(userLocation.Value.Latitude, userLocation.Value.Longitude);
+            if (nearestPoi == null)
+            {
+                return;
+            }
+
+            // Step 4: Trigger auto-play for the nearest POI
+            var (location, distanceKm) = nearestPoi.Value;
+            await PlayAutoAudioForLocationAsync(
+                location.Id,
+                distanceKm * 1000,
+                $"POI gần nhất • {FormatDistance(distanceKm)}"
+            );
+        }
+        catch
+        {
+            FooterStatusText = "Chế độ chờ: Không thể phát audio tự động";
+            FooterHintText = "Bạn có thể mở chi tiết POI và phát audio thủ công";
+            FooterActionText = "Thử lại";
+            IsFooterActionEnabled = true;
+        }
+    }
+
+    /// <summary>
+    /// Step 1: Get current user location from geolocation service.
+    /// </summary>
+    private async Task<(double Latitude, double Longitude)?> GetUserLocationAsync()
+    {
+        try
+        {
             var userLocation = await _geolocationService.GetCurrentLocationAsync();
             if (!userLocation.HasValue)
             {
@@ -312,9 +351,27 @@ public partial class MainViewModel : ObservableObject
                 FooterHintText = "Bật quyền vị trí để hệ thống tự chọn POI gần nhất";
                 FooterActionText = "Thử lại";
                 IsFooterActionEnabled = true;
-                return;
+                return null;
             }
+            return userLocation;
+        }
+        catch
+        {
+            FooterStatusText = "Chế độ chờ: Lỗi lấy vị trí";
+            FooterHintText = "Vui lòng kiểm tra kết nối GPS";
+            FooterActionText = "Thử lại";
+            IsFooterActionEnabled = true;
+            return null;
+        }
+    }
 
+    /// <summary>
+    /// Step 2: Find the nearest POI from the user's current location.
+    /// </summary>
+    private async Task<(Location Location, double DistanceKm)?> FindNearestPoiAsync(double userLatitude, double userLongitude)
+    {
+        try
+        {
             var locations = await _apiService.GetLocationsAsync();
             if (locations.Count == 0)
             {
@@ -322,7 +379,7 @@ public partial class MainViewModel : ObservableObject
                 FooterHintText = "Hiện chưa có dữ liệu địa điểm để phát audio";
                 FooterActionText = "Đang chờ";
                 IsFooterActionEnabled = false;
-                return;
+                return null;
             }
 
             var nearest = locations
@@ -330,36 +387,66 @@ public partial class MainViewModel : ObservableObject
                 {
                     Location = loc,
                     DistanceKm = CalculateDistanceKm(
-                        userLocation.Value.Latitude,
-                        userLocation.Value.Longitude,
+                        userLatitude,
+                        userLongitude,
                         loc.Latitude,
                         loc.Longitude)
                 })
                 .OrderBy(x => x.DistanceKm)
                 .First();
 
-            var payload = await ResolveAutoAudioAsync(nearest.Location.Id);
+            return (nearest.Location, nearest.DistanceKm);
+        }
+        catch
+        {
+            FooterStatusText = "Chế độ chờ: Lỗi tìm POI gần nhất";
+            FooterHintText = "Vui lòng thử lại";
+            FooterActionText = "Thử lại";
+            IsFooterActionEnabled = true;
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Step 3: Trigger auto-play for a specific location with available audio.
+    /// </summary>
+    private async Task PlayAutoAudioForLocationAsync(string locationId, double distanceMeters, string hint)
+    {
+        try
+        {
+            // Resolve audio for the location
+            var payload = await ResolveAutoAudioAsync(locationId);
             if (payload is null)
             {
-                FooterStatusText = $"Chế độ chờ: {nearest.Location.Name}";
+                FooterStatusText = $"Chế độ chờ: POI gần nhất";
                 FooterHintText = "POI gần nhất chưa có audio để phát";
                 FooterActionText = "Đang chờ";
                 IsFooterActionEnabled = false;
                 return;
             }
 
-            AutoLocationId = nearest.Location.Id;
-            AutoLocationName = nearest.Location.Name;
+            // Update location and audio information
+            var locations = await _apiService.GetLocationsAsync();
+            var location = locations.FirstOrDefault(l => l.Id == locationId);
+            if (location == null)
+            {
+                return;
+            }
+
+            AutoLocationId = location.Id;
+            AutoLocationName = location.Name;
             AutoAudioGuideId = payload.Value.AudioGuideId;
             AutoAudioUrl = payload.Value.AudioUrl;
 
+            // Update footer status
             FooterStatusText = $"Đang phát tự động: {AutoLocationName}";
-            FooterHintText = $"POI gần nhất • {FormatDistance(nearest.DistanceKm)}";
+            FooterHintText = hint;
             FooterActionText = "Mở trình phát";
             IsFooterActionEnabled = true;
-            _currentPoiDistanceMeters = nearest.DistanceKm * 1000;
+            _currentPoiDistanceMeters = distanceMeters;
             _lastAutoSwitchAt = DateTimeOffset.UtcNow;
 
+            // Start playing audio
             if (!string.Equals(_audioService.CurrentAudioUrl, AutoAudioUrl, StringComparison.OrdinalIgnoreCase) || !_audioService.IsPlaying)
             {
                 await _audioService.PlayAsync(AutoAudioUrl);
@@ -367,8 +454,8 @@ public partial class MainViewModel : ObservableObject
         }
         catch
         {
-            FooterStatusText = "Chế độ chờ: Không thể phát audio tự động";
-            FooterHintText = "Bạn có thể mở chi tiết POI và phát audio thủ công";
+            FooterStatusText = "Chế độ chờ: Lỗi phát audio";
+            FooterHintText = "Vui lòng thử lại";
             FooterActionText = "Thử lại";
             IsFooterActionEnabled = true;
         }
@@ -383,6 +470,7 @@ public partial class MainViewModel : ObservableObject
                 return;
             }
 
+            // Check auto-switch cooldown to prevent frequent switching
             var elapsedSinceLastSwitch = DateTimeOffset.UtcNow - _lastAutoSwitchAt;
             if (_lastAutoSwitchAt != DateTimeOffset.MinValue && elapsedSinceLastSwitch.TotalSeconds < AutoSwitchCooldownSeconds)
             {
@@ -390,6 +478,7 @@ public partial class MainViewModel : ObservableObject
                 return;
             }
 
+            // Check minimum distance improvement to avoid GPS jitter
             if (_currentPoiDistanceMeters < double.MaxValue)
             {
                 var requiredDistance = _currentPoiDistanceMeters - MinDistanceImprovementMeters;
@@ -400,35 +489,9 @@ public partial class MainViewModel : ObservableObject
                 }
             }
 
-            try
-            {
-                var payload = await ResolveAutoAudioAsync(e.LocationId);
-                if (payload is null)
-                {
-                    return;
-                }
-
-                AutoLocationId = e.LocationId;
-                AutoLocationName = e.LocationName;
-                AutoAudioGuideId = payload.Value.AudioGuideId;
-                AutoAudioUrl = payload.Value.AudioUrl;
-
-                FooterStatusText = $"Đang phát tự động: {AutoLocationName}";
-                FooterHintText = $"POI mới trong vùng gần • {Math.Round(e.DistanceMeters)} m";
-                FooterActionText = "Mở trình phát";
-                IsFooterActionEnabled = true;
-                _currentPoiDistanceMeters = e.DistanceMeters;
-                _lastAutoSwitchAt = DateTimeOffset.UtcNow;
-
-                await _audioService.PlayAsync(AutoAudioUrl);
-            }
-            catch
-            {
-                FooterStatusText = "Chế độ chờ: Lỗi khi cập nhật POI gần nhất";
-                FooterHintText = "Tiếp tục theo dõi vị trí để thử lại tự động";
-                FooterActionText = "Thử lại";
-                IsFooterActionEnabled = true;
-            }
+            // Trigger auto-play for the newly detected nearby location
+            var hint = $"POI mới trong vùng gần • {Math.Round(e.DistanceMeters)} m";
+            await PlayAutoAudioForLocationAsync(e.LocationId, e.DistanceMeters, hint);
         });
     }
 

@@ -41,12 +41,13 @@
                                                  Style="{StaticResource InfoBarFrame}">
                                           <VerticalStackLayout HorizontalOptions="Center"
                                                         Spacing="2">
-                                                 <Label Text="⏱"
-                                                               FontSize="18"
-                                                               HorizontalOptions="Center"/>
+                                                 <Image Source="time.svg"
+                                                        HeightRequest="18"
+                                                        WidthRequest="18"
+                                                        HorizontalOptions="Center"/>
                                                  <Label Text="Thời gian"
                                                                FontSize="10"
-                                                               TextColor="{StaticResource Gray500}"
+                                                               TextColor="{StaticResource OnSecondaryContainer}"
                                                                HorizontalOptions="Center"/>
                                                  <Label Text="{Binding Duration, StringFormat='{0} phút'}"
                                                                FontSize="12"
@@ -58,12 +59,13 @@
                                                  Style="{StaticResource InfoBarFrame}">
                                           <VerticalStackLayout HorizontalOptions="Center"
                                                         Spacing="2">
-                                                 <Label Text="🎧"
-                                                               FontSize="18"
-                                                               HorizontalOptions="Center"/>
+                                                 <Image Source="audio.svg"
+                                                        HeightRequest="18"
+                                                        WidthRequest="18"
+                                                        HorizontalOptions="Center"/>
                                                  <Label Text="Audio"
                                                                FontSize="10"
-                                                               TextColor="{StaticResource Gray500}"
+                                                               TextColor="{StaticResource OnSecondaryContainer}"
                                                                HorizontalOptions="Center"/>
                                                  <Label Text="{Binding AudioGuideCountText}"
                                                                FontSize="12"
@@ -75,12 +77,13 @@
                                                  Style="{StaticResource InfoBarFrame}">
                                           <VerticalStackLayout HorizontalOptions="Center"
                                                         Spacing="2">
-                                                 <Label Text="🏷"
-                                                               FontSize="18"
-                                                               HorizontalOptions="Center"/>
+                                                 <Image Source="tags.svg"
+                                                        HeightRequest="18"
+                                                        WidthRequest="18"
+                                                        HorizontalOptions="Center"/>
                                                  <Label Text="Danh mục"
                                                                FontSize="10"
-                                                               TextColor="{StaticResource Gray500}"
+                                                               TextColor="{StaticResource OnSecondaryContainer}"
                                                                HorizontalOptions="Center"/>
                                                  <Label Text="{Binding CategoryName}"
                                                                FontSize="11"
@@ -93,12 +96,13 @@
                                                  Style="{StaticResource InfoBarFrame}">
                                           <VerticalStackLayout HorizontalOptions="Center"
                                                         Spacing="2">
-                                                 <Label Text="🌐"
-                                                               FontSize="18"
-                                                               HorizontalOptions="Center"/>
+                                                 <Image Source="language_icon.svg"
+                                                        HeightRequest="18"
+                                                        WidthRequest="18"
+                                                        HorizontalOptions="Center"/>  
                                                  <Label Text="Ngôn ngữ"
                                                                FontSize="10"
-                                                               TextColor="{StaticResource Gray500}"
+                                                               TextColor="{StaticResource OnSecondaryContainer}"
                                                                HorizontalOptions="Center"/>
                                                  <Label Text="Tiếng Việt"
                                                                FontSize="11"
@@ -112,21 +116,23 @@
 
                             <!-- Description -->
                             <Label Text="Giới thiệu"
-                                   FontSize="18"
+                                   FontSize="22"
+                                   TextColor="{StaticResource OnPrimaryContainer}"
                                    FontAttributes="Bold"/>
 
                             <Label Text="{Binding Description}"
                                    FontSize="14"
-                                   TextColor="Gray"/>
+                                   TextColor="{StaticResource OnSurfaceVariant}"/>
 
                             <!-- Audio Guides -->
                             <Label Text="Audio Guide"
-                                   FontSize="18"
+                                   FontSize="22"
+                                   TextColor="{StaticResource OnPrimaryContainer}"
                                    FontAttributes="Bold"
                                    Margin="0,10,0,0"/>
                             <Label Text="Nghe thuyết minh về các điểm tham quan"
-                                   FontSize="12"
-                                   TextColor="{StaticResource Gray500}"
+                                   FontSize="14"
+                                   TextColor="{StaticResource OnSurfaceVariant}"
                                    Margin="0,0,0,5"/>
 
                             <CollectionView ItemsSource="{Binding AudioGuides}">
@@ -135,21 +141,21 @@
                                                  <Frame Padding="12"
                                                         Margin="0,4"
                                                         CornerRadius="10"
-                                                        BorderColor="LightGray">
+                                                        BorderColor="{StaticResource PrimaryContainer}">
                                                         <Frame.GestureRecognizers>
                                                                <TapGestureRecognizer
                                                                       Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:LocationDetailViewModel}}, Path=PlayAudioCommand}"
                                                                       CommandParameter="{Binding .}"/>
                                                         </Frame.GestureRecognizers>
                                                         <Grid ColumnDefinitions="44,*,Auto">
-                                                               <Frame BackgroundColor="{StaticResource Primary}"
+                                                               <Frame BackgroundColor="{StaticResource PrimaryContainer}"
                                                                       CornerRadius="22"
                                                                       Padding="0"
                                                                       HeightRequest="44"
                                                                       WidthRequest="44"
                                                                       HasShadow="False">
                                                                       <Label Text="▶"
-                                                                             TextColor="White"
+                                                                             TextColor="{StaticResource Primary}"
                                                                              FontSize="16"
                                                                              HorizontalOptions="Center"
                                                                              VerticalOptions="Center"/>
@@ -159,27 +165,44 @@
                                                                                     VerticalOptions="Center"
                                                                              Spacing="2">
                                                                       <Label Text="{Binding Title}"
-                                                                             FontSize="14"
+                                                                             FontSize="16"
                                                                              FontAttributes="Bold"/>
                                                                       <Label Text="{Binding Description}"
-                                                                             FontSize="11"
-                                                                             TextColor="{StaticResource Gray500}"
+                                                                             FontSize="14"
+                                                                             TextColor="{StaticResource OnSurfaceVariant}"
                                                                              LineBreakMode="TailTruncation"/>
                                                                </VerticalStackLayout>
-                                                               <Label Grid.Column="2"
-                                                                      Text="{Binding Duration, StringFormat='⏱ {0} phút'}"
-                                                                      FontSize="11"
-                                                                      TextColor="{StaticResource Gray500}"
-                                                                      VerticalOptions="Center"/>
+                                                               <HorizontalStackLayout Grid.Column="2"
+                                                                                      Spacing="4"
+                                                                                      VerticalOptions="Center">
+                                                                      <Image Source="time.svg"
+                                                                             HeightRequest="14"
+                                                                             WidthRequest="14"
+                                                                             VerticalOptions="Center"/>
+                                                                      <Label Text="{Binding Duration, StringFormat='{0} phút'}"
+                                                                             FontSize="14"
+                                                                             TextColor="{StaticResource OnSecondaryContainer}"
+                                                                             VerticalOptions="Center"/>
+                                                               </HorizontalStackLayout>
                                                         </Grid>
                                                  </Frame>
                                           </DataTemplate>
                                    </CollectionView.ItemTemplate>
                             </CollectionView>
 
+
+                     <!-- ĐỪNG XÓA CODE NHÉ, CÒN PHẦN MAP VÀ TOUR LIÊN QUAN NỮA, ĐỂ TÔI XEM CÓ THỂ LÀM GÌ KHÔNG! -->
+
+
                             <!-- Map Embed (matching web sidebar map) -->
-                            <Label Text="📍 Vị trí"
-                                   FontSize="18"
+                            <!-- <Image Source="location_icon.svg"
+                                   Aspect="AspectFill"
+                                   HeightRequest="200"
+                                   Margin="0,10,0,0"
+                                   IsVisible="{Binding IsMapLoading}"/>
+                            <Label Text="Vị trí"
+                                   FontSize="22"
+                                   TextColor="{StaticResource OnPrimaryContainer}"
                                    FontAttributes="Bold"
                                    Margin="0,10,0,0"/>
 
@@ -193,10 +216,10 @@
                             <Label Text="{Binding Address}"
                                    FontSize="12"
                                    TextColor="{StaticResource Gray500}"
-                                   Margin="0,5,0,0"/>
+                                   Margin="0,5,0,0"/> -->
 
                             <!-- Related Tours (matching web sidebar) -->
-                            <Label Text="🗺 Tours liên quan"
+                            <!-- <Label Text="🗺 Tours liên quan"
                                    FontSize="18"
                                    FontAttributes="Bold"
                                    Margin="0,10,0,0"
@@ -247,10 +270,12 @@
                                                  </Frame>
                                           </DataTemplate>
                                    </CollectionView.ItemTemplate>
-                            </CollectionView>
+                            </CollectionView> -->
 
                             <!-- Start Button -->
                             <Button Text="Bắt đầu nghe"
+                                   TextColor="{StaticResource Primary}"
+                                   BackgroundColor="{StaticResource PrimaryContainer}"
                                     Command="{Binding StartListeningCommand}"
                                     Style="{StaticResource PrimaryButton}"
                                     Margin="0,20,0,0"/>

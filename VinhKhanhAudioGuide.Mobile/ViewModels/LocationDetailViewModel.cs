@@ -51,6 +51,9 @@ public partial class LocationDetailViewModel : ObservableObject
     private HtmlWebViewSource? _mapHtmlSource;
 
     [ObservableProperty]
+    private bool _isMapLoading = true;
+
+    [ObservableProperty]
     private bool _hasRelatedTours;
 
     public ObservableCollection<AudioGuide> AudioGuides { get; } = new();
@@ -72,54 +75,62 @@ public partial class LocationDetailViewModel : ObservableObject
 
     private async Task LoadLocationDetailsAsync(string locationId)
     {
-        var location = await _apiService.GetLocationByIdAsync(locationId);
-
-        if (location == null)
+        IsMapLoading = true;
+        try
         {
-            var locations = await _apiService.GetLocationsAsync();
-            location = locations.ElementAtOrDefault(int.TryParse(locationId, out var idx) ? idx - 1 : -1);
-        }
+            var location = await _apiService.GetLocationByIdAsync(locationId);
 
-        if (location == null) return;
-
-        LocationName = location.Name;
-        Title = LocationName;
-        Description = location.Description;
-        ImageUrl = location.ImageUrl;
-        Address = location.Address;
-        Duration = location.Duration;
-
-        // Category name
-        var categories = await _apiService.GetCategoriesAsync();
-        var cat = categories.FirstOrDefault(c => c.Id == location.CategoryId);
-        CategoryName = cat?.Name ?? "Di tích";
-
-        AudioGuides.Clear();
-        foreach (var audio in location.AudioGuides)
-        {
-            AudioGuides.Add(audio);
-        }
-        AudioGuideCountText = $"{AudioGuides.Count} bài";
-
-        // Map HTML
-        BuildMapHtml(location.Latitude, location.Longitude, location.Name);
-
-        // Related Tours
-        var tours = await _apiService.GetToursAsync();
-        RelatedTours.Clear();
-        foreach (var tour in tours)
-        {
-            if (tour.LocationIds.Contains(location.Id))
+            if (location == null)
             {
-                RelatedTours.Add(new RelatedTourItem
-                {
-                    Id = tour.Id,
-                    Name = tour.Name,
-                    Info = $"{tour.LocationIds.Count} điểm · {tour.Duration} phút"
-                });
+                var locations = await _apiService.GetLocationsAsync();
+                location = locations.ElementAtOrDefault(int.TryParse(locationId, out var idx) ? idx - 1 : -1);
             }
+
+            if (location == null) return;
+
+            LocationName = location.Name;
+            Title = LocationName;
+            Description = location.Description;
+            ImageUrl = location.ImageUrl;
+            Address = location.Address;
+            Duration = location.Duration;
+
+            // Category name
+            var categories = await _apiService.GetCategoriesAsync();
+            var cat = categories.FirstOrDefault(c => c.Id == location.CategoryId);
+            CategoryName = cat?.Name ?? "Di tích";
+
+            AudioGuides.Clear();
+            foreach (var audio in location.AudioGuides)
+            {
+                AudioGuides.Add(audio);
+            }
+            AudioGuideCountText = $"{AudioGuides.Count} bài";
+
+            // Map HTML
+            BuildMapHtml(location.Latitude, location.Longitude, location.Name);
+
+            // Related Tours
+            var tours = await _apiService.GetToursAsync();
+            RelatedTours.Clear();
+            foreach (var tour in tours)
+            {
+                if (tour.LocationIds.Contains(location.Id))
+                {
+                    RelatedTours.Add(new RelatedTourItem
+                    {
+                        Id = tour.Id,
+                        Name = tour.Name,
+                        Info = $"{tour.LocationIds.Count} điểm · {tour.Duration} phút"
+                    });
+                }
+            }
+            HasRelatedTours = RelatedTours.Count > 0;
         }
-        HasRelatedTours = RelatedTours.Count > 0;
+        finally
+        {
+            IsMapLoading = false;
+        }
     }
 
     private void BuildMapHtml(double lat, double lng, string name)

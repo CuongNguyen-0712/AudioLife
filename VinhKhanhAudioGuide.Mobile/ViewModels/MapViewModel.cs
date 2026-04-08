@@ -36,12 +36,80 @@ public partial class MapViewModel : ObservableObject
         _navigationService = navigationService;
         _geolocationService = geolocationService;
         _apiService = apiService;
-        LoadMapData();
+        InitializeMapAsync();
+    }
+
+    /// <summary>
+    /// Initialize map with automatic user location detection and POI updates.
+    /// </summary>
+    private async void InitializeMapAsync()
+    {
+        try
+        {
+            // Step 1: Get user location automatically
+            var userLocation = await GetUserLocationAsync();
+            
+            // Step 2: Load map data with user location
+            await LoadMapDataAsync();
+        }
+        catch
+        {
+            // Fallback: load map with default location if geolocation fails
+            await LoadMapDataAsync();
+        }
+    }
+
+    /// <summary>
+    /// Get current user location from geolocation service.
+    /// </summary>
+    private async Task<bool> GetUserLocationAsync()
+    {
+        try
+        {
+            var location = await _geolocationService.GetCurrentLocationAsync();
+            if (!location.HasValue)
+            {
+                return false;
+            }
+
+            UserLatitude = location.Value.Latitude;
+            UserLongitude = location.Value.Longitude;
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public void LoadMapData()
     {
         _ = LoadMapDataAsync();
+    }
+
+    /// <summary>
+    /// Refresh map by getting user location and reloading map data (called from MapPage OnAppearing).
+    /// </summary>
+    public void RefreshMapWithLocation()
+    {
+        _ = RefreshMapWithLocationAsync();
+    }
+
+    private async Task RefreshMapWithLocationAsync()
+    {
+        try
+        {
+            // Get updated user location
+            await GetUserLocationAsync();
+            
+            // Reload map with new location
+            await LoadMapDataAsync();
+        }
+        catch
+        {
+            // Fallback: just reload map data if location fetch fails
+            await LoadMapDataAsync();
+        }
     }
 
     public async Task LoadMapDataAsync()
@@ -255,18 +323,18 @@ public partial class MapViewModel : ObservableObject
 
     var customIcon = L.divIcon({{
         className: 'custom-marker',
-        html: '<div style=""width:28px;height:28px;background:{primary};border-radius:50%;border:3px solid {surfaceContainerLowest};box-shadow:0 2px 6px rgba(0,0,0,0.3);""></div>',
-        iconSize: [28, 28],
-        iconAnchor: [14, 14],
-        popupAnchor: [0, -16]
+        html: '<img src=""location_icon.svg"" style=""width:40px;height:40px;display:block;filter:drop-shadow(0 3px 8px rgba(0,0,0,0.3));""/>',
+        iconSize: [48, 48],
+        iconAnchor: [24, 48],
+        popupAnchor: [0, -42]
     }});
 
     var nearestIcon = L.divIcon({{
         className: 'nearest-marker',
-        html: '<div style=""width:32px;height:32px;background:{tertiary};border-radius:50%;border:3px solid {surfaceContainerLowest};box-shadow:0 4px 10px rgba(0,0,0,0.32);position:relative;""><div style=""position:absolute;inset:8px;background:{tertiaryFixed};border-radius:50%;opacity:0.5;""></div></div>',
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
-        popupAnchor: [0, -18]
+        html: '<div style=""width:48px;height:48px;border-radius:24px;background:#8A4F30;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px rgba(0,0,0,0.35);""><img src=""location_icon.svg"" style=""width:30px;height:30px;display:block;filter:brightness(0) invert(1);""/></div>',
+        iconSize: [48, 48],
+        iconAnchor: [24, 48],
+        popupAnchor: [0, -42]
     }});
 
     // User location marker
