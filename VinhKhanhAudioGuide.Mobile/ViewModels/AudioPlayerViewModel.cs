@@ -48,7 +48,7 @@ public partial class AudioPlayerViewModel : ObservableObject
     private string _currentScriptText = string.Empty;
 
     [ObservableProperty]
-    private string _playPauseGlyph = "▶";
+    private string _playPauseGlyph = "play_white_icon.svg";
 
     [ObservableProperty]
     private string _rewindGlyph = "⟲10";
@@ -138,9 +138,9 @@ public partial class AudioPlayerViewModel : ObservableObject
             IsPlaying = e.State == AudioPlaybackState.Playing;
             PlayPauseGlyph = e.State switch
             {
-                AudioPlaybackState.Loading => "⏳",
-                AudioPlaybackState.Playing => "⏸",
-                _ => "▶"
+                AudioPlaybackState.Loading => "loading.svg",
+                AudioPlaybackState.Playing => "pause.svg",
+                _ => "play_white_icon.svg"
             };
         });
     }
@@ -293,7 +293,7 @@ public partial class AudioPlayerViewModel : ObservableObject
         var currentAudioMatches = IsCurrentAudio(_audioService.CurrentAudioUrl);
 
         IsPlaying = currentAudioMatches && _audioService.IsPlaying;
-        PlayPauseGlyph = IsPlaying ? "⏸" : "▶";
+        PlayPauseGlyph = IsPlaying ? "play_white_icon.svg" : "pause.svg";
 
         if (!currentAudioMatches)
         {

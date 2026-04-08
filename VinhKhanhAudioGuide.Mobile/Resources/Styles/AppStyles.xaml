@@ -258,7 +258,7 @@
     <Style x:Key="AudioSlider" TargetType="Slider">
         <Setter Property="MinimumTrackColor" Value="{StaticResource Primary}"/>
         <Setter Property="MaximumTrackColor" Value="{StaticResource SurfaceContainerHighest}"/>
-        <Setter Property="ThumbColor" Value="{StaticResource Primary}"/>
+        <Setter Property="ThumbColor" Value="{StaticResource SecondaryContainer}"/>
     </Style>
 
     <!-- Stat and info blocks use surface hierarchy instead of separators -->

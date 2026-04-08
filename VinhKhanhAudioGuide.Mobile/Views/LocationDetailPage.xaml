@@ -141,7 +141,7 @@
                                                  <Frame Padding="12"
                                                         Margin="0,4"
                                                         CornerRadius="10"
-                                                        BorderColor="LightGray">
+                                                        BorderColor="{StaticResource PrimaryContainer}">
                                                         <Frame.GestureRecognizers>
                                                                <TapGestureRecognizer
                                                                       Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:LocationDetailViewModel}}, Path=PlayAudioCommand}"
@@ -192,6 +192,8 @@
 
 
                      <!-- ĐỪNG XÓA CODE NHÉ, CÒN PHẦN MAP VÀ TOUR LIÊN QUAN NỮA, ĐỂ TÔI XEM CÓ THỂ LÀM GÌ KHÔNG! -->
+
+
                             <!-- Map Embed (matching web sidebar map) -->
                             <!-- <Image Source="location_icon.svg"
                                    Aspect="AspectFill"
