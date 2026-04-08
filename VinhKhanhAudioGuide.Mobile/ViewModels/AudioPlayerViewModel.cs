@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VinhKhanhAudioGuide.Mobile.Models;
@@ -73,6 +75,21 @@ public partial class AudioPlayerViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _isSliderDragging;
+
+    [ObservableProperty]
+    private int _currentAudioGuideIndex;
+
+    [ObservableProperty]
+    private bool _canPlayNext;
+
+    [ObservableProperty]
+    private bool _canPlayBack;
+
+    [ObservableProperty]
+    private string _currentPlayingAudioGuideId = string.Empty;
+
+    public ObservableCollection<AudioGuide> AudioGuides { get; } = new();
+    public ObservableCollection<ScriptSegmentViewModel> ScriptSegments { get; } = new();
 
     public AudioPlayerViewModel(IAudioService audioService, IApiService apiService)
     {
@@ -193,31 +210,33 @@ public partial class AudioPlayerViewModel : ObservableObject
                 CurrentScriptText = AudioTranslationText;
                 Title = location.Name;
 
-                if (location.AudioGuides.Count > 0)
+                // Load all audio guides
+                AudioGuides.Clear();
+                foreach (var audio in location.AudioGuides)
                 {
-                    var guide = SelectGuide(location.AudioGuides);
-                    Duration = guide.Duration * 60; // minutes to seconds
-                    DurationText = FormatTime(TimeSpan.FromSeconds(Duration));
+                    AudioGuides.Add(audio);
+                }
 
-                    AudioTranslationText = !string.IsNullOrWhiteSpace(guide.TranscriptText)
-                        ? guide.TranscriptText
-                        : guide.Description;
+                if (AudioGuides.Count > 0)
+                {
+                    // Find and select the appropriate audio guide
+                    var selectedIndex = 0;
+                    
+                    if (!string.IsNullOrWhiteSpace(AudioGuideId))
+                    {
+                        selectedIndex = AudioGuides.ToList().FindIndex(g => g.Id == AudioGuideId);
+                        if (selectedIndex == -1) selectedIndex = 0;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(AudioUrl))
+                    {
+                        selectedIndex = AudioGuides.ToList().FindIndex(g =>
+                            string.Equals(g.AudioUrl, AudioUrl, StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(g.CloudinaryAudioUrl, AudioUrl, StringComparison.OrdinalIgnoreCase));
+                        if (selectedIndex == -1) selectedIndex = 0;
+                    }
 
-                    AudioTranslationSummary = !string.IsNullOrWhiteSpace(guide.Description)
-                        ? guide.Description
-                        : AudioTranslationSummary;
-
-                    Title = !string.IsNullOrWhiteSpace(guide.Title)
-                        ? guide.Title
-                        : location.Name;
-
-                    AudioGuideId = guide.Id;
-                    AudioUrl = !string.IsNullOrWhiteSpace(guide.CloudinaryAudioUrl)
-                        ? guide.CloudinaryAudioUrl
-                        : guide.AudioUrl;
-
-                    LoadScriptSegments(guide);
-                    SyncPlaybackStateFromService();
+                    CurrentAudioGuideIndex = selectedIndex;
+                    UpdateCurrentAudioGuide();
                 }
             }
             else
@@ -233,12 +252,64 @@ public partial class AudioPlayerViewModel : ObservableObject
                 CurrentScriptText = string.Empty;
                 _scriptSegments.Clear();
                 _activeScriptSegmentId = -1;
+                AudioGuides.Clear();
             }
         }
         finally
         {
             _isLoadingLocationData = false;
         }
+    }
+
+    private void UpdateCurrentAudioGuide()
+    {
+        if (CurrentAudioGuideIndex < 0 || CurrentAudioGuideIndex >= AudioGuides.Count)
+        {
+            return;
+        }
+
+        var guide = AudioGuides[CurrentAudioGuideIndex];
+        Duration = guide.Duration * 60; // minutes to seconds
+        DurationText = FormatTime(TimeSpan.FromSeconds(Duration));
+
+        AudioTranslationText = !string.IsNullOrWhiteSpace(guide.TranscriptText)
+            ? guide.TranscriptText
+            : guide.Description;
+
+        AudioTranslationSummary = !string.IsNullOrWhiteSpace(guide.Description)
+            ? guide.Description
+            : AudioTranslationSummary;
+
+        Title = !string.IsNullOrWhiteSpace(guide.Title)
+            ? guide.Title
+            : LocationName;
+
+        AudioGuideId = guide.Id;
+        CurrentPlayingAudioGuideId = guide.Id;
+        AudioUrl = !string.IsNullOrWhiteSpace(guide.CloudinaryAudioUrl)
+            ? guide.CloudinaryAudioUrl
+            : guide.AudioUrl;
+
+        UpdateScriptSegmentsForAudio();
+        UpdateNextBackButtonStates();
+        SyncPlaybackStateFromService();
+    }
+
+    private void UpdateNextBackButtonStates()
+    {
+        CanPlayNext = CurrentAudioGuideIndex < AudioGuides.Count - 1;
+        CanPlayBack = CurrentAudioGuideIndex > 0;
+    }
+
+    private void UpdateScriptSegmentsForAudio()
+    {
+        if (CurrentAudioGuideIndex < 0 || CurrentAudioGuideIndex >= AudioGuides.Count)
+        {
+            return;
+        }
+
+        var guide = AudioGuides[CurrentAudioGuideIndex];
+        LoadScriptSegments(guide);
     }
 
     private void LoadScriptSegments(AudioGuide guide)
@@ -271,6 +342,7 @@ public partial class AudioPlayerViewModel : ObservableObject
         if (_scriptSegments.Count == 0)
         {
             CurrentScriptText = AudioTranslationText;
+            CheckAutoAdvanceAudio();
             return;
         }
 
@@ -281,11 +353,13 @@ public partial class AudioPlayerViewModel : ObservableObject
 
         if (activeSegment.Id == _activeScriptSegmentId)
         {
+            CheckAutoAdvanceAudio();
             return;
         }
 
         _activeScriptSegmentId = activeSegment.Id;
         CurrentScriptText = activeSegment.ScriptText;
+        CheckAutoAdvanceAudio();
     }
 
     private void SyncPlaybackStateFromService()
@@ -293,7 +367,7 @@ public partial class AudioPlayerViewModel : ObservableObject
         var currentAudioMatches = IsCurrentAudio(_audioService.CurrentAudioUrl);
 
         IsPlaying = currentAudioMatches && _audioService.IsPlaying;
-        PlayPauseGlyph = IsPlaying ? "play_white_icon.svg" : "pause.svg";
+        PlayPauseGlyph = IsPlaying ? "pause.svg" : "play_white_icon.svg";
 
         if (!currentAudioMatches)
         {
@@ -399,10 +473,103 @@ public partial class AudioPlayerViewModel : ObservableObject
         CurrentPositionText = FormatTime(TimeSpan.FromSeconds(CurrentPosition));
     }
 
+    [RelayCommand]
+    private void PlayNext()
+    {
+        if (CanPlayNext)
+        {
+            CurrentAudioGuideIndex++;
+            UpdateCurrentAudioGuide();
+        }
+    }
+
+    [RelayCommand]
+    private void PlayBack()
+    {
+        if (CanPlayBack)
+        {
+            CurrentAudioGuideIndex--;
+            UpdateCurrentAudioGuide();
+        }
+    }
+
+    [RelayCommand]
+    private async Task PlayAudioGuideAsync(AudioGuide audioGuide)
+    {
+        if (audioGuide == null)
+        {
+            return;
+        }
+
+        var index = AudioGuides.IndexOf(audioGuide);
+        if (index >= 0)
+        {
+            CurrentAudioGuideIndex = index;
+            UpdateCurrentAudioGuide();
+            // Auto-play the selected audio guide
+            await PlayPauseAsync();
+        }
+    }
+
+    partial void OnCurrentAudioGuideIndexChanged(int value)
+    {
+        UpdateNextBackButtonStates();
+        if (CurrentAudioGuideIndex >= 0 && CurrentAudioGuideIndex < AudioGuides.Count)
+        {
+            UpdateCurrentAudioGuide();
+        }
+    }
+
+    // Check if a specific segment is the active one currently playing
+    public bool IsSegmentActive(AudioScriptSegment segment)
+    {
+        return segment.Id == _activeScriptSegmentId;
+    }
+
+    // Check for auto-advance when audio finishes
+    private void CheckAutoAdvanceAudio()
+    {
+        if (IsPlaying || CurrentPosition < Duration - 0.5)
+        {
+            return; // Still playing or not at the end yet
+        }
+
+        // Audio has finished, auto-advance to next if available
+        if (CanPlayNext)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                PlayNext();
+            });
+        }
+    }
+
     private static string FormatTime(TimeSpan time)
     {
         return time.Hours > 0 
             ? $"{time.Hours}:{time.Minutes:D2}:{time.Seconds:D2}" 
             : $"{time.Minutes}:{time.Seconds:D2}";
     }
+}
+
+// Helper class for binding script segments with active state
+public class ScriptSegmentViewModel : INotifyPropertyChanged
+{
+    private bool _isActive;
+    public AudioScriptSegment Segment { get; set; } = new();
+
+    public bool IsActive
+    {
+        get => _isActive;
+        set
+        {
+            if (_isActive != value)
+            {
+                _isActive = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsActive)));
+            }
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 }
