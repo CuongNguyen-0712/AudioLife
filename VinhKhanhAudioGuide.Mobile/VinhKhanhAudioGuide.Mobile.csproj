@@ -39,7 +39,7 @@
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#ffffff" />
 
     <!-- Splash Screen -->
-    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#13696D" BaseSize="2040,2040" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#13696D" BaseSize="512,512" />
 
     <!-- Images -->
     <MauiImage Include="Resources\Images\*" />
@@ -61,6 +61,10 @@
     <PackageReference Include="CommunityToolkit.Maui" Version="7.0.1" />
     <PackageReference Include="Plugin.Maui.Audio" Version="3.0.0" />
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+    <PackageReference Include="ZXing.Net.MAUI" Version="0.4.0" />
+    <PackageReference Include="ZXing.Net.MAUI.Controls" Version="0.4.0" />
+    <PackageReference Include="ZXing.Net.Bindings.SkiaSharp" Version="0.16.20" />
+    <PackageReference Include="QRCoder" Version="1.6.0" />
   </ItemGroup>
 
 </Project>

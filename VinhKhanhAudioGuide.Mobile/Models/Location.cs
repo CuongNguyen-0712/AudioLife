@@ -14,7 +14,6 @@ public partial class Location : ObservableObject
     public int Duration { get; set; } // Duration in minutes
     public string CategoryId { get; set; } = string.Empty;
     public List<AudioGuide> AudioGuides { get; set; } = new();
-    public List<Feedback> Feedbacks { get; set; } = new();
 
     // Computed properties for UI binding
     public int AudioGuideCount => AudioGuides.Count;

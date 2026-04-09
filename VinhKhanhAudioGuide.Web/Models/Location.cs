@@ -36,6 +36,4 @@ public class Location
     public ICollection<AudioGuide> AudioGuides { get; set; } = new List<AudioGuide>();
 
     public ICollection<TourLocation> TourLocations { get; set; } = new List<TourLocation>();
-
-    public ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 }

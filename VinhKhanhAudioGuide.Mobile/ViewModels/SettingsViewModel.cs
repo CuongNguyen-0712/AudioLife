@@ -1,10 +1,20 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using VinhKhanhAudioGuide.Mobile.Services;
 
 namespace VinhKhanhAudioGuide.Mobile.ViewModels;
 
 public partial class SettingsViewModel : ObservableObject
 {
+    private readonly INavigationService _navigationService;
+    private readonly ILocalizationService _localizationService;
+
+    [ObservableProperty]
+    private bool _autoNearestPoiPlayback = true;
+
+    [ObservableProperty]
+    private string _locationScanInterval = string.Empty;
+
     [ObservableProperty]
     private string _selectedLanguage = "Tiếng Việt";
 
@@ -21,7 +31,7 @@ public partial class SettingsViewModel : ObservableObject
     private bool _downloadOnWifiOnly = true;
 
     [ObservableProperty]
-    private string _audioQuality = "Cao (320kbps)";
+    private string _audioQuality = string.Empty;
 
     [ObservableProperty]
     private string _storageUsed = "45.2 MB";
@@ -33,22 +43,48 @@ public partial class SettingsViewModel : ObservableObject
     private bool _enableLocationNotifications = true;
 
     [ObservableProperty]
-    private string _themeMode = "Theo hệ thống";
+    private string _themeMode = string.Empty;
 
-    public SettingsViewModel()
+    public SettingsViewModel(INavigationService navigationService, ILocalizationService localizationService)
     {
+        _navigationService = navigationService;
+        _localizationService = localizationService;
+
+        _localizationService.CultureChanged += OnCultureChanged;
         LoadSettings();
     }
 
     private void LoadSettings()
     {
         // Load settings from preferences
+        AutoNearestPoiPlayback = Preferences.Get("AutoNearestPoiPlayback", true);
         AutoPlayNext = Preferences.Get("AutoPlayNext", true);
         PlaybackSpeed = Preferences.Get("PlaybackSpeed", 1.0);
         SkipInterval = Preferences.Get("SkipInterval", 10);
         DownloadOnWifiOnly = Preferences.Get("DownloadOnWifiOnly", true);
         EnableNotifications = Preferences.Get("EnableNotifications", true);
         EnableLocationNotifications = Preferences.Get("EnableLocationNotifications", true);
+        SelectedLanguage = _localizationService.GetCurrentLanguageDisplayName();
+        LocationScanInterval = _localizationService.GetString("Settings_ScanEveryMinute");
+
+        var qualityValue = Preferences.Get("AudioQuality", "high");
+        AudioQuality = ToAudioQualityLabel(qualityValue);
+
+        var themeValue = Preferences.Get("ThemeMode", "system");
+        ThemeMode = ToThemeLabel(themeValue);
+    }
+
+    private void OnCultureChanged(object? sender, EventArgs e)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            SelectedLanguage = _localizationService.GetCurrentLanguageDisplayName();
+        });
+    }
+
+    partial void OnAutoNearestPoiPlaybackChanged(bool value)
+    {
+        Preferences.Set("AutoNearestPoiPlayback", value);
     }
 
     partial void OnAutoPlayNextChanged(bool value)
@@ -74,25 +110,34 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private async Task SelectLanguageAsync()
     {
-        var languages = new[] { "Tiếng Việt", "English", "日本語", "한국어", "中文" };
+        var supportedLanguages = _localizationService.GetSupportedLanguages();
+        var options = supportedLanguages.Select(language => language.DisplayName).ToArray();
+        var cancel = _localizationService.GetString("Common_Cancel");
         var result = await Application.Current!.MainPage!.DisplayActionSheet(
-            "Chọn ngôn ngữ", "Hủy", null, languages);
+            _localizationService.GetString("Settings_SelectLanguage_Title"), cancel, null, options);
 
-        if (!string.IsNullOrEmpty(result) && result != "Hủy")
+        if (!string.IsNullOrEmpty(result) && !string.Equals(result, cancel, StringComparison.Ordinal))
         {
-            SelectedLanguage = result;
-            Preferences.Set("Language", result);
+            var selectedLanguage = supportedLanguages.FirstOrDefault(language =>
+                string.Equals(language.DisplayName, result, StringComparison.Ordinal));
+
+            if (selectedLanguage is not null)
+            {
+                _localizationService.SetCulture(selectedLanguage.CultureName);
+                SelectedLanguage = selectedLanguage.DisplayName;
+            }
         }
     }
 
     [RelayCommand]
     private async Task SelectPlaybackSpeedAsync()
     {
+        var cancel = _localizationService.GetString("Common_Cancel");
         var speeds = new[] { "0.5x", "0.75x", "1.0x", "1.25x", "1.5x", "2.0x" };
         var result = await Application.Current!.MainPage!.DisplayActionSheet(
-            "Tốc độ phát", "Hủy", null, speeds);
+            _localizationService.GetString("Settings_SelectPlaybackSpeed_Title"), cancel, null, speeds);
 
-        if (!string.IsNullOrEmpty(result) && result != "Hủy")
+        if (!string.IsNullOrEmpty(result) && !string.Equals(result, cancel, StringComparison.Ordinal))
         {
             PlaybackSpeed = double.Parse(result.Replace("x", ""));
             Preferences.Set("PlaybackSpeed", PlaybackSpeed);
@@ -102,28 +147,57 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private async Task SelectSkipIntervalAsync()
     {
-        var intervals = new[] { "5 giây", "10 giây", "15 giây", "30 giây" };
-        var result = await Application.Current!.MainPage!.DisplayActionSheet(
-            "Khoảng tua", "Hủy", null, intervals);
-
-        if (!string.IsNullOrEmpty(result) && result != "Hủy")
+        var cancel = _localizationService.GetString("Common_Cancel");
+        var intervals = new[]
         {
-            SkipInterval = int.Parse(result.Replace(" giây", ""));
-            Preferences.Set("SkipInterval", SkipInterval);
+            new { Label = string.Format(_localizationService.GetString("Settings_SkipOption_Seconds"), 5), Value = 5 },
+            new { Label = string.Format(_localizationService.GetString("Settings_SkipOption_Seconds"), 10), Value = 10 },
+            new { Label = string.Format(_localizationService.GetString("Settings_SkipOption_Seconds"), 15), Value = 15 },
+            new { Label = string.Format(_localizationService.GetString("Settings_SkipOption_Seconds"), 30), Value = 30 }
+        };
+
+        var result = await Application.Current!.MainPage!.DisplayActionSheet(
+            _localizationService.GetString("Settings_SelectSkipInterval_Title"),
+            cancel,
+            null,
+            intervals.Select(item => item.Label).ToArray());
+
+        if (!string.IsNullOrEmpty(result) && !string.Equals(result, cancel, StringComparison.Ordinal))
+        {
+            var selected = intervals.FirstOrDefault(item => string.Equals(item.Label, result, StringComparison.Ordinal));
+            if (selected is not null)
+            {
+                SkipInterval = selected.Value;
+                Preferences.Set("SkipInterval", SkipInterval);
+            }
         }
     }
 
     [RelayCommand]
     private async Task SelectAudioQualityAsync()
     {
-        var qualities = new[] { "Thấp (64kbps)", "Trung bình (128kbps)", "Cao (320kbps)" };
-        var result = await Application.Current!.MainPage!.DisplayActionSheet(
-            "Chất lượng Audio", "Hủy", null, qualities);
-
-        if (!string.IsNullOrEmpty(result) && result != "Hủy")
+        var cancel = _localizationService.GetString("Common_Cancel");
+        var qualities = new[]
         {
-            AudioQuality = result;
-            Preferences.Set("AudioQuality", result);
+            new { Label = _localizationService.GetString("Settings_AudioQuality_Low"), Value = "low" },
+            new { Label = _localizationService.GetString("Settings_AudioQuality_Medium"), Value = "medium" },
+            new { Label = _localizationService.GetString("Settings_AudioQuality_High"), Value = "high" }
+        };
+
+        var result = await Application.Current!.MainPage!.DisplayActionSheet(
+            _localizationService.GetString("Settings_SelectAudioQuality_Title"),
+            cancel,
+            null,
+            qualities.Select(item => item.Label).ToArray());
+
+        if (!string.IsNullOrEmpty(result) && !string.Equals(result, cancel, StringComparison.Ordinal))
+        {
+            var selected = qualities.FirstOrDefault(item => string.Equals(item.Label, result, StringComparison.Ordinal));
+            if (selected is not null)
+            {
+                AudioQuality = selected.Label;
+                Preferences.Set("AudioQuality", selected.Value);
+            }
         }
     }
 
@@ -131,10 +205,10 @@ public partial class SettingsViewModel : ObservableObject
     private async Task ClearDownloadsAsync()
     {
         bool confirm = await Application.Current!.MainPage!.DisplayAlert(
-            "Xóa audio đã tải",
-            "Bạn có chắc muốn xóa tất cả audio đã tải?",
-            "Xóa",
-            "Hủy");
+            _localizationService.GetString("Settings_ClearDownloads_Title"),
+            _localizationService.GetString("Settings_ClearDownloads_Confirm"),
+            _localizationService.GetString("Common_Delete"),
+            _localizationService.GetString("Common_Cancel"));
 
         if (confirm)
         {
@@ -146,21 +220,88 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private async Task SelectThemeAsync()
     {
-        var themes = new[] { "Sáng", "Tối", "Theo hệ thống" };
-        var result = await Application.Current!.MainPage!.DisplayActionSheet(
-            "Chế độ giao diện", "Hủy", null, themes);
-
-        if (!string.IsNullOrEmpty(result) && result != "Hủy")
+        var cancel = _localizationService.GetString("Common_Cancel");
+        var themes = new[]
         {
-            ThemeMode = result;
-            Preferences.Set("ThemeMode", result);
-            
-            Application.Current.UserAppTheme = result switch
+            new { Label = _localizationService.GetString("Settings_Theme_Light"), Value = "light" },
+            new { Label = _localizationService.GetString("Settings_Theme_Dark"), Value = "dark" },
+            new { Label = _localizationService.GetString("Settings_Theme_System"), Value = "system" }
+        };
+
+        var result = await Application.Current!.MainPage!.DisplayActionSheet(
+            _localizationService.GetString("Settings_SelectTheme_Title"),
+            cancel,
+            null,
+            themes.Select(item => item.Label).ToArray());
+
+        if (!string.IsNullOrEmpty(result) && !string.Equals(result, cancel, StringComparison.Ordinal))
+        {
+            var selected = themes.FirstOrDefault(item => string.Equals(item.Label, result, StringComparison.Ordinal));
+            if (selected is null)
             {
-                "Sáng" => AppTheme.Light,
-                "Tối" => AppTheme.Dark,
+                return;
+            }
+
+            ThemeMode = selected.Label;
+            Preferences.Set("ThemeMode", selected.Value);
+            
+            Application.Current.UserAppTheme = selected.Value switch
+            {
+                "light" => AppTheme.Light,
+                "dark" => AppTheme.Dark,
                 _ => AppTheme.Unspecified
             };
         }
     }
+
+    private string ToAudioQualityLabel(string quality)
+    {
+        return quality switch
+        {
+            "low" => _localizationService.GetString("Settings_AudioQuality_Low"),
+            "medium" => _localizationService.GetString("Settings_AudioQuality_Medium"),
+            _ => _localizationService.GetString("Settings_AudioQuality_High")
+        };
+    }
+
+    private string ToThemeLabel(string theme)
+    {
+        return theme switch
+        {
+            "light" => _localizationService.GetString("Settings_Theme_Light"),
+            "dark" => _localizationService.GetString("Settings_Theme_Dark"),
+            _ => _localizationService.GetString("Settings_Theme_System")
+        };
+    }
+
+    [RelayCommand]
+    private async Task GoToFavoritesAsync()
+    {
+        await _navigationService.NavigateToAsync(nameof(Views.FavoritesPage));
+    }
+
+    [RelayCommand]
+    private async Task GoToDownloadsAsync()
+    {
+        await _navigationService.NavigateToAsync(nameof(Views.DownloadsPage));
+    }
+
+    [RelayCommand]
+    private async Task GoToHistoryAsync()
+    {
+        await _navigationService.NavigateToAsync(nameof(Views.HistoryPage));
+    }
+
+    [RelayCommand]
+    private async Task GoToHelpAsync()
+    {
+        await _navigationService.NavigateToAsync(nameof(Views.HelpPage));
+    }
+
+    [RelayCommand]
+    private async Task GoToAboutAsync()
+    {
+        await _navigationService.NavigateToAsync(nameof(Views.AboutPage));
+    }
+
 }

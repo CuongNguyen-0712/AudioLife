@@ -28,9 +28,7 @@ public interface IApiService
     Task<List<AudioGuide>> GetAudioGuidesForLocationAsync(string locationId);
     Task<AudioGuide?> GetAudioGuideByIdAsync(string audioGuideId);
 
-    // User Profile
-    Task<UserProfile?> GetUserProfileAsync();
-    Task<bool> UpdateUserProfileAsync(UserProfile profile);
+    // Favorites
     Task<bool> ToggleFavoriteAsync(string locationId);
     Task<List<Location>> GetFavoriteLocationsAsync();
 

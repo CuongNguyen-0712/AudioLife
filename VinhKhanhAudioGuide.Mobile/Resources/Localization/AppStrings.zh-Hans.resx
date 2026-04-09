@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value>
+  </resheader>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Common_Loading" xml:space="preserve">
+    <value>加载中...</value>
+  </data>
+  <data name="Language_Applying" xml:space="preserve">
+    <value>正在应用语言...</value>
+  </data>
+  <data name="Language_Page_Title" xml:space="preserve">
+    <value>选择语言</value>
+  </data>
+  <data name="Language_Option_Vietnamese" xml:space="preserve">
+    <value>越南语</value>
+  </data>
+  <data name="Language_Option_English" xml:space="preserve">
+    <value>英语</value>
+  </data>
+  <data name="Language_Option_ChineseSimplified" xml:space="preserve">
+    <value>简体中文</value>
+  </data>
+  <data name="Settings_SelectLanguage_Title" xml:space="preserve">
+    <value>选择语言</value>
+  </data>
+  <data name="Common_Notice" xml:space="preserve"><value>提示</value></data>
+  <data name="Common_Understood" xml:space="preserve"><value>知道了</value></data>
+  <data name="Common_MinutesFormat" xml:space="preserve"><value>{0} 分钟</value></data>
+  <data name="Common_AudioCountFormat" xml:space="preserve"><value>{0} 条音频</value></data>
+  <data name="App_Name" xml:space="preserve"><value>永庆语音导览</value></data>
+  <data name="Tab_Home" xml:space="preserve"><value>首页</value></data>
+  <data name="Tab_Map" xml:space="preserve"><value>地图</value></data>
+  <data name="Tab_Tours" xml:space="preserve"><value>路线</value></data>
+  <data name="Tab_Settings" xml:space="preserve"><value>设置</value></data>
+  <data name="Main_FeaturedDish" xml:space="preserve"><value>精选美食</value></data>
+  <data name="Main_ExploreTitle" xml:space="preserve"><value>探索永庆街区</value></data>
+  <data name="Main_ExploreSubtitle" xml:space="preserve"><value>每一道菜都有一段街头故事</value></data>
+  <data name="Main_LocationCountFormat" xml:space="preserve"><value>{0} 个地点可探索</value></data>
+  <data name="Main_SearchPlaceholder" xml:space="preserve"><value>搜索美食或地点...</value></data>
+  <data name="Main_MustTryTitle" xml:space="preserve"><value>必吃推荐</value></data>
+  <data name="Main_MustTrySubtitle" xml:space="preserve"><value>不容错过的招牌美味</value></data>
+  <data name="Main_ViewAll" xml:space="preserve"><value>查看全部</value></data>
+  <data name="Main_PopularTitle" xml:space="preserve"><value>热门地点</value></data>
+  <data name="Main_PopularSubtitle" xml:space="preserve"><value>最受社区欢迎的打卡点</value></data>
+  <data name="Main_OtherCategory" xml:space="preserve"><value>其他</value></data>
+  <data name="Main_Free" xml:space="preserve"><value>免费</value></data>
+  <data name="Main_PriceFormat" xml:space="preserve"><value>{0:N0} 越南盾</value></data>
+  <data name="Main_DurationMinutesFormat" xml:space="preserve"><value>⏱ {0} 分钟</value></data>
+  <data name="Main_DurationHoursMinutesFormat" xml:space="preserve"><value>⏱ {0}小时 {1}分</value></data>
+  <data name="Main_DurationHoursOnlyFormat" xml:space="preserve"><value>⏱ {0}小时</value></data>
+  <data name="Settings_PageTitle" xml:space="preserve"><value>设置</value></data>
+  <data name="Settings_Favorites" xml:space="preserve"><value>收藏</value></data>
+  <data name="Settings_Downloads" xml:space="preserve"><value>下载</value></data>
+  <data name="Settings_History" xml:space="preserve"><value>历史</value></data>
+  <data name="Settings_AutoPlayByLocationSection" xml:space="preserve"><value>按位置自动播放</value></data>
+  <data name="Settings_AutoNearestTitle" xml:space="preserve"><value>自动播放最近 POI</value></data>
+  <data name="Settings_AutoNearestDescription" xml:space="preserve"><value>打开应用时检测，并每 1 分钟重复</value></data>
+  <data name="Settings_LocationScanCycle" xml:space="preserve"><value>位置扫描周期</value></data>
+  <data name="Settings_PlaybackSection" xml:space="preserve"><value>播放</value></data>
+  <data name="Settings_AutoPlayNextTitle" xml:space="preserve"><value>自动播放下一条</value></data>
+  <data name="Settings_AutoPlayNextDescription" xml:space="preserve"><value>在同一 POI 内自动播放下一段音频</value></data>
+  <data name="Settings_PlaybackSpeed" xml:space="preserve"><value>播放速度</value></data>
+  <data name="Settings_SkipInterval" xml:space="preserve"><value>快进间隔</value></data>
+  <data name="Settings_AppSection" xml:space="preserve"><value>应用</value></data>
+  <data name="Settings_Language" xml:space="preserve"><value>语言</value></data>
+  <data name="Settings_Theme" xml:space="preserve"><value>主题</value></data>
+  <data name="Settings_Help" xml:space="preserve"><value>帮助</value></data>
+  <data name="Settings_HelpSubtitle" xml:space="preserve"><value>使用指南与常见问题</value></data>
+  <data name="Settings_About" xml:space="preserve"><value>关于应用</value></data>
+  <data name="Settings_AboutSubtitle" xml:space="preserve"><value>版本与版权信息</value></data>
+  <data name="Settings_ScanEveryMinute" xml:space="preserve"><value>每 1 分钟</value></data>
+  <data name="Settings_SelectPlaybackSpeed_Title" xml:space="preserve"><value>播放速度</value></data>
+  <data name="Settings_SelectSkipInterval_Title" xml:space="preserve"><value>快进间隔</value></data>
+  <data name="Settings_SkipOption_Seconds" xml:space="preserve"><value>{0} 秒</value></data>
+  <data name="Settings_SelectAudioQuality_Title" xml:space="preserve"><value>音频质量</value></data>
+  <data name="Settings_AudioQuality_Low" xml:space="preserve"><value>低 (64kbps)</value></data>
+  <data name="Settings_AudioQuality_Medium" xml:space="preserve"><value>中 (128kbps)</value></data>
+  <data name="Settings_AudioQuality_High" xml:space="preserve"><value>高 (320kbps)</value></data>
+  <data name="Settings_ClearDownloads_Title" xml:space="preserve"><value>删除已下载音频</value></data>
+  <data name="Settings_ClearDownloads_Confirm" xml:space="preserve"><value>确定要删除所有已下载音频吗？</value></data>
+  <data name="Settings_SelectTheme_Title" xml:space="preserve"><value>界面模式</value></data>
+  <data name="Settings_Theme_Light" xml:space="preserve"><value>浅色</value></data>
+  <data name="Settings_Theme_Dark" xml:space="preserve"><value>深色</value></data>
+  <data name="Settings_Theme_System" xml:space="preserve"><value>跟随系统</value></data>
+  <data name="Common_Delete" xml:space="preserve"><value>删除</value></data>
+  <data name="Audio_NowPlayingContent" xml:space="preserve"><value>当前播放内容</value></data>
+  <data name="Audio_ListTitle" xml:space="preserve"><value>音频列表</value></data>
+  <data name="Audio_NowPlayingBadge" xml:space="preserve"><value>播放中</value></data>
+  <data name="Intro_PageTitle" xml:space="preserve"><value>相机权限</value></data>
+  <data name="Intro_MainTitlePrefix" xml:space="preserve"><value>解锁你的 </value></data>
+  <data name="Intro_MainTitleHighlight" xml:space="preserve"><value>永庆体验</value></data>
+  <data name="Intro_Description" xml:space="preserve"><value>我们需要相机权限，方便你在摊位扫描二维码，了解每道美食背后的故事。</value></data>
+  <data name="Intro_AllowCamera" xml:space="preserve"><value>允许访问相机</value></data>
+  <data name="Intro_Later" xml:space="preserve"><value>稍后</value></data>
+  <data name="Intro_PrivacyBadge" xml:space="preserve"><value>隐私已保护</value></data>
+  <data name="Intro_AlertCameraRequired" xml:space="preserve"><value>需要相机权限才能扫码并收听音频。</value></data>
+  <data name="Intro_AlertCannotContinue" xml:space="preserve"><value>请先扫码以解锁音频页面。</value></data>
+  <data name="Qr_PageTitle" xml:space="preserve"><value>扫码</value></data>
+  <data name="Qr_HeaderTitle" xml:space="preserve"><value>扫码打开语音导览</value></data>
+  <data name="Qr_StatusPrompt" xml:space="preserve"><value>将二维码放入框内，选择语言后进入应用</value></data>
+  <data name="Qr_SeedTitle" xml:space="preserve"><value>示例二维码测试</value></data>
+  <data name="Qr_SeedSubtitle" xml:space="preserve"><value>使用示例二维码快速验证识别并进入应用</value></data>
+  <data name="Qr_PickedTitle" xml:space="preserve"><value>已选择二维码图片</value></data>
+  <data name="Qr_PickedSubtitle" xml:space="preserve"><value>应用将识别此图片中的二维码并在有效时打开音频</value></data>
+  <data name="Qr_UseSeedButton" xml:space="preserve"><value>使用示例二维码</value></data>
+  <data name="Qr_PickImageButton" xml:space="preserve"><value>选择二维码图片</value></data>
+  <data name="Qr_RescanButton" xml:space="preserve"><value>重新扫描</value></data>
+  <data name="Qr_StatusOpenLanguage" xml:space="preserve"><value>正在打开语言选择页面...</value></data>
+  <data name="Qr_StatusInvalid" xml:space="preserve"><value>二维码无效，请扫描正确格式的二维码。</value></data>
+  <data name="Qr_StatusNoCamera" xml:space="preserve"><value>扫码需要相机权限。</value></data>
+  <data name="Qr_StatusCameraFailed" xml:space="preserve"><value>无法打开扫码相机，请重试。</value></data>
+  <data name="Qr_StatusNoQrInImage" xml:space="preserve"><value>在所选图片中未识别到二维码。</value></data>
+  <data name="Qr_StatusImageReadFailed" xml:space="preserve"><value>无法从相册读取二维码图片，请重试。</value></data>
+  <data name="Qr_ImagePickerTitle" xml:space="preserve"><value>选择包含二维码的图片</value></data>
+  <data name="Footer_StandbyAutoOff" xml:space="preserve"><value>待机：自动播放已关闭</value></data>
+  <data name="Footer_EnableInSettings" xml:space="preserve"><value>请在设置中开启，每分钟自动播放最近 POI</value></data>
+  <data name="Footer_EnableManual" xml:space="preserve"><value>立即开启</value></data>
+  <data name="Footer_StandbyOffMode" xml:space="preserve"><value>待机：关闭</value></data>
+  <data name="Footer_StandbyLocating" xml:space="preserve"><value>待机：正在定位...</value></data>
+  <data name="Footer_KeepGpsOn" xml:space="preserve"><value>请保持 GPS 开启以自动播放最近 POI</value></data>
+  <data name="Footer_Retry" xml:space="preserve"><value>重试</value></data>
+  <data name="Footer_StandbyOnMode" xml:space="preserve"><value>待机：开启</value></data>
+  <data name="Footer_AutoPlayError" xml:space="preserve"><value>待机：无法启动自动播放</value></data>
+  <data name="Footer_OpenDetailManual" xml:space="preserve"><value>你可以打开 POI 详情并手动播放</value></data>
+  <data name="Footer_NoLocation" xml:space="preserve"><value>待机：无法获取位置</value></data>
+  <data name="Footer_EnableLocationPermission" xml:space="preserve"><value>请开启定位权限以自动选择最近 POI</value></data>
+  <data name="Footer_LocationError" xml:space="preserve"><value>待机：定位错误</value></data>
+  <data name="Footer_CheckGps" xml:space="preserve"><value>请检查 GPS 连接</value></data>
+  <data name="Footer_NoPoi" xml:space="preserve"><value>待机：无 POI</value></data>
+  <data name="Footer_NoPoiData" xml:space="preserve"><value>当前没有可播放的地点数据</value></data>
+  <data name="Footer_Waiting" xml:space="preserve"><value>等待中</value></data>
+  <data name="Footer_FindNearestError" xml:space="preserve"><value>待机：查找最近 POI 失败</value></data>
+  <data name="Footer_PleaseRetry" xml:space="preserve"><value>请重试</value></data>
+  <data name="Footer_NoAudioAtPoiFormat" xml:space="preserve"><value>待机：{0} 暂无音频</value></data>
+  <data name="Footer_WaitForNewPoiAudio" xml:space="preserve"><value>系统将等待下一个有音频的 POI</value></data>
+  <data name="Footer_PlayingAutoFormat" xml:space="preserve"><value>自动播放中：{0}</value></data>
+  <data name="Footer_OpenPlayer" xml:space="preserve"><value>打开播放器</value></data>
+  <data name="Footer_PlayAudioError" xml:space="preserve"><value>待机：音频播放错误</value></data>
+  <data name="Footer_LoadingNearest" xml:space="preserve"><value>待机：正在加载最近音频...</value></data>
+  <data name="Footer_AudioPaused" xml:space="preserve"><value>待机：音频已暂停</value></data>
+  <data name="Footer_Resume" xml:space="preserve"><value>继续播放</value></data>
+  <data name="Footer_SwitchingNext" xml:space="preserve"><value>待机：正在切换下一条音频</value></data>
+  <data name="Footer_UpdatedAudioFormat" xml:space="preserve"><value>待机：已更新 {0} 的音频</value></data>
+  <data name="Footer_FinishedAtPoiFormat" xml:space="preserve"><value>待机：已播完 {0} 的全部音频，等待新 POI</value></data>
+  <data name="Footer_WaitForNewNearest" xml:space="preserve"><value>检测到新的最近 POI 时将自动切换</value></data>
+  <data name="Footer_NearestHintFormat" xml:space="preserve"><value>最近 POI • {0} 米</value></data>
+  <data name="Footer_NearestShort" xml:space="preserve"><value>最近 POI</value></data>
+  <data name="Footer_QueueHintFormat" xml:space="preserve"><value>{0} • 第 {1}/{2} 条</value></data>
+</root>

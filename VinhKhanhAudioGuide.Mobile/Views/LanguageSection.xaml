@@ -25,7 +25,8 @@
                                  Spacing="12"
                                  HorizontalOptions="Center"
                                  WidthRequest="279">
-                <Label Text="Ngôn ngữ của bạn"
+                  <Label x:Name="TitleLabel"
+                      Text="Ngôn ngữ của bạn"
                        FontFamily="RobotoCondensed-SemiBold"
                        FontSize="24"
                        Margin="0,0,0,8"
@@ -41,7 +42,8 @@
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnVietnameseTapped" />
                     </Border.GestureRecognizers>
-                    <Label Text="Tiếng việt"
+                          <Label x:Name="VietnameseOptionLabel"
+                              Text="Tiếng Việt"
                            TextColor="{StaticResource OnSecondaryContainer}"
                            FontFamily="RobotoCondensed-Medium"
                            FontSize="16"
@@ -59,7 +61,27 @@
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnEnglishTapped" />
                     </Border.GestureRecognizers>
-                    <Label Text="English"
+                    <Label x:Name="EnglishOptionLabel"
+                           Text="English"
+                           TextColor="{StaticResource OnSecondaryContainer}"
+                           FontFamily="RobotoCondensed-Medium"
+                           FontSize="16"
+                           HorizontalTextAlignment="Center"
+                           VerticalTextAlignment="Center"
+                           VerticalOptions="Center"
+                           HorizontalOptions="Center" />
+                </Border>
+
+                <Border BackgroundColor="{StaticResource SecondaryContainer}"
+                        Opacity="0.5"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 10"
+                        HeightRequest="47">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnChineseSimplifiedTapped" />
+                    </Border.GestureRecognizers>
+                    <Label x:Name="ChineseSimplifiedOptionLabel"
+                           Text="简体中文"
                            TextColor="{StaticResource OnSecondaryContainer}"
                            FontFamily="RobotoCondensed-Medium"
                            FontSize="16"
@@ -69,6 +91,32 @@
                            HorizontalOptions="Center" />
                 </Border>
             </VerticalStackLayout>
+        </Grid>
+
+        <Grid x:Name="LoadingOverlay"
+              IsVisible="False"
+              InputTransparent="False"
+              BackgroundColor="#66000000"
+              RowDefinitions="Auto,Auto"
+              RowSpacing="10"
+              VerticalOptions="Fill"
+              HorizontalOptions="Fill">
+            <ActivityIndicator x:Name="LoadingIndicator"
+                               IsRunning="False"
+                               Color="White"
+                               WidthRequest="40"
+                               HeightRequest="40"
+                               VerticalOptions="Center"
+                               HorizontalOptions="Center" />
+            <Label x:Name="LoadingTextLabel"
+                   Grid.Row="1"
+                   Text="Loading..."
+                   FontFamily="RobotoCondensed-Medium"
+                   FontSize="14"
+                   TextColor="White"
+                   HorizontalTextAlignment="Center"
+                   HorizontalOptions="Center"
+                   Margin="0,48,0,0" />
         </Grid>
     </Grid>
 

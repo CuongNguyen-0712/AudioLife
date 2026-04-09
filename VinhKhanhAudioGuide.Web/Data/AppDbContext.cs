@@ -13,10 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<Tour> Tours => Set<Tour>();
     public DbSet<TourLocation> TourLocations => Set<TourLocation>();
     public DbSet<AudioScriptSegment> AudioScriptSegments => Set<AudioScriptSegment>();
-    public DbSet<ListeningHistory> ListeningHistories => Set<ListeningHistory>();
-    public DbSet<AppUser> AppUsers => Set<AppUser>();
     public DbSet<AuthUserAccount> AuthUserAccounts => Set<AuthUserAccount>();
-    public DbSet<Feedback> Feedbacks => Set<Feedback>();
     public DbSet<PoiChangeRequest> PoiChangeRequests => Set<PoiChangeRequest>();
     public DbSet<PoiAdminLocationAssignment> PoiAdminLocationAssignments => Set<PoiAdminLocationAssignment>();
 
@@ -61,32 +58,6 @@ public class AppDbContext : DbContext
                 .WithMany(ag => ag.ScriptSegments)
                 .HasForeignKey(s => s.AudioGuideId)
                 .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        modelBuilder.Entity<ListeningHistory>(entity =>
-        {
-            entity.HasOne(lh => lh.AudioGuide)
-                .WithMany(ag => ag.ListeningHistories)
-                .HasForeignKey(lh => lh.AudioGuideId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasOne(lh => lh.User)
-                .WithMany(u => u.ListeningHistories)
-                .HasForeignKey(lh => lh.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        modelBuilder.Entity<Feedback>(entity =>
-        {
-            entity.HasOne(f => f.User)
-                .WithMany(u => u.Feedbacks)
-                .HasForeignKey(f => f.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasOne(f => f.Location)
-                .WithMany(l => l.Feedbacks)
-                .HasForeignKey(f => f.LocationId)
-                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<PoiChangeRequest>(entity =>

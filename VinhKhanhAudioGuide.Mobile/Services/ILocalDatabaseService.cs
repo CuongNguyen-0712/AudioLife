@@ -4,8 +4,8 @@ namespace VinhKhanhAudioGuide.Mobile.Services;
 
 public interface ILocalDatabaseService
 {
-    Task<UserProfile?> GetUserProfileAsync();
-    Task SaveUserProfileAsync(UserProfile profile);
+    Task<List<string>> GetFavoriteLocationIdsAsync();
+    Task SaveFavoriteLocationIdsAsync(IReadOnlyCollection<string> locationIds);
 
     Task<List<ListeningHistory>> GetListeningHistoryAsync();
     Task UpsertListeningHistoryAsync(ListeningHistory history);

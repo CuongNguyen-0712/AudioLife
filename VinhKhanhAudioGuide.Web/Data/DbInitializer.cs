@@ -20,6 +20,7 @@ public static class DbInitializer
         }
 
         EnsureApprovalTables(context);
+        EnsureLegacyTablesRemoved(context);
 
         var hasVinhKhanhSeed = context.Locations
             .AsNoTracking()
@@ -27,14 +28,13 @@ public static class DbInitializer
 
         if (context.Categories.Any() && hasVinhKhanhSeed)
         {
+            EnsureAuthUserAccounts(context);
             EnsurePoiAdminAssignments(context);
             return;
         }
 
         if (context.Categories.Any())
         {
-            context.Feedbacks.RemoveRange(context.Feedbacks);
-            context.AppUsers.RemoveRange(context.AppUsers);
             context.TourLocations.RemoveRange(context.TourLocations);
             context.AudioGuides.RemoveRange(context.AudioGuides);
             context.Tours.RemoveRange(context.Tours);
@@ -42,10 +42,6 @@ public static class DbInitializer
             context.Categories.RemoveRange(context.Categories);
             context.SaveChanges();
         }
-
-        var appUser = new AppUser { Id = "user_1", ScannedQrCode = "loc_001_qr", CreatedAt = DateTime.UtcNow, IsActive = true };
-        context.AppUsers.Add(appUser);
-        context.SaveChanges();
 
         var categories = SampleData.GetCategories();
         context.Categories.AddRange(categories);
@@ -86,18 +82,25 @@ public static class DbInitializer
             context.SaveChanges();
         }
 
-        var feedback = new Feedback 
-        { 
-            UserId = "user_1", 
-            LocationId = "loc_001", 
-            Rating = 5, 
-            Comment = "Rất tuyệt vời, trải nghiệm tốt.", 
-            CreatedAt = DateTime.UtcNow 
-        };
-        context.Feedbacks.Add(feedback);
-        context.SaveChanges();
-
+        EnsureAuthUserAccounts(context);
         EnsurePoiAdminAssignments(context);
+    }
+
+    private static void EnsureAuthUserAccounts(AppDbContext context)
+    {
+        if (context.AuthUserAccounts.Any())
+        {
+            return;
+        }
+
+        var defaultAccounts = SampleData.GetAuthUserAccounts();
+        if (defaultAccounts.Count == 0)
+        {
+            return;
+        }
+
+        context.AuthUserAccounts.AddRange(defaultAccounts);
+        context.SaveChanges();
     }
 
     private static void EnsurePoiAdminAssignments(AppDbContext context)
@@ -107,25 +110,33 @@ public static class DbInitializer
             return;
         }
 
-        var defaultAssignments = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        var defaultAssignments = SampleData.GetPoiAdminLocationAssignments();
+        foreach (var assignment in defaultAssignments)
         {
-            ["admin.poi.01"] = new[] { "loc_001", "loc_002", "loc_003", "loc_004", "loc_005" },
-            ["admin.poi.02"] = new[] { "loc_006", "loc_007", "loc_008", "loc_009", "loc_010" }
-        };
-
-        foreach (var (username, locationIds) in defaultAssignments)
-        {
-            foreach (var locationId in locationIds.Distinct(StringComparer.OrdinalIgnoreCase))
-            {
-                context.PoiAdminLocationAssignments.Add(new PoiAdminLocationAssignment
-                {
-                    Username = username,
-                    LocationId = locationId
-                });
-            }
+            context.PoiAdminLocationAssignments.Add(assignment);
         }
 
         context.SaveChanges();
+    }
+
+    private static void EnsureLegacyTablesRemoved(AppDbContext context)
+    {
+        context.Database.ExecuteSqlRaw(@"
+IF OBJECT_ID(N'dbo.ListeningHistories', N'U') IS NOT NULL
+BEGIN
+    DROP TABLE [dbo].[ListeningHistories];
+END
+
+IF OBJECT_ID(N'dbo.Feedbacks', N'U') IS NOT NULL
+BEGIN
+    DROP TABLE [dbo].[Feedbacks];
+END
+
+IF OBJECT_ID(N'dbo.AppUsers', N'U') IS NOT NULL
+BEGIN
+    DROP TABLE [dbo].[AppUsers];
+END
+");
     }
 
     private static void EnsureApprovalTables(AppDbContext context)
