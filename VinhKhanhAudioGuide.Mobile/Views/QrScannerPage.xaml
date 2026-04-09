@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	      xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	      xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
+	      xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
+	      x:Class="VinhKhanhAudioGuide.Mobile.Views.QrScannerPage"
+	      Title="{ext:Translate Qr_PageTitle}"
+	      BackgroundColor="Black"
+	      Shell.NavBarIsVisible="False">
+
+    <Grid>
+	 <zxing:CameraBarcodeReaderView x:Name="ScannerView"
+					    IsDetecting="True"
+					    BarcodesDetected="OnBarcodesDetected" />
+
+	 <Grid Padding="24,48,24,28"
+		RowDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto"
+		RowSpacing="10">
+	     <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="12">
+		  <ImageButton Source="back.svg"
+				 WidthRequest="36"
+				 HeightRequest="36"
+				 BackgroundColor="#1AFFFFFF"
+				 CornerRadius="18"
+				 Padding="8"
+				 Clicked="OnBackToIntroClicked" />
+
+		  <Label Grid.Column="1"
+			  Text="{ext:Translate Qr_HeaderTitle}"
+			  FontFamily="RobotoCondensedSemiBold"
+			  FontSize="26"
+			  TextColor="White"
+			  VerticalOptions="Center" />
+	     </Grid>
+
+	     <Border Grid.Row="1"
+		      Stroke="White"
+		      StrokeThickness="2"
+		      StrokeShape="RoundRectangle 18"
+		      HeightRequest="260"
+		      WidthRequest="260"
+		      HorizontalOptions="Center"
+		      VerticalOptions="Center"
+		      BackgroundColor="#1AFFFFFF" />
+
+	     <Label Grid.Row="2"
+		     x:Name="StatusLabel"
+		     Text="{ext:Translate Qr_StatusPrompt}"
+		     FontFamily="RobotoCondensedRegular"
+		     FontSize="15"
+		     TextColor="#E5FFFFFF"
+		     HorizontalTextAlignment="Center" />
+
+	     <Frame Grid.Row="3"
+		     BackgroundColor="#1AFFFFFF"
+		     CornerRadius="14"
+		     HasShadow="False"
+		     Padding="12,10">
+		  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+		      <Image x:Name="SeedQrImage"
+			      HeightRequest="84"
+			      WidthRequest="84"
+			      Aspect="AspectFill" />
+
+		      <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+			   <Label Text="{ext:Translate Qr_SeedTitle}"
+				   TextColor="White"
+				   FontFamily="RobotoCondensedSemiBold"
+				   FontSize="14" />
+			   <Label Text="{ext:Translate Qr_SeedSubtitle}"
+				   TextColor="#D9FFFFFF"
+				   FontFamily="RobotoCondensedRegular"
+				   FontSize="12"
+				   LineBreakMode="WordWrap" />
+		      </VerticalStackLayout>
+		  </Grid>
+	     </Frame>
+
+	     <Frame Grid.Row="4"
+		     x:Name="PickedQrFrame"
+		     IsVisible="False"
+		     BackgroundColor="#1AFFFFFF"
+		     CornerRadius="14"
+		     HasShadow="False"
+		     Padding="12,10">
+		  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+		      <Image x:Name="PickedQrImage"
+			      HeightRequest="84"
+			      WidthRequest="84"
+			      Aspect="AspectFill" />
+
+		      <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+			   <Label Text="{ext:Translate Qr_PickedTitle}"
+				   TextColor="White"
+				   FontFamily="RobotoCondensedSemiBold"
+				   FontSize="14" />
+			   <Label Text="{ext:Translate Qr_PickedSubtitle}"
+				   TextColor="#D9FFFFFF"
+				   FontFamily="RobotoCondensedRegular"
+				   FontSize="12"
+				   LineBreakMode="WordWrap" />
+		      </VerticalStackLayout>
+		  </Grid>
+	     </Frame>
+
+	     <Button Grid.Row="5"
+		      Margin="0,4,0,0"
+		      Text="{ext:Translate Qr_UseSeedButton}"
+		      Style="{StaticResource PrimaryButton}"
+		      Clicked="OnUseSeedQrClicked" />
+
+	     <Grid Grid.Row="6" ColumnDefinitions="*,*" ColumnSpacing="10">
+		  <Button Grid.Column="0"
+			  Margin="0,4,0,0"
+			  Text="{ext:Translate Qr_PickImageButton}"
+			  Style="{StaticResource SecondaryButton}"
+			  Clicked="OnPickQrImageClicked" />
+
+		  <Button Grid.Column="1"
+			  Margin="0,4,0,0"
+			  Text="{ext:Translate Qr_RescanButton}"
+			  Style="{StaticResource SecondaryButton}"
+			  Clicked="OnRescanClicked" />
+	     </Grid>
+	 </Grid>
+    </Grid>
+
+</ContentPage>

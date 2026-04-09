@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRD — VinhKhanhAudioGuide: Hệ Thống Hướng Dẫn Âm Thanh Du Lịch (tiếng việt)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+<style>
+:root{--blue:#1565C0;--blue-l:#42a5f5;--blue-d:#0D2137;--teal:#00838f;--teal-l:#4fb3bf;--mid:#0D1B2A;--sl:#1e293b;--zn:#334155;--ash:#64748b;--mist:#94a3b8;--cl:#e2e8f0;--sn:#f0f6ff;--wh:#fff;--ok:#16a34a;--wr:#d97706;--nfo:#2563eb;--dng:#dc2626;--or:#e65100;--pu:#7c3aed;--r:14px;--sh:0 4px 20px rgba(13,27,42,.08)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{font-family:'Be Vietnam Pro',sans-serif;background:var(--sn);color:var(--sl);line-height:1.7;-webkit-font-smoothing:antialiased}
+.sb{position:fixed;top:0;left:0;bottom:0;width:260px;background:var(--mid);color:var(--cl);z-index:200;overflow-y:auto;padding:1.4rem 0;transition:transform .3s}
+.sb.c{transform:translateX(-260px)}
+.sb-logo{padding:0 1.4rem 1.1rem;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:.8rem}
+.sb-logo h2{font-size:1rem;font-weight:800;background:linear-gradient(135deg,var(--blue-l),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sb-logo span{font-size:.7rem;color:var(--mist);display:block;margin-top:.1rem}
+.ng{margin-bottom:.5rem}.ngt{font-size:.6rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--ash);padding:.35rem 1.4rem;font-weight:600}
+.nl{display:flex;align-items:center;gap:.5rem;padding:.45rem 1.4rem;color:var(--mist);text-decoration:none;font-size:.78rem;transition:all .15s;border-left:3px solid transparent}
+.nl:hover,.nl.a{background:rgba(255,255,255,.05);color:var(--wh);border-left-color:var(--blue)}
+.nt{position:fixed;top:.8rem;left:.8rem;z-index:300;width:38px;height:38px;border-radius:10px;background:var(--mid);border:none;color:white;font-size:1.1rem;cursor:pointer;display:none;align-items:center;justify-content:center}
+.mn{margin-left:260px;min-height:100vh}
+.hero{background:linear-gradient(135deg,var(--blue-d) 0%,#1a237e 50%,var(--pu) 100%);color:white;padding:4rem 2.5rem 3rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1.5' fill='rgba(255,255,255,0.04)'/%3E%3C/svg%3E")}
+.hi{position:relative;max-width:880px}
+.hb{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);padding:.3rem .8rem;border-radius:20px;font-size:.72rem;font-weight:600;margin-bottom:.8rem}
+.hero h1{font-size:2.4rem;font-weight:900;letter-spacing:-1.5px;line-height:1.15;margin-bottom:.5rem}
+.hero .sub{font-size:1.05rem;opacity:.9;max-width:640px;line-height:1.7;margin-bottom:1.2rem}
+.ht{display:flex;flex-wrap:wrap;gap:.4rem}.ht span{background:rgba(255,255,255,.12);padding:.25rem .6rem;border-radius:8px;font-size:.72rem;font-weight:500}
+.hs{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:.8rem;margin-top:1.5rem}
+.hs div{background:rgba(255,255,255,.1);backdrop-filter:blur(8px);border-radius:12px;padding:.8rem;text-align:center}
+.hs .v{font-size:1.5rem;font-weight:800}.hs .l{font-size:.65rem;opacity:.8;margin-top:.1rem}
+.ct{max-width:980px;margin:0 auto;padding:2rem 2.2rem 4rem}
+.sec{margin-bottom:3rem;scroll-margin-top:2rem}
+.sh{display:flex;align-items:center;gap:.7rem;margin-bottom:1.3rem;padding-bottom:.7rem;border-bottom:2px solid var(--cl)}
+.si{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;color:white}
+.si.b{background:linear-gradient(135deg,var(--blue),var(--blue-l))}.si.t{background:linear-gradient(135deg,var(--teal),var(--teal-l))}.si.g{background:linear-gradient(135deg,var(--ok),#4ade80)}.si.p{background:linear-gradient(135deg,var(--pu),#a78bfa)}.si.o{background:linear-gradient(135deg,var(--or),#ff833a)}.si.w{background:linear-gradient(135deg,var(--wr),#fbbf24)}
+.sh h2{font-size:1.35rem;font-weight:800;color:var(--mid);letter-spacing:-.5px}
+.sh .ch{font-size:.6rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue);font-weight:700;display:block}
+.pr{font-size:.9rem;color:var(--zn);margin-bottom:1.1rem}.pr strong{color:var(--sl)}
+.cg{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.9rem;margin:1rem 0}
+.cd{background:var(--wh);border:1px solid var(--cl);border-radius:var(--r);padding:1.2rem;transition:all .2s}
+.cd:hover{box-shadow:var(--sh);transform:translateY(-2px)}
+.cd h3{font-size:.9rem;font-weight:700;color:var(--blue-d);margin-bottom:.35rem}
+.cd p,.cd li{font-size:.82rem;color:var(--ash);line-height:1.6}.cd ul{padding-left:1rem;margin-top:.25rem}.cd li{margin-bottom:.12rem}
+.tw{overflow-x:auto;margin:1rem 0;border-radius:var(--r);border:1px solid var(--cl)}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+thead th{background:var(--mid);color:white;padding:.6rem .8rem;text-align:left;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px}
+td{padding:.55rem .8rem;border-bottom:1px solid var(--cl)}tr:hover td{background:#eff6ff}
+code{background:var(--sn);padding:.1rem .3rem;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.78em;color:var(--blue)}
+.dc{background:var(--wh);border:1px solid var(--cl);border-radius:var(--r);padding:1.3rem;margin:1.3rem 0;overflow-x:auto}
+.dc .dt{font-size:.75rem;font-weight:700;color:var(--ash);text-transform:uppercase;letter-spacing:1px;margin-bottom:.8rem;display:flex;align-items:center;gap:.4rem}
+.dc .dt::before{content:'';width:12px;height:3px;background:var(--blue);border-radius:2px}
+.mermaid{text-align:center}
+.hl{border-left:4px solid var(--blue);background:#eff6ff;padding:.9rem 1.1rem;border-radius:0 var(--r) var(--r) 0;margin:.9rem 0;font-size:.85rem}
+.hl.ok{border-color:var(--ok);background:#f0fdf4}.hl.wr{border-color:var(--wr);background:#fffbeb}.hl.or{border-color:var(--or);background:#fff7ed}
+.fl{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;margin:.9rem 0}
+.fs{padding:.3rem .7rem;border-radius:8px;font-size:.75rem;font-weight:600;white-space:nowrap;color:white}
+.fs.b{background:var(--blue)}.fs.t{background:var(--teal)}.fs.g{background:var(--ok)}.fs.w{background:var(--wr);color:var(--sl)}.fs.p{background:var(--pu)}.fs.o{background:var(--or)}
+.fa{font-size:.9rem;color:var(--mist)}
+.ft{text-align:center;padding:1.5rem;font-size:.72rem;color:var(--mist);border-top:1px solid var(--cl)}
+@media(max-width:900px){.sb{transform:translateX(-260px)}.sb.open{transform:translateX(0)}.nt{display:flex}.mn{margin-left:0}.hero{padding:2.5rem 1.2rem 2rem}.hero h1{font-size:1.7rem}.ct{padding:1.2rem 1rem 3rem}}
+@media print{.sb,.nt{display:none!important}.mn{margin-left:0}.sec{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+<button class="nt" onclick="document.querySelector('.sb').classList.toggle('open')">&#9776;</button>
+<aside class="sb">
+<div class="sb-logo"><h2>VinhKhanhAudioGuide</h2><span>PRD v1.0 — Full System Documentation</span></div>
+<nav>
+<div class="ng"><div class="ngt">Tổng Quan</div>
+<a href="#overview" class="nl">Giới Thiệu</a>
+<a href="#arch" class="nl">Kiến Trúc Hệ Thống</a>
+<a href="#class" class="nl">Class Diagram</a>
+<a href="#er" class="nl">ER Diagram</a></div>
+<div class="ng"><div class="ngt">Mobile App</div>
+<a href="#mobile" class="nl">Pages & MVVM</a>
+<a href="#audio" class="nl">Audio Playback</a>
+<a href="#geo" class="nl">Geolocation</a></div>
+<div class="ng"><div class="ngt">Web Backend</div>
+<a href="#api" class="nl">Mobile API Endpoints</a>
+<a href="#tts" class="nl">TTS Service (Edge + Google)</a>
+<a href="#cloudinary" class="nl">Cloudinary Storage</a>
+<a href="#auth" class="nl">Auth & RBAC</a>
+<a href="#approval" class="nl">POI Change Request</a></div>
+<div class="ng"><div class="ngt">Web Admin</div>
+<a href="#admin" class="nl">SystemAdmin Pages</a>
+<a href="#shop" class="nl">PoiAdmin (Shop) Portal</a></div>
+<div class="ng"><div class="ngt">Diagrams</div>
+<a href="#state" class="nl">State Diagrams</a>
+<a href="#seq" class="nl">Sequence Diagrams</a>
+<a href="#act" class="nl">Activity Diagrams</a></div>
+<div class="ng"><div class="ngt">Tổng Kết</div>
+<a href="#stack" class="nl">Tech Stack</a>
+<a href="#roadmap" class="nl">Roadmap</a></div>
+</nav>
+</aside>
+
+<main class="mn">
+<header class="hero"><div class="hi">
+<div class="hb">PRD v1.0 — April 2026</div>
+<h1>VinhKhanhAudioGuide<br>Hệ Thống Hướng Dẫn Âm Thanh</h1>
+<p class="sub">Full-stack enterprise: .NET MAUI (MVVM + DI) — ASP.NET Core 8 Razor Pages + Minimal API — SQL Server + EF Core — Cloudinary CDN — Edge TTS + Google TTS fallback — POI Change Request Workflow — Role-based RBAC (SystemAdmin / PoiAdmin).</p>
+<div class="ht">
+<span>.NET MAUI 8 (MVVM)</span><span>ASP.NET Core 8 Razor Pages</span><span>EF Core + SQL Server</span><span>Cloudinary CDN</span><span>Edge TTS Neural</span><span>Cookie Auth + RBAC</span><span>POI Change Requests</span><span>Plugin.Maui.Audio</span>
+</div>
+<div class="hs">
+<div><div class="v">17</div><div class="l">Mobile Pages</div></div>
+<div><div class="v">15</div><div class="l">ViewModels</div></div>
+<div><div class="v">13+</div><div class="l">API Endpoints</div></div>
+<div><div class="v">12</div><div class="l">DB Tables</div></div>
+<div><div class="v">6</div><div class="l">TTS Languages</div></div>
+<div><div class="v">2</div><div class="l">Admin Roles</div></div>
+</div>
+</div></header>
+
+<div class="ct">
+
+<section class="sec" id="overview"><div class="sh"><div class="si b"></div><div><span class="ch">Chapter 00</span><h2>Giới Thiệu Sản Phẩm</h2></div></div>
+<p class="pr"><strong>VinhKhanhAudioGuide</strong> (AudioLife) là hệ thống hướng dẫn âm thanh du lịch ẩm thực đường phố Vĩnh Khánh, Q4, TP.HCM. Kiến trúc enterprise với <strong>MVVM pattern</strong> trên mobile, <strong>Razor Pages</strong> trên web, <strong>EF Core + SQL Server</strong>, lưu trữ audio trên <strong>Cloudinary CDN</strong>, và TTS tự động bằng <strong>Edge Neural Voices</strong> với Google TTS fallback. Hệ thống có <strong>2 portal riêng biệt</strong>: SystemAdmin (quản lý toàn bộ) và PoiAdmin/Shop (chủ quán quản lý địa điểm của mình).</p>
+<div class="cg">
+<div class="cd"><h3>Mục Tiêu</h3><ul>
+<li>Audio guide tự động cho du khách khi đến gần địa điểm (geolocation 100m)</li>
+<li>TTS đa ngôn ngữ: vi, en, zh, ja, ko, fr (Edge Neural + Google fallback)</li>
+<li>Cloudinary CDN lưu trữ audio MP3 chuyên nghiệp</li>
+<li>MVVM + Dependency Injection trên mobile</li>
+<li>POI Change Request: PoiAdmin gửi yêu cầu -> SystemAdmin duyệt</li>
+<li>Offline support: SQLite local database + audio download</li></ul></div>
+<div class="cd"><h3>2 Roles Quản Trị</h3><ul>
+<li><strong>SystemAdmin:</strong> Full access — CRUD Locations, Categories, Tours, AudioGuides, Users, Reports, Settings, Change Requests</li>
+<li><strong>PoiAdmin (Shop):</strong> Quản lý địa điểm được gán — sửa Location, tạo/sửa AudioGuide, gửi Change Request, xem Analytics, Reviews</li></ul></div>
+<div class="cd"><h3>Tính Năng Nổi Bật</h3><ul>
+<li>Plugin.Maui.Audio — audio player chuyên nghiệp (play/pause/seek/volume)</li>
+<li>AudioScriptSegment — hiển thị transcript đồng bộ theo thời gian phát</li>
+<li>Cloudinary upload + f_mp3 on-the-fly transformation</li>
+<li>Edge TTS với 6 Neural voices + Google TTS fallback khi 403</li>
+<li>QR code scanning cho AppUser identification</li>
+<li>Feedback/Rating system (1-5 stars) per location</li>
+<li>Download audio offline với SQLite tracking</li></ul></div>
+</div></section>
+
+<section class="sec" id="arch"><div class="sh"><div class="si t"></div><div><span class="ch">Chapter 01</span><h2>Kiến Trúc Hệ Thống</h2></div></div>
+<div class="dc"><div class="dt">System Architecture — Component Diagram</div>
+<div class="mermaid">
+graph TB
+    subgraph "Mobile — .NET MAUI (MVVM + DI)"
+        M_VIEWS["Views (17 pages)<br/>XAML + Code-behind"]
+        M_VM["ViewModels (15)<br/>CommunityToolkit.Mvvm"]
+        M_SVC["Services<br/>ApiService, AudioService<br/>GeolocationService"]
+        M_DB["SQLite<br/>mobile_local.db3"]
+        M_NAV["NavigationService<br/>Shell routing"]
+    end
+    subgraph "Web — ASP.NET Core 8"
+        W_RAZOR["Razor Pages<br/>Admin + Shop portals"]
+        W_API["Minimal API<br/>/api/mobile/*"]
+        W_SVC["Services<br/>TTS, Cloudinary<br/>ChangeRequest, Auth"]
+        W_EF["EF Core<br/>AppDbContext"]
+    end
+    subgraph "Infrastructure"
+        SQLSRV[(SQL Server<br/>AudioDB)]
+        CLOUD["Cloudinary CDN<br/>Audio MP3 storage"]
+        EDGE["Edge TTS<br/>Neural Voices"]
+        GTTS["Google TTS<br/>Fallback"]
+    end
+    M_VIEWS --> M_VM
+    M_VM --> M_SVC
+    M_SVC --> M_DB
+    M_SVC -->|HTTP| W_API
+    W_RAZOR --> W_SVC
+    W_RAZOR --> W_EF
+    W_API --> W_EF
+    W_SVC --> CLOUD
+    W_SVC --> EDGE
+    W_SVC -.->|fallback| GTTS
+    W_EF --> SQLSRV
+    style M_VIEWS fill:#1565C0,color:#fff
+    style W_RAZOR fill:#7c3aed,color:#fff
+    style W_API fill:#16a34a,color:#fff
+    style CLOUD fill:#e65100,color:#fff
+    style EDGE fill:#00838f,color:#fff
+</div></div>
+<div class="hl"><strong>Kiến trúc:</strong> Mobile dùng MVVM + DI (CommunityToolkit.Mvvm). Web dùng Razor Pages + Minimal API. Database: SQL Server + EF Core (code-first migrations). Audio storage: Cloudinary CDN với on-the-fly MP3 transformation. TTS: Edge Neural Voices (vi, en, zh, ja, ko, fr) với Google TTS fallback khi Edge trả về 403.</div>
+</section>
+
+<section class="sec" id="class"><div class="sh"><div class="si p"></div><div><span class="ch">Diagram</span><h2>Class Diagram</h2></div></div>
+<div class="dc"><div class="dt">Domain Model — Class Diagram</div>
+<div class="mermaid">
+classDiagram
+    class Location {
+        +string Id
+        +string Name
+        +string Description
+        +string ImageUrl
+        +string Address
+        +double Latitude
+        +double Longitude
+        +int Duration
+        +string CategoryId
+        +ICollection AudioGuides
+        +ICollection TourLocations
+        +ICollection Feedbacks
+    }
+    class AudioGuide {
+        +string Id
+        +string Title
+        +string Description
+        +string AudioUrl
+        +string CloudinaryAudioUrl
+        +string CloudinaryPublicId
+        +string TranscriptText
+        +int Duration
+        +string LocationId
+        +string Language
+        +bool GeneratedFromTts
+        +string TtsSourceText
+        +ICollection ScriptSegments
+        +ICollection ListeningHistories
+    }
+    class AudioScriptSegment {
+        +int Id
+        +string AudioGuideId
+        +int StartTimeSeconds
+        +int EndTimeSeconds
+        +string ScriptText
+    }
+    class Category {
+        +string Id
+        +string Name
+        +string Icon
+        +string Description
+        +ICollection Locations
+    }
+    class Tour {
+        +string Id
+        +string Name
+        +string Description
+        +string ImageUrl
+        +int Duration
+        +decimal Price
+        +bool IsFeatured
+        +ICollection TourLocations
+    }
+    class TourLocation {
+        +string TourId
+        +string LocationId
+        +int SortOrder
+    }
+    class AppUser {
+        +string Id
+        +string ScannedQrCode
+        +DateTime CreatedAt
+        +bool IsActive
+    }
+    class Feedback {
+        +int Id
+        +string UserId
+        +string LocationId
+        +int Rating
+        +string Comment
+        +DateTime CreatedAt
+    }
+    class ListeningHistory {
+        +int Id
+        +string UserId
+        +string AudioGuideId
+        +int ListenedSeconds
+        +bool IsCompleted
+        +DateTime LastListenedAt
+    }
+    class AuthUserAccount {
+        +int Id
+        +string Username
+        +string Password
+        +string DisplayName
+        +string Role
+        +bool IsActive
+    }
+    class PoiChangeRequest {
+        +Guid Id
+        +string SubmittedByUsername
+        +string LocationId
+        +string Topic
+        +string Title
+        +string Details
+        +PoiChangeTargetType TargetType
+        +string TargetEntityId
+        +string ChangeSetJson
+        +PoiChangeRequestStatus Status
+        +string ReviewNote
+    }
+    class PoiAdminLocationAssignment {
+        +int Id
+        +string Username
+        +string LocationId
+    }
+    Location "1" --> "*" AudioGuide : has
+    Location "1" --> "*" Feedback : receives
+    AudioGuide "1" --> "*" AudioScriptSegment : has segments
+    AudioGuide "1" --> "*" ListeningHistory : tracked
+    Category "1" --> "*" Location : contains
+    Tour "*" --> "*" Location : via TourLocation
+    AppUser "1" --> "*" ListeningHistory : listens
+    AppUser "1" --> "*" Feedback : writes
+    AuthUserAccount "1" --> "*" PoiChangeRequest : submits
+    PoiAdminLocationAssignment "*" --> "1" Location : assigned
+</div></div>
+</section>
+
+<section class="sec" id="er"><div class="sh"><div class="si g"></div><div><span class="ch">Diagram</span><h2>ER Diagram — SQL Server</h2></div></div>
+<div class="dc"><div class="dt">Database ER Diagram — 12 Tables</div>
+<div class="mermaid">
+erDiagram
+    Categories {
+        string Id PK
+        string Name
+        string Icon
+        string Description
+    }
+    Locations {
+        string Id PK
+        string Name
+        string Description
+        string ImageUrl
+        string Address
+        double Latitude
+        double Longitude
+        int Duration
+        string CategoryId FK
+    }
+    AudioGuides {
+        string Id PK
+        string Title
+        string Description
+        string AudioUrl
+        string CloudinaryAudioUrl
+        string CloudinaryPublicId
+        string TranscriptText
+        int Duration
+        string LocationId FK
+        string Language
+        bool GeneratedFromTts
+        string TtsSourceText
+    }
+    AudioScriptSegments {
+        int Id PK
+        string AudioGuideId FK
+        int StartTimeSeconds
+        int EndTimeSeconds
+        string ScriptText
+    }
+    Tours {
+        string Id PK
+        string Name
+        string Description
+        string ImageUrl
+        int Duration
+        decimal Price
+        bool IsFeatured
+    }
+    TourLocations {
+        string TourId FK
+        string LocationId FK
+        int SortOrder
+    }
+    AppUsers {
+        string Id PK
+        string ScannedQrCode
+        datetime CreatedAt
+        bool IsActive
+    }
+    Feedbacks {
+        int Id PK
+        string UserId FK
+        string LocationId FK
+        int Rating
+        string Comment
+    }
+    ListeningHistories {
+        int Id PK
+        string UserId FK
+        string AudioGuideId FK
+        int ListenedSeconds
+        bool IsCompleted
+    }
+    AuthUserAccounts {
+        int Id PK
+        string Username
+        string Password
+        string DisplayName
+        string Role
+        bool IsActive
+    }
+    PoiChangeRequests {
+        guid Id PK
+        string SubmittedByUsername
+        string LocationId
+        string TargetEntityId
+        string ChangeSetJson
+        int Status
+        string ReviewNote
+    }
+    PoiAdminLocationAssignments {
+        int Id PK
+        string Username
+        string LocationId
+    }
+    Categories ||--o{ Locations : "contains"
+    Locations ||--o{ AudioGuides : "has"
+    AudioGuides ||--o{ AudioScriptSegments : "has"
+    AudioGuides ||--o{ ListeningHistories : "tracked"
+    AppUsers ||--o{ ListeningHistories : "listens"
+    AppUsers ||--o{ Feedbacks : "writes"
+    Locations ||--o{ Feedbacks : "receives"
+    Tours }o--o{ Locations : "via TourLocations"
+    Locations ||--o{ PoiAdminLocationAssignments : "assigned"
+</div></div>
+</section>
+
+<section class="sec" id="mobile"><div class="sh"><div class="si b"></div><div><span class="ch">Chapter 02</span><h2>Mobile App — 17 Pages, MVVM Pattern</h2></div></div>
+<p class="pr">Kiến trúc <strong>MVVM + Dependency Injection</strong> với CommunityToolkit.Mvvm. Tất cả ViewModels dùng <code>[ObservableProperty]</code>, <code>[RelayCommand]</code>. Services được inject qua constructor. Navigation qua Shell routing.</p>
+<div class="cg">
+<div class="cd"><h3>IntroPage</h3><p>Onboarding giới thiệu app. Chuyển đến MainPage sau khi hoàn thành.</p></div>
+<div class="cd"><h3>MainPage</h3><p>Trang chủ — danh sách locations, categories, featured tours. Search bar.</p></div>
+<div class="cd"><h3>MapPage</h3><p>Bản đồ tương tác hiển thị locations. Geolocation tracking 100m radius.</p></div>
+<div class="cd"><h3>LocationDetailPage</h3><p>Chi tiết địa điểm — hình ảnh, mô tả, audio guides, feedbacks. Favorite toggle.</p></div>
+<div class="cd"><h3>AudioPlayerPage</h3><p>Player chuyên nghiệp: play/pause/seek/volume. Transcript hiển thị đồng bộ theo AudioScriptSegment.</p></div>
+<div class="cd"><h3>ToursPage + TourDetailPage</h3><p>Danh sách tours + chi tiết tour với locations theo thứ tự SortOrder.</p></div>
+<div class="cd"><h3>SearchPage</h3><p>Tìm kiếm locations theo tên, mô tả, địa chỉ.</p></div>
+<div class="cd"><h3>FavoritesPage</h3><p>Danh sách địa điểm yêu thích (SQLite local).</p></div>
+<div class="cd"><h3>HistoryPage</h3><p>Lịch sử nghe audio — ListeningHistory với listened seconds, completion.</p></div>
+<div class="cd"><h3>DownloadsPage</h3><p>Audio đã tải về offline. Quản lý dung lượng. Xóa downloads.</p></div>
+<div class="cd"><h3>ProfilePage + EditProfilePage</h3><p>Hồ sơ người dùng. Chỉnh sửa thông tin.</p></div>
+<div class="cd"><h3>SettingsPage + LanguageSection</h3><p>Cài đặt app. Chọn ngôn ngữ (vi/en/zh/ja/ko/fr).</p></div>
+<div class="cd"><h3>HelpPage + AboutPage</h3><p>Hướng dẫn sử dụng và thông tin ứng dụng.</p></div>
+</div></section>
+
+<section class="sec" id="audio"><div class="sh"><div class="si o"></div><div><span class="ch">Chapter 03</span><h2>Audio Playback — Plugin.Maui.Audio</h2></div></div>
+<p class="pr">AudioService dùng <strong>Plugin.Maui.Audio</strong> (IAudioManager) để phát MP3. Hỗ trợ play/pause/resume/stop/seek/volume. Position timer cập nhật mỗi 500ms. AudioScriptSegment hiển thị transcript đồng bộ theo thời gian.</p>
+<div class="fl">
+<span class="fs b">Load URL/File</span><span class="fa">&rarr;</span>
+<span class="fs t">IAudioPlayer.Play()</span><span class="fa">&rarr;</span>
+<span class="fs g">Position Timer 500ms</span><span class="fa">&rarr;</span>
+<span class="fs o">Transcript Sync</span><span class="fa">&rarr;</span>
+<span class="fs p">PlaybackEnded</span>
+</div>
+<div class="hl or"><strong>Audio States:</strong> None &rarr; Loading &rarr; Playing &rarr; Paused &rarr; Stopped &rarr; Completed &rarr; Error. Event-driven: StateChanged + PositionChanged callbacks.</div>
+</section>
+
+<section class="sec" id="geo"><div class="sh"><div class="si t"></div><div><span class="ch">Chapter 04</span><h2>Geolocation — Nearby Detection</h2></div></div>
+<p class="pr">GeolocationService theo dõi vị trí mỗi 60 giây. Khi phát hiện location trong bán kính 100m (Haversine), phát sự kiện <code>NearbyLocationDetected</code>. Chỉ trigger 1 lần cho mỗi location (theo dõi <code>_lastNearestLocationId</code>).</p>
+<div class="cg">
+<div class="cd"><h3>Tracking Config</h3><ul>
+<li>Radius: 100m (0.1 km)</li>
+<li>Interval: 60 seconds</li>
+<li>Accuracy: GeolocationAccuracy.Medium</li>
+<li>Timeout: 10 seconds per request</li></ul></div>
+<div class="cd"><h3>Haversine Formula</h3><p>Earth radius 6,371 km. Tính khoảng cách chính xác giữa 2 tọa độ GPS. Kết quả trả về km.</p></div>
+</div></section>
+
+<section class="sec" id="api"><div class="sh"><div class="si g"></div><div><span class="ch">Chapter 05</span><h2>Mobile API — Minimal API Endpoints</h2></div></div>
+<div class="tw"><table>
+<thead><tr><th>Endpoint</th><th>Method</th><th>Mô Tả</th></tr></thead>
+<tbody>
+<tr><td><code>/api/mobile/health</code></td><td>GET</td><td>Health check</td></tr>
+<tr><td><code>/api/mobile/categories</code></td><td>GET</td><td>Tất cả categories + location count</td></tr>
+<tr><td><code>/api/mobile/locations</code></td><td>GET</td><td>Tất cả locations + audio guides</td></tr>
+<tr><td><code>/api/mobile/locations/{id}</code></td><td>GET</td><td>Chi tiết location + audio guides</td></tr>
+<tr><td><code>/api/mobile/locations/by-category/{categoryId}</code></td><td>GET</td><td>Locations theo category</td></tr>
+<tr><td><code>/api/mobile/locations/search?query=</code></td><td>GET</td><td>Tìm kiếm (Name, Description, Address)</td></tr>
+<tr><td><code>/api/mobile/locations/nearby?lat=&lng=&radiusKm=</code></td><td>GET</td><td>Nearby (Haversine, default 100m)</td></tr>
+<tr><td><code>/api/mobile/tours</code></td><td>GET</td><td>Tất cả tours + location IDs</td></tr>
+<tr><td><code>/api/mobile/tours/{id}</code></td><td>GET</td><td>Chi tiết tour</td></tr>
+<tr><td><code>/api/mobile/tours/featured</code></td><td>GET</td><td>Tours nổi bật (IsFeatured=true)</td></tr>
+<tr><td><code>/api/mobile/audio/by-location/{locationId}</code></td><td>GET</td><td>Audio guides + script segments theo location</td></tr>
+<tr><td><code>/api/mobile/audio/{id}</code></td><td>GET</td><td>Chi tiết audio guide + segments</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="sec" id="tts"><div class="sh"><div class="si t"></div><div><span class="ch">Chapter 06</span><h2>TTS Service — Edge Neural + Google Fallback</h2></div></div>
+<p class="pr"><code>EdgeTextToSpeechService</code> dùng thư viện <strong>EdgeTTS</strong> (NuGet) để tạo audio MP3 từ text. 6 Neural voices. Khi Edge trả về 403, tự động fallback sang Google Translate TTS (free). Text dài được split thành chunks 180 ký tự, merge MP3 và strip ID3 headers.</p>
+<div class="tw"><table>
+<thead><tr><th>Language</th><th>Edge Voice</th><th>Google Code</th></tr></thead>
+<tbody>
+<tr><td>vi - Tiếng Việt</td><td>vi-VN-HoaiMyNeural</td><td>vi</td></tr>
+<tr><td>en - English</td><td>en-US-JennyNeural</td><td>en</td></tr>
+<tr><td>zh - Trung</td><td>zh-CN-XiaoxiaoNeural</td><td>zh-CN</td></tr>
+<tr><td>ja - Nhật</td><td>ja-JP-NanamiNeural</td><td>ja</td></tr>
+<tr><td>ko - Hàn</td><td>ko-KR-SunHiNeural</td><td>ko</td></tr>
+<tr><td>fr - Pháp</td><td>fr-FR-DeniseNeural</td><td>fr</td></tr>
+</tbody></table></div>
+<div class="fl">
+<span class="fs b">Text input</span><span class="fa">&rarr;</span>
+<span class="fs t">Edge TTS Neural</span><span class="fa">&rarr;</span>
+<span class="fs g">MP3 bytes</span><span class="fa">&rarr;</span>
+<span class="fs o">Cloudinary upload</span><span class="fa">&rarr;</span>
+<span class="fs p">CDN URL saved</span>
+</div>
+<div class="hl wr"><strong>Fallback:</strong> Edge 403 &rarr; Google Translate TTS (split text 180 chars, merge MP3 chunks, strip ID3 headers). Log error + retry.</div>
+</section>
+
+<section class="sec" id="cloudinary"><div class="sh"><div class="si o"></div><div><span class="ch">Chapter 07</span><h2>Cloudinary Audio Storage</h2></div></div>
+<p class="pr"><code>CloudinaryAudioStorageService</code> upload audio lên Cloudinary CDN. Dùng <code>VideoUploadParams</code> (Cloudinary coi audio là video). URL cuối cùng được transform: <code>/video/upload/</code> &rarr; <code>/video/upload/f_mp3/</code> để on-the-fly convert sang MP3. Mỗi file có unique PublicId.</p>
+<div class="cg">
+<div class="cd"><h3>Upload Flow</h3><ul>
+<li>IFormFile hoặc Stream &rarr; Cloudinary API</li>
+<li>Folder: <code>audio/</code></li>
+<li>PublicId: <code>{prefix}-{GUID}</code></li>
+<li>URL transform: f_mp3 on-the-fly</li></ul></div>
+<div class="cd"><h3>Stored Fields</h3><ul>
+<li><code>AudioUrl</code> — URL cuối cùng (f_mp3)</li>
+<li><code>CloudinaryAudioUrl</code> — URL gốc Cloudinary</li>
+<li><code>CloudinaryPublicId</code> — ID để manage/delete</li></ul></div>
+</div></section>
+
+<section class="sec" id="auth"><div class="sh"><div class="si p"></div><div><span class="ch">Chapter 08</span><h2>Authentication & RBAC</h2></div></div>
+<p class="pr">Cookie Authentication với <code>CookieAuthenticationDefaults</code>. 2 roles: <strong>SystemAdmin</strong> và <strong>PoiAdmin</strong>. Auth source: <code>appsettings.json</code> (config users) + <code>AuthUserAccounts</code> table (DB users). PoiAdmin được gán location qua <code>PoiAdminLocationAssignments</code>. Authorization policies: <code>SystemAdminOnly</code>, <code>PoiAdminOnly</code>.</p>
+<div class="tw"><table>
+<thead><tr><th>Role</th><th>Access</th><th>Folders</th></tr></thead>
+<tbody>
+<tr><td><strong>SystemAdmin</strong></td><td>Full access: Admin, Categories, Locations, Tours, AudioGuides</td><td>/Admin/*, /Categories/*, /Locations/*, /Tours/*, /AudioGuides/*</td></tr>
+<tr><td><strong>PoiAdmin</strong></td><td>Địa điểm được gán: sửa Location, tạo/sửa AudioGuide, gửi ChangeRequest</td><td>/Shop/*</td></tr>
+</tbody></table></div>
+<div class="hl"><strong>PoiAdmin Assignment:</strong> Mỗi PoiAdmin được gán một số LocationIds. UserAccessService kiểm tra <code>CanAccessLocation()</code> trước mỗi thao tác. SystemAdmin có thể chuyển/gán lại locations giữa các PoiAdmin.</div>
+</section>
+
+<section class="sec" id="approval"><div class="sh"><div class="si g"></div><div><span class="ch">Chapter 09</span><h2>POI Change Request Workflow</h2></div></div>
+<p class="pr"><code>PoiChangeRequestService</code> quản lý quy trình: PoiAdmin gửi yêu cầu thay đổi (Location hoặc AudioGuide) &rarr; SystemAdmin duyệt (Approved/Rejected). Khi Approved, hệ thống tự động <code>TryApplyChangeSetAsync()</code> — parse ChangeSetJson và apply từng field vào entity.</p>
+<div class="fl">
+<span class="fs g">PoiAdmin</span><span class="fa">&rarr;</span>
+<span class="fs b">Submit Request</span><span class="fa">&rarr;</span>
+<span class="fs w">Pending</span><span class="fa">&rarr;</span>
+<span class="fs p">SystemAdmin Review</span><span class="fa">&rarr;</span>
+<span class="fs g">Approved</span><span class="fa">&rarr;</span>
+<span class="fs o">Auto Apply ChangeSet</span>
+</div>
+<div class="cg">
+<div class="cd"><h3>TargetType</h3><ul>
+<li><code>Location</code> — sửa Name, Description, Address, ImageUrl, Lat/Lng, Duration</li>
+<li><code>AudioGuide</code> — sửa Title, Description, AudioUrl, Cloudinary fields, Language, Transcript. Hỗ trợ <code>create-audio-guide</code> action.</li></ul></div>
+<div class="cd"><h3>Status Flow</h3><ul>
+<li><code>Pending</code> &rarr; <code>InReview</code> &rarr; <code>Approved</code> / <code>Rejected</code></li>
+<li>ChangeSetJson lưu JSON diff của các fields thay đổi</li>
+<li>ReviewNote: ghi chú của admin khi duyệt/từ chối</li></ul></div>
+</div></section>
+
+<section class="sec" id="admin"><div class="sh"><div class="si p"></div><div><span class="ch">Chapter 10</span><h2>SystemAdmin — Razor Pages</h2></div></div>
+<div class="cg">
+<div class="cd"><h3>Admin/Index</h3><p>Dashboard tổng quan: stats, recent activities.</p></div>
+<div class="cd"><h3>Admin/Users</h3><p>CRUD AuthUserAccounts. Gán role, assign locations cho PoiAdmin.</p></div>
+<div class="cd"><h3>Admin/ChangeRequests</h3><p>Duyệt/từ chối POI Change Requests. Xem diff ChangeSetJson.</p></div>
+<div class="cd"><h3>Admin/Reports</h3><p>Báo cáo thống kê: listening, feedback, locations.</p></div>
+<div class="cd"><h3>Admin/Settings</h3><p>Cấu hình hệ thống.</p></div>
+<div class="cd"><h3>Locations/*</h3><p>CRUD Locations + MapView (bản đồ tổng quan).</p></div>
+<div class="cd"><h3>Categories/*</h3><p>CRUD Categories (Quán ăn, WC, Bãi xe...).</p></div>
+<div class="cd"><h3>Tours/*</h3><p>CRUD Tours + gán TourLocations với SortOrder.</p></div>
+<div class="cd"><h3>AudioGuides/*</h3><p>CRUD AudioGuides + TTS generation + Cloudinary upload.</p></div>
+</div></section>
+
+<section class="sec" id="shop"><div class="sh"><div class="si g"></div><div><span class="ch">Chapter 11</span><h2>PoiAdmin (Shop) Portal</h2></div></div>
+<div class="cg">
+<div class="cd"><h3>Shop/Index</h3><p>Dashboard của PoiAdmin — chỉ hiện locations được gán.</p></div>
+<div class="cd"><h3>Shop/Locations/Edit</h3><p>Sửa thông tin location (chỉ những địa điểm được assign).</p></div>
+<div class="cd"><h3>Shop/AudioGuides/*</h3><p>CRUD audio guides cho locations của mình. TTS generate + Cloudinary upload.</p></div>
+<div class="cd"><h3>Shop/ChangeRequests</h3><p>Gửi yêu cầu thay đổi. Xem trạng thái pending/approved/rejected.</p></div>
+<div class="cd"><h3>Shop/Analytics</h3><p>Thống kê nghe audio cho locations của mình.</p></div>
+<div class="cd"><h3>Shop/Reviews</h3><p>Xem feedback/reviews của du khách cho locations.</p></div>
+</div></section>
+
+<section class="sec" id="state"><div class="sh"><div class="si o"></div><div><span class="ch">Diagram</span><h2>State Diagrams</h2></div></div>
+
+<div class="dc"><div class="dt">Audio Playback — State Machine</div>
+<div class="mermaid">
+stateDiagram-v2
+    [*] --> None
+    None --> Loading : PlayAsync(url)
+    Loading --> Playing : Player ready
+    Loading --> Error : Load failed
+    Playing --> Paused : PauseAsync()
+    Paused --> Playing : ResumeAsync()
+    Playing --> Stopped : StopAsync()
+    Paused --> Stopped : StopAsync()
+    Playing --> Completed : PlaybackEnded
+    Completed --> None : Reset
+    Stopped --> None : Reset
+    Error --> None : Reset
+
+    note right of Playing
+        Position timer 500ms
+        Transcript sync per segment
+        Volume control 0.0-1.0
+    end note
+</div></div>
+
+<div class="dc"><div class="dt">POI Change Request — State Machine</div>
+<div class="mermaid">
+stateDiagram-v2
+    [*] --> Pending : PoiAdmin submits
+    Pending --> InReview : Admin starts review
+    InReview --> Approved : Admin approves
+    InReview --> Rejected : Admin rejects
+    Approved --> Applied : TryApplyChangeSetAsync()
+    Applied --> [*] : Done
+
+    note right of Approved
+        Auto parse ChangeSetJson
+        Apply field-by-field to
+        Location or AudioGuide
+    end note
+</div></div>
+
+<div class="dc"><div class="dt">TTS Generation — State Machine</div>
+<div class="mermaid">
+stateDiagram-v2
+    [*] --> TextInput : Admin enters text
+    TextInput --> EdgeTTS : SynthesizeAsync()
+    EdgeTTS --> MP3Generated : Success
+    EdgeTTS --> GoogleFallback : 403 Error
+    GoogleFallback --> MP3Generated : Chunks merged
+    GoogleFallback --> Failed : Also rejected
+    MP3Generated --> CloudinaryUpload : Upload MP3
+    CloudinaryUpload --> Saved : AudioGuide updated
+    Saved --> [*]
+    Failed --> [*] : Manual upload needed
+</div></div>
+
+<div class="dc"><div class="dt">Geolocation Tracking — State Machine</div>
+<div class="mermaid">
+stateDiagram-v2
+    [*] --> Idle
+    Idle --> RequestPermission : StartTrackingAsync()
+    RequestPermission --> Tracking : Permission granted
+    RequestPermission --> Idle : Denied
+    Tracking --> CheckNearby : GPS position received
+    CheckNearby --> Notify : Location within 100m
+    CheckNearby --> Tracking : No nearby location
+    Notify --> Tracking : Wait 60s next cycle
+    Tracking --> Idle : StopTracking()
+</div></div>
+</section>
+
+<section class="sec" id="seq"><div class="sh"><div class="si t"></div><div><span class="ch">Diagram</span><h2>Sequence Diagrams</h2></div></div>
+
+<div class="dc"><div class="dt">Audio Playback Flow</div>
+<div class="mermaid">
+sequenceDiagram
+    participant U as User
+    participant VP as AudioPlayerPage
+    participant VM as AudioPlayerVM
+    participant SVC as AudioService
+    participant PLG as Plugin.Maui.Audio
+    participant API as Web API
+
+    U->>VP: Tap Play on AudioGuide
+    VP->>VM: PlayCommand.Execute()
+    VM->>API: GET /api/mobile/audio/{id}
+    API-->>VM: AudioGuide + ScriptSegments
+    VM->>SVC: PlayAsync(audioUrl)
+    SVC->>SVC: LoadPlayerAsync (HTTP download)
+    SVC->>PLG: CreatePlayer(stream)
+    PLG-->>SVC: IAudioPlayer
+    SVC->>PLG: player.Play()
+    SVC->>SVC: StartPositionTimer (500ms)
+
+    loop Every 500ms
+        SVC->>SVC: Update CurrentPosition
+        SVC-->>VM: PositionChanged event
+        VM->>VM: Sync transcript segment
+        VM-->>VP: UI update
+    end
+
+    PLG-->>SVC: PlaybackEnded
+    SVC-->>VM: StateChanged(Completed)
+    VM->>VM: Save ListeningHistory
+</div></div>
+
+<div class="dc"><div class="dt">Geolocation Nearby Detection</div>
+<div class="mermaid">
+sequenceDiagram
+    participant GEO as GeolocationService
+    participant GPS as Device GPS
+    participant API as ApiService
+    participant APP as MapViewModel
+
+    GEO->>GPS: GetLocationAsync (accuracy: Medium)
+    GPS-->>GEO: {Latitude, Longitude}
+    GEO->>API: GetNearbyLocationsAsync(lat, lng, 0.1km)
+    API-->>GEO: Nearby locations list
+
+    alt Location found within 100m
+        GEO->>GEO: Check _lastNearestLocationId
+        alt New location (not same as last)
+            GEO-->>APP: NearbyLocationDetected event
+            GEO->>GEO: _lastNearestLocationId = newId
+            APP->>APP: Show notification / auto-play
+        end
+    end
+
+    Note over GEO: Wait 60 seconds
+    GEO->>GPS: Next tracking cycle
+</div></div>
+
+<div class="dc"><div class="dt">TTS Generation + Cloudinary Upload</div>
+<div class="mermaid">
+sequenceDiagram
+    participant A as Admin
+    participant WEB as Razor Page
+    participant TTS as EdgeTTSService
+    participant EDGE as Edge Neural API
+    participant GTTS as Google TTS
+    participant CLD as Cloudinary
+    participant DB as SQL Server
+
+    A->>WEB: Enter TTS text + select language
+    WEB->>TTS: SynthesizeAsync(text, "vi")
+    TTS->>TTS: GetVoiceForLanguage("vi") = HoaiMyNeural
+    TTS->>EDGE: Communicate(text, voice)
+
+    alt Edge Success
+        EDGE-->>TTS: MP3 bytes (stream)
+    else Edge 403 Error
+        TTS->>GTTS: SynthesizeWithGoogleFallbackAsync()
+        GTTS->>GTTS: SplitTextForGoogleTts(180 chars)
+        loop Each chunk
+            GTTS->>GTTS: GET translate.google.com/translate_tts
+            GTTS->>GTTS: StripId3Header + merge
+        end
+        GTTS-->>TTS: Merged MP3 bytes
+    end
+
+    WEB->>CLD: UploadAudioAsync(mp3Stream)
+    CLD->>CLD: Upload as video + f_mp3 transform
+    CLD-->>WEB: {AudioUrl, CloudinaryPublicId}
+    WEB->>DB: UPDATE AudioGuides SET AudioUrl, GeneratedFromTts=true
+    WEB-->>A: Success notification
+</div></div>
+
+<div class="dc"><div class="dt">POI Change Request — Submit + Review</div>
+<div class="mermaid">
+sequenceDiagram
+    participant POI as PoiAdmin
+    participant SHOP as Shop Pages
+    participant SVC as ChangeRequestService
+    participant DB as SQL Server
+    participant ADM as SystemAdmin
+    participant ADMIN as Admin Pages
+
+    POI->>SHOP: Edit location / audio guide
+    SHOP->>SHOP: Build ChangeSetJson (field diffs)
+    SHOP->>SVC: SubmitAsync(PoiChangeRequest)
+    SVC->>DB: INSERT PoiChangeRequests (status=Pending)
+    SVC-->>SHOP: Request submitted
+    SHOP-->>POI: "Chờ admin duyệt"
+
+    ADM->>ADMIN: Open ChangeRequests page
+    ADMIN->>SVC: GetAllAsync()
+    SVC->>DB: SELECT * ORDER BY SubmittedAtUtc DESC
+    DB-->>ADMIN: List requests
+
+    ADM->>ADMIN: Approve request
+    ADMIN->>SVC: TryUpdateStatusAsync(id, Approved, "admin")
+    SVC->>SVC: TryApplyChangeSetAsync()
+
+    alt TargetType = Location
+        SVC->>DB: UPDATE Locations SET field=value...
+    else TargetType = AudioGuide
+        alt Action = create-audio-guide
+            SVC->>DB: INSERT AudioGuides
+        else Update existing
+            SVC->>DB: UPDATE AudioGuides SET field=value...
+        end
+    end
+
+    SVC->>DB: UPDATE PoiChangeRequests SET Status=Approved
+    SVC-->>ADMIN: "Đã duyệt và áp dụng!"
+</div></div>
+
+<div class="dc"><div class="dt">User Login + Authorization</div>
+<div class="mermaid">
+sequenceDiagram
+    participant U as User
+    participant LP as Login Page
+    participant AUTH as AuthUserStore
+    participant CFG as appsettings.json
+    participant DB as SQL Server
+    participant CK as Cookie
+
+    U->>LP: Enter username + password
+    LP->>AUTH: FindByCredentialsAsync(user, pass)
+    AUTH->>CFG: Check configured users list
+
+    alt Found in config
+        CFG-->>AUTH: AuthUserOption (role, locationIds)
+    else Not in config
+        AUTH->>DB: SELECT FROM AuthUserAccounts WHERE Username AND Password
+        alt Found in DB
+            DB-->>AUTH: AuthUserAccount
+            AUTH->>DB: SELECT LocationIds FROM PoiAdminLocationAssignments
+            DB-->>AUTH: Assigned locationIds
+        else Not found
+            AUTH-->>LP: null (login failed)
+            LP-->>U: "Sai tài khoản"
+        end
+    end
+
+    AUTH-->>LP: AuthUserOption
+    LP->>CK: SignIn (Claims: role, username, owned_locations)
+    CK-->>U: Redirect to Admin or Shop based on role
+</div></div>
+
+<div class="dc"><div class="dt">SystemAdmin — CRUD Location + AudioGuide</div>
+<div class="mermaid">
+sequenceDiagram
+    participant A as SystemAdmin
+    participant WEB as Razor Pages
+    participant EF as EF Core
+    participant DB as SQL Server
+    participant TTS as EdgeTTSService
+    participant CLD as Cloudinary
+
+    A->>WEB: Create new Location
+    WEB->>EF: db.Locations.Add(location)
+    EF->>DB: INSERT INTO Locations
+    DB-->>WEB: Success
+
+    A->>WEB: Create AudioGuide for location
+    A->>WEB: Option 1: Upload audio file
+    WEB->>CLD: UploadAudioAsync(file)
+    CLD-->>WEB: {AudioUrl, CloudinaryPublicId}
+    WEB->>EF: db.AudioGuides.Add(guide)
+    EF->>DB: INSERT INTO AudioGuides
+
+    A->>WEB: Option 2: Generate from TTS
+    WEB->>TTS: SynthesizeAsync(text, language)
+    TTS-->>WEB: MP3 bytes
+    WEB->>CLD: UploadAudioAsync(mp3Stream)
+    CLD-->>WEB: {AudioUrl, CloudinaryPublicId}
+    WEB->>EF: Update AudioGuide (GeneratedFromTts=true)
+    EF->>DB: UPDATE AudioGuides
+</div></div>
+</section>
+
+<section class="sec" id="act"><div class="sh"><div class="si g"></div><div><span class="ch">Diagram</span><h2>Activity Diagrams</h2></div></div>
+
+<div class="dc"><div class="dt">Audio Guide Creation — Full Pipeline</div>
+<div class="mermaid">
+flowchart TD
+    A([Admin opens AudioGuide Create]) --> B{Upload or TTS?}
+    B -->|Upload file| C[Validate file format]
+    C --> D[CloudinaryAudioStorageService.Upload]
+    D --> E[Transform URL: f_mp3]
+    B -->|Generate TTS| F[Enter text + select language]
+    F --> G[EdgeTTSService.SynthesizeAsync]
+    G --> H{Edge success?}
+    H -->|Yes| I[MP3 bytes ready]
+    H -->|No 403| J[Google TTS Fallback]
+    J --> K[Split text 180 chars]
+    K --> L[Merge chunks + strip ID3]
+    L --> I
+    I --> D
+    E --> M[Save to DB: AudioUrl, CloudinaryPublicId]
+    M --> N{Add ScriptSegments?}
+    N -->|Yes| O[Add timestamp + text segments]
+    N -->|No| P([AudioGuide created])
+    O --> P
+    style A fill:#7c3aed,color:#fff
+    style P fill:#16a34a,color:#fff
+</div></div>
+
+<div class="dc"><div class="dt">POI Change Request — Apply Logic</div>
+<div class="mermaid">
+flowchart TD
+    A([TryApplyChangeSetAsync]) --> B[Parse ChangeSetJson]
+    B --> C{TargetType?}
+    C -->|Location| D[Find Location by TargetEntityId]
+    D --> E{Location exists?}
+    E -->|No| FAIL([Return false])
+    E -->|Yes| F[Apply field changes]
+    F --> G[Name, Description, Address]
+    F --> H[ImageUrl, Lat, Lng, Duration]
+    G --> OK([Return true])
+    H --> OK
+
+    C -->|AudioGuide| I{Action = create?}
+    I -->|Yes| J[Verify LocationId exists]
+    J --> K[Create new AudioGuide]
+    K --> L[Apply fields from ChangeSet]
+    L --> OK
+    I -->|No| M[Find existing AudioGuide]
+    M --> N{Exists and same LocationId?}
+    N -->|No| FAIL
+    N -->|Yes| O[Apply field changes]
+    O --> P[Title, Description, AudioUrl]
+    O --> Q[Cloudinary fields, Language, TTS]
+    P --> OK
+    Q --> OK
+
+    style A fill:#7c3aed,color:#fff
+    style OK fill:#16a34a,color:#fff
+    style FAIL fill:#dc2626,color:#fff
+</div></div>
+
+<div class="dc"><div class="dt">Geolocation Nearby Detection Loop</div>
+<div class="mermaid">
+flowchart TD
+    A([StartTrackingAsync]) --> B{Permission granted?}
+    B -->|No| Z([Stop])
+    B -->|Yes| C[Set _isTracking = true]
+    C --> D[GetLocationAsync GPS]
+    D --> E{Got position?}
+    E -->|No| F[Wait 60s retry]
+    F --> D
+    E -->|Yes| G[CheckNearbyLocationsAsync]
+    G --> H[GetNearbyLocationsAsync lat,lng,0.1km]
+    H --> I{Found nearby?}
+    I -->|No| F
+    I -->|Yes| J{Same as lastNearestId?}
+    J -->|Yes| F
+    J -->|No| K[Fire NearbyLocationDetected]
+    K --> L[Update _lastNearestLocationId]
+    L --> F
+
+    style A fill:#00838f,color:#fff
+    style K fill:#1565C0,color:#fff
+    style Z fill:#64748b,color:#fff
+</div></div>
+</section>
+
+<section class="sec" id="stack"><div class="sh"><div class="si b"></div><div><span class="ch">Summary</span><h2>Tech Stack & Constants</h2></div></div>
+<div class="cg">
+<div class="cd"><h3>Mobile</h3><ul>
+<li>.NET MAUI 8 (MVVM)</li>
+<li>CommunityToolkit.Mvvm</li>
+<li>Plugin.Maui.Audio</li>
+<li>SQLite-net (local DB)</li>
+<li>Shell navigation</li></ul></div>
+<div class="cd"><h3>Web Backend</h3><ul>
+<li>ASP.NET Core 8 Razor Pages</li>
+<li>Minimal API (/api/mobile/*)</li>
+<li>EF Core + SQL Server</li>
+<li>Cookie Authentication</li>
+<li>EdgeTTS (NuGet)</li>
+<li>CloudinaryDotNet</li></ul></div>
+<div class="cd"><h3>Infrastructure</h3><ul>
+<li>SQL Server (AudioDB)</li>
+<li>Cloudinary CDN (audio)</li>
+<li>Edge Neural Voices (6 langs)</li>
+<li>Google TTS (fallback)</li>
+<li>Bootstrap 5 (admin UI)</li></ul></div>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Constant</th><th>Value</th><th>Location</th></tr></thead>
+<tbody>
+<tr><td>Nearby Radius</td><td>100m (0.1 km)</td><td>GeolocationService.cs</td></tr>
+<tr><td>Tracking Interval</td><td>60 seconds</td><td>GeolocationService.cs</td></tr>
+<tr><td>Position Timer</td><td>500ms</td><td>AudioService.cs</td></tr>
+<tr><td>Cookie Expiry</td><td>8 hours (sliding)</td><td>Program.cs</td></tr>
+<tr><td>Database</td><td>AudioDB (SQL Server)</td><td>appsettings.json</td></tr>
+<tr><td>Cloudinary Folder</td><td>audio/</td><td>appsettings.json</td></tr>
+<tr><td>Google TTS chunk</td><td>180 chars max</td><td>EdgeTTSService.cs</td></tr>
+<tr><td>Audio Transform</td><td>f_mp3 (on-the-fly)</td><td>CloudinaryService.cs</td></tr>
+<tr><td>SystemAdmin role</td><td>SystemAdmin</td><td>RoleNames.cs</td></tr>
+<tr><td>PoiAdmin role</td><td>PoiAdmin</td><td>RoleNames.cs</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="sec" id="roadmap"><div class="sh"><div class="si w"></div><div><span class="ch">Future</span><h2>Roadmap</h2></div></div>
+<div class="cg">
+<div class="cd"><h3>Security</h3><ul>
+<li>JWT tokens thay Cookie cho mobile API</li>
+<li>Password hashing (bcrypt/Argon2)</li>
+<li>API rate limiting</li>
+<li>HTTPS enforcement</li></ul></div>
+<div class="cd"><h3>Features</h3><ul>
+<li>Realtime listening analytics dashboard</li>
+<li>Push notifications khi gán POI</li>
+<li>Social sharing / QR code tours</li>
+<li>Multi-language UI (mobile app)</li>
+<li>Payment integration cho tours có phí</li></ul></div>
+<div class="cd"><h3>Infrastructure</h3><ul>
+<li>Docker containerization</li>
+<li>CI/CD pipeline (GitHub Actions)</li>
+<li>Azure deployment</li>
+<li>CDN caching optimization</li></ul></div>
+</div>
+<div class="hl ok"><strong>Đã hoàn thành:</strong> Full-stack enterprise với MVVM mobile (17 pages, 15 VMs), Razor Pages admin (2 portals), EF Core + SQL Server (12 tables), Cloudinary CDN, Edge TTS 6 languages + Google fallback, POI Change Request workflow, Role-based RBAC, AudioScriptSegment transcript sync, offline downloads, feedback/rating system.</div>
+</section>
+
+</div>
+<footer class="ft">
+<p><strong>VinhKhanhAudioGuide (AudioLife)</strong> — PRD v1.0</p>
+<p>.NET MAUI (MVVM) + ASP.NET Core 8 Razor Pages + SQL Server + Cloudinary + Edge TTS</p>
+<p>Generated April 2026 — Verified against source code</p>
+</footer>
+</main>
+
+<script>
+mermaid.initialize({startOnLoad:true,theme:'base',themeVariables:{primaryColor:'#eff6ff',primaryTextColor:'#1e293b',primaryBorderColor:'#1565C0',lineColor:'#64748b',secondaryColor:'#f0fdf4',tertiaryColor:'#fff7ed',fontFamily:'Be Vietnam Pro,sans-serif',fontSize:'12px',nodeBorder:'#1565C0',mainBkg:'#eff6ff',clusterBkg:'#f8fafc',clusterBorder:'#cbd5e1',actorBorder:'#1565C0',actorBkg:'#eff6ff',actorTextColor:'#1e293b',noteBkgColor:'#fef3c7',noteTextColor:'#1e293b',noteBorderColor:'#d97706',activationBorderColor:'#1565C0',activationBkgColor:'#dbeafe',relationColor:'#64748b'},flowchart:{curve:'basis',padding:12},sequence:{actorMargin:55,width:160,height:45,mirrorActors:true,useMaxWidth:true},er:{useMaxWidth:true}});
+const secs=document.querySelectorAll('.sec'),nls=document.querySelectorAll('.nl');
+const obs=new IntersectionObserver(e=>{e.forEach(en=>{if(en.isIntersecting){nls.forEach(l=>l.classList.remove('a'));const a=document.querySelector(`.nl[href="#${en.target.id}"]`);if(a)a.classList.add('a')}})},{rootMargin:'-20% 0px -70% 0px'});
+secs.forEach(s=>obs.observe(s));
+nls.forEach(l=>l.addEventListener('click',()=>{if(window.innerWidth<=900)document.querySelector('.sb').classList.remove('open')}));
+</script>
+</body>
+</html>

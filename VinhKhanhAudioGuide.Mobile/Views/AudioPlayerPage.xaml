@@ -1,46 +1,39 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:converters="clr-namespace:VinhKhanhAudioGuide.Mobile.Converters"
              xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
-             xmlns:local="clr-namespace:VinhKhanhAudioGuide.Mobile.Views"
              x:Class="VinhKhanhAudioGuide.Mobile.Views.AudioPlayerPage"
+             x:Name="AudioPage"
              x:DataType="viewmodels:AudioPlayerViewModel"
              Title="{Binding Title}"
              Shell.NavBarIsVisible="True"
              BackgroundColor="{StaticResource Gray100}">
 
     <ContentPage.Resources>
-        <ResourceDictionary>
-            <local:IsCurrentAudioConverter x:Key="IsCurrentAudioConverter" />
-        </ResourceDictionary>
+        <converters:DurationMinutesConverter x:Key="DurationMinutesConverter" />
     </ContentPage.Resources>
-    
+
     <Grid RowDefinitions="Auto,*,Auto">
 
-        <!-- Hero -->
-         <Frame Grid.Row="0"
-             Margin="16,16,16,0"
-             Padding="0"
-             CornerRadius="28"
-             HasShadow="True"
-             IsClippedToBounds="True">
+        <Frame Grid.Row="0"
+               Margin="16,16,16,0"
+               Padding="0"
+               CornerRadius="28"
+               HasShadow="True"
+               IsClippedToBounds="True">
             <Grid HeightRequest="265">
-                <Image Source="{Binding ImageUrl}"
-                       Aspect="AspectFill" />
+                <Image Source="{Binding ImageUrl}" Aspect="AspectFill" />
                 <BoxView BackgroundColor="#6A000000" />
 
-                                <Grid Padding="18,20,18,18"
-                                            RowDefinitions="Auto,*,Auto"
-                                            RowSpacing="0">
-                                        <HorizontalStackLayout Grid.Row="0"
-                                                                                     HorizontalOptions="Fill"
-                                                                                     Spacing="8">
+                <Grid Padding="18,20,18,18" RowDefinitions="Auto,*,Auto" RowSpacing="0">
+                    <HorizontalStackLayout Grid.Row="0" Spacing="8">
                         <Frame Padding="10,5"
                                CornerRadius="16"
                                HasShadow="False"
-                               BackgroundColor="{StaticResource SecondaryContainer}"
-                               BorderColor="Transparent">
+                               BackgroundColor="{StaticResource SecondaryContainer}">
                             <Label Text="{Binding LocationName}"
                                    FontFamily="RobotoCondensedMedium"
                                    FontSize="11"
@@ -50,24 +43,41 @@
                         <Frame Padding="10,5"
                                CornerRadius="16"
                                HasShadow="False"
-                               BackgroundColor="{StaticResource Outline}"
-                               BorderColor="Transparent">
+                               BackgroundColor="{StaticResource Outline}">
                             <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
-                                <Image Source="audio.svg"
-                                    WidthRequest="16"
-                                    HeightRequest="16"
-                                    VerticalOptions="Center" />
+                                <Image Source="audio.svg" WidthRequest="16" HeightRequest="16" />
                                 <Label Text="{Binding DurationText}"
-                                    FontFamily="RobotoCondensedMedium"
-                                    FontSize="11"
-                                    TextColor="{StaticResource White}" />
+                                       FontFamily="RobotoCondensedMedium"
+                                       FontSize="11"
+                                       TextColor="{StaticResource White}" />
                             </HorizontalStackLayout>
                         </Frame>
+
+                        <Frame Padding="10,5"
+                               CornerRadius="16"
+                               HasShadow="False"
+                               BorderColor="Transparent"
+                               BackgroundColor="{StaticResource SurfaceContainerHighest}">
+                            <Frame.Triggers>
+                                <DataTrigger TargetType="Frame" Binding="{Binding IsAutoPlaybackSource}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                                </DataTrigger>
+                            </Frame.Triggers>
+
+                            <Label Text="{Binding PlaybackSourceText}"
+                                   FontFamily="RobotoCondensedMedium"
+                                   FontSize="10"
+                                   TextColor="{StaticResource OnSurfaceVariant}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsAutoPlaybackSource}" Value="True">
+                                        <Setter Property="TextColor" Value="{StaticResource OnPrimary}" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                        </Frame>
                     </HorizontalStackLayout>
-                    <!-- Title and Description -->
-                    <VerticalStackLayout Grid.Row="2"
-                                         VerticalOptions="End"
-                                         Spacing="6">
+
+                    <VerticalStackLayout Grid.Row="2" VerticalOptions="End" Spacing="6">
                         <Label Text="{Binding Title}"
                                TextColor="{StaticResource White}"
                                FontFamily="RobotoCondensedSemiBold"
@@ -78,105 +88,113 @@
                                TextColor="{StaticResource Gray200}"
                                FontFamily="RobotoCondensedRegular"
                                FontSize="14"
-                               LineBreakMode="WordWrap"
-                               MaxLines="3" />
+                               MaxLines="3"
+                               LineBreakMode="WordWrap" />
                     </VerticalStackLayout>
                 </Grid>
             </Grid>
         </Frame>
 
-        <!-- Content -->
         <ScrollView Grid.Row="1" Padding="0">
-            <VerticalStackLayout Spacing="0">
-                <!-- Location Description -->
-                <VerticalStackLayout Padding="20" Spacing="10">
-                    <Label Text="{Binding LocationName}"
-                           FontSize="22"
-                           TextColor="{StaticResource OnPrimaryContainer}"
-                           FontAttributes="Bold"/>
-                    
-                    <Label Text="{Binding Description}"
-                           FontSize="14"
-                           TextColor="{StaticResource OnSurfaceVariant}"
-                           Opacity="0.7"
-                           LineHeight="1.2"
-                           LineBreakMode="WordWrap"/>
-                </VerticalStackLayout>
+            <VerticalStackLayout Spacing="12" Padding="16,12,16,8">
+                <Frame CornerRadius="14"
+                       Padding="14,12"
+                       HasShadow="False"
+                       BackgroundColor="{StaticResource PrimaryContainer}">
+                    <VerticalStackLayout Spacing="6">
+                       <Label Text="{ext:Translate Audio_NowPlayingContent}"
+                               FontSize="13"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource Primary}" />
+                        <Label Text="{Binding CurrentScriptText}"
+                               FontSize="14"
+                               TextColor="{StaticResource OnPrimaryContainer}"
+                               LineBreakMode="WordWrap"
+                               MaxLines="4" />
+                    </VerticalStackLayout>
+                </Frame>
 
-                <Grid Style="{StaticResource LayerDivider}" Margin="0,0"/>
-                
-                <!-- Audio Guides List with Current Playing Highlight -->
-                <VerticalStackLayout Padding="20,15" Spacing="10">
-                    <Label Text="Audio Guide"
-                           FontSize="20"
-                           TextColor="{StaticResource OnPrimaryContainer}"
-                           FontAttributes="Bold"/>
+                  <Label Text="{ext:Translate Audio_ListTitle}"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       TextColor="{StaticResource OnPrimaryContainer}" />
 
-                    <CollectionView ItemsSource="{Binding AudioGuides}">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate>
-                                <Frame Padding="12"
-                                       Margin="0,4"
-                                       CornerRadius="10"
-                                       BorderColor="{StaticResource PrimaryContainer}"
-                                       HasShadow="False"
-                                       BackgroundColor="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:AudioPlayerViewModel}}, Path=CurrentPlayingAudioGuideId, Converter={StaticResource IsCurrentAudioConverter}, ConverterParameter={Binding Id}}">
-                                    <Frame.GestureRecognizers>
-                                        <TapGestureRecognizer
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:AudioPlayerViewModel}}, Path=PlayAudioGuideCommand}"
-                                            CommandParameter="{Binding .}"/>
-                                    </Frame.GestureRecognizers>
-                                    <Grid ColumnDefinitions="44,*,Auto">
-                                        <Frame BackgroundColor="{StaticResource PrimaryContainer}"
-                                               CornerRadius="22"
-                                               Padding="0"
-                                               HeightRequest="44"
-                                               WidthRequest="44"
-                                               HasShadow="False">
-                                            <Label Text="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:AudioPlayerViewModel}}, Path=CurrentPlayingAudioGuideId, Converter={StaticResource IsCurrentAudioConverter}, ConverterParameter={Binding Id}}"
-                                                   TextColor="{StaticResource Primary}"
-                                                   FontSize="16"
-                                                   HorizontalOptions="Center"
-                                                   VerticalOptions="Center"/>
-                                        </Frame>
-                                        <VerticalStackLayout Grid.Column="1"
-                                                             Padding="12,0"
-                                                             VerticalOptions="Center"
-                                                             Spacing="2">
+                <CollectionView ItemsSource="{Binding AudioGuides}" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="viewmodels:AudioGuideItemViewModel">
+                            <Frame Padding="12"
+                                   Margin="0,4"
+                                   CornerRadius="14"
+                                   BorderColor="{StaticResource SurfaceContainerHighest}"
+                                   HasShadow="False"
+                                   BackgroundColor="{StaticResource SurfaceContainerLowest}">
+                                <Frame.Triggers>
+                                    <DataTrigger TargetType="Frame" Binding="{Binding IsCurrentPlaying}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{StaticResource SecondaryContainer}" />
+                                        <Setter Property="BorderColor" Value="{StaticResource Primary}" />
+                                        <Setter Property="HasShadow" Value="True" />
+                                    </DataTrigger>
+                                </Frame.Triggers>
+
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={x:Reference AudioPage}, Path=BindingContext.PlayAudioGuideCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Frame.GestureRecognizers>
+
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                    <Frame WidthRequest="38"
+                                           HeightRequest="38"
+                                           Padding="7"
+                                           CornerRadius="19"
+                                           HasShadow="False"
+                                           BackgroundColor="{StaticResource SurfaceContainerHigh}">
+                                        <Image Source="play_icon.svg" Aspect="AspectFit">
+                                            <Image.Triggers>
+                                                <DataTrigger TargetType="Image" Binding="{Binding IsCurrentPlaying}" Value="True">
+                                                    <Setter Property="Source" Value="pause.svg" />
+                                                </DataTrigger>
+                                            </Image.Triggers>
+                                        </Image>
+                                    </Frame>
+
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                        <HorizontalStackLayout Spacing="8">
                                             <Label Text="{Binding Title}"
-                                                   FontSize="16"
-                                                   FontAttributes="Bold"/>
-                                            <Label Text="{Binding Description}"
-                                                   FontSize="14"
-                                                   TextColor="{StaticResource OnSurfaceVariant}"
-                                                   LineBreakMode="TailTruncation"/>
-                                        </VerticalStackLayout>
-                                        <HorizontalStackLayout Grid.Column="2"
-                                                               Spacing="4"
-                                                               VerticalOptions="Center">
-                                            <Image Source="time.svg"
-                                                   HeightRequest="14"
-                                                   WidthRequest="14"
-                                                   VerticalOptions="Center"/>
-                                            <Label Text="{Binding Duration, StringFormat='{0} phút'}"
-                                                   FontSize="14"
-                                                   TextColor="{StaticResource OnSecondaryContainer}"
-                                                   VerticalOptions="Center"/>
+                                                   FontSize="15"
+                                                   FontAttributes="Bold"
+                                                   TextColor="{StaticResource OnSurface}" />
+                                              <Label Text="{ext:Translate Audio_NowPlayingBadge}"
+                                                   FontSize="10"
+                                                   FontAttributes="Bold"
+                                                   TextColor="{StaticResource Primary}"
+                                                   IsVisible="{Binding IsCurrentPlaying}" />
                                         </HorizontalStackLayout>
-                                    </Grid>
-                                </Frame>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </VerticalStackLayout>
+                                        <Label Text="{Binding Description}"
+                                               FontSize="13"
+                                               TextColor="{StaticResource OnSurfaceVariant}"
+                                               MaxLines="2"
+                                               LineBreakMode="TailTruncation" />
+                                    </VerticalStackLayout>
+
+                                    <HorizontalStackLayout Grid.Column="2" Spacing="4" VerticalOptions="Center">
+                                        <Image Source="time.svg" WidthRequest="14" HeightRequest="14" />
+                                        <Label Text="{Binding Duration, Converter={StaticResource DurationMinutesConverter}}"
+                                               FontSize="12"
+                                               TextColor="{StaticResource OnSurfaceVariant}" />
+                                    </HorizontalStackLayout>
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
             </VerticalStackLayout>
         </ScrollView>
 
-        <!-- Player Controls -->
         <Frame Grid.Row="2"
                Margin="16,4,16,16"
-                Padding="16"
-                CornerRadius="24"
+               Padding="16"
+               CornerRadius="24"
                HasShadow="True"
                BackgroundColor="{StaticResource White}">
             <VerticalStackLayout Spacing="12">
@@ -185,14 +203,12 @@
                         Value="{Binding CurrentPosition}"
                         Style="{StaticResource AudioSlider}">
                     <Slider.Behaviors>
-                        <toolkit:EventToCommandBehavior EventName="DragStarted"
-                                                        Command="{Binding BeginSeekCommand}" />
-                        <toolkit:EventToCommandBehavior EventName="DragCompleted"
-                                                        Command="{Binding CompleteSeekCommand}" />
+                        <toolkit:EventToCommandBehavior EventName="DragStarted" Command="{Binding BeginSeekCommand}" />
+                        <toolkit:EventToCommandBehavior EventName="DragCompleted" Command="{Binding CompleteSeekCommand}" />
                     </Slider.Behaviors>
                 </Slider>
-                <!-- Position and Duration Labels -->
-                <Grid ColumnDefinitions="Auto,*,Auto" VerticalOptions="Center">
+
+                <Grid ColumnDefinitions="Auto,*,Auto">
                     <Label Text="{Binding CurrentPositionText}"
                            FontFamily="RobotoCondensedMedium"
                            FontSize="14"
@@ -205,24 +221,17 @@
                            HorizontalOptions="End" />
                 </Grid>
 
-                <Grid ColumnDefinitions="Auto,*,Auto,*,Auto"
-                      HorizontalOptions="Fill"
-                      VerticalOptions="Center"
-                      ColumnSpacing="8">
-                    <!-- Back Audio Guide (SVG) -->
+                <Grid ColumnDefinitions="Auto,*,Auto,*,Auto" ColumnSpacing="8" VerticalOptions="Center">
                     <Button Grid.Column="0"
                             Command="{Binding PlayBackCommand}"
                             IsEnabled="{Binding CanPlayBack}"
                             Style="{StaticResource SecondaryButton}"
                             BackgroundColor="{StaticResource SurfaceContainerHighest}"
-                            TextColor="{StaticResource OnSecondaryContainer}"
                             Padding="0"
                             HeightRequest="48"
                             WidthRequest="48"
-                            ImageSource="back.svg">
-                    </Button>
+                            ImageSource="back.svg" />
 
-                    <!-- Rewind Button -->
                     <Button Grid.Column="1"
                             Text="{Binding RewindGlyph}"
                             Command="{Binding RewindCommand}"
@@ -233,7 +242,7 @@
                             Padding="0"
                             HeightRequest="56"
                             HorizontalOptions="End" />
-                    <!-- Play/Pause Button -->
+
                     <Button Grid.Column="2"
                             Text=""
                             ImageSource="{Binding PlayPauseGlyph}"
@@ -243,30 +252,27 @@
                             Padding="0"
                             HeightRequest="64"
                             WidthRequest="64" />
-                    <!-- Forward Button -->
+
                     <Button Grid.Column="3"
-                        Text="{Binding ForwardGlyph}"
-                        Command="{Binding ForwardCommand}"
+                            Text="{Binding ForwardGlyph}"
+                            Command="{Binding ForwardCommand}"
                             Style="{StaticResource SecondaryButton}"
-                        BackgroundColor="{StaticResource SurfaceContainerHighest}"
-                        TextColor="{StaticResource OnSecondaryContainer}"
-                        FontSize="18"
+                            BackgroundColor="{StaticResource SurfaceContainerHighest}"
+                            TextColor="{StaticResource OnSecondaryContainer}"
+                            FontSize="18"
                             Padding="0"
                             HeightRequest="56"
                             HorizontalOptions="Start" />
 
-                    <!-- Next Audio Guide (SVG) -->
                     <Button Grid.Column="4"
                             Command="{Binding PlayNextCommand}"
                             IsEnabled="{Binding CanPlayNext}"
                             Style="{StaticResource SecondaryButton}"
                             BackgroundColor="{StaticResource SurfaceContainerHighest}"
-                            TextColor="{StaticResource OnSecondaryContainer}"
                             Padding="0"
                             HeightRequest="48"
                             WidthRequest="48"
-                            ImageSource="next.svg">
-                    </Button>
+                            ImageSource="next.svg" />
                 </Grid>
             </VerticalStackLayout>
         </Frame>

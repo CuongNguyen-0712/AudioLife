@@ -1,8 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
              x:Class="VinhKhanhAudioGuide.Mobile.Views.IntroPage"
-             Title="Camera Access"
+             Title="{ext:Translate Intro_PageTitle}"
              BackgroundColor="{StaticResource Surface}"
              Shell.NavBarIsVisible="False">
     
@@ -19,7 +20,8 @@
             
             <!-- Top Bar / Header -->
             <Grid Grid.Row="0" Margin="0,10,0,0">
-                <Label Text="Camera Access" 
+                  <Label x:Name="HeaderTitleLabel"
+                      Text="{ext:Translate Intro_PageTitle}" 
                        FontFamily="RobotoCondensed-SemiBold" 
                        FontSize="20" 
                        TextColor="{StaticResource Primary}" 
@@ -72,13 +74,14 @@
                     <Label HorizontalOptions="Center" HorizontalTextAlignment="Center">
                         <Label.FormattedText>
                             <FormattedString>
-                                <Span Text="Mở khóa trải nghiệm " FontFamily="RobotoCondensed-SemiBold" FontSize="32" TextColor="{StaticResource OnSurface}"/>
-                                <Span Text="Vĩnh Khánh" FontFamily="RobotoCondensed-SemiBold" FontSize="32" TextColor="{StaticResource Primary}"/>
+                                <Span x:Name="MainTitlePrefixSpan" Text="{ext:Translate Intro_MainTitlePrefix}" FontFamily="RobotoCondensed-SemiBold" FontSize="32" TextColor="{StaticResource OnSurface}"/>
+                                <Span x:Name="MainTitleHighlightSpan" Text="{ext:Translate Intro_MainTitleHighlight}" FontFamily="RobotoCondensed-SemiBold" FontSize="32" TextColor="{StaticResource Primary}"/>
                             </FormattedString>
                         </Label.FormattedText>
                     </Label>
 
-                    <Label Text="Chúng tôi cần quyền truy cập camera để bạn có thể quét mã QR tại các sạp hàng và khám phá những câu chuyện thú vị đằng sau mỗi món ăn." 
+                    <Label x:Name="DescriptionLabel"
+                           Text="{ext:Translate Intro_Description}" 
                            FontFamily="RobotoCondensed-Regular"
                            FontSize="16" 
                            TextColor="{StaticResource OnSurfaceVariant}" 
@@ -90,12 +93,14 @@
 
             <!-- Action Cluster -->
             <VerticalStackLayout Grid.Row="2" Spacing="12">
-                <Button Text="Cho phép truy cập Camera"
+                <Button x:Name="AllowCameraButton"
+                    Text="{ext:Translate Intro_AllowCamera}"
                         Clicked="OnAllowClicked"
                         Style="{StaticResource PrimaryButton}"
                         Margin="0,0,0,8" />
 
-                <Button Text="Để sau"
+                <Button x:Name="LaterButton"
+                    Text="{ext:Translate Intro_Later}"
                         Clicked="OnLaterClicked"
                         Style="{StaticResource SecondaryButton}" />
             </VerticalStackLayout>
@@ -110,7 +115,8 @@
                     </Border.StrokeShape>
                     <HorizontalStackLayout Spacing="8">
                         <Image Source="shield.svg" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
-                        <Label Text="QUYỀN RIÊNG TƯ ĐƯỢC BẢO MẬT" 
+                        <Label x:Name="PrivacyBadgeLabel"
+                               Text="{ext:Translate Intro_PrivacyBadge}"
                                FontFamily="RobotoCondensed-SemiBold"
                                FontSize="11"
                                CharacterSpacing="1"
@@ -120,6 +126,32 @@
                 </Border>
             </Grid>
             
+        </Grid>
+
+        <Grid x:Name="LoadingOverlay"
+              IsVisible="False"
+              InputTransparent="False"
+              BackgroundColor="#66000000"
+              RowDefinitions="Auto,Auto"
+              RowSpacing="12"
+              VerticalOptions="Fill"
+              HorizontalOptions="Fill">
+            <ActivityIndicator x:Name="LoadingIndicator"
+                               IsRunning="False"
+                               Color="White"
+                               WidthRequest="42"
+                               HeightRequest="42"
+                               VerticalOptions="Center"
+                               HorizontalOptions="Center" />
+            <Label x:Name="LoadingTextLabel"
+                   Grid.Row="1"
+                   Text="{ext:Translate Common_Loading}"
+                   FontFamily="RobotoCondensed-Medium"
+                   FontSize="14"
+                   HorizontalTextAlignment="Center"
+                   HorizontalOptions="Center"
+                   TextColor="White"
+                   Margin="0,48,0,0" />
         </Grid>
     </Grid>
 </ContentPage>

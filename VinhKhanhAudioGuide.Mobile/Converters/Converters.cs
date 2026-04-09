@@ -1,6 +1,7 @@
 using System.Globalization;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using VinhKhanhAudioGuide.Mobile.Services;
 
 namespace VinhKhanhAudioGuide.Mobile.Converters;
 
@@ -157,6 +158,61 @@ public class BoolToChipTextColorConverter : IValueConverter
             return Application.Current?.Resources["OnPrimary"] as Color ?? Colors.White;
         }
         return Application.Current?.Resources["OnSurfaceVariant"] as Color ?? Colors.DarkGray;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public class DurationMinutesConverter : IValueConverter
+{
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is not int minutes)
+        {
+            return "";
+        }
+
+        var localization = ResolveLocalizationService();
+        if (localization is null)
+        {
+            return minutes <= 0 ? "0 min" : $"{minutes} min";
+        }
+
+        var template = localization.GetString("Common_MinutesFormat");
+        return string.Format(template, minutes);
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+
+    private static ILocalizationService? ResolveLocalizationService()
+    {
+        return Application.Current?.Handler?.MauiContext?.Services.GetService(typeof(ILocalizationService)) as ILocalizationService;
+    }
+}
+
+public class AudioCountConverter : IValueConverter
+{
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is not int count)
+        {
+            return "";
+        }
+
+        var localization = Application.Current?.Handler?.MauiContext?.Services.GetService(typeof(ILocalizationService)) as ILocalizationService;
+        if (localization is null)
+        {
+            return $"{count} audio";
+        }
+
+        var template = localization.GetString("Common_AudioCountFormat");
+        return string.Format(template, count);
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

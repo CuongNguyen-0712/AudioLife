@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using VinhKhanhAudioGuide.Mobile.Messages;
 using VinhKhanhAudioGuide.Mobile.Models;
 using VinhKhanhAudioGuide.Mobile.Services;
 using Location = VinhKhanhAudioGuide.Mobile.Models.Location;
@@ -9,17 +11,20 @@ namespace VinhKhanhAudioGuide.Mobile.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
-    private const int AutoSwitchCooldownSeconds = 45;
-    private const double MinDistanceImprovementMeters = 20;
+    private const string PreferredAudioGuideKeyPrefix = "AutoNearestPreferredAudioGuide:";
+    private const string PreferredAudioUrlKeyPrefix = "AutoNearestPreferredAudioUrl:";
 
     private readonly INavigationService _navigationService;
     private readonly IApiService _apiService;
     private readonly IAudioService _audioService;
     private readonly IGeolocationService _geolocationService;
+    private readonly ILocalizationService _localizationService;
+    private readonly SemaphoreSlim _autoSwitchLock = new(1, 1);
+    private readonly List<AutoQueueItem> _autoQueue = new();
     private bool _hasInitializedAutoAudio;
     private bool _isGeoTrackingSubscribed;
-    private DateTimeOffset _lastAutoSwitchAt = DateTimeOffset.MinValue;
     private double _currentPoiDistanceMeters = double.MaxValue;
+    private int _autoQueueIndex = -1;
 
     [ObservableProperty]
     private bool _isRefreshing;
@@ -73,6 +78,12 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _footerModeText = string.Empty;
 
+    [ObservableProperty]
+    private string _footerPlaybackIcon = "play_white_icon.svg";
+
+    [ObservableProperty]
+    private bool _isFooterPlaybackEnabled;
+
     public ObservableCollection<Category> Categories { get; } = new();
     public ObservableCollection<Location> FeaturedLocations { get; } = new();
     public ObservableCollection<Location> MoreLocations { get; } = new();
@@ -83,14 +94,22 @@ public partial class MainViewModel : ObservableObject
         INavigationService navigationService,
         IApiService apiService,
         IAudioService audioService,
-        IGeolocationService geolocationService)
+        IGeolocationService geolocationService,
+        ILocalizationService localizationService)
     {
         _navigationService = navigationService;
         _apiService = apiService;
         _audioService = audioService;
         _geolocationService = geolocationService;
+        _localizationService = localizationService;
+
+        _localizationService.CultureChanged += (_, _) =>
+        {
+            _ = MainThread.InvokeOnMainThreadAsync(async () => await LoadDataAsync());
+        };
 
         _audioService.StateChanged += OnAudioStateChanged;
+        WeakReferenceMessenger.Default.Register<AutoAudioSelectionChangedMessage>(this, OnAutoAudioSelectionChanged);
 
         // Raise preview property when FavoriteLocations changes
         FavoriteLocations.CollectionChanged += (_, _) => OnPropertyChanged(nameof(FavoriteLocationsPreview));
@@ -149,7 +168,7 @@ public partial class MainViewModel : ObservableObject
         foreach (var loc in locations)
         {
             var cat = categories.FirstOrDefault(c => c.Id == loc.CategoryId);
-            loc.CategoryName = cat?.Name ?? "Khác";
+            loc.CategoryName = cat?.Name ?? T("Main_OtherCategory");
         }
 
         // Featured locations (first 6, matching web)
@@ -183,24 +202,65 @@ public partial class MainViewModel : ObservableObject
                 Duration = tour.Duration,
                 DurationText = FormatDuration(tour.Duration),
                 LocationCount = tour.LocationIds.Count,
-                PriceText = tour.Price == 0 ? "Miễn phí" : $"{tour.Price:N0} VNĐ"
+                PriceText = tour.Price == 0 ? T("Main_Free") : F("Main_PriceFormat", tour.Price)
             });
+        }
+    }
+
+    public async Task OnAppearingAsync()
+    {
+        if (!Preferences.Get("AutoNearestPoiPlayback", true))
+        {
+            FooterStatusText = T("Footer_StandbyAutoOff");
+            FooterHintText = T("Footer_EnableInSettings");
+            FooterActionText = T("Footer_EnableManual");
+            IsFooterActionEnabled = true;
+            FooterModeText = T("Footer_StandbyOffMode");
+            UpdateFooterPlaybackUi();
+            return;
         }
 
         if (!_hasInitializedAutoAudio)
         {
             _hasInitializedAutoAudio = true;
             await StartAutoNearestAudioAsync();
+            return;
         }
+
+        var userLocation = await GetUserLocationAsync();
+        if (!userLocation.HasValue)
+        {
+            return;
+        }
+
+        var nearestPoi = await FindNearestPoiAsync(userLocation.Value.Latitude, userLocation.Value.Longitude);
+        if (!nearestPoi.HasValue)
+        {
+            return;
+        }
+
+        var (location, distanceMeters) = nearestPoi.Value;
+        if (!string.Equals(AutoLocationId, location.Id, StringComparison.OrdinalIgnoreCase))
+        {
+            await PlayAutoAudioForLocationAsync(location.Id, distanceMeters);
+            return;
+        }
+
+        await SyncAutoAudioSelectionWithUserPreferenceAsync(location.Id);
+        FooterHintText = F("Footer_NearestHintFormat", Math.Round(distanceMeters));
+        _currentPoiDistanceMeters = distanceMeters;
+        UpdateFooterPlaybackUi();
     }
 
-    private static string FormatDuration(int minutes)
+    private string FormatDuration(int minutes)
     {
         if (minutes < 60)
-            return $"⏱ {minutes} phút";
+            return F("Main_DurationMinutesFormat", minutes);
         var hours = minutes / 60;
         var mins = minutes % 60;
-        return mins > 0 ? $"⏱ {hours}h {mins}p" : $"⏱ {hours} giờ";
+        return mins > 0
+            ? F("Main_DurationHoursMinutesFormat", hours, mins)
+            : F("Main_DurationHoursOnlyFormat", hours);
     }
 
     [RelayCommand]
@@ -273,14 +333,23 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task OpenAutoAudioPlayerAsync()
     {
+        if (!Preferences.Get("AutoNearestPoiPlayback", true))
+        {
+            Preferences.Set("AutoNearestPoiPlayback", true);
+            await StartAutoNearestAudioAsync();
+            return;
+        }
+
         if (!string.IsNullOrWhiteSpace(AutoLocationId) && IsFooterActionEnabled)
         {
+            await SyncAutoAudioSelectionWithUserPreferenceAsync(AutoLocationId);
             await _navigationService.NavigateToAsync(nameof(Views.AudioPlayerPage),
                 new Dictionary<string, object>
                 {
                     { "LocationId", AutoLocationId },
                     { "AudioGuideId", AutoAudioGuideId },
-                    { "AudioUrl", AutoAudioUrl }
+                    { "AudioUrl", AutoAudioUrl },
+                    { "PlaybackSource", "AutoNearest" }
                 });
             return;
         }
@@ -288,13 +357,64 @@ public partial class MainViewModel : ObservableObject
         await StartAutoNearestAudioAsync();
     }
 
+    [RelayCommand]
+    private async Task ToggleFooterPlaybackAsync()
+    {
+        if (!Preferences.Get("AutoNearestPoiPlayback", true))
+        {
+            Preferences.Set("AutoNearestPoiPlayback", true);
+            await StartAutoNearestAudioAsync();
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(AutoLocationId))
+        {
+            await SyncAutoAudioSelectionWithUserPreferenceAsync(AutoLocationId);
+        }
+
+        if (string.IsNullOrWhiteSpace(AutoAudioUrl))
+        {
+            await StartAutoNearestAudioAsync();
+            return;
+        }
+
+        var isCurrentAutoAudio = !string.IsNullOrWhiteSpace(_audioService.CurrentAudioUrl)
+                                 && string.Equals(_audioService.CurrentAudioUrl, AutoAudioUrl, StringComparison.OrdinalIgnoreCase);
+
+        if (isCurrentAutoAudio && _audioService.IsPlaying)
+        {
+            await _audioService.PauseAsync();
+            return;
+        }
+
+        if (isCurrentAutoAudio)
+        {
+            await _audioService.ResumeAsync();
+            return;
+        }
+
+        await _audioService.PlayAsync(AutoAudioUrl);
+    }
+
     private async Task StartAutoNearestAudioAsync()
     {
-        FooterStatusText = "Chế độ chờ: Đang xác định vị trí...";
-        FooterHintText = "Vui lòng giữ GPS bật để phát audio tự động theo POI gần nhất";
-        FooterActionText = "Thử lại";
+        if (!Preferences.Get("AutoNearestPoiPlayback", true))
+        {
+            FooterStatusText = T("Footer_StandbyAutoOff");
+            FooterHintText = T("Footer_EnableInSettings");
+            FooterActionText = T("Footer_EnableManual");
+            IsFooterActionEnabled = true;
+            FooterModeText = T("Footer_StandbyOffMode");
+            UpdateFooterPlaybackUi();
+            return;
+        }
+
+        FooterStatusText = T("Footer_StandbyLocating");
+        FooterHintText = T("Footer_KeepGpsOn");
+        FooterActionText = T("Footer_Retry");
         IsFooterActionEnabled = false;
-        FooterModeText = "Standby: ON";
+        FooterModeText = T("Footer_StandbyOnMode");
+        UpdateFooterPlaybackUi();
 
         // Step 1: Start geolocation tracking
         await _geolocationService.StartTrackingAsync();
@@ -324,16 +444,16 @@ public partial class MainViewModel : ObservableObject
             var (location, distanceMeters) = nearestPoi.Value;
             await PlayAutoAudioForLocationAsync(
                 location.Id,
-                distanceMeters,
-                $"POI gần nhất • {Math.Round(distanceMeters)} m"
+                distanceMeters
             );
         }
         catch
         {
-            FooterStatusText = "Chế độ chờ: Không thể phát audio tự động";
-            FooterHintText = "Bạn có thể mở chi tiết POI và phát audio thủ công";
-            FooterActionText = "Thử lại";
+            FooterStatusText = T("Footer_AutoPlayError");
+            FooterHintText = T("Footer_OpenDetailManual");
+            FooterActionText = T("Footer_Retry");
             IsFooterActionEnabled = true;
+            UpdateFooterPlaybackUi();
         }
     }
 
@@ -347,9 +467,9 @@ public partial class MainViewModel : ObservableObject
             var userLocation = await _geolocationService.GetCurrentLocationAsync();
             if (!userLocation.HasValue)
             {
-                FooterStatusText = "Chế độ chờ: Chưa lấy được vị trí";
-                FooterHintText = "Bật quyền vị trí để hệ thống tự chọn POI gần nhất";
-                FooterActionText = "Thử lại";
+                FooterStatusText = T("Footer_NoLocation");
+                FooterHintText = T("Footer_EnableLocationPermission");
+                FooterActionText = T("Footer_Retry");
                 IsFooterActionEnabled = true;
                 return null;
             }
@@ -357,9 +477,9 @@ public partial class MainViewModel : ObservableObject
         }
         catch
         {
-            FooterStatusText = "Chế độ chờ: Lỗi lấy vị trí";
-            FooterHintText = "Vui lòng kiểm tra kết nối GPS";
-            FooterActionText = "Thử lại";
+            FooterStatusText = T("Footer_LocationError");
+            FooterHintText = T("Footer_CheckGps");
+            FooterActionText = T("Footer_Retry");
             IsFooterActionEnabled = true;
             return null;
         }
@@ -375,9 +495,9 @@ public partial class MainViewModel : ObservableObject
             var locations = await _apiService.GetLocationsAsync();
             if (locations.Count == 0)
             {
-                FooterStatusText = "Chế độ chờ: Không có POI";
-                FooterHintText = "Hiện chưa có dữ liệu địa điểm để phát audio";
-                FooterActionText = "Đang chờ";
+                FooterStatusText = T("Footer_NoPoi");
+                FooterHintText = T("Footer_NoPoiData");
+                FooterActionText = T("Footer_Waiting");
                 IsFooterActionEnabled = false;
                 return null;
             }
@@ -399,9 +519,9 @@ public partial class MainViewModel : ObservableObject
         }
         catch
         {
-            FooterStatusText = "Chế độ chờ: Lỗi tìm POI gần nhất";
-            FooterHintText = "Vui lòng thử lại";
-            FooterActionText = "Thử lại";
+            FooterStatusText = T("Footer_FindNearestError");
+            FooterHintText = T("Footer_PleaseRetry");
+            FooterActionText = T("Footer_Retry");
             IsFooterActionEnabled = true;
             return null;
         }
@@ -410,22 +530,11 @@ public partial class MainViewModel : ObservableObject
     /// <summary>
     /// Step 3: Trigger auto-play for a specific location with available audio.
     /// </summary>
-    private async Task PlayAutoAudioForLocationAsync(string locationId, double distanceMeters, string hint)
+    private async Task PlayAutoAudioForLocationAsync(string locationId, double distanceMeters)
     {
+        await _autoSwitchLock.WaitAsync();
         try
         {
-            // Resolve audio for the location
-            var payload = await ResolveAutoAudioAsync(locationId);
-            if (payload is null)
-            {
-                FooterStatusText = $"Chế độ chờ: POI gần nhất";
-                FooterHintText = "POI gần nhất chưa có audio để phát";
-                FooterActionText = "Đang chờ";
-                IsFooterActionEnabled = false;
-                return;
-            }
-
-            // Update location and audio information
             var locations = await _apiService.GetLocationsAsync();
             var location = locations.FirstOrDefault(l => l.Id == locationId);
             if (location == null)
@@ -434,27 +543,46 @@ public partial class MainViewModel : ObservableObject
             }
 
             var previousLocationId = AutoLocationId;
+            var isSwitchingPoi = !string.IsNullOrWhiteSpace(previousLocationId)
+                                 && !string.Equals(previousLocationId, locationId, StringComparison.OrdinalIgnoreCase);
+
+            if (isSwitchingPoi)
+            {
+                // New POI detected: clear current auto queue context and stop current audio before loading new queue.
+                ClearAutoQueueSelection();
+                await _audioService.StopAsync();
+            }
+
+            var queue = await ResolveAutoAudioQueueAsync(locationId);
 
             AutoLocationId = location.Id;
             AutoLocationName = location.Name;
-            AutoAudioGuideId = payload.Value.AudioGuideId;
-            AutoAudioUrl = payload.Value.AudioUrl;
+            _currentPoiDistanceMeters = distanceMeters;
+
+            if (queue.Count == 0)
+            {
+                FooterStatusText = F("Footer_NoAudioAtPoiFormat", AutoLocationName);
+                FooterHintText = T("Footer_WaitForNewPoiAudio");
+                FooterActionText = T("Footer_Waiting");
+                IsFooterActionEnabled = false;
+                ClearAutoQueueSelection();
+                UpdateFooterPlaybackUi();
+                return;
+            }
+
+            _autoQueue.Clear();
+            _autoQueue.AddRange(queue);
+
+            var preferredIndex = ResolvePreferredQueueIndex(locationId, _autoQueue);
+            _autoQueueIndex = preferredIndex >= 0 ? preferredIndex : 0;
+            ApplyAutoQueueItem(_autoQueueIndex);
 
             // Update footer status
-            FooterStatusText = $"Đang phát tự động: {AutoLocationName}";
-            FooterHintText = hint;
-            FooterActionText = "Mở trình phát";
+            FooterStatusText = F("Footer_PlayingAutoFormat", AutoLocationName);
+            FooterHintText = BuildQueueProgressHint(distanceMeters);
+            FooterActionText = T("Footer_OpenPlayer");
             IsFooterActionEnabled = true;
-            _currentPoiDistanceMeters = distanceMeters;
-            _lastAutoSwitchAt = DateTimeOffset.UtcNow;
-
-            // Ensure only one auto audio is active: stop old POI audio before playing new POI audio.
-            var isSwitchingPoi = !string.IsNullOrWhiteSpace(previousLocationId) &&
-                                 !string.Equals(previousLocationId, locationId, StringComparison.OrdinalIgnoreCase);
-            if (isSwitchingPoi)
-            {
-                await _audioService.StopAsync();
-            }
+            UpdateFooterPlaybackUi();
 
             // Start playing nearest POI audio.
             if (!string.Equals(_audioService.CurrentAudioUrl, AutoAudioUrl, StringComparison.OrdinalIgnoreCase) || !_audioService.IsPlaying)
@@ -464,10 +592,15 @@ public partial class MainViewModel : ObservableObject
         }
         catch
         {
-            FooterStatusText = "Chế độ chờ: Lỗi phát audio";
-            FooterHintText = "Vui lòng thử lại";
-            FooterActionText = "Thử lại";
+            FooterStatusText = T("Footer_PlayAudioError");
+            FooterHintText = T("Footer_PleaseRetry");
+            FooterActionText = T("Footer_Retry");
             IsFooterActionEnabled = true;
+            UpdateFooterPlaybackUi();
+        }
+        finally
+        {
+            _autoSwitchLock.Release();
         }
     }
 
@@ -475,91 +608,339 @@ public partial class MainViewModel : ObservableObject
     {
         await MainThread.InvokeOnMainThreadAsync(async () =>
         {
-            var latitude = _geolocationService.CurrentLatitude;
-            var longitude = _geolocationService.CurrentLongitude;
-            if (!latitude.HasValue || !longitude.HasValue)
+            if (!Preferences.Get("AutoNearestPoiPlayback", true))
             {
                 return;
             }
 
-            var nearestPoi = await FindNearestPoiAsync(latitude.Value, longitude.Value);
-            if (!nearestPoi.HasValue)
+            if (string.IsNullOrWhiteSpace(e.LocationId))
             {
                 return;
             }
 
-            var (nearestLocation, nearestDistanceMeters) = nearestPoi.Value;
-            if (string.Equals(AutoLocationId, nearestLocation.Id, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(AutoLocationId, e.LocationId, StringComparison.OrdinalIgnoreCase))
             {
-                FooterHintText = $"POI gần nhất • {Math.Round(nearestDistanceMeters)} m";
-                _currentPoiDistanceMeters = nearestDistanceMeters;
+                FooterHintText = BuildQueueProgressHint(e.DistanceMeters);
+                _currentPoiDistanceMeters = e.DistanceMeters;
                 return;
             }
 
-            // Trigger nearest POI auto-audio and stop old POI audio before switching.
-            var hint = $"POI mới trong vùng gần • {Math.Round(nearestDistanceMeters)} m";
-            await PlayAutoAudioForLocationAsync(nearestLocation.Id, nearestDistanceMeters, hint);
+            await PlayAutoAudioForLocationAsync(e.LocationId, e.DistanceMeters);
         });
     }
 
-    private async Task<(string AudioGuideId, string AudioUrl)?> ResolveAutoAudioAsync(string locationId)
+    private async Task<List<AutoQueueItem>> ResolveAutoAudioQueueAsync(string locationId)
     {
         var guides = await _apiService.GetAudioGuidesForLocationAsync(locationId);
-        var selectedGuide = guides.FirstOrDefault(g =>
-            !string.IsNullOrWhiteSpace(g.CloudinaryAudioUrl) ||
-            !string.IsNullOrWhiteSpace(g.AudioUrl));
+        var queue = guides
+            .Select(g => new AutoQueueItem(g.Id, ResolveAudioSource(g)))
+            .Where(item => !string.IsNullOrWhiteSpace(item.AudioUrl))
+            .ToList();
 
-        if (selectedGuide is null)
-        {
-            return null;
-        }
-
-        var audioSource = !string.IsNullOrWhiteSpace(selectedGuide.CloudinaryAudioUrl)
-            ? selectedGuide.CloudinaryAudioUrl
-            : selectedGuide.AudioUrl;
-
-        if (string.IsNullOrWhiteSpace(audioSource))
-        {
-            return null;
-        }
-
-        return (selectedGuide.Id, audioSource);
+        return queue;
     }
 
     private void OnAudioStateChanged(object? sender, AudioStateChangedEventArgs e)
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            var queueIndex = FindQueueIndexByAudioUrl(e.AudioUrl);
+            var isCurrentAutoAudio = !string.IsNullOrWhiteSpace(AutoAudioUrl)
+                                     && !string.IsNullOrWhiteSpace(e.AudioUrl)
+                                     && string.Equals(AutoAudioUrl, e.AudioUrl, StringComparison.OrdinalIgnoreCase);
+
+            if (!isCurrentAutoAudio && queueIndex < 0)
+            {
+                return;
+            }
+
+            // Ignore stale stop events from old audio (for example while user manually switches track).
+            if (!isCurrentAutoAudio && e.State == AudioPlaybackState.Stopped)
+            {
+                UpdateFooterPlaybackUi();
+                return;
+            }
+
+            if (queueIndex >= 0
+                && queueIndex != _autoQueueIndex
+                && (isCurrentAutoAudio || e.State == AudioPlaybackState.Playing))
+            {
+                ApplyAutoQueueItem(queueIndex);
+            }
+
             switch (e.State)
             {
                 case AudioPlaybackState.Loading:
-                    FooterStatusText = "Chế độ chờ: Đang nạp audio gần nhất...";
+                    FooterStatusText = T("Footer_LoadingNearest");
                     break;
                 case AudioPlaybackState.Playing:
                     if (!string.IsNullOrWhiteSpace(AutoLocationName))
                     {
-                        FooterStatusText = $"Đang phát tự động: {AutoLocationName}";
+                        FooterStatusText = F("Footer_PlayingAutoFormat", AutoLocationName);
                     }
-                    FooterActionText = "Mở trình phát";
+                    FooterHintText = BuildQueueProgressHint(_currentPoiDistanceMeters);
+                    FooterActionText = T("Footer_OpenPlayer");
                     IsFooterActionEnabled = true;
                     break;
                 case AudioPlaybackState.Paused:
-                    FooterStatusText = "Chế độ chờ: Audio đang tạm dừng";
-                    FooterActionText = "Tiếp tục nghe";
+                    FooterStatusText = T("Footer_AudioPaused");
+                    FooterHintText = BuildQueueProgressHint(_currentPoiDistanceMeters);
+                    FooterActionText = T("Footer_Resume");
                     IsFooterActionEnabled = !string.IsNullOrWhiteSpace(AutoLocationId);
                     break;
                 case AudioPlaybackState.Stopped:
-                    FooterStatusText = "Chế độ chờ: Audio đã dừng";
-                    FooterActionText = "Mở trình phát";
+                    FooterStatusText = T("Footer_SwitchingNext");
+                    FooterHintText = BuildQueueProgressHint(_currentPoiDistanceMeters);
+                    FooterActionText = T("Footer_OpenPlayer");
                     IsFooterActionEnabled = !string.IsNullOrWhiteSpace(AutoLocationId);
                     break;
                 case AudioPlaybackState.Error:
-                    FooterStatusText = "Chế độ chờ: Lỗi phát audio";
-                    FooterActionText = "Thử lại";
+                    FooterStatusText = T("Footer_PlayAudioError");
+                    FooterActionText = T("Footer_Retry");
                     IsFooterActionEnabled = true;
                     break;
             }
+
+            UpdateFooterPlaybackUi();
+
+            // Only auto-advance when the currently selected auto-audio finished naturally.
+            if (e.State == AudioPlaybackState.Stopped && queueIndex >= 0 && isCurrentAutoAudio)
+            {
+                _ = AdvanceAutoQueueAfterStopAsync(e.AudioUrl);
+            }
         });
+    }
+
+    private void OnAutoAudioSelectionChanged(object recipient, AutoAudioSelectionChangedMessage message)
+    {
+        var payload = message.Value;
+        Preferences.Set(GetPreferredAudioGuideKey(payload.LocationId), payload.AudioGuideId);
+        Preferences.Set(GetPreferredAudioUrlKey(payload.LocationId), payload.AudioUrl);
+
+        if (!string.Equals(AutoLocationId, payload.LocationId, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            var selectedIndex = _autoQueue.FindIndex(item =>
+                string.Equals(item.AudioGuideId, payload.AudioGuideId, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(item.AudioUrl, payload.AudioUrl, StringComparison.OrdinalIgnoreCase));
+
+            if (selectedIndex >= 0)
+            {
+                ApplyAutoQueueItem(selectedIndex);
+            }
+            else
+            {
+                AutoAudioGuideId = payload.AudioGuideId;
+                AutoAudioUrl = payload.AudioUrl;
+            }
+
+            if (!string.IsNullOrWhiteSpace(payload.LocationName))
+            {
+                AutoLocationName = payload.LocationName;
+            }
+
+            FooterActionText = T("Footer_OpenPlayer");
+            IsFooterActionEnabled = true;
+            FooterStatusText = _audioService.IsPlaying
+                ? F("Footer_PlayingAutoFormat", AutoLocationName)
+                : F("Footer_UpdatedAudioFormat", AutoLocationName);
+            FooterHintText = BuildQueueProgressHint(_currentPoiDistanceMeters);
+            UpdateFooterPlaybackUi();
+        });
+    }
+
+    private async Task SyncAutoAudioSelectionWithUserPreferenceAsync(string locationId)
+    {
+        if (string.IsNullOrWhiteSpace(locationId))
+        {
+            return;
+        }
+
+        var queue = await ResolveAutoAudioQueueAsync(locationId);
+        if (queue.Count == 0)
+        {
+            return;
+        }
+
+        _autoQueue.Clear();
+        _autoQueue.AddRange(queue);
+
+        var serviceAudioIndex = _autoQueue.FindIndex(item =>
+            string.Equals(item.AudioUrl, _audioService.CurrentAudioUrl, StringComparison.OrdinalIgnoreCase));
+
+        if (serviceAudioIndex >= 0)
+        {
+            _autoQueueIndex = serviceAudioIndex;
+        }
+        else if (_autoQueueIndex >= 0 && _autoQueueIndex < _autoQueue.Count)
+        {
+            // Keep current auto queue position if we are still at the same POI.
+        }
+        else
+        {
+            var preferredIndex = ResolvePreferredQueueIndex(locationId, _autoQueue);
+            _autoQueueIndex = preferredIndex >= 0 ? preferredIndex : 0;
+        }
+
+        ApplyAutoQueueItem(_autoQueueIndex);
+    }
+
+    private static int ResolvePreferredQueueIndex(string locationId, IReadOnlyList<AutoQueueItem> queue)
+    {
+        if (queue.Count == 0)
+        {
+            return -1;
+        }
+
+        var preferredGuideId = Preferences.Get(GetPreferredAudioGuideKey(locationId), string.Empty);
+        if (!string.IsNullOrWhiteSpace(preferredGuideId))
+        {
+            var byGuideId = queue
+                .Select((item, index) => new { item, index })
+                .FirstOrDefault(x => string.Equals(x.item.AudioGuideId, preferredGuideId, StringComparison.OrdinalIgnoreCase));
+            if (byGuideId != null)
+            {
+                return byGuideId.index;
+            }
+        }
+
+        var preferredAudioUrl = Preferences.Get(GetPreferredAudioUrlKey(locationId), string.Empty);
+        if (!string.IsNullOrWhiteSpace(preferredAudioUrl))
+        {
+            var byAudioUrl = queue
+                .Select((item, index) => new { item, index })
+                .FirstOrDefault(x => string.Equals(x.item.AudioUrl, preferredAudioUrl, StringComparison.OrdinalIgnoreCase));
+            if (byAudioUrl != null)
+            {
+                return byAudioUrl.index;
+            }
+        }
+
+        return -1;
+    }
+
+    private int FindQueueIndexByAudioUrl(string? audioUrl)
+    {
+        if (string.IsNullOrWhiteSpace(audioUrl))
+        {
+            return -1;
+        }
+
+        return _autoQueue.FindIndex(item =>
+            string.Equals(item.AudioUrl, audioUrl, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void ApplyAutoQueueItem(int queueIndex)
+    {
+        if (queueIndex < 0 || queueIndex >= _autoQueue.Count)
+        {
+            return;
+        }
+
+        _autoQueueIndex = queueIndex;
+        var currentItem = _autoQueue[queueIndex];
+        AutoAudioGuideId = currentItem.AudioGuideId;
+        AutoAudioUrl = currentItem.AudioUrl;
+    }
+
+    private void ClearAutoQueueSelection()
+    {
+        _autoQueue.Clear();
+        _autoQueueIndex = -1;
+        AutoAudioGuideId = string.Empty;
+        AutoAudioUrl = string.Empty;
+    }
+
+    private async Task AdvanceAutoQueueAfterStopAsync(string? stoppedAudioUrl)
+    {
+        if (!Preferences.Get("AutoNearestPoiPlayback", true))
+        {
+            return;
+        }
+
+        await _autoSwitchLock.WaitAsync();
+        try
+        {
+            var stoppedIndex = FindQueueIndexByAudioUrl(stoppedAudioUrl);
+            if (stoppedIndex < 0)
+            {
+                return;
+            }
+
+            var nextIndex = stoppedIndex + 1;
+            if (nextIndex >= _autoQueue.Count)
+            {
+                _autoQueueIndex = _autoQueue.Count - 1;
+                FooterStatusText = F("Footer_FinishedAtPoiFormat", AutoLocationName);
+                FooterHintText = T("Footer_WaitForNewNearest");
+                FooterActionText = T("Footer_OpenPlayer");
+                IsFooterActionEnabled = !string.IsNullOrWhiteSpace(AutoLocationId);
+                UpdateFooterPlaybackUi();
+                return;
+            }
+
+            ApplyAutoQueueItem(nextIndex);
+            FooterStatusText = F("Footer_PlayingAutoFormat", AutoLocationName);
+            FooterHintText = BuildQueueProgressHint(_currentPoiDistanceMeters);
+            FooterActionText = T("Footer_OpenPlayer");
+            IsFooterActionEnabled = true;
+            UpdateFooterPlaybackUi();
+            await _audioService.PlayAsync(AutoAudioUrl);
+        }
+        finally
+        {
+            _autoSwitchLock.Release();
+        }
+    }
+
+    private string BuildQueueProgressHint(double distanceMeters)
+    {
+        var distanceHint = distanceMeters < double.MaxValue
+            ? F("Footer_NearestHintFormat", Math.Round(distanceMeters))
+            : T("Footer_NearestShort");
+
+        if (_autoQueue.Count <= 0 || _autoQueueIndex < 0)
+        {
+            return distanceHint;
+        }
+
+        return F("Footer_QueueHintFormat", distanceHint, _autoQueueIndex + 1, _autoQueue.Count);
+    }
+
+    private static string ResolveAudioSource(AudioGuide guide)
+    {
+        return !string.IsNullOrWhiteSpace(guide.CloudinaryAudioUrl)
+            ? guide.CloudinaryAudioUrl
+            : guide.AudioUrl;
+    }
+
+    private static string GetPreferredAudioGuideKey(string locationId) => $"{PreferredAudioGuideKeyPrefix}{locationId}";
+
+    private static string GetPreferredAudioUrlKey(string locationId) => $"{PreferredAudioUrlKeyPrefix}{locationId}";
+
+    private string T(string key) => _localizationService.GetString(key);
+
+    private string F(string key, params object[] args)
+    {
+        var template = T(key);
+        return string.Format(template, args);
+    }
+
+    private void UpdateFooterPlaybackUi()
+    {
+        var hasAutoAudio = !string.IsNullOrWhiteSpace(AutoAudioUrl);
+        var isCurrentAutoAudio = hasAutoAudio
+                                 && !string.IsNullOrWhiteSpace(_audioService.CurrentAudioUrl)
+                                 && string.Equals(_audioService.CurrentAudioUrl, AutoAudioUrl, StringComparison.OrdinalIgnoreCase);
+
+        IsFooterPlaybackEnabled = true;
+        FooterPlaybackIcon = isCurrentAutoAudio && _audioService.IsPlaying
+            ? "pause.svg"
+            : "play_white_icon.svg";
     }
 
     private static double CalculateDistanceMeters(double lat1, double lon1, double lat2, double lon2)
@@ -575,6 +956,8 @@ public partial class MainViewModel : ObservableObject
     }
 
     private static double ToRadians(double angle) => angle * Math.PI / 180.0;
+
+    private sealed record AutoQueueItem(string AudioGuideId, string AudioUrl);
 }
 
 public class FeaturedTourItem

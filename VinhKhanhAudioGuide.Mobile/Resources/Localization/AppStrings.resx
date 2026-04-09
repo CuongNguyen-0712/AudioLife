@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value>
+  </resheader>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Hủy</value>
+  </data>
+  <data name="Common_Loading" xml:space="preserve">
+    <value>Đang tải...</value>
+  </data>
+  <data name="Language_Applying" xml:space="preserve">
+    <value>Đang áp dụng ngôn ngữ...</value>
+  </data>
+  <data name="Language_Page_Title" xml:space="preserve">
+    <value>Ngôn ngữ của bạn</value>
+  </data>
+  <data name="Language_Option_Vietnamese" xml:space="preserve">
+    <value>Tiếng Việt</value>
+  </data>
+  <data name="Language_Option_English" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="Language_Option_ChineseSimplified" xml:space="preserve">
+    <value>简体中文</value>
+  </data>
+  <data name="Settings_SelectLanguage_Title" xml:space="preserve">
+    <value>Chọn ngôn ngữ</value>
+  </data>
+  <data name="Common_Notice" xml:space="preserve">
+    <value>Thông báo</value>
+  </data>
+  <data name="Common_Understood" xml:space="preserve">
+    <value>Đã hiểu</value>
+  </data>
+  <data name="Common_MinutesFormat" xml:space="preserve">
+    <value>{0} phút</value>
+  </data>
+  <data name="Common_AudioCountFormat" xml:space="preserve">
+    <value>{0} audio</value>
+  </data>
+  <data name="App_Name" xml:space="preserve">
+    <value>Vinh Khanh Audio Guide</value>
+  </data>
+  <data name="Tab_Home" xml:space="preserve">
+    <value>Trang chủ</value>
+  </data>
+  <data name="Tab_Map" xml:space="preserve">
+    <value>Bản đồ</value>
+  </data>
+  <data name="Tab_Tours" xml:space="preserve">
+    <value>Tours</value>
+  </data>
+  <data name="Tab_Settings" xml:space="preserve">
+    <value>Cài đặt</value>
+  </data>
+  <data name="Main_FeaturedDish" xml:space="preserve">
+    <value>Món ăn nổi bật</value>
+  </data>
+  <data name="Main_ExploreTitle" xml:space="preserve">
+    <value>Khám phá Vĩnh Khánh</value>
+  </data>
+  <data name="Main_ExploreSubtitle" xml:space="preserve">
+    <value>Mỗi món ăn là một câu chuyện đường phố</value>
+  </data>
+  <data name="Main_LocationCountFormat" xml:space="preserve">
+    <value>{0} địa điểm khám phá</value>
+  </data>
+  <data name="Main_SearchPlaceholder" xml:space="preserve">
+    <value>Tìm kiếm món ăn, địa điểm...</value>
+  </data>
+  <data name="Main_MustTryTitle" xml:space="preserve">
+    <value>Nhất Định Phải Thử</value>
+  </data>
+  <data name="Main_MustTrySubtitle" xml:space="preserve">
+    <value>Những món ăn đặc trưng không thể bỏ qua</value>
+  </data>
+  <data name="Main_ViewAll" xml:space="preserve">
+    <value>Xem tất cả</value>
+  </data>
+  <data name="Main_PopularTitle" xml:space="preserve">
+    <value>Địa điểm phổ biến</value>
+  </data>
+  <data name="Main_PopularSubtitle" xml:space="preserve">
+    <value>Những địa điểm được yêu thích nhất bởi cộng đồng</value>
+  </data>
+  <data name="Main_OtherCategory" xml:space="preserve">
+    <value>Khác</value>
+  </data>
+  <data name="Main_Free" xml:space="preserve">
+    <value>Miễn phí</value>
+  </data>
+  <data name="Main_PriceFormat" xml:space="preserve">
+    <value>{0:N0} VNĐ</value>
+  </data>
+  <data name="Main_DurationMinutesFormat" xml:space="preserve">
+    <value>⏱ {0} phút</value>
+  </data>
+  <data name="Main_DurationHoursMinutesFormat" xml:space="preserve">
+    <value>⏱ {0}h {1}p</value>
+  </data>
+  <data name="Main_DurationHoursOnlyFormat" xml:space="preserve">
+    <value>⏱ {0} giờ</value>
+  </data>
+  <data name="Settings_PageTitle" xml:space="preserve">
+    <value>Cài đặt</value>
+  </data>
+  <data name="Settings_Favorites" xml:space="preserve">
+    <value>Yêu thích</value>
+  </data>
+  <data name="Settings_Downloads" xml:space="preserve">
+    <value>Đã tải</value>
+  </data>
+  <data name="Settings_History" xml:space="preserve">
+    <value>Lịch sử</value>
+  </data>
+  <data name="Settings_AutoPlayByLocationSection" xml:space="preserve">
+    <value>Tự động phát theo vị trí</value>
+  </data>
+  <data name="Settings_AutoNearestTitle" xml:space="preserve">
+    <value>Tự động phát POI gần nhất</value>
+  </data>
+  <data name="Settings_AutoNearestDescription" xml:space="preserve">
+    <value>Detect khi mở app và lặp lại mỗi 1 phút</value>
+  </data>
+  <data name="Settings_LocationScanCycle" xml:space="preserve">
+    <value>Chu kỳ quét vị trí</value>
+  </data>
+  <data name="Settings_PlaybackSection" xml:space="preserve">
+    <value>Phát lại</value>
+  </data>
+  <data name="Settings_AutoPlayNextTitle" xml:space="preserve">
+    <value>Tự động phát tiếp</value>
+  </data>
+  <data name="Settings_AutoPlayNextDescription" xml:space="preserve">
+    <value>Tự phát audio kế tiếp trong cùng POI</value>
+  </data>
+  <data name="Settings_PlaybackSpeed" xml:space="preserve">
+    <value>Tốc độ phát</value>
+  </data>
+  <data name="Settings_SkipInterval" xml:space="preserve">
+    <value>Khoảng tua</value>
+  </data>
+  <data name="Settings_AppSection" xml:space="preserve">
+    <value>Ứng dụng</value>
+  </data>
+  <data name="Settings_Language" xml:space="preserve">
+    <value>Ngôn ngữ</value>
+  </data>
+  <data name="Settings_Theme" xml:space="preserve">
+    <value>Giao diện</value>
+  </data>
+  <data name="Settings_Help" xml:space="preserve">
+    <value>Trợ giúp</value>
+  </data>
+  <data name="Settings_HelpSubtitle" xml:space="preserve">
+    <value>Hướng dẫn sử dụng và FAQ</value>
+  </data>
+  <data name="Settings_About" xml:space="preserve">
+    <value>Về ứng dụng</value>
+  </data>
+  <data name="Settings_AboutSubtitle" xml:space="preserve">
+    <value>Thông tin phiên bản và bản quyền</value>
+  </data>
+  <data name="Settings_ScanEveryMinute" xml:space="preserve"><value>Mỗi 1 phút</value></data>
+  <data name="Settings_SelectPlaybackSpeed_Title" xml:space="preserve"><value>Tốc độ phát</value></data>
+  <data name="Settings_SelectSkipInterval_Title" xml:space="preserve"><value>Khoảng tua</value></data>
+  <data name="Settings_SkipOption_Seconds" xml:space="preserve"><value>{0} giây</value></data>
+  <data name="Settings_SelectAudioQuality_Title" xml:space="preserve"><value>Chất lượng Audio</value></data>
+  <data name="Settings_AudioQuality_Low" xml:space="preserve"><value>Thấp (64kbps)</value></data>
+  <data name="Settings_AudioQuality_Medium" xml:space="preserve"><value>Trung bình (128kbps)</value></data>
+  <data name="Settings_AudioQuality_High" xml:space="preserve"><value>Cao (320kbps)</value></data>
+  <data name="Settings_ClearDownloads_Title" xml:space="preserve"><value>Xóa audio đã tải</value></data>
+  <data name="Settings_ClearDownloads_Confirm" xml:space="preserve"><value>Bạn có chắc muốn xóa tất cả audio đã tải?</value></data>
+  <data name="Settings_SelectTheme_Title" xml:space="preserve"><value>Chế độ giao diện</value></data>
+  <data name="Settings_Theme_Light" xml:space="preserve"><value>Sáng</value></data>
+  <data name="Settings_Theme_Dark" xml:space="preserve"><value>Tối</value></data>
+  <data name="Settings_Theme_System" xml:space="preserve"><value>Theo hệ thống</value></data>
+  <data name="Common_Delete" xml:space="preserve"><value>Xóa</value></data>
+  <data name="Audio_NowPlayingContent" xml:space="preserve">
+    <value>Nội dung đang phát</value>
+  </data>
+  <data name="Audio_ListTitle" xml:space="preserve">
+    <value>Danh sách audio</value>
+  </data>
+  <data name="Audio_NowPlayingBadge" xml:space="preserve">
+    <value>ĐANG PHÁT</value>
+  </data>
+  <data name="Intro_PageTitle" xml:space="preserve">
+    <value>Camera Access</value>
+  </data>
+  <data name="Intro_MainTitlePrefix" xml:space="preserve">
+    <value>Mở khóa trải nghiệm </value>
+  </data>
+  <data name="Intro_MainTitleHighlight" xml:space="preserve">
+    <value>Vĩnh Khánh</value>
+  </data>
+  <data name="Intro_Description" xml:space="preserve">
+    <value>Chúng tôi cần quyền truy cập camera để bạn có thể quét mã QR tại các sạp hàng và khám phá những câu chuyện thú vị đằng sau mỗi món ăn.</value>
+  </data>
+  <data name="Intro_AllowCamera" xml:space="preserve">
+    <value>Cho phép truy cập Camera</value>
+  </data>
+  <data name="Intro_Later" xml:space="preserve">
+    <value>Để sau</value>
+  </data>
+  <data name="Intro_PrivacyBadge" xml:space="preserve">
+    <value>QUYỀN RIÊNG TƯ ĐƯỢC BẢO MẬT</value>
+  </data>
+  <data name="Intro_AlertCameraRequired" xml:space="preserve">
+    <value>Bạn cần cấp quyền camera để quét QR và vào nghe audio.</value>
+  </data>
+  <data name="Intro_AlertCannotContinue" xml:space="preserve">
+    <value>Bạn cần quét QR để mở khóa màn hình nghe audio.</value>
+  </data>
+  <data name="Qr_PageTitle" xml:space="preserve">
+    <value>Quét QR</value>
+  </data>
+  <data name="Qr_HeaderTitle" xml:space="preserve">
+    <value>Quét QR để mở Audio Guide</value>
+  </data>
+  <data name="Qr_StatusPrompt" xml:space="preserve">
+    <value>Đưa mã QR vào khung để chọn ngôn ngữ và vào app</value>
+  </data>
+  <data name="Qr_SeedTitle" xml:space="preserve">
+    <value>QR seed test</value>
+  </data>
+  <data name="Qr_SeedSubtitle" xml:space="preserve">
+    <value>Dùng QR mẫu để kiểm tra nhận diện và vào app nhanh</value>
+  </data>
+  <data name="Qr_PickedTitle" xml:space="preserve">
+    <value>Ảnh QR đã chọn</value>
+  </data>
+  <data name="Qr_PickedSubtitle" xml:space="preserve">
+    <value>Ứng dụng sẽ nhận diện QR từ ảnh này và mở audio nếu hợp lệ</value>
+  </data>
+  <data name="Qr_UseSeedButton" xml:space="preserve">
+    <value>Dùng QR mẫu</value>
+  </data>
+  <data name="Qr_PickImageButton" xml:space="preserve">
+    <value>Chọn ảnh QR</value>
+  </data>
+  <data name="Qr_RescanButton" xml:space="preserve">
+    <value>Quét lại</value>
+  </data>
+  <data name="Qr_StatusOpenLanguage" xml:space="preserve">
+    <value>Đang mở trang chọn ngôn ngữ...</value>
+  </data>
+  <data name="Qr_StatusInvalid" xml:space="preserve">
+    <value>QR không hợp lệ. Vui lòng quét lại mã đúng định dạng.</value>
+  </data>
+  <data name="Qr_StatusNoCamera" xml:space="preserve">
+    <value>Bạn cần cấp quyền camera để quét QR.</value>
+  </data>
+  <data name="Qr_StatusCameraFailed" xml:space="preserve">
+    <value>Không thể mở camera quét QR. Vui lòng thử lại.</value>
+  </data>
+  <data name="Qr_StatusNoQrInImage" xml:space="preserve">
+    <value>Không nhận diện được QR trong ảnh đã chọn.</value>
+  </data>
+  <data name="Qr_StatusImageReadFailed" xml:space="preserve">
+    <value>Không thể mở ảnh QR từ thư viện. Vui lòng thử lại.</value>
+  </data>
+  <data name="Qr_ImagePickerTitle" xml:space="preserve">
+    <value>Chọn ảnh có mã QR</value>
+  </data>
+  <data name="Footer_StandbyAutoOff" xml:space="preserve">
+    <value>Chế độ chờ: Tự động phát đang tắt</value>
+  </data>
+  <data name="Footer_EnableInSettings" xml:space="preserve">
+    <value>Bật lại trong Cài đặt để phát theo POI gần nhất mỗi 1 phút</value>
+  </data>
+  <data name="Footer_EnableManual" xml:space="preserve">
+    <value>Bật thủ công</value>
+  </data>
+  <data name="Footer_StandbyOffMode" xml:space="preserve">
+    <value>Standby: OFF</value>
+  </data>
+  <data name="Footer_StandbyLocating" xml:space="preserve">
+    <value>Chế độ chờ: Đang xác định vị trí...</value>
+  </data>
+  <data name="Footer_KeepGpsOn" xml:space="preserve">
+    <value>Vui lòng giữ GPS bật để phát audio tự động theo POI gần nhất</value>
+  </data>
+  <data name="Footer_Retry" xml:space="preserve">
+    <value>Thử lại</value>
+  </data>
+  <data name="Footer_StandbyOnMode" xml:space="preserve">
+    <value>Standby: ON</value>
+  </data>
+  <data name="Footer_AutoPlayError" xml:space="preserve">
+    <value>Chế độ chờ: Không thể phát audio tự động</value>
+  </data>
+  <data name="Footer_OpenDetailManual" xml:space="preserve">
+    <value>Bạn có thể mở chi tiết POI và phát audio thủ công</value>
+  </data>
+  <data name="Footer_NoLocation" xml:space="preserve">
+    <value>Chế độ chờ: Chưa lấy được vị trí</value>
+  </data>
+  <data name="Footer_EnableLocationPermission" xml:space="preserve">
+    <value>Bật quyền vị trí để hệ thống tự chọn POI gần nhất</value>
+  </data>
+  <data name="Footer_LocationError" xml:space="preserve">
+    <value>Chế độ chờ: Lỗi lấy vị trí</value>
+  </data>
+  <data name="Footer_CheckGps" xml:space="preserve">
+    <value>Vui lòng kiểm tra kết nối GPS</value>
+  </data>
+  <data name="Footer_NoPoi" xml:space="preserve">
+    <value>Chế độ chờ: Không có POI</value>
+  </data>
+  <data name="Footer_NoPoiData" xml:space="preserve">
+    <value>Hiện chưa có dữ liệu địa điểm để phát audio</value>
+  </data>
+  <data name="Footer_Waiting" xml:space="preserve">
+    <value>Đang chờ</value>
+  </data>
+  <data name="Footer_FindNearestError" xml:space="preserve">
+    <value>Chế độ chờ: Lỗi tìm POI gần nhất</value>
+  </data>
+  <data name="Footer_PleaseRetry" xml:space="preserve">
+    <value>Vui lòng thử lại</value>
+  </data>
+  <data name="Footer_NoAudioAtPoiFormat" xml:space="preserve">
+    <value>Chế độ chờ: {0} chưa có audio</value>
+  </data>
+  <data name="Footer_WaitForNewPoiAudio" xml:space="preserve">
+    <value>Hệ thống sẽ chờ POI mới có audio để tiếp tục</value>
+  </data>
+  <data name="Footer_PlayingAutoFormat" xml:space="preserve">
+    <value>Đang phát tự động: {0}</value>
+  </data>
+  <data name="Footer_OpenPlayer" xml:space="preserve">
+    <value>Mở trình phát</value>
+  </data>
+  <data name="Footer_PlayAudioError" xml:space="preserve">
+    <value>Chế độ chờ: Lỗi phát audio</value>
+  </data>
+  <data name="Footer_LoadingNearest" xml:space="preserve">
+    <value>Chế độ chờ: Đang nạp audio gần nhất...</value>
+  </data>
+  <data name="Footer_AudioPaused" xml:space="preserve">
+    <value>Chế độ chờ: Audio đang tạm dừng</value>
+  </data>
+  <data name="Footer_Resume" xml:space="preserve">
+    <value>Tiếp tục nghe</value>
+  </data>
+  <data name="Footer_SwitchingNext" xml:space="preserve">
+    <value>Chế độ chờ: Đang chuyển audio kế tiếp</value>
+  </data>
+  <data name="Footer_UpdatedAudioFormat" xml:space="preserve">
+    <value>Chế độ chờ: Đã cập nhật audio cho {0}</value>
+  </data>
+  <data name="Footer_FinishedAtPoiFormat" xml:space="preserve">
+    <value>Chế độ chờ: Đã phát hết audio tại {0}, chờ POI mới</value>
+  </data>
+  <data name="Footer_WaitForNewNearest" xml:space="preserve">
+    <value>Hệ thống sẽ tự chuyển khi có POI gần nhất mới</value>
+  </data>
+  <data name="Footer_NearestHintFormat" xml:space="preserve">
+    <value>POI gần nhất • {0} m</value>
+  </data>
+  <data name="Footer_NearestShort" xml:space="preserve">
+    <value>POI gần nhất</value>
+  </data>
+  <data name="Footer_QueueHintFormat" xml:space="preserve">
+    <value>{0} • Bài {1}/{2}</value>
+  </data>
+</root>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value>
+  </resheader>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Common_Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="Language_Applying" xml:space="preserve">
+    <value>Applying language...</value>
+  </data>
+  <data name="Language_Page_Title" xml:space="preserve">
+    <value>Your language</value>
+  </data>
+  <data name="Language_Option_Vietnamese" xml:space="preserve">
+    <value>Vietnamese</value>
+  </data>
+  <data name="Language_Option_English" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="Language_Option_ChineseSimplified" xml:space="preserve">
+    <value>Simplified Chinese</value>
+  </data>
+  <data name="Settings_SelectLanguage_Title" xml:space="preserve">
+    <value>Select language</value>
+  </data>
+  <data name="Common_Notice" xml:space="preserve"><value>Notice</value></data>
+  <data name="Common_Understood" xml:space="preserve"><value>Understood</value></data>
+  <data name="Common_MinutesFormat" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Common_AudioCountFormat" xml:space="preserve"><value>{0} audio</value></data>
+  <data name="App_Name" xml:space="preserve"><value>Vinh Khanh Audio Guide</value></data>
+  <data name="Tab_Home" xml:space="preserve"><value>Home</value></data>
+  <data name="Tab_Map" xml:space="preserve"><value>Map</value></data>
+  <data name="Tab_Tours" xml:space="preserve"><value>Tours</value></data>
+  <data name="Tab_Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="Main_FeaturedDish" xml:space="preserve"><value>Featured Dish</value></data>
+  <data name="Main_ExploreTitle" xml:space="preserve"><value>Explore Vinh Khanh</value></data>
+  <data name="Main_ExploreSubtitle" xml:space="preserve"><value>Every dish tells a street story</value></data>
+  <data name="Main_LocationCountFormat" xml:space="preserve"><value>{0} places to explore</value></data>
+  <data name="Main_SearchPlaceholder" xml:space="preserve"><value>Search food or places...</value></data>
+  <data name="Main_MustTryTitle" xml:space="preserve"><value>Must Try</value></data>
+  <data name="Main_MustTrySubtitle" xml:space="preserve"><value>Signature dishes you should not miss</value></data>
+  <data name="Main_ViewAll" xml:space="preserve"><value>View all</value></data>
+  <data name="Main_PopularTitle" xml:space="preserve"><value>Popular Places</value></data>
+  <data name="Main_PopularSubtitle" xml:space="preserve"><value>Community favorite places</value></data>
+  <data name="Main_OtherCategory" xml:space="preserve"><value>Other</value></data>
+  <data name="Main_Free" xml:space="preserve"><value>Free</value></data>
+  <data name="Main_PriceFormat" xml:space="preserve"><value>{0:N0} VND</value></data>
+  <data name="Main_DurationMinutesFormat" xml:space="preserve"><value>⏱ {0} min</value></data>
+  <data name="Main_DurationHoursMinutesFormat" xml:space="preserve"><value>⏱ {0}h {1}m</value></data>
+  <data name="Main_DurationHoursOnlyFormat" xml:space="preserve"><value>⏱ {0}h</value></data>
+  <data name="Settings_PageTitle" xml:space="preserve"><value>Settings</value></data>
+  <data name="Settings_Favorites" xml:space="preserve"><value>Favorites</value></data>
+  <data name="Settings_Downloads" xml:space="preserve"><value>Downloads</value></data>
+  <data name="Settings_History" xml:space="preserve"><value>History</value></data>
+  <data name="Settings_AutoPlayByLocationSection" xml:space="preserve"><value>Auto play by location</value></data>
+  <data name="Settings_AutoNearestTitle" xml:space="preserve"><value>Auto play nearest POI</value></data>
+  <data name="Settings_AutoNearestDescription" xml:space="preserve"><value>Detect on app open and repeat every 1 minute</value></data>
+  <data name="Settings_LocationScanCycle" xml:space="preserve"><value>Location scan interval</value></data>
+  <data name="Settings_PlaybackSection" xml:space="preserve"><value>Playback</value></data>
+  <data name="Settings_AutoPlayNextTitle" xml:space="preserve"><value>Auto play next</value></data>
+  <data name="Settings_AutoPlayNextDescription" xml:space="preserve"><value>Automatically play next audio in the same POI</value></data>
+  <data name="Settings_PlaybackSpeed" xml:space="preserve"><value>Playback speed</value></data>
+  <data name="Settings_SkipInterval" xml:space="preserve"><value>Skip interval</value></data>
+  <data name="Settings_AppSection" xml:space="preserve"><value>Application</value></data>
+  <data name="Settings_Language" xml:space="preserve"><value>Language</value></data>
+  <data name="Settings_Theme" xml:space="preserve"><value>Theme</value></data>
+  <data name="Settings_Help" xml:space="preserve"><value>Help</value></data>
+  <data name="Settings_HelpSubtitle" xml:space="preserve"><value>User guide and FAQ</value></data>
+  <data name="Settings_About" xml:space="preserve"><value>About</value></data>
+  <data name="Settings_AboutSubtitle" xml:space="preserve"><value>Version and copyright info</value></data>
+  <data name="Settings_ScanEveryMinute" xml:space="preserve"><value>Every 1 minute</value></data>
+  <data name="Settings_SelectPlaybackSpeed_Title" xml:space="preserve"><value>Playback speed</value></data>
+  <data name="Settings_SelectSkipInterval_Title" xml:space="preserve"><value>Skip interval</value></data>
+  <data name="Settings_SkipOption_Seconds" xml:space="preserve"><value>{0} seconds</value></data>
+  <data name="Settings_SelectAudioQuality_Title" xml:space="preserve"><value>Audio quality</value></data>
+  <data name="Settings_AudioQuality_Low" xml:space="preserve"><value>Low (64kbps)</value></data>
+  <data name="Settings_AudioQuality_Medium" xml:space="preserve"><value>Medium (128kbps)</value></data>
+  <data name="Settings_AudioQuality_High" xml:space="preserve"><value>High (320kbps)</value></data>
+  <data name="Settings_ClearDownloads_Title" xml:space="preserve"><value>Delete downloaded audio</value></data>
+  <data name="Settings_ClearDownloads_Confirm" xml:space="preserve"><value>Delete all downloaded audio files?</value></data>
+  <data name="Settings_SelectTheme_Title" xml:space="preserve"><value>Theme mode</value></data>
+  <data name="Settings_Theme_Light" xml:space="preserve"><value>Light</value></data>
+  <data name="Settings_Theme_Dark" xml:space="preserve"><value>Dark</value></data>
+  <data name="Settings_Theme_System" xml:space="preserve"><value>System default</value></data>
+  <data name="Common_Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Audio_NowPlayingContent" xml:space="preserve"><value>Now playing content</value></data>
+  <data name="Audio_ListTitle" xml:space="preserve"><value>Audio list</value></data>
+  <data name="Audio_NowPlayingBadge" xml:space="preserve"><value>NOW PLAYING</value></data>
+  <data name="Intro_PageTitle" xml:space="preserve"><value>Camera Access</value></data>
+  <data name="Intro_MainTitlePrefix" xml:space="preserve"><value>Unlock your </value></data>
+  <data name="Intro_MainTitleHighlight" xml:space="preserve"><value>Vinh Khanh</value></data>
+  <data name="Intro_Description" xml:space="preserve"><value>We need camera access so you can scan QR codes at food stalls and discover stories behind each dish.</value></data>
+  <data name="Intro_AllowCamera" xml:space="preserve"><value>Allow Camera Access</value></data>
+  <data name="Intro_Later" xml:space="preserve"><value>Later</value></data>
+  <data name="Intro_PrivacyBadge" xml:space="preserve"><value>PRIVACY PROTECTED</value></data>
+  <data name="Intro_AlertCameraRequired" xml:space="preserve"><value>You need camera permission to scan QR and listen to audio.</value></data>
+  <data name="Intro_AlertCannotContinue" xml:space="preserve"><value>You need to scan a QR code to unlock the audio screen.</value></data>
+  <data name="Qr_PageTitle" xml:space="preserve"><value>Scan QR</value></data>
+  <data name="Qr_HeaderTitle" xml:space="preserve"><value>Scan QR to open Audio Guide</value></data>
+  <data name="Qr_StatusPrompt" xml:space="preserve"><value>Place QR inside the frame to choose language and enter app</value></data>
+  <data name="Qr_SeedTitle" xml:space="preserve"><value>Seed QR test</value></data>
+  <data name="Qr_SeedSubtitle" xml:space="preserve"><value>Use sample QR for quick detection and app entry</value></data>
+  <data name="Qr_PickedTitle" xml:space="preserve"><value>Selected QR image</value></data>
+  <data name="Qr_PickedSubtitle" xml:space="preserve"><value>The app will decode this image and open audio if valid</value></data>
+  <data name="Qr_UseSeedButton" xml:space="preserve"><value>Use sample QR</value></data>
+  <data name="Qr_PickImageButton" xml:space="preserve"><value>Pick QR image</value></data>
+  <data name="Qr_RescanButton" xml:space="preserve"><value>Scan again</value></data>
+  <data name="Qr_StatusOpenLanguage" xml:space="preserve"><value>Opening language selection...</value></data>
+  <data name="Qr_StatusInvalid" xml:space="preserve"><value>Invalid QR. Please scan a valid code.</value></data>
+  <data name="Qr_StatusNoCamera" xml:space="preserve"><value>Camera permission is required for QR scanning.</value></data>
+  <data name="Qr_StatusCameraFailed" xml:space="preserve"><value>Cannot open scanner camera. Please try again.</value></data>
+  <data name="Qr_StatusNoQrInImage" xml:space="preserve"><value>No QR detected in selected image.</value></data>
+  <data name="Qr_StatusImageReadFailed" xml:space="preserve"><value>Cannot open QR image from gallery. Please try again.</value></data>
+  <data name="Qr_ImagePickerTitle" xml:space="preserve"><value>Select image with QR code</value></data>
+  <data name="Footer_StandbyAutoOff" xml:space="preserve"><value>Standby: Auto playback is off</value></data>
+  <data name="Footer_EnableInSettings" xml:space="preserve"><value>Enable in Settings to play nearest POI every minute</value></data>
+  <data name="Footer_EnableManual" xml:space="preserve"><value>Enable now</value></data>
+  <data name="Footer_StandbyOffMode" xml:space="preserve"><value>Standby: OFF</value></data>
+  <data name="Footer_StandbyLocating" xml:space="preserve"><value>Standby: Locating...</value></data>
+  <data name="Footer_KeepGpsOn" xml:space="preserve"><value>Please keep GPS on for nearest POI auto playback</value></data>
+  <data name="Footer_Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="Footer_StandbyOnMode" xml:space="preserve"><value>Standby: ON</value></data>
+  <data name="Footer_AutoPlayError" xml:space="preserve"><value>Standby: Cannot start auto playback</value></data>
+  <data name="Footer_OpenDetailManual" xml:space="preserve"><value>You can open POI details and play manually</value></data>
+  <data name="Footer_NoLocation" xml:space="preserve"><value>Standby: Location unavailable</value></data>
+  <data name="Footer_EnableLocationPermission" xml:space="preserve"><value>Enable location permission for nearest POI detection</value></data>
+  <data name="Footer_LocationError" xml:space="preserve"><value>Standby: Location error</value></data>
+  <data name="Footer_CheckGps" xml:space="preserve"><value>Please check GPS connectivity</value></data>
+  <data name="Footer_NoPoi" xml:space="preserve"><value>Standby: No POI</value></data>
+  <data name="Footer_NoPoiData" xml:space="preserve"><value>No location data available for playback</value></data>
+  <data name="Footer_Waiting" xml:space="preserve"><value>Waiting</value></data>
+  <data name="Footer_FindNearestError" xml:space="preserve"><value>Standby: Failed to find nearest POI</value></data>
+  <data name="Footer_PleaseRetry" xml:space="preserve"><value>Please try again</value></data>
+  <data name="Footer_NoAudioAtPoiFormat" xml:space="preserve"><value>Standby: {0} has no audio</value></data>
+  <data name="Footer_WaitForNewPoiAudio" xml:space="preserve"><value>Waiting for another POI with available audio</value></data>
+  <data name="Footer_PlayingAutoFormat" xml:space="preserve"><value>Auto playing: {0}</value></data>
+  <data name="Footer_OpenPlayer" xml:space="preserve"><value>Open player</value></data>
+  <data name="Footer_PlayAudioError" xml:space="preserve"><value>Standby: Audio playback error</value></data>
+  <data name="Footer_LoadingNearest" xml:space="preserve"><value>Standby: Loading nearest audio...</value></data>
+  <data name="Footer_AudioPaused" xml:space="preserve"><value>Standby: Audio paused</value></data>
+  <data name="Footer_Resume" xml:space="preserve"><value>Resume</value></data>
+  <data name="Footer_SwitchingNext" xml:space="preserve"><value>Standby: Switching to next audio</value></data>
+  <data name="Footer_UpdatedAudioFormat" xml:space="preserve"><value>Standby: Updated audio for {0}</value></data>
+  <data name="Footer_FinishedAtPoiFormat" xml:space="preserve"><value>Standby: Finished all audio at {0}, waiting for new POI</value></data>
+  <data name="Footer_WaitForNewNearest" xml:space="preserve"><value>Will auto switch when a new nearest POI is detected</value></data>
+  <data name="Footer_NearestHintFormat" xml:space="preserve"><value>Nearest POI • {0} m</value></data>
+  <data name="Footer_NearestShort" xml:space="preserve"><value>Nearest POI</value></data>
+  <data name="Footer_QueueHintFormat" xml:space="preserve"><value>{0} • Track {1}/{2}</value></data>
+</root>

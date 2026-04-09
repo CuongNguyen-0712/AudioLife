@@ -1,4 +1,3 @@
-using System.Text.Json;
 using SQLite;
 using VinhKhanhAudioGuide.Mobile.Models;
 
@@ -6,8 +5,6 @@ namespace VinhKhanhAudioGuide.Mobile.Services;
 
 public class LocalDatabaseService : ILocalDatabaseService
 {
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-
     private readonly SQLiteAsyncConnection _database;
 
     public LocalDatabaseService()
@@ -18,22 +15,37 @@ public class LocalDatabaseService : ILocalDatabaseService
 
     private async Task EnsureInitializedAsync()
     {
-        await _database.CreateTableAsync<UserProfileEntity>();
+        await _database.CreateTableAsync<FavoriteLocationEntity>();
         await _database.CreateTableAsync<ListeningHistoryEntity>();
         await _database.CreateTableAsync<DownloadedAudioEntity>();
     }
 
-    public async Task<UserProfile?> GetUserProfileAsync()
+    public async Task<List<string>> GetFavoriteLocationIdsAsync()
     {
         await EnsureInitializedAsync();
-        var entity = await _database.Table<UserProfileEntity>().FirstOrDefaultAsync();
-        return entity is null ? null : ToModel(entity);
+        var entities = await _database.Table<FavoriteLocationEntity>().ToListAsync();
+        return entities.Select(x => x.LocationId).ToList();
     }
 
-    public async Task SaveUserProfileAsync(UserProfile profile)
+    public async Task SaveFavoriteLocationIdsAsync(IReadOnlyCollection<string> locationIds)
     {
         await EnsureInitializedAsync();
-        await _database.InsertOrReplaceAsync(ToEntity(profile));
+
+        var existing = await _database.Table<FavoriteLocationEntity>().ToListAsync();
+        if (existing.Count > 0)
+        {
+            await _database.DeleteAllAsync<FavoriteLocationEntity>();
+        }
+
+        var distinctIds = locationIds
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        foreach (var id in distinctIds)
+        {
+            await _database.InsertAsync(new FavoriteLocationEntity { LocationId = id });
+        }
     }
 
     public async Task<List<ListeningHistory>> GetListeningHistoryAsync()
@@ -72,38 +84,6 @@ public class LocalDatabaseService : ILocalDatabaseService
     {
         await EnsureInitializedAsync();
         await _database.DeleteAsync<DownloadedAudioEntity>(audioGuideId);
-    }
-
-    private static UserProfileEntity ToEntity(UserProfile model)
-    {
-        return new UserProfileEntity
-        {
-            Id = model.Id,
-            Name = model.Name,
-            Email = model.Email,
-            AvatarUrl = model.AvatarUrl,
-            PreferredLanguage = model.PreferredLanguage,
-            FavoriteLocationIdsJson = JsonSerializer.Serialize(model.FavoriteLocationIds, JsonOptions),
-            VisitedLocationIdsJson = JsonSerializer.Serialize(model.VisitedLocationIds, JsonOptions),
-            CreatedAtUtcTicks = model.CreatedAt.ToUniversalTime().Ticks,
-            LastLoginAtUtcTicks = model.LastLoginAt.ToUniversalTime().Ticks
-        };
-    }
-
-    private static UserProfile ToModel(UserProfileEntity entity)
-    {
-        return new UserProfile
-        {
-            Id = entity.Id,
-            Name = entity.Name,
-            Email = entity.Email,
-            AvatarUrl = entity.AvatarUrl,
-            PreferredLanguage = entity.PreferredLanguage,
-            FavoriteLocationIds = DeserializeStringList(entity.FavoriteLocationIdsJson),
-            VisitedLocationIds = DeserializeStringList(entity.VisitedLocationIdsJson),
-            CreatedAt = new DateTime(entity.CreatedAtUtcTicks, DateTimeKind.Utc).ToLocalTime(),
-            LastLoginAt = new DateTime(entity.LastLoginAtUtcTicks, DateTimeKind.Utc).ToLocalTime()
-        };
     }
 
     private static ListeningHistoryEntity ToEntity(ListeningHistory model)
@@ -168,35 +148,10 @@ public class LocalDatabaseService : ILocalDatabaseService
         };
     }
 
-    private static List<string> DeserializeStringList(string json)
-    {
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            return new List<string>();
-        }
-
-        try
-        {
-            return JsonSerializer.Deserialize<List<string>>(json, JsonOptions) ?? new List<string>();
-        }
-        catch
-        {
-            return new List<string>();
-        }
-    }
-
-    private sealed class UserProfileEntity
+    private sealed class FavoriteLocationEntity
     {
         [PrimaryKey]
-        public string Id { get; set; } = string.Empty;
-        public string Name { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string AvatarUrl { get; set; } = string.Empty;
-        public string PreferredLanguage { get; set; } = "vi";
-        public string FavoriteLocationIdsJson { get; set; } = "[]";
-        public string VisitedLocationIdsJson { get; set; } = "[]";
-        public long CreatedAtUtcTicks { get; set; }
-        public long LastLoginAtUtcTicks { get; set; }
+        public string LocationId { get; set; } = string.Empty;
     }
 
     private sealed class ListeningHistoryEntity

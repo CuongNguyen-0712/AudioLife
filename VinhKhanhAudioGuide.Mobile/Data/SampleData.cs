@@ -4,6 +4,8 @@ using VinhKhanhAudioGuide.Mobile.Models;
 
 public static class SampleData
 {
+    private const string BanhTrangIntroAudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934750/gioithieu_banhtrang_ujedfy.wav";
+
     public static List<Category> GetCategories()
     {
         return new List<Category>
@@ -167,7 +169,7 @@ public static class SampleData
             CreateAudioGuide("ag_002_1", "Giới thiệu quán", "Thông tin bánh xèo", "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934750/gioithieu_banhxeo_l94n9t.wav", 3, "loc_002", "vi"),
             CreateAudioGuide("ag_002_2", "Khám phá ẩm thực", "Hương vị bánh xèo", "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934750/amthuc_banhxeo_vld0dx.wav", 4, "loc_002", "vi"),
 
-            CreateAudioGuide("ag_003_1", "Giới thiệu quán", "Thông tin bánh tráng", "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934750/gioithieu_banhtrang_ujedfy.wav", 3, "loc_003", "vi"),
+            CreateAudioGuide("ag_003_1", "Giới thiệu quán", "Thông tin bánh tráng", BanhTrangIntroAudioUrl, 3, "loc_003", "vi"),
             CreateAudioGuide("ag_003_2", "Khám phá ẩm thực", "Thưởng thức bánh tráng", "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934748/amthuc_banhtrang_qglacj.wav", 4, "loc_003", "vi"),
 
             CreateAudioGuide("ag_004_1", "Giới thiệu quán", "Câu chuyện xiên que", "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934748/gioithieu_xienque_miulom.wav", 3, "loc_004", "vi"),
