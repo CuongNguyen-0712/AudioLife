@@ -13,15 +13,13 @@ VinhKhanhAudioGuide.Mobile/
 │   ├── Location.cs
 │   ├── Category.cs
 │   ├── AudioGuide.cs
-│   ├── Tour.cs
-│   └── UserProfile.cs
+│   └── Tour.cs
 ├── ViewModels/                 # MVVM ViewModels
 │   ├── MainViewModel.cs
 │   ├── AudioPlayerViewModel.cs
 │   ├── LocationDetailViewModel.cs
 │   ├── MapViewModel.cs
 │   ├── ToursViewModel.cs
-│   ├── ProfileViewModel.cs
 │   ├── SettingsViewModel.cs
 │   ├── FavoritesViewModel.cs
 │   ├── SearchViewModel.cs
@@ -32,7 +30,6 @@ VinhKhanhAudioGuide.Mobile/
 │   ├── LocationDetailPage.xaml
 │   ├── MapPage.xaml
 │   ├── ToursPage.xaml
-│   ├── ProfilePage.xaml
 │   ├── SettingsPage.xaml
 │   ├── FavoritesPage.xaml
 │   ├── SearchPage.xaml
@@ -40,8 +37,7 @@ VinhKhanhAudioGuide.Mobile/
 │   ├── DownloadsPage.xaml
 │   ├── HistoryPage.xaml
 │   ├── HelpPage.xaml
-│   ├── AboutPage.xaml
-│   └── EditProfilePage.xaml
+│   └── AboutPage.xaml
 ├── Services/                   # Business logic
 │   ├── IAudioService.cs
 │   ├── AudioService.cs
@@ -133,8 +129,8 @@ dotnet run -f net8.0-windows10.0.17763.0
 - Chi tiết từng tour
 - Bắt đầu lộ trình
 
-### 5. Tài khoản
-- Thông tin cá nhân
+### 5. Cài đặt & Thư viện
+- Cài đặt phát audio và ngôn ngữ
 - Danh sách yêu thích
 - Audio đã tải
 - Lịch sử nghe
@@ -162,18 +158,17 @@ dotnet run -f net8.0-windows10.0.17763.0
 Đặt các hình ảnh vào thư mục `Resources/Images/`:
 
 Các icon cần thiết:
-- `home_icon.png`
-- `search_icon.png`
-- `map_icon.png`
-- `tour_icon.png`
-- `profile_icon.png`
-- `play_icon.png`
-- `pause_icon.png`
-- `favorite_icon.png`
-- `favorite_filled_icon.png`
-- `download_icon.png`
-- `audio_icon.png`
-- `chevron_right.png`
+- `compass.svg`
+- `map.svg`
+- `tour.svg`
+- `settings.svg`
+- `play_white_icon.svg`
+- `pause.svg`
+- `heart_no_fill.svg`
+- `heart_filled.svg`
+- `audio.svg`
+- `chevron_right.svg`
+- `user.svg`
 - Và các hình ảnh địa điểm
 
 ## 🔧 Cấu hình

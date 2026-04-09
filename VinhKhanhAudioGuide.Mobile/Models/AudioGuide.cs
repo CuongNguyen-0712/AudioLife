@@ -13,5 +13,4 @@ public class AudioGuide
     public string LocationId { get; set; } = string.Empty;
     public string Language { get; set; } = "vi"; // Default Vietnamese
     public List<AudioScriptSegment> ScriptSegments { get; set; } = new();
-    public List<ListeningHistory> ListeningHistories { get; set; } = new();
 }

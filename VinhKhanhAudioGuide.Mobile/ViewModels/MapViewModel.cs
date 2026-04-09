@@ -12,6 +12,7 @@ public partial class MapViewModel : ObservableObject
     private readonly INavigationService _navigationService;
     private readonly IGeolocationService _geolocationService;
     private readonly IApiService _apiService;
+    private readonly SemaphoreSlim _loadMapLock = new(1, 1);
 
     [ObservableProperty]
     private string _searchQuery = string.Empty;
@@ -114,65 +115,73 @@ public partial class MapViewModel : ObservableObject
 
     public async Task LoadMapDataAsync()
     {
-        MapMarkers.Clear();
-        NearbyLocations.Clear();
-
-        var locationsTask = _apiService.GetLocationsAsync();
-        var categoriesTask = _apiService.GetCategoriesAsync();
-        var featuredToursTask = _apiService.GetFeaturedToursAsync();
-        await Task.WhenAll(locationsTask, categoriesTask, featuredToursTask);
-
-        var locations = locationsTask.Result;
-        var categories = categoriesTask.Result;
-        var featuredTours = featuredToursTask.Result;
-        var featuredLocationIds = featuredTours
-            .SelectMany(t => t.LocationIds)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        var locationPoints = locations
-            .Select((location, index) => BuildLocationPoint(location, index))
-            .ToList();
-
-        foreach (var point in locationPoints)
+        await _loadMapLock.WaitAsync();
+        try
         {
-            var location = point.Location;
-            MapMarkers.Add(new MapMarker
-            {
-                Id = location.Id,
-                Name = location.Name,
-                Latitude = point.Latitude,
-                Longitude = point.Longitude
-            });
+            MapMarkers.Clear();
+            NearbyLocations.Clear();
 
-            var distance = CalculateDistance(UserLatitude, UserLongitude, point.Latitude, point.Longitude);
-            var category = categories.FirstOrDefault(c => c.Id == location.CategoryId);
-            NearbyLocations.Add(new NearbyLocation
+            var locationsTask = _apiService.GetLocationsAsync();
+            var categoriesTask = _apiService.GetCategoriesAsync();
+            var featuredToursTask = _apiService.GetFeaturedToursAsync();
+            await Task.WhenAll(locationsTask, categoriesTask, featuredToursTask);
+
+            var locations = locationsTask.Result;
+            var categories = categoriesTask.Result;
+            var featuredTours = featuredToursTask.Result;
+            var featuredLocationIds = featuredTours
+                .SelectMany(t => t.LocationIds)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var locationPoints = locations
+                .Select((location, index) => BuildLocationPoint(location, index))
+                .ToList();
+
+            foreach (var point in locationPoints)
             {
-                Id = location.Id,
-                Name = location.Name,
-                ImageUrl = location.ImageUrl,
-                CategoryName = category?.Name ?? "Khác",
-                Address = location.Address,
-                Distance = Math.Round(distance, 1),
-                AudioCount = location.AudioGuides?.Count ?? 0,
-                IsHot = featuredLocationIds.Contains(location.Id)
-            });
+                var location = point.Location;
+                MapMarkers.Add(new MapMarker
+                {
+                    Id = location.Id,
+                    Name = location.Name,
+                    Latitude = point.Latitude,
+                    Longitude = point.Longitude
+                });
+
+                var distanceMeters = CalculateDistance(UserLatitude, UserLongitude, point.Latitude, point.Longitude) * 1000;
+                var category = categories.FirstOrDefault(c => c.Id == location.CategoryId);
+                NearbyLocations.Add(new NearbyLocation
+                {
+                    Id = location.Id,
+                    Name = location.Name,
+                    ImageUrl = location.ImageUrl,
+                    CategoryName = category?.Name ?? "Khác",
+                    Address = location.Address,
+                    Distance = Math.Round(distanceMeters),
+                    AudioCount = location.AudioGuides?.Count ?? 0,
+                    IsHot = featuredLocationIds.Contains(location.Id)
+                });
+            }
+
+            // Sort by distance and keep all POIs in the list.
+            var sorted = NearbyLocations.OrderBy(x => x.Distance).ToList();
+            NearbyLocations.Clear();
+            for (var i = 0; i < sorted.Count; i++)
+            {
+                var loc = sorted[i];
+                loc.IsNearest = i == 0;
+                NearbyLocations.Add(loc);
+            }
+
+            CurrentPoiLocation = NearbyLocations.FirstOrDefault(x => x.IsNearest) ?? NearbyLocations.FirstOrDefault();
+
+            // Generate Leaflet map HTML
+            GenerateMapHtml(locationPoints, categories);
         }
-
-        // Sort by distance and keep all POIs in the list.
-        var sorted = NearbyLocations.OrderBy(x => x.Distance).ToList();
-        NearbyLocations.Clear();
-        for (var i = 0; i < sorted.Count; i++)
+        finally
         {
-            var loc = sorted[i];
-            loc.IsNearest = i == 0;
-            NearbyLocations.Add(loc);
+            _loadMapLock.Release();
         }
-
-        CurrentPoiLocation = NearbyLocations.FirstOrDefault(x => x.IsNearest) ?? NearbyLocations.FirstOrDefault();
-
-        // Generate Leaflet map HTML
-        GenerateMapHtml(locationPoints, categories);
     }
 
     private void GenerateMapHtml(List<LocationPoint> locations, List<Category> categories)

@@ -4,15 +4,17 @@ using VinhKhanhAudioGuide.Mobile.Models;
 
 public static class SampleData
 {
+    private const string BanhTrangIntroAudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934750/gioithieu_banhtrang_ujedfy.wav";
+
     public static List<Category> GetCategories()
     {
         return new List<Category>
         {
-            new() { Id = "1", Name = "Đặc sản", Icon = "fa-bowl-food", Description = "Các món đặc sản đặc trưng mang hương vị truyền thống." },
-            new() { Id = "2", Name = "Ăn vặt", Icon = "fa-cookie-bite", Description = "Bánh tráng, xiên que và các món ăn chơi hấp dẫn." },
-            new() { Id = "3", Name = "Ăn đêm", Icon = "fa-moon", Description = "Cháo sườn, phở và các món phục vụ khuya." },
-            new() { Id = "4", Name = "Hải sản", Icon = "fa-fish", Description = "Ốc, tôm, cua, mực tươi sống nướng, xào." },
-            new() { Id = "5", Name = "Đồ uống", Icon = "fa-mug-hot", Description = "Cà phê, trà sữa và đồ uống giải khát." }
+            new() { Id = "1", Name = "Đặc sản", Icon = "specialty.svg", Description = "Các món đặc sản đặc trưng mang hương vị truyền thống." },
+            new() { Id = "2", Name = "Ăn vặt", Icon = "snack.svg", Description = "Bánh tráng, xiên que và các món ăn chơi hấp dẫn." },
+            new() { Id = "3", Name = "Ăn đêm", Icon = "night_food.svg", Description = "Cháo sườn, phở và các món phục vụ khuya." },
+            new() { Id = "4", Name = "Hải sản", Icon = "seafood.svg", Description = "Ốc, tôm, cua, mực tươi sống nướng, xào." },
+            new() { Id = "5", Name = "Đồ uống", Icon = "drink.svg", Description = "Cà phê, trà sữa và đồ uống giải khát." }
         };
     }
 
@@ -167,7 +169,7 @@ public static class SampleData
             CreateAudioGuide("ag_002_1", "Giới thiệu quán", "Thông tin bánh xèo", "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934750/gioithieu_banhxeo_l94n9t.wav", 3, "loc_002", "vi"),
             CreateAudioGuide("ag_002_2", "Khám phá ẩm thực", "Hương vị bánh xèo", "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934750/amthuc_banhxeo_vld0dx.wav", 4, "loc_002", "vi"),
 
-            CreateAudioGuide("ag_003_1", "Giới thiệu quán", "Thông tin bánh tráng", "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934750/gioithieu_banhtrang_ujedfy.wav", 3, "loc_003", "vi"),
+            CreateAudioGuide("ag_003_1", "Giới thiệu quán", "Thông tin bánh tráng", BanhTrangIntroAudioUrl, 3, "loc_003", "vi"),
             CreateAudioGuide("ag_003_2", "Khám phá ẩm thực", "Thưởng thức bánh tráng", "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934748/amthuc_banhtrang_qglacj.wav", 4, "loc_003", "vi"),
 
             CreateAudioGuide("ag_004_1", "Giới thiệu quán", "Câu chuyện xiên que", "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934748/gioithieu_xienque_miulom.wav", 3, "loc_004", "vi"),

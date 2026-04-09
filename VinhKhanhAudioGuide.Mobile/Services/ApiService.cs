@@ -12,99 +12,54 @@ public class ApiService : IApiService
 {
     private static readonly HttpClient HttpClient = new();
     private static readonly string DownloadDirectory = Path.Combine(FileSystem.AppDataDirectory, "downloads", "audio");
+    private const string LocalUserId = "local_user";
 
+    private readonly ILocalDatabaseService _localDatabaseService;
+    private readonly ILocalizationService _localizationService;
     private readonly List<Location> _locations;
     private readonly List<Category> _categories;
     private readonly List<Tour> _tours;
-    private UserProfile _userProfile;
+    private readonly HashSet<string> _favoriteLocationIds;
     private readonly List<ListeningHistory> _history;
     private readonly List<DownloadedAudio> _downloads;
+    private readonly SemaphoreSlim _localDataSyncLock = new(1, 1);
+    private bool _localDataLoaded;
 
-    public ApiService()
+    public ApiService(ILocalDatabaseService localDatabaseService, ILocalizationService localizationService)
     {
+        _localDatabaseService = localDatabaseService;
+        _localizationService = localizationService;
         _locations = SampleData.GetLocations();
         _categories = SampleData.GetCategories();
         _tours = SampleData.GetTours();
-        _userProfile = new UserProfile
-        {
-            Id = "user_001",
-            Name = "Nguyễn Văn A",
-            Email = "nguyenvana@email.com",
-            AvatarUrl = "default_avatar",
-            PreferredLanguage = "vi",
-            FavoriteLocationIds = new List<string> { "loc_001", "loc_002", "loc_006" },
-            VisitedLocationIds = new List<string> { "loc_001", "loc_002", "loc_003", "loc_005", "loc_006" },
-            CreatedAt = new DateTime(2025, 1, 15),
-            LastLoginAt = DateTime.Now
-        };
-
-        _history = new List<ListeningHistory>
-        {
-            new()
-            {
-                Id = "h1",
-                AudioGuideId = "ag_001_1",
-                AudioTitle = "Giới thiệu quán",
-                LocationId = "loc_001",
-                LocationName = "Bún mắm Vĩnh Khánh",
-                LocationImageUrl = "bun_mam.jpg",
-                AudioDuration = 3,
-                Progress = 0.8,
-                ListenedAt = DateTime.Today.AddHours(-2)
-            },
-            new()
-            {
-                Id = "h2",
-                AudioGuideId = "ag_002_1",
-                AudioTitle = "Giới thiệu quán",
-                LocationId = "loc_002",
-                LocationName = "Bánh xèo miền Tây",
-                LocationImageUrl = "banh_xeo.jpg",
-                AudioDuration = 3,
-                Progress = 1.0,
-                ListenedAt = DateTime.Today.AddHours(-5)
-            },
-            new()
-            {
-                Id = "h3",
-                AudioGuideId = "ag_007_1",
-                AudioTitle = "Giới thiệu quán",
-                LocationId = "loc_007",
-                LocationName = "Ốc xào bơ tỏi",
-                LocationImageUrl = "oc_xao_bo_toi.jpg",
-                AudioDuration = 3,
-                Progress = 0.45,
-                ListenedAt = DateTime.Today.AddDays(-1)
-            },
-            new()
-            {
-                Id = "h4",
-                AudioGuideId = "ag_006_1",
-                AudioTitle = "Giới thiệu quán",
-                LocationId = "loc_006",
-                LocationName = "Phở khuya",
-                LocationImageUrl = "pho.png",
-                AudioDuration = 3,
-                Progress = 1.0,
-                ListenedAt = DateTime.Today.AddDays(-2)
-            }
-        };
-
+        _favoriteLocationIds = CreateDefaultFavoriteLocationIds();
+        _history = CreateDefaultHistory();
         _downloads = new List<DownloadedAudio>();
     }
 
     // ──────── Locations ────────
 
     public Task<List<Location>> GetLocationsAsync()
-        => Task.FromResult(_locations);
+    {
+        var localized = ContentLocalizationMapper.LocalizeLocations(_locations, GetCurrentLanguageCode(), _favoriteLocationIds);
+        return Task.FromResult(localized);
+    }
 
     public Task<Location?> GetLocationByIdAsync(string locationId)
-        => Task.FromResult(_locations.FirstOrDefault(l => l.Id == locationId));
+    {
+        var source = _locations.FirstOrDefault(l => l.Id == locationId);
+        var localized = source is null
+            ? null
+            : ContentLocalizationMapper.LocalizeLocation(source, GetCurrentLanguageCode(), _favoriteLocationIds);
+
+        return Task.FromResult(localized);
+    }
 
     public Task<List<Location>> SearchLocationsAsync(string query)
     {
         var q = query.ToLowerInvariant();
-        var results = _locations.Where(l =>
+        var localizedLocations = ContentLocalizationMapper.LocalizeLocations(_locations, GetCurrentLanguageCode(), _favoriteLocationIds);
+        var results = localizedLocations.Where(l =>
             l.Name.Contains(q, StringComparison.InvariantCultureIgnoreCase) ||
             l.Description.Contains(q, StringComparison.InvariantCultureIgnoreCase) ||
             l.Address.Contains(q, StringComparison.InvariantCultureIgnoreCase)
@@ -113,11 +68,15 @@ public class ApiService : IApiService
     }
 
     public Task<List<Location>> GetLocationsByCategoryAsync(string categoryId)
-        => Task.FromResult(_locations.Where(l => l.CategoryId == categoryId).ToList());
+    {
+        var localizedLocations = ContentLocalizationMapper.LocalizeLocations(_locations, GetCurrentLanguageCode(), _favoriteLocationIds);
+        return Task.FromResult(localizedLocations.Where(l => l.CategoryId == categoryId).ToList());
+    }
 
     public Task<List<Location>> GetNearbyLocationsAsync(double latitude, double longitude, double radiusKm = 0.1)
     {
-        var nearby = _locations.Where(l =>
+        var localizedLocations = ContentLocalizationMapper.LocalizeLocations(_locations, GetCurrentLanguageCode(), _favoriteLocationIds);
+        var nearby = localizedLocations.Where(l =>
         {
             var distance = CalculateDistance(latitude, longitude, l.Latitude, l.Longitude);
             return distance <= radiusKm;
@@ -129,67 +88,97 @@ public class ApiService : IApiService
     // ──────── Categories ────────
 
     public Task<List<Category>> GetCategoriesAsync()
-        => Task.FromResult(_categories);
+    {
+        var localized = ContentLocalizationMapper.LocalizeCategories(_categories, GetCurrentLanguageCode());
+        return Task.FromResult(localized);
+    }
 
     // ──────── Tours ────────
 
     public Task<List<Tour>> GetToursAsync()
-        => Task.FromResult(_tours);
+    {
+        var localized = ContentLocalizationMapper.LocalizeTours(_tours, GetCurrentLanguageCode());
+        return Task.FromResult(localized);
+    }
 
     public Task<Tour?> GetTourByIdAsync(string tourId)
-        => Task.FromResult(_tours.FirstOrDefault(t => t.Id == tourId));
+    {
+        var source = _tours.FirstOrDefault(t => t.Id == tourId);
+        var localized = source is null
+            ? null
+            : ContentLocalizationMapper.LocalizeTours(new[] { source }, GetCurrentLanguageCode()).First();
+
+        return Task.FromResult(localized);
+    }
 
     public Task<List<Tour>> GetFeaturedToursAsync()
-        => Task.FromResult(_tours.Where(t => t.IsFeatured).ToList());
+    {
+        var localized = ContentLocalizationMapper.LocalizeTours(_tours.Where(t => t.IsFeatured), GetCurrentLanguageCode());
+        return Task.FromResult(localized);
+    }
 
     // ──────── Audio ────────
 
     public Task<List<AudioGuide>> GetAudioGuidesForLocationAsync(string locationId)
     {
         var location = _locations.FirstOrDefault(l => l.Id == locationId);
-        return Task.FromResult(location?.AudioGuides ?? new List<AudioGuide>());
+        if (location is null)
+        {
+            return Task.FromResult(new List<AudioGuide>());
+        }
+
+        var localizedGuides = ContentLocalizationMapper.LocalizeAudioGuides(location.AudioGuides, GetCurrentLanguageCode(), location.Id);
+        return Task.FromResult(localizedGuides);
     }
 
     public Task<AudioGuide?> GetAudioGuideByIdAsync(string audioGuideId)
     {
-        var audio = _locations.SelectMany(l => l.AudioGuides)
-                              .FirstOrDefault(a => a.Id == audioGuideId);
+        var languageCode = GetCurrentLanguageCode();
+        var audio = _locations
+            .SelectMany(location => ContentLocalizationMapper.LocalizeAudioGuides(location.AudioGuides, languageCode, location.Id))
+            .FirstOrDefault(guide => guide.Id == audioGuideId);
+
         return Task.FromResult(audio);
     }
 
-    // ──────── User Profile ────────
+    // ──────── Favorites ────────
 
-    public Task<UserProfile?> GetUserProfileAsync()
-        => Task.FromResult<UserProfile?>(_userProfile);
-
-    public Task<bool> UpdateUserProfileAsync(UserProfile profile)
+    public async Task<bool> ToggleFavoriteAsync(string locationId)
     {
-        _userProfile = profile;
-        return Task.FromResult(true);
-    }
-
-    public Task<bool> ToggleFavoriteAsync(string locationId)
-    {
-        if (_userProfile.FavoriteLocationIds.Contains(locationId))
-            _userProfile.FavoriteLocationIds.Remove(locationId);
+        await EnsureLocalDataLoadedAsync();
+        if (_favoriteLocationIds.Contains(locationId))
+            _favoriteLocationIds.Remove(locationId);
         else
-            _userProfile.FavoriteLocationIds.Add(locationId);
-        return Task.FromResult(true);
+            _favoriteLocationIds.Add(locationId);
+
+        await _localDatabaseService.SaveFavoriteLocationIdsAsync(_favoriteLocationIds.ToList());
+        return true;
     }
 
-    public Task<List<Location>> GetFavoriteLocationsAsync()
+    public async Task<List<Location>> GetFavoriteLocationsAsync()
     {
-        var favorites = _locations.Where(l => _userProfile.FavoriteLocationIds.Contains(l.Id)).ToList();
-        return Task.FromResult(favorites);
+        await EnsureLocalDataLoadedAsync();
+        var localizedLocations = ContentLocalizationMapper.LocalizeLocations(_locations, GetCurrentLanguageCode(), _favoriteLocationIds);
+        var favorites = localizedLocations.Where(l => _favoriteLocationIds.Contains(l.Id)).ToList();
+        return favorites;
     }
 
     // ──────── History ────────
 
-    public Task<List<ListeningHistory>> GetListeningHistoryAsync()
-        => Task.FromResult(_history.OrderByDescending(h => h.ListenedAt).ToList());
-
-    public Task AddListeningHistoryAsync(string audioGuideId, string locationId, double progress)
+    public async Task<List<ListeningHistory>> GetListeningHistoryAsync()
     {
+        await EnsureLocalDataLoadedAsync();
+        return _history.OrderByDescending(h => h.ListenedAt).ToList();
+    }
+
+    private string GetCurrentLanguageCode()
+    {
+        return ContentLocalizationMapper.ToLanguageCode(_localizationService.CurrentCulture.Name);
+    }
+
+    public async Task AddListeningHistoryAsync(string audioGuideId, string locationId, double progress)
+    {
+        await EnsureLocalDataLoadedAsync();
         var audio = _locations.SelectMany(l => l.AudioGuides).FirstOrDefault(a => a.Id == audioGuideId);
         var location = _locations.FirstOrDefault(l => l.Id == locationId);
         if (audio != null && location != null)
@@ -199,10 +188,14 @@ public class ApiService : IApiService
             {
                 existing.Progress = progress;
                 existing.ListenedAt = DateTime.Now;
+                existing.ListenedSeconds = (int)Math.Round(audio.Duration * 60 * progress);
+                existing.LastListenedAt = existing.ListenedAt;
+                existing.IsCompleted = progress >= 0.999;
+                await _localDatabaseService.UpsertListeningHistoryAsync(existing);
             }
             else
             {
-                _history.Add(new ListeningHistory
+                var item = new ListeningHistory
                 {
                     Id = $"h{_history.Count + 1}",
                     AudioGuideId = audioGuideId,
@@ -212,23 +205,44 @@ public class ApiService : IApiService
                     LocationImageUrl = location.ImageUrl,
                     AudioDuration = audio.Duration,
                     Progress = progress,
-                    ListenedAt = DateTime.Now
-                });
+                    ListenedAt = DateTime.Now,
+                    UserId = LocalUserId,
+                    ListenedSeconds = (int)Math.Round(audio.Duration * 60 * progress),
+                    LastListenedAt = DateTime.Now,
+                    IsCompleted = progress >= 0.999
+                };
+                _history.Add(item);
+                await _localDatabaseService.UpsertListeningHistoryAsync(item);
             }
         }
-        return Task.CompletedTask;
     }
 
     // ──────── Downloads ────────
 
     public Task<List<DownloadedAudio>> GetDownloadedAudiosAsync()
     {
-        _downloads.RemoveAll(download => !File.Exists(download.LocalPath));
-        return Task.FromResult(_downloads.OrderByDescending(d => d.DownloadedAt).ToList());
+        return GetDownloadedAudiosInternalAsync();
+    }
+
+    private async Task<List<DownloadedAudio>> GetDownloadedAudiosInternalAsync()
+    {
+        await EnsureLocalDataLoadedAsync();
+        var removed = _downloads.Where(download => !File.Exists(download.LocalPath)).ToList();
+        if (removed.Count > 0)
+        {
+            foreach (var item in removed)
+            {
+                _downloads.Remove(item);
+                await _localDatabaseService.DeleteDownloadedAudioAsync(item.AudioGuideId);
+            }
+        }
+
+        return _downloads.OrderByDescending(d => d.DownloadedAt).ToList();
     }
 
     public async Task<bool> DownloadAudioAsync(string audioGuideId)
     {
+        await EnsureLocalDataLoadedAsync();
         if (_downloads.Any(d => d.AudioGuideId == audioGuideId))
             return false;
 
@@ -266,19 +280,23 @@ public class ApiService : IApiService
         if (!fileInfo.Exists || fileInfo.Length == 0)
             return false;
 
-        _downloads.Add(new DownloadedAudio
+        var download = new DownloadedAudio
         {
             AudioGuideId = audioGuideId,
             LocalPath = localPath,
             DownloadedAt = DateTime.Now,
             FileSize = fileInfo.Length
-        });
+        };
+
+        _downloads.Add(download);
+        await _localDatabaseService.UpsertDownloadedAudioAsync(download);
 
         return true;
     }
 
-    public Task<bool> DeleteDownloadedAudioAsync(string audioGuideId)
+    public async Task<bool> DeleteDownloadedAudioAsync(string audioGuideId)
     {
+        await EnsureLocalDataLoadedAsync();
         var item = _downloads.FirstOrDefault(d => d.AudioGuideId == audioGuideId);
         if (item != null)
         {
@@ -287,13 +305,154 @@ public class ApiService : IApiService
                 File.Delete(item.LocalPath);
             }
             _downloads.Remove(item);
-            return Task.FromResult(true);
+            await _localDatabaseService.DeleteDownloadedAudioAsync(audioGuideId);
+            return true;
         }
-        return Task.FromResult(false);
+        return false;
     }
 
-    public Task<long> GetTotalDownloadSizeAsync()
-        => Task.FromResult(_downloads.Sum(d => d.FileSize));
+    public async Task<long> GetTotalDownloadSizeAsync()
+    {
+        await EnsureLocalDataLoadedAsync();
+        return _downloads.Sum(d => d.FileSize);
+    }
+
+    private async Task EnsureLocalDataLoadedAsync()
+    {
+        if (_localDataLoaded)
+        {
+            return;
+        }
+
+        await _localDataSyncLock.WaitAsync();
+        try
+        {
+            if (_localDataLoaded)
+            {
+                return;
+            }
+
+            var savedFavoriteIds = await _localDatabaseService.GetFavoriteLocationIdsAsync();
+            _favoriteLocationIds.Clear();
+            if (savedFavoriteIds.Count == 0)
+            {
+                foreach (var id in CreateDefaultFavoriteLocationIds())
+                {
+                    _favoriteLocationIds.Add(id);
+                }
+                await _localDatabaseService.SaveFavoriteLocationIdsAsync(_favoriteLocationIds.ToList());
+            }
+            else
+            {
+                foreach (var id in savedFavoriteIds)
+                {
+                    _favoriteLocationIds.Add(id);
+                }
+            }
+
+            var savedHistory = await _localDatabaseService.GetListeningHistoryAsync();
+            _history.Clear();
+            if (savedHistory.Count == 0)
+            {
+                var defaults = CreateDefaultHistory();
+                foreach (var item in defaults)
+                {
+                    _history.Add(item);
+                    await _localDatabaseService.UpsertListeningHistoryAsync(item);
+                }
+            }
+            else
+            {
+                _history.AddRange(savedHistory);
+            }
+
+            var savedDownloads = await _localDatabaseService.GetDownloadedAudiosAsync();
+            _downloads.Clear();
+            _downloads.AddRange(savedDownloads);
+
+            _localDataLoaded = true;
+        }
+        finally
+        {
+            _localDataSyncLock.Release();
+        }
+    }
+
+    private static HashSet<string> CreateDefaultFavoriteLocationIds()
+    {
+        return new HashSet<string>(new[] { "loc_001", "loc_002", "loc_006" }, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static List<ListeningHistory> CreateDefaultHistory()
+    {
+        return new List<ListeningHistory>
+        {
+            new()
+            {
+                Id = "h1",
+                AudioGuideId = "ag_001_1",
+                AudioTitle = "Giới thiệu quán",
+                LocationId = "loc_001",
+                LocationName = "Bún mắm Vĩnh Khánh",
+                LocationImageUrl = "bun_mam.jpg",
+                AudioDuration = 3,
+                Progress = 0.8,
+                ListenedAt = DateTime.Today.AddHours(-2),
+                UserId = LocalUserId,
+                ListenedSeconds = (int)Math.Round(3 * 60 * 0.8),
+                LastListenedAt = DateTime.Today.AddHours(-2),
+                IsCompleted = false
+            },
+            new()
+            {
+                Id = "h2",
+                AudioGuideId = "ag_002_1",
+                AudioTitle = "Giới thiệu quán",
+                LocationId = "loc_002",
+                LocationName = "Bánh xèo miền Tây",
+                LocationImageUrl = "banh_xeo.jpg",
+                AudioDuration = 3,
+                Progress = 1.0,
+                ListenedAt = DateTime.Today.AddHours(-5),
+                UserId = LocalUserId,
+                ListenedSeconds = 180,
+                LastListenedAt = DateTime.Today.AddHours(-5),
+                IsCompleted = true
+            },
+            new()
+            {
+                Id = "h3",
+                AudioGuideId = "ag_007_1",
+                AudioTitle = "Giới thiệu quán",
+                LocationId = "loc_007",
+                LocationName = "Ốc xào bơ tỏi",
+                LocationImageUrl = "oc_xao_bo_toi.jpg",
+                AudioDuration = 3,
+                Progress = 0.45,
+                ListenedAt = DateTime.Today.AddDays(-1),
+                UserId = LocalUserId,
+                ListenedSeconds = (int)Math.Round(3 * 60 * 0.45),
+                LastListenedAt = DateTime.Today.AddDays(-1),
+                IsCompleted = false
+            },
+            new()
+            {
+                Id = "h4",
+                AudioGuideId = "ag_006_1",
+                AudioTitle = "Giới thiệu quán",
+                LocationId = "loc_006",
+                LocationName = "Phở khuya",
+                LocationImageUrl = "pho.png",
+                AudioDuration = 3,
+                Progress = 1.0,
+                ListenedAt = DateTime.Today.AddDays(-2),
+                UserId = LocalUserId,
+                ListenedSeconds = 180,
+                LastListenedAt = DateTime.Today.AddDays(-2),
+                IsCompleted = true
+            }
+        };
+    }
 
     // ──────── Helpers ────────
 

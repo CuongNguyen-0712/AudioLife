@@ -3,6 +3,7 @@
     x:Class="VinhKhanhAudioGuide.Mobile.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
     xmlns:views="clr-namespace:VinhKhanhAudioGuide.Mobile.Views"
     Shell.FlyoutBehavior="Disabled"
     >
@@ -10,7 +11,7 @@
     <Shell.TitleView>
         <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
             <Image Source="tour.svg" HeightRequest="22" WidthRequest="22" VerticalOptions="Center" />
-            <Label Text="Vinh Khanh Audio Guide"
+                 <Label Text="{ext:Translate App_Name}"
                    FontSize="20"
                    FontAttributes="Bold"
                    TextColor="{StaticResource Primary}"
@@ -20,7 +21,7 @@
 
     <TabBar>
         <ShellContent
-            Title="Trang chủ"
+            Title="{ext:Translate Tab_Home}"
             Icon="compass.svg"
             ContentTemplate="{DataTemplate views:MainPage}"
             Route="MainPage" />
@@ -32,22 +33,22 @@
             Route="SearchPage" /> -->
         
         <ShellContent
-            Title="Bản đồ"
+            Title="{ext:Translate Tab_Map}"
             Icon="map.svg"
             ContentTemplate="{DataTemplate views:MapPage}"
             Route="MapPage" />
         
         <ShellContent
-            Title="Tours"
+            Title="{ext:Translate Tab_Tours}"
             Icon="tour.svg"
             ContentTemplate="{DataTemplate views:ToursPage}"
             Route="ToursPage" />
         
         <ShellContent
-            Title="Tài khoản"
-            Icon="user.svg"
-            ContentTemplate="{DataTemplate views:ProfilePage}"
-            Route="ProfilePage" />
+            Title="{ext:Translate Tab_Settings}"
+            Icon="settings.svg"
+            ContentTemplate="{DataTemplate views:SettingsPage}"
+            Route="SettingsPage" />
     </TabBar>
 
 </Shell>

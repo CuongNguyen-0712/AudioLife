@@ -4,10 +4,8 @@ namespace VinhKhanhAudioGuide.Mobile.Services;
 
 public class GeolocationService : IGeolocationService, IDisposable
 {
-    private const double NearbyRadiusKm = 0.1; // 100m radius
     private const int TrackingIntervalSeconds = 60; // 1 minute like web
     private readonly IApiService _apiService;
-    private readonly HashSet<string> _notifiedLocationIds = new();
     private CancellationTokenSource? _cts;
     private bool _isTracking;
 
@@ -126,22 +124,31 @@ public class GeolocationService : IGeolocationService, IDisposable
     private async Task CheckNearbyLocationsAsync(double userLat, double userLng)
     {
         var locations = await _apiService.GetLocationsAsync();
-        foreach (var loc in locations)
+        if (locations.Count == 0)
         {
-            if (_notifiedLocationIds.Contains(loc.Id)) continue;
-
-            var distance = CalculateDistanceKm(userLat, userLng, loc.Latitude, loc.Longitude);
-            if (distance <= NearbyRadiusKm)
-            {
-                _notifiedLocationIds.Add(loc.Id);
-                NearbyLocationDetected?.Invoke(this, new NearbyLocationEventArgs
-                {
-                    LocationId = loc.Id,
-                    LocationName = loc.Name,
-                    DistanceMeters = distance * 1000
-                });
-            }
+            return;
         }
+
+        var nearest = locations
+            .Select(loc => new
+            {
+                Location = loc,
+                DistanceKm = CalculateDistanceKm(userLat, userLng, loc.Latitude, loc.Longitude)
+            })
+            .OrderBy(x => x.DistanceKm)
+            .FirstOrDefault();
+
+        if (nearest == null)
+        {
+            return;
+        }
+
+        NearbyLocationDetected?.Invoke(this, new NearbyLocationEventArgs
+        {
+            LocationId = nearest.Location.Id,
+            LocationName = nearest.Location.Name,
+            DistanceMeters = nearest.DistanceKm * 1000
+        });
     }
 
     private static double CalculateDistanceKm(double lat1, double lon1, double lat2, double lon2)

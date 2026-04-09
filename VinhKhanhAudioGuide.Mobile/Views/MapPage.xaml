@@ -82,7 +82,7 @@
                             WidthRequest="18"
                             HeightRequest="18"
                             VerticalOptions="Center" />
-                    <Label Text="{Binding CurrentPoiLocation.Distance, StringFormat='Cách bạn {0:F1} km'}"
+                        <Label Text="{Binding CurrentPoiLocation.Distance, StringFormat='Cách bạn {0:F0} m'}"
                             FontSize="12"
                             TextColor="{StaticResource OnSurfaceVariant}" />
                     </HorizontalStackLayout>
@@ -205,7 +205,7 @@
                                                  HorizontalOptions="End"
                                                  VerticalOptions="Start"
                                                  Margin="0,0,0,0"
-                                                     TextColor="{StaticResource OnSecondaryContainer}"
+                                                    TextColor="{StaticResource OnSecondaryContainer}"
                                                  IsVisible="{Binding IsNearest}" />
 
                                          <HorizontalStackLayout Grid.Row="2" Spacing="4" VerticalOptions="Center">
@@ -215,7 +215,7 @@
                                                  HeightRequest="18"
                                                  VerticalOptions="Center" />
                                              <Label
-                                                 Text="{Binding Distance, StringFormat='Cách bạn {0:F1} km'}"
+                                                 Text="{Binding Distance, StringFormat='Cách bạn {0:F0} m'}"
                                                  FontSize="12"
                                                  TextColor="{StaticResource OnSurfaceVariant}"
                                                  VerticalOptions="Center" />

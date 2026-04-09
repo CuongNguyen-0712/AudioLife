@@ -2,21 +2,104 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
     xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
     xmlns:models="clr-namespace:VinhKhanhAudioGuide.Mobile.Models"
     xmlns:converters="clr-namespace:VinhKhanhAudioGuide.Mobile.Converters"
     x:Class="VinhKhanhAudioGuide.Mobile.Views.MainPage"
     x:DataType="viewmodels:MainViewModel"
     x:Name="PageRoot"
-    Title="Vinh Khanh Audio Guide">
+    Title="{ext:Translate App_Name}">
 
     <ContentPage.Resources>
         <converters:BoolToChipBackgroundConverter x:Key="BoolToChipBackgroundConverter" />
         <converters:BoolToChipTextColorConverter x:Key="BoolToChipTextColorConverter" />
+        <converters:DurationMinutesConverter x:Key="DurationMinutesConverter" />
+        <converters:AudioCountConverter x:Key="AudioCountConverter" />
     </ContentPage.Resources>
 
-        <RefreshView
+    <Grid RowDefinitions="Auto,*">
+        <Frame
             Grid.Row="0"
+            Margin="12,10,12,6"
+            Padding="12,10"
+            CornerRadius="18"
+            HasShadow="True"
+            BackgroundColor="{StaticResource SurfaceContainerLowest}"
+            BorderColor="{StaticResource OutlineVariant}">
+            <VerticalStackLayout Spacing="8">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" VerticalOptions="Center">
+                    <Frame
+                        WidthRequest="30"
+                        HeightRequest="30"
+                        Padding="6"
+                        CornerRadius="15"
+                        HasShadow="False"
+                        BackgroundColor="{StaticResource SecondaryContainer}">
+                        <Image Source="audio.svg" Aspect="AspectFit" />
+                    </Frame>
+
+                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                        <HorizontalStackLayout Spacing="8">
+                            <Label
+                                Text="{Binding FooterStatusText}"
+                                FontSize="12"
+                                FontAttributes="Bold"
+                                TextColor="{StaticResource OnSurface}"
+                                LineBreakMode="TailTruncation"
+                                MaxLines="1" />
+                            <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
+                                <BoxView
+                                    x:Name="AutoPulseDot"
+                                    WidthRequest="8"
+                                    HeightRequest="8"
+                                    CornerRadius="4"
+                                    Color="{StaticResource Primary}"
+                                    VerticalOptions="Center" />
+                                <Label
+                                    Text="{Binding FooterModeText}"
+                                    FontSize="10"
+                                    TextColor="{StaticResource Primary}"
+                                    VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </HorizontalStackLayout>
+                        <Label
+                            Text="{Binding FooterHintText}"
+                            FontSize="11"
+                            TextColor="{StaticResource OnSurfaceVariant}"
+                            LineBreakMode="TailTruncation"
+                            MaxLines="1" />
+                    </VerticalStackLayout>
+                </Grid>
+
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                    <Button
+                        Grid.Column="0"
+                        Text="{Binding FooterActionText}"
+                        Command="{Binding OpenAutoAudioPlayerCommand}"
+                        IsEnabled="{Binding IsFooterActionEnabled}"
+                        Style="{StaticResource PrimaryButton}"
+                        Padding="12,6"
+                        HeightRequest="34"
+                        FontSize="13" />
+
+                    <ImageButton
+                        Grid.Column="1"
+                        Source="{Binding FooterPlaybackIcon}"
+                        Command="{Binding ToggleFooterPlaybackCommand}"
+                        IsEnabled="{Binding IsFooterPlaybackEnabled}"
+                        BackgroundColor="{StaticResource Primary}"
+                        CornerRadius="17"
+                        Padding="8"
+                        WidthRequest="34"
+                        HeightRequest="34"
+                        VerticalOptions="Center" />
+                </Grid>
+            </VerticalStackLayout>
+        </Frame>
+
+        <RefreshView
+            Grid.Row="1"
             IsRefreshing="{Binding IsRefreshing}"
             Command="{Binding RefreshCommand}">
 
@@ -61,24 +144,24 @@
                             <Frame
                                 Style="{StaticResource ChipSelected}"
                                 HorizontalOptions="Start">
-                                <Label Text="Món ăn nổi bật" Style="{StaticResource ChipTextSelected}" FontSize="12" FontAttributes="Bold" />
+                                <Label Text="{ext:Translate Main_FeaturedDish}" Style="{StaticResource ChipTextSelected}" FontSize="12" FontAttributes="Bold" />
                             </Frame>
 
                             <Label
-                                Text="Khám phá Vĩnh Khánh"
+                                Text="{ext:Translate Main_ExploreTitle}"
                                 FontSize="32"
                                 FontAttributes="Bold"
                                 LineHeight="1.2"
                                 TextColor="#FFFFFF" />
 
                             <Label
-                                Text="Mỗi món ăn là một câu chuyện đường phố"
+                                Text="{ext:Translate Main_ExploreSubtitle}"
                                 FontSize="16"
                                 LineHeight="1.4"
                                 TextColor="#FFFFFF" />
 
                             <Label
-                                Text="{Binding LocationCount, StringFormat='{0} địa điểm khám phá'}"
+                                Text="{Binding LocationCount, StringFormat={ext:Translate Main_LocationCountFormat}}"
                                 FontSize="14"
                                 TextColor="#F2F7F7" />
                         </VerticalStackLayout>
@@ -93,7 +176,7 @@
                         <SearchBar
                             Text="{Binding SearchText}"
                             SearchCommand="{Binding SearchCommand}"
-                            Placeholder="Tìm kiếm món ăn, địa điểm..."
+                            Placeholder="{ext:Translate Main_SearchPlaceholder}"
                             BackgroundColor="Transparent"
                             CancelButtonColor="{StaticResource SecondaryContainer}"
                             Style="{StaticResource RoundedSearchBar}" />
@@ -148,14 +231,14 @@
                     <Grid ColumnDefinitions="*,Auto">
                         <VerticalStackLayout Spacing="{StaticResource Space2}">
                             <Label 
-                                Text="Nhất Định Phải Thử" 
+                                Text="{ext:Translate Main_MustTryTitle}" 
                                 TextColor="{StaticResource OnPrimaryContainer}"
                                 FontSize="22"
                                 FontAttributes="Bold"
                                 LineHeight="1.2"
                                 Margin="0" />
                             <Label 
-                                Text="Những món ăn đặc trưng không thể bỏ qua" 
+                                Text="{ext:Translate Main_MustTrySubtitle}" 
                                 FontSize="16"
                                 TextColor="{StaticResource OnSurfaceVariant}"
                                 Opacity="0.7" />
@@ -163,7 +246,7 @@
 
                         <Label
                             Grid.Column="1"
-                            Text="Xem tất cả"
+                            Text="{ext:Translate Main_ViewAll}"
                             Style="{StaticResource LinkText}"
                             FontSize="14"
                             FontAttributes="Bold"
@@ -244,14 +327,14 @@
                                             <HorizontalStackLayout Spacing="{StaticResource Space2}">
                                                 <Image Source="time.svg" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" />
                                                 <Label
-                                                    Text="{Binding Duration, StringFormat='{0} phút'}"
+                                                    Text="{Binding Duration, Converter={StaticResource DurationMinutesConverter}}"
                                                     FontSize="13"
                                                     TextColor="{StaticResource OnSurfaceVariant}"
                                                     Opacity="0.7" />
                                                 
                                                 <Image Source="audio.svg" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" />
                                                 <Label
-                                                    Text="{Binding AudioGuideCount, StringFormat='{0} audio'}"
+                                                    Text="{Binding AudioGuideCount, Converter={StaticResource AudioCountConverter}}"
                                                     FontSize="13"
                                                     TextColor="{StaticResource OnSurfaceVariant}"
                                                     Opacity="0.7" />
@@ -268,14 +351,14 @@
                 <VerticalStackLayout Spacing="{StaticResource Space4}">
                     <VerticalStackLayout Spacing="{StaticResource Space2}">
                         <Label 
-                            Text="Địa điểm phổ biến" 
+                            Text="{ext:Translate Main_PopularTitle}" 
                             TextColor="{StaticResource OnPrimaryContainer}"
                             FontSize="22"
                             FontAttributes="Bold"
                             LineHeight="1.2"
                             Margin="0" />
                         <Label 
-                            Text="Những địa điểm được yêu thích nhất bởi cộng đồng" 
+                            Text="{ext:Translate Main_PopularSubtitle}" 
                             FontSize="16"
                             TextColor="{StaticResource OnSurfaceVariant}"
                             Opacity="0.7" />
@@ -325,7 +408,7 @@
                                             <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
                                                 <Image Source="time.svg" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" />
                                                 <Label
-                                                    Text="{Binding Duration, StringFormat='{0} phút'}"
+                                                    Text="{Binding Duration, Converter={StaticResource DurationMinutesConverter}}"
                                                     FontSize="13"
                                                     TextColor="{StaticResource OnSurfaceVariant}"
                                                     Opacity="0.7"
@@ -335,7 +418,7 @@
                                             <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
                                                 <Image Source="audio.svg" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" />
                                                 <Label
-                                                    Text="{Binding AudioGuideCount, StringFormat='{0} audio guides'}"
+                                                    Text="{Binding AudioGuideCount, Converter={StaticResource AudioCountConverter}}"
                                                     FontSize="13"
                                                     TextColor="{StaticResource OnSurfaceVariant}"
                                                     Opacity="0.7"
@@ -381,5 +464,6 @@
             </VerticalStackLayout>
         </ScrollView>
     </RefreshView>
+    </Grid>
 </ContentPage>
 

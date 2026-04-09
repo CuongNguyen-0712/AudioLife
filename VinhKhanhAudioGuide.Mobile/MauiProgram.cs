@@ -1,6 +1,8 @@
 using CommunityToolkit.Maui;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Plugin.Maui.Audio;
+using ZXing.Net.Maui.Controls;
 #if ANDROID
 using Android.Widget;
 using Android.Graphics;
@@ -16,22 +18,23 @@ public static class MauiProgram
         builder
             .UseMauiApp<App>()
             .UseMauiCommunityToolkit()
-            .ConfigureFonts(fonts =>
-            {
-                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-               
-                fonts.AddFont("RobotoCondensed-SemiBold.ttf", "RobotoCondensedSemiBold");
-                fonts.AddFont("RobotoCondensed-Medium.ttf", "RobotoCondensedMedium");
-                fonts.AddFont("RobotoCondensed-Regular.ttf", "RobotoCondensedRegular");
+            .UseBarcodeReader();
 
-
-            });
+        builder.ConfigureFonts(fonts =>
+        {
+            fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+            fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+            fonts.AddFont("RobotoCondensed-SemiBold.ttf", "RobotoCondensedSemiBold");
+            fonts.AddFont("RobotoCondensed-Medium.ttf", "RobotoCondensedMedium");
+            fonts.AddFont("RobotoCondensed-Regular.ttf", "RobotoCondensedRegular");
+        });
 
         // Register services
         builder.Services.AddSingleton(AudioManager.Current);
+        builder.Services.AddSingleton<Services.ILocalDatabaseService, Services.LocalDatabaseService>();
         builder.Services.AddSingleton<Services.IAudioService, Services.AudioService>();
         builder.Services.AddSingleton<Services.INavigationService, Services.NavigationService>();
+        builder.Services.AddSingleton<Services.ILocalizationService, Services.LocalizationService>();
         builder.Services.AddSingleton<Services.ApiService>();
         builder.Services.AddSingleton<Services.IApiService, Services.RemoteApiService>();
         builder.Services.AddSingleton<Services.IGeolocationService, Services.GeolocationService>();
@@ -42,7 +45,6 @@ public static class MauiProgram
         builder.Services.AddTransient<ViewModels.LocationDetailViewModel>();
         builder.Services.AddTransient<ViewModels.MapViewModel>();
         builder.Services.AddTransient<ViewModels.ToursViewModel>();
-        builder.Services.AddTransient<ViewModels.ProfileViewModel>();
         builder.Services.AddTransient<ViewModels.SettingsViewModel>();
         builder.Services.AddTransient<ViewModels.FavoritesViewModel>();
         builder.Services.AddTransient<ViewModels.SearchViewModel>();
@@ -51,7 +53,6 @@ public static class MauiProgram
         builder.Services.AddTransient<ViewModels.HistoryViewModel>();
         builder.Services.AddTransient<ViewModels.HelpViewModel>();
         builder.Services.AddTransient<ViewModels.AboutViewModel>();
-        builder.Services.AddTransient<ViewModels.EditProfileViewModel>();
 
         // Register Pages
         builder.Services.AddTransient<Views.MainPage>();
@@ -59,7 +60,6 @@ public static class MauiProgram
         builder.Services.AddTransient<Views.LocationDetailPage>();
         builder.Services.AddTransient<Views.MapPage>();
         builder.Services.AddTransient<Views.ToursPage>();
-        builder.Services.AddTransient<Views.ProfilePage>();
         builder.Services.AddTransient<Views.SettingsPage>();
         builder.Services.AddTransient<Views.FavoritesPage>();
         builder.Services.AddTransient<Views.SearchPage>();
@@ -68,7 +68,7 @@ public static class MauiProgram
         builder.Services.AddTransient<Views.HistoryPage>();
         builder.Services.AddTransient<Views.HelpPage>();
         builder.Services.AddTransient<Views.AboutPage>();
-        builder.Services.AddTransient<Views.EditProfilePage>();
+        builder.Services.AddTransient<Views.LanguageSection>();
 
 #if DEBUG
         builder.Logging.AddDebug();
@@ -115,6 +115,8 @@ public static class MauiProgram
         });
 #endif
 
-        return builder.Build();
+        var app = builder.Build();
+        _ = app.Services.GetRequiredService<Services.ILocalizationService>();
+        return app;
     }
-}
+    }
