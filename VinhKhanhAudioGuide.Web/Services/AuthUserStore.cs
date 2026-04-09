@@ -1,42 +1,35 @@
-using Microsoft.Extensions.Options;
-using VinhKhanhAudioGuide.Web.Configuration;
-using VinhKhanhAudioGuide.Web.Data;
 using Microsoft.EntityFrameworkCore;
+using VinhKhanhAudioGuide.Web.Data;
 
 namespace VinhKhanhAudioGuide.Web.Services;
 
 public interface IAuthUserStore
 {
-    Task<AuthUserOption?> FindByCredentialsAsync(string username, string password, CancellationToken cancellationToken = default);
+    Task<AuthenticatedUser?> FindByCredentialsAsync(string username, string password, CancellationToken cancellationToken = default);
 }
 
 public class AuthUserStore : IAuthUserStore
 {
-    private readonly List<AuthUserOption> _users;
     private readonly AppDbContext _db;
 
-    public AuthUserStore(IOptions<AuthOptions> options, AppDbContext db)
+    public AuthUserStore(AppDbContext db)
     {
-        _users = options.Value.Users;
         _db = db;
     }
 
-    public async Task<AuthUserOption?> FindByCredentialsAsync(string username, string password, CancellationToken cancellationToken = default)
+    public async Task<AuthenticatedUser?> FindByCredentialsAsync(string username, string password, CancellationToken cancellationToken = default)
     {
-        var configuredUser = _users.FirstOrDefault(user =>
-            string.Equals(user.Username, username, StringComparison.OrdinalIgnoreCase)
-            && user.Password == password);
-
-        if (configuredUser is not null)
+        var normalizedUsername = username.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedUsername) || string.IsNullOrEmpty(password))
         {
-            return configuredUser;
+            return null;
         }
 
         var dbUser = await _db.AuthUserAccounts
             .AsNoTracking()
             .FirstOrDefaultAsync(user =>
                 user.IsActive
-                && user.Username == username
+                && user.Username == normalizedUsername
                 && user.Password == password,
                 cancellationToken);
 
@@ -45,20 +38,52 @@ public class AuthUserStore : IAuthUserStore
             return null;
         }
 
-        var locationIds = await _db.PoiAdminLocationAssignments
-            .AsNoTracking()
-            .Where(item => item.Username == dbUser.Username)
-            .Select(item => item.LocationId)
-            .Distinct()
-            .ToListAsync(cancellationToken);
+        var normalizedRole = NormalizeRole(dbUser.Role);
+        if (normalizedRole is null)
+        {
+            return null;
+        }
 
-        return new AuthUserOption
+        var locationIds = new List<string>();
+        if (RoleNames.IsPoiAdmin(normalizedRole))
+        {
+            locationIds = await _db.PoiAdminLocationAssignments
+                .AsNoTracking()
+                .Where(item => item.Username == dbUser.Username)
+                .Select(item => item.LocationId)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+        }
+
+        return new AuthenticatedUser
         {
             Username = dbUser.Username,
-            Password = dbUser.Password,
             DisplayName = dbUser.DisplayName,
-            Role = dbUser.Role,
+            Role = normalizedRole,
             LocationIds = locationIds
         };
     }
+
+    private static string? NormalizeRole(string? role)
+    {
+        if (RoleNames.IsSystemAdmin(role))
+        {
+            return RoleNames.SystemAdmin;
+        }
+
+        if (RoleNames.IsPoiAdmin(role))
+        {
+            return RoleNames.PoiAdmin;
+        }
+
+        return null;
+    }
+}
+
+public sealed class AuthenticatedUser
+{
+    public string Username { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
+    public List<string> LocationIds { get; set; } = new();
 }
