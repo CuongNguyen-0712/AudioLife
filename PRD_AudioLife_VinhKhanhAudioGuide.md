@@ -3,30 +3,6 @@ VinhKhanhAudioGuide
 
 PRD v1.0 — Full System Documentation
 
-Tổng Quan
-
-[Giới Thiệu](#overview) [Kiến Trúc Hệ Thống](#arch) [Class Diagram](#class) [ER Diagram](#er)
-
-Mobile App
-
-[Pages & MVVM](#mobile) [Audio Playback](#audio) [Geolocation](#geo)
-
-Web Backend
-
-[Mobile API Endpoints](#api) [TTS Service (Edge + Google)](#tts) [Cloudinary Storage](#cloudinary) [Auth & RBAC](#auth) [POI Change Request](#approval)
-
-Web Admin
-
-[SystemAdmin Pages](#admin) [PoiAdmin (Shop) Portal](#shop)
-
-Diagrams
-
-[State Diagrams](#state) [Sequence Diagrams](#seq) [Activity Diagrams](#act)
-
-Tổng Kết
-
-[Tech Stack](#stack) [Roadmap](#roadmap)
-
 PRD v1.0 — April 2026
 
 VinhKhanhAudioGuide  
@@ -60,8 +36,6 @@ TTS Languages
 2
 
 Admin Roles
-
-Chapter 00
 
 Giới Thiệu Sản Phẩm
 -------------------
@@ -97,27 +71,6 @@ Chapter 01
 Kiến Trúc Hệ Thống
 ------------------
 
-System Architecture — Component Diagram
-
-```mermaid
-graph TB subgraph "Mobile — .NET MAUI (MVVM + DI)" M\_VIEWS\["Views (17 pages)  
-XAML + Code-behind"\] M\_VM\["ViewModels (15)  
-CommunityToolkit.Mvvm"\] M\_SVC\["Services  
-ApiService, AudioService  
-GeolocationService"\] M\_DB\["SQLite  
-mobile\_local.db3"\] M\_NAV\["NavigationService  
-Shell routing"\] end subgraph "Web — ASP.NET Core 8" W\_RAZOR\["Razor Pages  
-Admin + Shop portals"\] W\_API\["Minimal API  
-/api/mobile/\*"\] W\_SVC\["Services  
-TTS, Cloudinary  
-ChangeRequest, Auth"\] W\_EF\["EF Core  
-AppDbContext"\] end subgraph "Infrastructure" SQLSRV\[(SQL Server  
-AudioDB)\] CLOUD\["Cloudinary CDN  
-Audio MP3 storage"\] EDGE\["Edge TTS  
-Neural Voices"\] GTTS\["Google TTS  
-Fallback"\] end M\_VIEWS --> M\_VM M\_VM --> M\_SVC M\_SVC --> M\_DB M\_SVC -->|HTTP| W\_API W\_RAZOR --> W\_SVC W\_RAZOR --> W\_EF W\_API --> W\_EF W\_SVC --> CLOUD W\_SVC --> EDGE W\_SVC -.->|fallback| GTTS W\_EF --> SQLSRV style M\_VIEWS fill:#1565C0,color:#fff style W\_RAZOR fill:#7c3aed,color:#fff style W\_API fill:#16a34a,color:#fff style CLOUD fill:#e65100,color:#fff style EDGE fill:#00838f,color:#fff
-```
-
 **Kiến trúc:** Mobile dùng MVVM + DI (CommunityToolkit.Mvvm). Web dùng Razor Pages + Minimal API. Database: SQL Server + EF Core (code-first migrations). Audio storage: Cloudinary CDN với on-the-fly MP3 transformation. TTS: Edge Neural Voices (vi, en, zh, ja, ko, fr) với Google TTS fallback khi Edge trả về 403.
 
 Class Diagram
@@ -125,22 +78,10 @@ Class Diagram
 
 ![Class Diagram](dbdiagram.jpg)
 
-Domain Model — Class Diagram
-
-```mermaid
-classDiagram class Location { +string Id +string Name +string Description +string ImageUrl +string Address +double Latitude +double Longitude +int Duration +string CategoryId +ICollection AudioGuides +ICollection TourLocations +ICollection Feedbacks } class AudioGuide { +string Id +string Title +string Description +string AudioUrl +string CloudinaryAudioUrl +string CloudinaryPublicId +string TranscriptText +int Duration +string LocationId +string Language +bool GeneratedFromTts +string TtsSourceText +ICollection ScriptSegments +ICollection ListeningHistories } class AudioScriptSegment { +int Id +string AudioGuideId +int StartTimeSeconds +int EndTimeSeconds +string ScriptText } class Category { +string Id +string Name +string Icon +string Description +ICollection Locations } class Tour { +string Id +string Name +string Description +string ImageUrl +int Duration +decimal Price +bool IsFeatured +ICollection TourLocations } class TourLocation { +string TourId +string LocationId +int SortOrder } class AppUser { +string Id +string ScannedQrCode +DateTime CreatedAt +bool IsActive } class Feedback { +int Id +string UserId +string LocationId +int Rating +string Comment +DateTime CreatedAt } class ListeningHistory { +int Id +string UserId +string AudioGuideId +int ListenedSeconds +bool IsCompleted +DateTime LastListenedAt } class AuthUserAccount { +int Id +string Username +string Password +string DisplayName +string Role +bool IsActive } class PoiChangeRequest { +Guid Id +string SubmittedByUsername +string LocationId +string Topic +string Title +string Details +PoiChangeTargetType TargetType +string TargetEntityId +string ChangeSetJson +PoiChangeRequestStatus Status +string ReviewNote } class PoiAdminLocationAssignment { +int Id +string Username +string LocationId } Location "1" --> "\*" AudioGuide : has Location "1" --> "\*" Feedback : receives AudioGuide "1" --> "\*" AudioScriptSegment : has segments AudioGuide "1" --> "\*" ListeningHistory : tracked Category "1" --> "\*" Location : contains Tour "\*" --> "\*" Location : via TourLocation AppUser "1" --> "\*" ListeningHistory : listens AppUser "1" --> "\*" Feedback : writes AuthUserAccount "1" --> "\*" PoiChangeRequest : submits PoiAdminLocationAssignment "\*" --> "1" Location : assigned
-```
-
 ER Diagram — SQL Server
 -----------------------
 
 ![ER Diagram](ERD.jpg)
-
-Database ER Diagram — 12 Tables
-
-```mermaid
-erDiagram Categories { string Id PK string Name string Icon string Description } Locations { string Id PK string Name string Description string ImageUrl string Address double Latitude double Longitude int Duration string CategoryId FK } AudioGuides { string Id PK string Title string Description string AudioUrl string CloudinaryAudioUrl string CloudinaryPublicId string TranscriptText int Duration string LocationId FK string Language bool GeneratedFromTts string TtsSourceText } AudioScriptSegments { int Id PK string AudioGuideId FK int StartTimeSeconds int EndTimeSeconds string ScriptText } Tours { string Id PK string Name string Description string ImageUrl int Duration decimal Price bool IsFeatured } TourLocations { string TourId FK string LocationId FK int SortOrder } AppUsers { string Id PK string ScannedQrCode datetime CreatedAt bool IsActive } Feedbacks { int Id PK string UserId FK string LocationId FK int Rating string Comment } ListeningHistories { int Id PK string UserId FK string AudioGuideId FK int ListenedSeconds bool IsCompleted } AuthUserAccounts { int Id PK string Username string Password string DisplayName string Role bool IsActive } PoiChangeRequests { guid Id PK string SubmittedByUsername string LocationId string TargetEntityId string ChangeSetJson int Status string ReviewNote } PoiAdminLocationAssignments { int Id PK string Username string LocationId } Categories ||--o{ Locations : "contains" Locations ||--o{ AudioGuides : "has" AudioGuides ||--o{ AudioScriptSegments : "has" AudioGuides ||--o{ ListeningHistories : "tracked" AppUsers ||--o{ ListeningHistories : "listens" AppUsers ||--o{ Feedbacks : "writes" Locations ||--o{ Feedbacks : "receives" Tours }o--o{ Locations : "via TourLocations" Locations ||--o{ PoiAdminLocationAssignments : "assigned"
-```
 
 Chapter 02
 
@@ -386,8 +327,6 @@ Cloudinary Audio Storage
 *   `CloudinaryAudioUrl` — URL gốc Cloudinary
 *   `CloudinaryPublicId` — ID để manage/delete
 
-Chapter 08
-
 Authentication & RBAC
 ---------------------
 
@@ -412,8 +351,6 @@ Full access: Admin, Categories, Locations, Tours, AudioGuides
 /Shop/\*
 
 **PoiAdmin Assignment:** Mỗi PoiAdmin được gán một số LocationIds. UserAccessService kiểm tra `CanAccessLocation()` trước mỗi thao tác. SystemAdmin có thể chuyển/gán lại locations giữa các PoiAdmin.
-
-Chapter 09
 
 POI Change Request Workflow
 ---------------------------
@@ -502,103 +439,6 @@ Thống kê nghe audio cho locations của mình.
 ### Shop/Reviews
 
 Xem feedback/reviews của du khách cho locations.
-
-State Diagrams
---------------
-
-Audio Playback — State Machine
-
-```mermaid
-stateDiagram-v2 \[\*\] --> None None --> Loading : PlayAsync(url) Loading --> Playing : Player ready Loading --> Error : Load failed Playing --> Paused : PauseAsync() Paused --> Playing : ResumeAsync() Playing --> Stopped : StopAsync() Paused --> Stopped : StopAsync() Playing --> Completed : PlaybackEnded Completed --> None : Reset Stopped --> None : Reset Error --> None : Reset note right of Playing Position timer 500ms Transcript sync per segment Volume control 0.0-1.0 end note
-```
-
-POI Change Request — State Machine
-
-```mermaid
-stateDiagram-v2 \[\*\] --> Pending : PoiAdmin submits Pending --> InReview : Admin starts review InReview --> Approved : Admin approves InReview --> Rejected : Admin rejects Approved --> Applied : TryApplyChangeSetAsync() Applied --> \[\*\] : Done note right of Approved Auto parse ChangeSetJson Apply field-by-field to Location or AudioGuide end note
-```
-
-TTS Generation — State Machine
-
-```mermaid
-stateDiagram-v2 \[\*\] --> TextInput : Admin enters text TextInput --> EdgeTTS : SynthesizeAsync() EdgeTTS --> MP3Generated : Success EdgeTTS --> GoogleFallback : 403 Error GoogleFallback --> MP3Generated : Chunks merged GoogleFallback --> Failed : Also rejected MP3Generated --> CloudinaryUpload : Upload MP3 CloudinaryUpload --> Saved : AudioGuide updated Saved --> \[\*\] Failed --> \[\*\] : Manual upload needed
-```
-
-Geolocation Tracking — State Machine
-
-```mermaid
-stateDiagram-v2 \[\*\] --> Idle Idle --> RequestPermission : StartTrackingAsync() RequestPermission --> Tracking : Permission granted RequestPermission --> Idle : Denied Tracking --> CheckNearby : GPS position received CheckNearby --> Notify : Location within 100m CheckNearby --> Tracking : No nearby location Notify --> Tracking : Wait 60s next cycle Tracking --> Idle : StopTracking()
-```
-
-<details>
-<summary><strong>Sequence Diagrams (nhan de mo)</strong></summary>
-
-Sequence Diagrams
------------------
-
-Audio Playback Flow
-
-```mermaid
-sequenceDiagram participant U as User participant VP as AudioPlayerPage participant VM as AudioPlayerVM participant SVC as AudioService participant PLG as Plugin.Maui.Audio participant API as Web API U->>VP: Tap Play on AudioGuide VP->>VM: PlayCommand.Execute() VM->>API: GET /api/mobile/audio/{id} API-->>VM: AudioGuide + ScriptSegments VM->>SVC: PlayAsync(audioUrl) SVC->>SVC: LoadPlayerAsync (HTTP download) SVC->>PLG: CreatePlayer(stream) PLG-->>SVC: IAudioPlayer SVC->>PLG: player.Play() SVC->>SVC: StartPositionTimer (500ms) loop Every 500ms SVC->>SVC: Update CurrentPosition SVC-->>VM: PositionChanged event VM->>VM: Sync transcript segment VM-->>VP: UI update end PLG-->>SVC: PlaybackEnded SVC-->>VM: StateChanged(Completed) VM->>VM: Save ListeningHistory
-```
-
-Geolocation Nearby Detection
-
-```mermaid
-sequenceDiagram participant GEO as GeolocationService participant GPS as Device GPS participant API as ApiService participant APP as MapViewModel GEO->>GPS: GetLocationAsync (accuracy: Medium) GPS-->>GEO: {Latitude, Longitude} GEO->>API: GetNearbyLocationsAsync(lat, lng, 0.1km) API-->>GEO: Nearby locations list alt Location found within 100m GEO->>GEO: Check \_lastNearestLocationId alt New location (not same as last) GEO-->>APP: NearbyLocationDetected event GEO->>GEO: \_lastNearestLocationId = newId APP->>APP: Show notification / auto-play end end Note over GEO: Wait 60 seconds GEO->>GPS: Next tracking cycle
-```
-
-TTS Generation + Cloudinary Upload
-
-```mermaid
-sequenceDiagram participant A as Admin participant WEB as Razor Page participant TTS as EdgeTTSService participant EDGE as Edge Neural API participant GTTS as Google TTS participant CLD as Cloudinary participant DB as SQL Server A->>WEB: Enter TTS text + select language WEB->>TTS: SynthesizeAsync(text, "vi") TTS->>TTS: GetVoiceForLanguage("vi") = HoaiMyNeural TTS->>EDGE: Communicate(text, voice) alt Edge Success EDGE-->>TTS: MP3 bytes (stream) else Edge 403 Error TTS->>GTTS: SynthesizeWithGoogleFallbackAsync() GTTS->>GTTS: SplitTextForGoogleTts(180 chars) loop Each chunk GTTS->>GTTS: GET translate.google.com/translate\_tts GTTS->>GTTS: StripId3Header + merge end GTTS-->>TTS: Merged MP3 bytes end WEB->>CLD: UploadAudioAsync(mp3Stream) CLD->>CLD: Upload as video + f\_mp3 transform CLD-->>WEB: {AudioUrl, CloudinaryPublicId} WEB->>DB: UPDATE AudioGuides SET AudioUrl, GeneratedFromTts=true WEB-->>A: Success notification
-```
-
-POI Change Request — Submit + Review
-
-```mermaid
-sequenceDiagram participant POI as PoiAdmin participant SHOP as Shop Pages participant SVC as ChangeRequestService participant DB as SQL Server participant ADM as SystemAdmin participant ADMIN as Admin Pages POI->>SHOP: Edit location / audio guide SHOP->>SHOP: Build ChangeSetJson (field diffs) SHOP->>SVC: SubmitAsync(PoiChangeRequest) SVC->>DB: INSERT PoiChangeRequests (status=Pending) SVC-->>SHOP: Request submitted SHOP-->>POI: "Chờ admin duyệt" ADM->>ADMIN: Open ChangeRequests page ADMIN->>SVC: GetAllAsync() SVC->>DB: SELECT \* ORDER BY SubmittedAtUtc DESC DB-->>ADMIN: List requests ADM->>ADMIN: Approve request ADMIN->>SVC: TryUpdateStatusAsync(id, Approved, "admin") SVC->>SVC: TryApplyChangeSetAsync() alt TargetType = Location SVC->>DB: UPDATE Locations SET field=value... else TargetType = AudioGuide alt Action = create-audio-guide SVC->>DB: INSERT AudioGuides else Update existing SVC->>DB: UPDATE AudioGuides SET field=value... end end SVC->>DB: UPDATE PoiChangeRequests SET Status=Approved SVC-->>ADMIN: "Đã duyệt và áp dụng!"
-```
-
-User Login + Authorization
-
-```mermaid
-sequenceDiagram participant U as User participant LP as Login Page participant AUTH as AuthUserStore participant CFG as appsettings.json participant DB as SQL Server participant CK as Cookie U->>LP: Enter username + password LP->>AUTH: FindByCredentialsAsync(user, pass) AUTH->>CFG: Check configured users list alt Found in config CFG-->>AUTH: AuthUserOption (role, locationIds) else Not in config AUTH->>DB: SELECT FROM AuthUserAccounts WHERE Username AND Password alt Found in DB DB-->>AUTH: AuthUserAccount AUTH->>DB: SELECT LocationIds FROM PoiAdminLocationAssignments DB-->>AUTH: Assigned locationIds else Not found AUTH-->>LP: null (login failed) LP-->>U: "Sai tài khoản" end end AUTH-->>LP: AuthUserOption LP->>CK: SignIn (Claims: role, username, owned\_locations) CK-->>U: Redirect to Admin or Shop based on role
-```
-
-SystemAdmin — CRUD Location + AudioGuide
-
-```mermaid
-sequenceDiagram participant A as SystemAdmin participant WEB as Razor Pages participant EF as EF Core participant DB as SQL Server participant TTS as EdgeTTSService participant CLD as Cloudinary A->>WEB: Create new Location WEB->>EF: db.Locations.Add(location) EF->>DB: INSERT INTO Locations DB-->>WEB: Success A->>WEB: Create AudioGuide for location A->>WEB: Option 1: Upload audio file WEB->>CLD: UploadAudioAsync(file) CLD-->>WEB: {AudioUrl, CloudinaryPublicId} WEB->>EF: db.AudioGuides.Add(guide) EF->>DB: INSERT INTO AudioGuides A->>WEB: Option 2: Generate from TTS WEB->>TTS: SynthesizeAsync(text, language) TTS-->>WEB: MP3 bytes WEB->>CLD: UploadAudioAsync(mp3Stream) CLD-->>WEB: {AudioUrl, CloudinaryPublicId} WEB->>EF: Update AudioGuide (GeneratedFromTts=true) EF->>DB: UPDATE AudioGuides
-```
-
-</details>
-
-<details>
-<summary><strong>Activity Diagrams (nhan de mo)</strong></summary>
-
-Activity Diagrams
------------------
-
-Audio Guide Creation — Full Pipeline
-
-```mermaid
-flowchart TD A(\[Admin opens AudioGuide Create\]) --> B{Upload or TTS?} B -->|Upload file| C\[Validate file format\] C --> D\[CloudinaryAudioStorageService.Upload\] D --> E\[Transform URL: f\_mp3\] B -->|Generate TTS| F\[Enter text + select language\] F --> G\[EdgeTTSService.SynthesizeAsync\] G --> H{Edge success?} H -->|Yes| I\[MP3 bytes ready\] H -->|No 403| J\[Google TTS Fallback\] J --> K\[Split text 180 chars\] K --> L\[Merge chunks + strip ID3\] L --> I I --> D E --> M\[Save to DB: AudioUrl, CloudinaryPublicId\] M --> N{Add ScriptSegments?} N -->|Yes| O\[Add timestamp + text segments\] N -->|No| P(\[AudioGuide created\]) O --> P style A fill:#7c3aed,color:#fff style P fill:#16a34a,color:#fff
-```
-
-POI Change Request — Apply Logic
-
-```mermaid
-flowchart TD A(\[TryApplyChangeSetAsync\]) --> B\[Parse ChangeSetJson\] B --> C{TargetType?} C -->|Location| D\[Find Location by TargetEntityId\] D --> E{Location exists?} E -->|No| FAIL(\[Return false\]) E -->|Yes| F\[Apply field changes\] F --> G\[Name, Description, Address\] F --> H\[ImageUrl, Lat, Lng, Duration\] G --> OK(\[Return true\]) H --> OK C -->|AudioGuide| I{Action = create?} I -->|Yes| J\[Verify LocationId exists\] J --> K\[Create new AudioGuide\] K --> L\[Apply fields from ChangeSet\] L --> OK I -->|No| M\[Find existing AudioGuide\] M --> N{Exists and same LocationId?} N -->|No| FAIL N -->|Yes| O\[Apply field changes\] O --> P\[Title, Description, AudioUrl\] O --> Q\[Cloudinary fields, Language, TTS\] P --> OK Q --> OK style A fill:#7c3aed,color:#fff style OK fill:#16a34a,color:#fff style FAIL fill:#dc2626,color:#fff
-```
-
-Geolocation Nearby Detection Loop
-
-```mermaid
-flowchart TD A(\[StartTrackingAsync\]) --> B{Permission granted?} B -->|No| Z(\[Stop\]) B -->|Yes| C\[Set \_isTracking = true\] C --> D\[GetLocationAsync GPS\] D --> E{Got position?} E -->|No| F\[Wait 60s retry\] F --> D E -->|Yes| G\[CheckNearbyLocationsAsync\] G --> H\[GetNearbyLocationsAsync lat,lng,0.1km\] H --> I{Found nearby?} I -->|No| F I -->|Yes| J{Same as lastNearestId?} J -->|Yes| F J -->|No| K\[Fire NearbyLocationDetected\] K --> L\[Update \_lastNearestLocationId\] L --> F style A fill:#00838f,color:#fff style K fill:#1565C0,color:#fff style Z fill:#64748b,color:#fff
-```
-
-</details>
 
 Summary
 

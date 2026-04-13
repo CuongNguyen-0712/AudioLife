@@ -5,7 +5,8 @@
     ViewData["ActivePage"] = "ShopAnalytics";
 
     var avgMinutes = Model.TotalAudios == 0 ? 0 : Math.Round((double)Model.TotalAudioMinutes / Model.TotalAudios, 1);
-    var topListen = Model.TopAudios.Any() ? Model.TopAudios.Max(x => x.EstimatedListens) : 0;
+    var topListenSeconds = Model.TopAudios.Any() ? Model.TopAudios.Max(x => x.ListenSeconds) : 0;
+    var totalListenMinutes = Math.Round(Model.TotalListenSeconds / 60.0, 1);
 }
 
 <div class="dashboard-hero mb-4">
@@ -38,12 +39,16 @@
     <div class="metric-box"><div class="k">Tổng audio</div><div class="v">@Model.TotalAudios</div></div>
     <div class="metric-box"><div class="k">Tổng phút nghe</div><div class="v">@Model.TotalAudioMinutes</div></div>
     <div class="metric-box"><div class="k">Trung bình phút / audio</div><div class="v">@avgMinutes</div></div>
+    <div class="metric-box"><div class="k">Bản ghi lịch sử nghe</div><div class="v">@Model.TotalHistoryRecords</div></div>
+    <div class="metric-box"><div class="k">Số audio hoàn thành</div><div class="v">@Model.TotalCompletedRecords</div></div>
+    <div class="metric-box"><div class="k">Tổng phút nghe thực tế</div><div class="v">@totalListenMinutes</div></div>
+    <div class="metric-box"><div class="k">Tiến độ nghe trung bình</div><div class="v">@Model.AverageProgressPercent%</div></div>
 </div>
 
 <div class="row g-4">
     <div class="col-xl-7">
         <div class="shop-card card-v2 h-100">
-            <div class="shop-card-header">Top audio theo lượt nghe ước tính</div>
+            <div class="shop-card-header">Top audio theo thời lượng nghe thực tế</div>
             <div class="shop-card-body">
                 <div class="chart-wrap"><canvas id="shopTopAudioChart"></canvas></div>
             </div>
@@ -62,13 +67,14 @@
                     <div class="progress-list">
                         @foreach (var item in Model.TopAudios)
                         {
-                            var percent = topListen == 0 ? 0 : Math.Round((double)item.EstimatedListens / topListen * 100, 0);
+                            var percent = topListenSeconds == 0 ? 0 : Math.Round((double)item.ListenSeconds / topListenSeconds * 100, 0);
                             <div class="progress-item">
                                 <div class="progress-head">
                                     <span>@item.Title</span>
-                                    <span>@item.EstimatedListens lượt</span>
+                                    <span>@Math.Round(item.ListenSeconds / 60.0, 1) phút nghe</span>
                                 </div>
                                 <div class="progress-track"><div class="progress-fill" style="width:@percent%"></div></div>
+                                <div class="small text-muted mt-1">@item.ListenCount bản ghi · @item.CompletionRatePercent% hoàn thành trung bình</div>
                             </div>
                         }
                     </div>
@@ -82,7 +88,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const topAudioLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopAudios.Select(x => x.Title)));
-        const topAudioValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopAudios.Select(x => x.EstimatedListens)));
+        const topAudioValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopAudios.Select(x => x.ListenSeconds)));
 
         const topAudioCtx = document.getElementById('shopTopAudioChart');
         if (topAudioCtx) {
@@ -91,7 +97,7 @@
                 data: {
                     labels: topAudioLabels,
                     datasets: [{
-                        label: 'Lượt nghe ước tính',
+                        label: 'Giây nghe',
                         data: topAudioValues,
                         borderRadius: 8,
                         backgroundColor: '#0ea5e9'

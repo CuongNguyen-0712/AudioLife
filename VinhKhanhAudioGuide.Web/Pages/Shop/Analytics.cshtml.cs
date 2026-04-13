@@ -20,6 +20,10 @@ public class AnalyticsModel : PageModel
     public string SelectedLocationName { get; set; } = string.Empty;
     public int TotalAudios { get; set; }
     public int TotalAudioMinutes { get; set; }
+    public int TotalHistoryRecords { get; set; }
+    public int TotalCompletedRecords { get; set; }
+    public int TotalListenSeconds { get; set; }
+    public double AverageProgressPercent { get; set; }
     public List<AudioRankItem> TopAudios { get; set; } = new();
 
     [BindProperty(SupportsGet = true)]
@@ -54,16 +58,65 @@ public class AnalyticsModel : PageModel
         TotalAudios = audios.Count;
         TotalAudioMinutes = audios.Sum(audio => audio.Duration);
 
+        var histories = await _db.ListeningHistories
+            .AsNoTracking()
+            .Where(item => item.LocationId == LocationId)
+            .ToListAsync();
+
+        TotalHistoryRecords = histories.Count;
+        TotalCompletedRecords = histories.Count(item => item.IsCompleted);
+        TotalListenSeconds = histories.Sum(item => item.ListenedSeconds);
+        AverageProgressPercent = histories.Count == 0
+            ? 0
+            : Math.Round(histories.Average(item => (double)item.Progress) * 100, 1);
+
+        var historyByAudio = histories
+            .GroupBy(item => item.AudioGuideId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => new
+                {
+                    ListenSeconds = group.Sum(item => item.ListenedSeconds),
+                    ListenCount = group.Count(),
+                    CompletionRate = group.Average(item => (double)item.Progress) * 100
+                },
+                StringComparer.OrdinalIgnoreCase);
+
         TopAudios = audios
-            .Select((audio, index) => new AudioRankItem
+            .Select(audio =>
             {
-                Title = audio.Title,
-                Duration = audio.Duration,
-                EstimatedListens = 120 + (index * 37)
+                historyByAudio.TryGetValue(audio.Id, out var usage);
+
+                return new AudioRankItem
+                {
+                    Title = audio.Title,
+                    Duration = audio.Duration,
+                    ListenSeconds = usage?.ListenSeconds ?? 0,
+                    ListenCount = usage?.ListenCount ?? 0,
+                    CompletionRatePercent = Math.Round(usage?.CompletionRate ?? 0, 1)
+                };
             })
-            .OrderByDescending(item => item.EstimatedListens)
+            .OrderByDescending(item => item.ListenSeconds)
+            .ThenByDescending(item => item.ListenCount)
+            .ThenBy(item => item.Title)
             .Take(5)
             .ToList();
+
+        if (TopAudios.All(item => item.ListenSeconds == 0))
+        {
+            TopAudios = audios
+                .Select(audio => new AudioRankItem
+                {
+                    Title = audio.Title,
+                    Duration = audio.Duration,
+                    ListenSeconds = 0,
+                    ListenCount = 0,
+                    CompletionRatePercent = 0
+                })
+                .OrderBy(item => item.Title)
+                .Take(5)
+                .ToList();
+        }
 
         return Page();
     }
@@ -72,6 +125,8 @@ public class AnalyticsModel : PageModel
     {
         public string Title { get; set; } = string.Empty;
         public int Duration { get; set; }
-        public int EstimatedListens { get; set; }
+        public int ListenSeconds { get; set; }
+        public int ListenCount { get; set; }
+        public double CompletionRatePercent { get; set; }
     }
 }

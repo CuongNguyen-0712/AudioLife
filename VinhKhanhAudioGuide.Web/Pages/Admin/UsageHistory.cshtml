@@ -1,0 +1,151 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Admin.UsageHistoryModel
+@{
+    ViewData["Title"] = "Lịch sử sử dụng";
+    ViewData["ActivePage"] = "AdminUsageHistory";
+
+    var totalHours = Math.Round(Model.TotalListenedSeconds / 3600.0, 1);
+}
+
+<div class="dashboard-hero mb-4">
+    <div>
+        <p class="hero-kicker"><i class="fa-solid fa-clock-rotate-left"></i> Theo dõi sử dụng</p>
+        <h1 class="hero-title">Lịch sử sử dụng audio</h1>
+        <p class="hero-subtitle">Quản trị lịch sử nghe, mức hoàn thành và hoạt động gần nhất theo POI.</p>
+    </div>
+    <span class="hero-badge"><i class="fa-solid fa-chart-line"></i> Dữ liệu thực tế</span>
+</div>
+
+<div class="admin-card card-v2 mb-4">
+    <div class="p-3 p-md-4">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-5">
+                <label for="locationId" class="form-label">POI</label>
+                <select id="locationId" name="locationId" class="form-select">
+                    <option value="">Tất cả POI</option>
+                    @foreach (var location in Model.Locations)
+                    {
+                        <option value="@location.Id" selected="@(location.Id == Model.LocationId)">@location.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="status" class="form-label">Trạng thái nghe</label>
+                <select id="status" name="status" class="form-select">
+                    <option value="all" selected="@(Model.Status == "all")">Tất cả</option>
+                    <option value="completed" selected="@(Model.Status == "completed")">Đã hoàn thành</option>
+                    <option value="incomplete" selected="@(Model.Status == "incomplete")">Chưa hoàn thành</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button class="btn-admin btn-admin-primary w-100" type="submit">Lọc dữ liệu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-xl-2"><div class="stat-card stat-card-v2"><div class="stat-icon bg-primary"><i class="fas fa-list"></i></div><div><div class="stat-value">@Model.TotalRecords</div><div class="stat-label">Bản ghi</div></div></div></div>
+    <div class="col-sm-6 col-xl-2"><div class="stat-card stat-card-v2"><div class="stat-icon bg-success"><i class="fas fa-check"></i></div><div><div class="stat-value">@Model.CompletedRecords</div><div class="stat-label">Hoàn thành</div></div></div></div>
+    <div class="col-sm-6 col-xl-2"><div class="stat-card stat-card-v2"><div class="stat-icon bg-warning"><i class="fas fa-hourglass-half"></i></div><div><div class="stat-value">@Model.IncompleteRecords</div><div class="stat-label">Chưa xong</div></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="stat-card stat-card-v2"><div class="stat-icon bg-info"><i class="fas fa-stopwatch"></i></div><div><div class="stat-value">@totalHours h</div><div class="stat-label">Tổng thời lượng nghe</div></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="stat-card stat-card-v2"><div class="stat-icon bg-secondary"><i class="fas fa-percent"></i></div><div><div class="stat-value">@Model.AverageProgressPercent%</div><div class="stat-label">Tiến độ trung bình</div></div></div></div>
+</div>
+
+<div class="admin-card card-v2 mb-4">
+    <div class="card-header"><span><i class="fas fa-ranking-star me-2"></i>Top POI theo thời lượng nghe</span></div>
+    <div class="table-responsive">
+        <table class="admin-table table-v2 mb-0">
+            <thead>
+                <tr>
+                    <th>POI</th>
+                    <th class="text-end">Bản ghi</th>
+                    <th class="text-end">Hoàn thành</th>
+                    <th class="text-end">Tiến độ TB</th>
+                    <th class="text-end">Giây nghe</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.TopLocations.Any())
+                {
+                    foreach (var location in Model.TopLocations)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@location.LocationName</strong>
+                                <div class="small text-muted">@location.LocationId</div>
+                            </td>
+                            <td class="text-end">@location.RecordCount</td>
+                            <td class="text-end">@location.CompletedCount</td>
+                            <td class="text-end">@location.AvgProgressPercent%</td>
+                            <td class="text-end">@location.ListenSeconds</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="5" class="text-center text-muted py-4">Chưa có dữ liệu lịch sử nghe.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="admin-card card-v2">
+    <div class="card-header">
+        <span><i class="fas fa-clock me-2"></i>Hoạt động gần nhất</span>
+        @if (Model.LastActivityUtc.HasValue)
+        {
+            <span class="small text-muted">Cập nhật gần nhất: @Model.LastActivityUtc.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</span>
+        }
+    </div>
+    <div class="table-responsive">
+        <table class="admin-table table-v2 mb-0">
+            <thead>
+                <tr>
+                    <th>Audio</th>
+                    <th>POI</th>
+                    <th class="text-end">Tiến độ</th>
+                    <th class="text-end">Giây nghe</th>
+                    <th>Trạng thái</th>
+                    <th>Thời gian</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.RecentItems.Any())
+                {
+                    foreach (var item in Model.RecentItems)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@item.AudioTitle</strong>
+                                <div class="small text-muted">@item.AudioGuideId</div>
+                            </td>
+                            <td>
+                                @item.LocationName
+                                <div class="small text-muted">@item.LocationId</div>
+                            </td>
+                            <td class="text-end">@item.ProgressPercent%</td>
+                            <td class="text-end">@item.ListenedSeconds</td>
+                            <td>
+                                @if (item.IsCompleted)
+                                {
+                                    <span class="badge bg-success">Hoàn thành</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Đang nghe dở</span>
+                                }
+                            </td>
+                            <td>@item.LastListenedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6" class="text-center text-muted py-4">Không có bản ghi nào phù hợp bộ lọc.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -4,6 +4,8 @@ using VinhKhanhAudioGuide.Web.Models;
 
 public static class SampleData
 {
+    private const string LocalUserId = "local_user";
+    private static readonly DateTime SeedBaseUtc = new(2026, 4, 13, 7, 0, 0, DateTimeKind.Utc);
 
     public static List<Category> GetCategories()
     {
@@ -19,7 +21,7 @@ public static class SampleData
 
     public static List<Location> GetLocations()
     {
-        return new List<Location>
+        var locations = new List<Location>
         {
             // ===== ĐẶC SẢN (1) =====
             new()
@@ -209,6 +211,9 @@ public static class SampleData
                 }
             }
         };
+
+        NormalizeAudioGuideSeedData(locations);
+        return locations;
     }
 
     public static List<Tour> GetTours()
@@ -273,7 +278,7 @@ public static class SampleData
                 DisplayName = "Admin Hệ Thống",
                 Role = "SystemAdmin",
                 IsActive = true,
-                CreatedAtUtc = DateTime.UtcNow
+                CreatedAtUtc = SeedBaseUtc
             },
             new()
             {
@@ -282,7 +287,7 @@ public static class SampleData
                 DisplayName = "Admin POI - Khu Trung Tâm",
                 Role = "PoiAdmin",
                 IsActive = true,
-                CreatedAtUtc = DateTime.UtcNow
+                CreatedAtUtc = SeedBaseUtc.AddMinutes(1)
             },
             new()
             {
@@ -291,7 +296,7 @@ public static class SampleData
                 DisplayName = "Admin POI - Khu Mở Rộng",
                 Role = "PoiAdmin",
                 IsActive = true,
-                CreatedAtUtc = DateTime.UtcNow
+                CreatedAtUtc = SeedBaseUtc.AddMinutes(2)
             }
         };
     }
@@ -311,5 +316,195 @@ public static class SampleData
             new() { Username = "admin.poi.02", LocationId = "loc_009" },
             new() { Username = "admin.poi.02", LocationId = "loc_010" }
         };
+    }
+
+    public static List<PoiChangeRequest> GetSamplePoiChangeRequests()
+    {
+        return new List<PoiChangeRequest>
+        {
+            new()
+            {
+                Id = Guid.Parse("a4ac4b80-06fe-4ba4-8ee5-f9ce15d7ae7f"),
+                SubmittedByUsername = "admin.poi.01",
+                SubmittedByName = "Admin POI - Khu Trung Tâm",
+                LocationId = "loc_003",
+                LocationName = "Bánh tráng trộn",
+                Topic = "Nội dung audio",
+                Title = "Cập nhật transcript tiếng Việt",
+                Details = "Đề xuất làm rõ hơn phần giới thiệu món và lịch sử quán.",
+                TargetType = PoiChangeTargetType.AudioGuide,
+                TargetEntityId = "ag_003_1",
+                ChangeSetJson = "{\"Title\":\"Giới thiệu quán\",\"TranscriptText\":\"Nội dung mới\"}",
+                Status = PoiChangeRequestStatus.Pending,
+                SubmittedAtUtc = SeedBaseUtc.AddDays(-2)
+            },
+            new()
+            {
+                Id = Guid.Parse("fdfb3d17-9d5f-47f7-a9cf-bccd1e3f4fca"),
+                SubmittedByUsername = "admin.poi.02",
+                SubmittedByName = "Admin POI - Khu Mở Rộng",
+                LocationId = "loc_008",
+                LocationName = "Tôm nướng muối ớt",
+                Topic = "Thông tin địa điểm",
+                Title = "Cập nhật mô tả địa điểm",
+                Details = "Bổ sung thông tin giờ mở cửa và lưu ý món đặc trưng.",
+                TargetType = PoiChangeTargetType.Location,
+                TargetEntityId = "loc_008",
+                ChangeSetJson = "{\"Description\":\"Mô tả đã cập nhật\"}",
+                Status = PoiChangeRequestStatus.Approved,
+                SubmittedAtUtc = SeedBaseUtc.AddDays(-5),
+                UpdatedAtUtc = SeedBaseUtc.AddDays(-4),
+                UpdatedBy = "admin.system",
+                ReviewNote = "Nội dung hợp lệ, đã duyệt."
+            }
+        };
+    }
+
+    public static List<ListeningHistorySeed> GetListeningHistorySeeds()
+    {
+        return new List<ListeningHistorySeed>
+        {
+            new()
+            {
+                Id = "h1",
+                AudioGuideId = "ag_001_1",
+                LocationId = "loc_001",
+                AudioTitle = "Giới thiệu quán",
+                LocationName = "Bún mắm Vĩnh Khánh",
+                LocationImageUrl = "/images/locations/bun_mam.jpg",
+                AudioDuration = 3,
+                Progress = 0.8M,
+                ListenedSeconds = 144,
+                IsCompleted = false,
+                LastListenedAtUtc = SeedBaseUtc.AddHours(-2),
+                UserId = LocalUserId
+            },
+            new()
+            {
+                Id = "h2",
+                AudioGuideId = "ag_002_1",
+                LocationId = "loc_002",
+                AudioTitle = "Giới thiệu quán",
+                LocationName = "Bánh xèo miền Tây",
+                LocationImageUrl = "/images/locations/banh_xeo.jpg",
+                AudioDuration = 3,
+                Progress = 1.0M,
+                ListenedSeconds = 180,
+                IsCompleted = true,
+                LastListenedAtUtc = SeedBaseUtc.AddHours(-5),
+                UserId = LocalUserId
+            },
+            new()
+            {
+                Id = "h3",
+                AudioGuideId = "ag_007_1",
+                LocationId = "loc_007",
+                AudioTitle = "Giới thiệu quán",
+                LocationName = "Ốc xào bơ tỏi",
+                LocationImageUrl = "/images/locations/oc_xao_bo_toi.jpg",
+                AudioDuration = 3,
+                Progress = 0.45M,
+                ListenedSeconds = 81,
+                IsCompleted = false,
+                LastListenedAtUtc = SeedBaseUtc.AddDays(-1),
+                UserId = LocalUserId
+            }
+        };
+    }
+
+    private static void NormalizeAudioGuideSeedData(IEnumerable<Location> locations)
+    {
+        foreach (var location in locations)
+        {
+            foreach (var guide in location.AudioGuides)
+            {
+                guide.LocationId = location.Id;
+
+                if (string.IsNullOrWhiteSpace(guide.CloudinaryAudioUrl))
+                {
+                    guide.CloudinaryAudioUrl = string.IsNullOrWhiteSpace(guide.AudioUrl)
+                        ? null
+                        : guide.AudioUrl;
+                }
+
+                if (string.IsNullOrWhiteSpace(guide.CloudinaryPublicId))
+                {
+                    guide.CloudinaryPublicId = ToCloudinaryPublicId(guide.AudioUrl);
+                }
+
+                if (guide.ScriptSegments.Count == 0)
+                {
+                    guide.ScriptSegments = BuildDefaultSegments(guide);
+                }
+
+                if (string.IsNullOrWhiteSpace(guide.TranscriptText))
+                {
+                    guide.TranscriptText = string.Join(" ", guide.ScriptSegments
+                        .OrderBy(segment => segment.StartTimeSeconds)
+                        .Select(segment => segment.ScriptText.Trim())
+                        .Where(segment => !string.IsNullOrWhiteSpace(segment)));
+                }
+            }
+        }
+    }
+
+    private static List<AudioScriptSegment> BuildDefaultSegments(AudioGuide guide)
+    {
+        var totalSeconds = Math.Max(60, guide.Duration * 60);
+        var segmentDuration = Math.Max(20, totalSeconds / 3);
+
+        return new List<AudioScriptSegment>
+        {
+            new()
+            {
+                AudioGuideId = guide.Id,
+                StartTimeSeconds = 0,
+                EndTimeSeconds = segmentDuration,
+                ScriptText = $"Mở đầu: {guide.Title}. {guide.Description}."
+            },
+            new()
+            {
+                AudioGuideId = guide.Id,
+                StartTimeSeconds = segmentDuration,
+                EndTimeSeconds = segmentDuration * 2,
+                ScriptText = $"Nội dung chính: khám phá điểm nhấn tại {guide.Title.ToLowerInvariant()}."
+            },
+            new()
+            {
+                AudioGuideId = guide.Id,
+                StartTimeSeconds = segmentDuration * 2,
+                EndTimeSeconds = totalSeconds,
+                ScriptText = "Kết thúc: cảm ơn bạn đã lắng nghe, hãy tiếp tục khám phá POI kế tiếp."
+            }
+        };
+    }
+
+    private static string? ToCloudinaryPublicId(string? audioUrl)
+    {
+        if (string.IsNullOrWhiteSpace(audioUrl))
+        {
+            return null;
+        }
+
+        var fileName = audioUrl.Split('/').LastOrDefault() ?? string.Empty;
+        var dotIndex = fileName.LastIndexOf('.');
+        var baseName = dotIndex > 0 ? fileName[..dotIndex] : fileName;
+        return string.IsNullOrWhiteSpace(baseName) ? null : $"audio/{baseName}";
+    }
+
+    public sealed class ListeningHistorySeed
+    {
+        public string Id { get; set; } = string.Empty;
+        public string AudioGuideId { get; set; } = string.Empty;
+        public string LocationId { get; set; } = string.Empty;
+        public string AudioTitle { get; set; } = string.Empty;
+        public string LocationName { get; set; } = string.Empty;
+        public string LocationImageUrl { get; set; } = string.Empty;
+        public int AudioDuration { get; set; }
+        public decimal Progress { get; set; }
+        public int ListenedSeconds { get; set; }
+        public bool IsCompleted { get; set; }
+        public DateTime LastListenedAtUtc { get; set; }
+        public string UserId { get; set; } = string.Empty;
     }
 }
