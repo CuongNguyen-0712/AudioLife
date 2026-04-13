@@ -20,6 +20,7 @@ public static class DbInitializer
         }
 
         EnsureApprovalTables(context);
+        EnsureListeningHistoryTable(context);
         EnsureLegacyTablesRemoved(context);
 
         var hasVinhKhanhSeed = context.Locations
@@ -30,11 +31,13 @@ public static class DbInitializer
         {
             EnsureAuthUserAccounts(context);
             EnsurePoiAdminAssignments(context);
+            EnsureListeningHistory(context);
             return;
         }
 
         if (context.Categories.Any())
         {
+            context.ListeningHistories.RemoveRange(context.ListeningHistories);
             context.TourLocations.RemoveRange(context.TourLocations);
             context.AudioGuides.RemoveRange(context.AudioGuides);
             context.Tours.RemoveRange(context.Tours);
@@ -84,6 +87,7 @@ public static class DbInitializer
 
         EnsureAuthUserAccounts(context);
         EnsurePoiAdminAssignments(context);
+        EnsureListeningHistory(context);
     }
 
     private static void EnsureAuthUserAccounts(AppDbContext context)
@@ -114,6 +118,42 @@ public static class DbInitializer
         foreach (var assignment in defaultAssignments)
         {
             context.PoiAdminLocationAssignments.Add(assignment);
+        }
+
+        context.SaveChanges();
+    }
+
+    private static void EnsureListeningHistory(AppDbContext context)
+    {
+        if (context.ListeningHistories.Any())
+        {
+            return;
+        }
+
+        var seeds = SampleData.GetListeningHistorySeeds();
+        foreach (var seed in seeds)
+        {
+            var audioExists = context.AudioGuides.Any(item => item.Id == seed.AudioGuideId);
+            var locationExists = context.Locations.Any(item => item.Id == seed.LocationId);
+            if (!audioExists || !locationExists)
+            {
+                continue;
+            }
+
+            context.ListeningHistories.Add(new ListeningHistory
+            {
+                Id = seed.Id,
+                AudioGuideId = seed.AudioGuideId,
+                LocationId = seed.LocationId,
+                AudioTitle = seed.AudioTitle,
+                LocationName = seed.LocationName,
+                LocationImageUrl = seed.LocationImageUrl,
+                AudioDuration = seed.AudioDuration,
+                Progress = seed.Progress,
+                ListenedSeconds = seed.ListenedSeconds,
+                IsCompleted = seed.IsCompleted,
+                LastListenedAtUtc = seed.LastListenedAtUtc
+            });
         }
 
         context.SaveChanges();
@@ -202,6 +242,37 @@ BEGIN
 
     CREATE UNIQUE INDEX [IX_AuthUserAccounts_Username] ON [dbo].[AuthUserAccounts]([Username]);
     CREATE INDEX [IX_AuthUserAccounts_Role_IsActive] ON [dbo].[AuthUserAccounts]([Role], [IsActive]);
+END
+");
+    }
+
+    private static void EnsureListeningHistoryTable(AppDbContext context)
+    {
+        context.Database.ExecuteSqlRaw(@"
+IF OBJECT_ID(N'dbo.ListeningHistory', N'U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[ListeningHistory](
+        [Id] nvarchar(100) NOT NULL,
+        [AudioGuideId] nvarchar(50) NOT NULL,
+        [LocationId] nvarchar(50) NOT NULL,
+        [AudioTitle] nvarchar(200) NOT NULL,
+        [LocationName] nvarchar(200) NOT NULL,
+        [LocationImageUrl] nvarchar(500) NOT NULL,
+        [AudioDuration] int NOT NULL,
+        [Progress] decimal(5,4) NOT NULL,
+        [ListenedSeconds] int NOT NULL,
+        [IsCompleted] bit NOT NULL,
+        [LastListenedAtUtc] datetime2 NOT NULL,
+        CONSTRAINT [PK_ListeningHistory] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_ListeningHistory_AudioGuides_AudioGuideId]
+            FOREIGN KEY ([AudioGuideId]) REFERENCES [dbo].[AudioGuides]([Id]),
+        CONSTRAINT [FK_ListeningHistory_Locations_LocationId]
+            FOREIGN KEY ([LocationId]) REFERENCES [dbo].[Locations]([Id])
+    );
+
+    CREATE INDEX [IX_ListeningHistory_AudioGuideId] ON [dbo].[ListeningHistory]([AudioGuideId]);
+    CREATE INDEX [IX_ListeningHistory_LocationId] ON [dbo].[ListeningHistory]([LocationId]);
+    CREATE INDEX [IX_ListeningHistory_LastListenedAtUtc] ON [dbo].[ListeningHistory]([LastListenedAtUtc]);
 END
 ");
     }

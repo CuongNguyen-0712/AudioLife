@@ -1,0 +1,194 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Admin.TranslationsModel
+@{
+    ViewData["Title"] = "Quản lý bản dịch";
+    ViewData["ActivePage"] = "AdminTranslations";
+}
+
+<div class="dashboard-hero mb-4">
+    <div>
+        <p class="hero-kicker"><i class="fa-solid fa-language"></i> Nội dung đa ngôn ngữ</p>
+        <h1 class="hero-title">Quản lý bản dịch</h1>
+        <p class="hero-subtitle">Theo dõi độ phủ ngôn ngữ và xử lý audio/transcript còn thiếu theo từng POI.</p>
+    </div>
+    <a asp-page="/AudioGuides/Create" class="btn-admin btn-admin-primary"><i class="fas fa-plus"></i> Thêm audio dịch</a>
+</div>
+
+<div class="admin-card card-v2 mb-4">
+    <div class="p-3 p-md-4">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label for="locationId" class="form-label">POI</label>
+                <select id="locationId" name="locationId" class="form-select">
+                    <option value="">Tất cả POI</option>
+                    @foreach (var location in Model.Locations)
+                    {
+                        <option value="@location.Id" selected="@(location.Id == Model.LocationId)">@location.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="language" class="form-label">Ngôn ngữ</label>
+                <select id="language" name="language" class="form-select">
+                    <option value="">Tất cả ngôn ngữ</option>
+                    <option value="vi" selected="@(Model.Language == "vi")">Tiếng Việt</option>
+                    <option value="en" selected="@(Model.Language == "en")">English</option>
+                    <option value="fr" selected="@(Model.Language == "fr")">Français</option>
+                    <option value="ja" selected="@(Model.Language == "ja")">日本語</option>
+                    <option value="ko" selected="@(Model.Language == "ko")">한국어</option>
+                    <option value="zh" selected="@(Model.Language == "zh")">中文</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <div class="form-check mt-4">
+                    <input id="onlyIssues" name="onlyIssues" value="true" type="checkbox" class="form-check-input" checked="@Model.OnlyIssues" />
+                    <label class="form-check-label" for="onlyIssues">Chỉ lỗi</label>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button class="btn-admin btn-admin-primary w-100" type="submit">Lọc dữ liệu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-xl-3"><div class="stat-card stat-card-v2"><div class="stat-icon bg-primary"><i class="fas fa-wave-square"></i></div><div><div class="stat-value">@Model.TotalAudioCount</div><div class="stat-label">Audio đang lọc</div></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="stat-card stat-card-v2"><div class="stat-icon bg-success"><i class="fas fa-check"></i></div><div><div class="stat-value">@Model.ReadyCount</div><div class="stat-label">Đủ điều kiện</div></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="stat-card stat-card-v2"><div class="stat-icon bg-warning"><i class="fas fa-file-audio"></i></div><div><div class="stat-value">@Model.MissingAudioCount</div><div class="stat-label">Thiếu file audio</div></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="stat-card stat-card-v2"><div class="stat-icon bg-danger"><i class="fas fa-file-lines"></i></div><div><div class="stat-value">@Model.MissingTranscriptCount</div><div class="stat-label">Thiếu transcript</div></div></div></div>
+</div>
+
+<div class="admin-card card-v2 mb-4">
+    <div class="card-header"><span><i class="fas fa-chart-column me-2"></i>Độ phủ bản dịch theo POI</span></div>
+    <div class="table-responsive">
+        <table class="admin-table table-v2 mb-0">
+            <thead>
+                <tr>
+                    <th>POI</th>
+                    <th class="text-end">Tổng audio</th>
+                    <th class="text-end">VI</th>
+                    <th class="text-end">EN</th>
+                    <th class="text-end">FR</th>
+                    <th class="text-end">JA</th>
+                    <th class="text-end">KO</th>
+                    <th class="text-end">ZH</th>
+                    <th>Ngôn ngữ còn thiếu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.CoverageByLocation.Any())
+                {
+                    foreach (var coverage in Model.CoverageByLocation)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@coverage.LocationName</strong>
+                                <div class="small text-muted">@coverage.LocationId</div>
+                            </td>
+                            <td class="text-end">@coverage.TotalAudios</td>
+                            <td class="text-end">@coverage.ViCount</td>
+                            <td class="text-end">@coverage.EnCount</td>
+                            <td class="text-end">@coverage.FrCount</td>
+                            <td class="text-end">@coverage.JaCount</td>
+                            <td class="text-end">@coverage.KoCount</td>
+                            <td class="text-end">@coverage.ZhCount</td>
+                            <td>
+                                @if (coverage.MissingLanguages.Any())
+                                {
+                                    <span class="badge-soft">@string.Join(", ", coverage.MissingLanguages).ToUpperInvariant()</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Đã đủ bộ</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="9" class="text-center text-muted py-4">Chưa có dữ liệu bản dịch.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="admin-card card-v2">
+    <div class="card-header"><span><i class="fas fa-list-check me-2"></i>Danh sách audio theo trạng thái bản dịch</span></div>
+    <div class="table-responsive">
+        <table class="admin-table table-v2 mb-0">
+            <thead>
+                <tr>
+                    <th>Audio</th>
+                    <th>POI</th>
+                    <th>Ngôn ngữ</th>
+                    <th>Audio file</th>
+                    <th>Transcript</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.TranslationItems.Any())
+                {
+                    foreach (var item in Model.TranslationItems)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@item.Title</strong>
+                                <div class="small text-muted">@item.Id</div>
+                            </td>
+                            <td>@item.LocationName</td>
+                            <td>@item.NormalizedLanguage.ToUpperInvariant()</td>
+                            <td>
+                                @if (item.HasAudio)
+                                {
+                                    <span class="badge bg-success">Đầy đủ</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Thiếu</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.HasTranscript)
+                                {
+                                    <span class="badge bg-success">Đầy đủ</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Thiếu</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!item.IsSupportedLanguage)
+                                {
+                                    <span class="badge bg-warning text-dark">Ngôn ngữ chưa chuẩn</span>
+                                }
+                                else if (item.IsIssue)
+                                {
+                                    <span class="badge bg-warning text-dark">Cần bổ sung</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Sẵn sàng</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-page="/AudioGuides/Edit" asp-route-id="@item.Id" class="btn-admin btn-sm-admin btn-sm-icon btn-admin-warning" title="Chỉnh sửa">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="7" class="text-center text-muted py-4">Không có audio phù hợp bộ lọc.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

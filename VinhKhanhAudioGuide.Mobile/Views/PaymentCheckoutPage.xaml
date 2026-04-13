@@ -18,40 +18,16 @@
     </NavigationPage.TitleView>
 
     <Grid>
-        <Ellipse Fill="{StaticResource SecondaryContainer}"
-                 Opacity="0.12"
-                 WidthRequest="320"
-                 HeightRequest="320"
-                 HorizontalOptions="End"
-                 VerticalOptions="Start"
-                 TranslationX="120"
-                 TranslationY="-80"
-                 InputTransparent="True" />
-
-        <Ellipse Fill="{StaticResource PrimaryContainer}"
-                 Opacity="0.10"
-                 WidthRequest="360"
-                 HeightRequest="360"
-                 HorizontalOptions="Start"
-                 VerticalOptions="End"
-                 TranslationX="-120"
-                 TranslationY="120"
-                 InputTransparent="True" />
-
         <Grid Padding="20,24,20,20"
               RowDefinitions="Auto,Auto,Auto,*,Auto"
               RowSpacing="16">
-            <VerticalStackLayout Grid.Row="0" Spacing="8" Margin="2,4,2,0">
-                <Label Text="Thanh toán"
-                       FontFamily="RobotoCondensed-SemiBold"
-                       FontSize="24"
-                       TextColor="{StaticResource OnSurface}" />
-                <Label Text="Kiểm tra lại gói và hoàn tất thanh toán để mở khóa nội dung."
-                       FontFamily="RobotoCondensed-Regular"
-                       FontSize="14"
-                       TextColor="{StaticResource OnSurfaceVariant}" />
-            </VerticalStackLayout>
-
+           
+                    <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                        <Label Text="Kiểm tra lại gói và hoàn tất thanh toán để mở khóa nội dung."
+                               FontFamily="RobotoCondensed-SemiBold"
+                               FontSize="24"
+                               TextColor="{StaticResource OnSurface}" />
+                    </VerticalStackLayout>
             <Border Grid.Row="1"
                     StrokeThickness="0"
                     BackgroundColor="{StaticResource SurfaceContainerLowest}"
@@ -102,6 +78,7 @@
                                 <Label Text="Giá tiền"
                                        FontFamily="RobotoCondensed-Regular"
                                        FontSize="13"
+                                       Margin="0,0,8,0"
                                        TextColor="{StaticResource OnSurfaceVariant}" />
                                 <Label x:Name="PriceLabel"
                                        Text="10.000đ"

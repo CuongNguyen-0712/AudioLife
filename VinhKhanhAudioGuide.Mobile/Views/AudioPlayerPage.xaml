@@ -227,9 +227,9 @@
                             IsEnabled="{Binding CanPlayBack}"
                             Style="{StaticResource SecondaryButton}"
                             BackgroundColor="{StaticResource SurfaceContainerHighest}"
-                            Padding="0"
-                            HeightRequest="48"
-                            WidthRequest="48"
+                            Padding="8"
+                            HeightRequest="40"
+                            WidthRequest="40"
                             ImageSource="back.svg" />
 
                     <Button Grid.Column="1"
@@ -239,8 +239,8 @@
                             BackgroundColor="{StaticResource SurfaceContainerHighest}"
                             TextColor="{StaticResource OnSecondaryContainer}"
                             FontSize="18"
-                            Padding="0"
-                            HeightRequest="56"
+                            Padding="8"
+                            HeightRequest="50"
                             HorizontalOptions="End" />
 
                     <Button Grid.Column="2"
@@ -260,8 +260,8 @@
                             BackgroundColor="{StaticResource SurfaceContainerHighest}"
                             TextColor="{StaticResource OnSecondaryContainer}"
                             FontSize="18"
-                            Padding="0"
-                            HeightRequest="56"
+                            Padding="8"
+                            HeightRequest="50"
                             HorizontalOptions="Start" />
 
                     <Button Grid.Column="4"
@@ -269,9 +269,9 @@
                             IsEnabled="{Binding CanPlayNext}"
                             Style="{StaticResource SecondaryButton}"
                             BackgroundColor="{StaticResource SurfaceContainerHighest}"
-                            Padding="0"
-                            HeightRequest="48"
-                            WidthRequest="48"
+                            Padding="8"
+                            HeightRequest="40"
+                            WidthRequest="40"
                             ImageSource="next.svg" />
                 </Grid>
             </VerticalStackLayout>

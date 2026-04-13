@@ -109,7 +109,7 @@ public partial class QrScannerPage : ContentPage
 			return;
 		}
 
-		StatusLabel.Text = _localizationService.GetString("Qr_StatusOpenLanguage");
+		StatusLabel.Text = "Đang chuyển đến màn hình thanh toán...";
 		await App.CompleteQrOnboardingAsync(payload);
 	}
 

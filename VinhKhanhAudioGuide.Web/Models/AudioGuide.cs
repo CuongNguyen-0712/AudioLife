@@ -44,4 +44,6 @@ public class AudioGuide
 
     // Navigations
     public ICollection<AudioScriptSegment> ScriptSegments { get; set; } = new List<AudioScriptSegment>();
+
+    public ICollection<ListeningHistory> ListeningHistories { get; set; } = new List<ListeningHistory>();
 }

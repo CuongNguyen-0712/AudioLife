@@ -16,6 +16,7 @@ public class AppDbContext : DbContext
     public DbSet<AuthUserAccount> AuthUserAccounts => Set<AuthUserAccount>();
     public DbSet<PoiChangeRequest> PoiChangeRequests => Set<PoiChangeRequest>();
     public DbSet<PoiAdminLocationAssignment> PoiAdminLocationAssignments => Set<PoiAdminLocationAssignment>();
+    public DbSet<ListeningHistory> ListeningHistories => Set<ListeningHistory>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -79,6 +80,26 @@ public class AppDbContext : DbContext
         {
             entity.HasIndex(item => item.Username).IsUnique();
             entity.HasIndex(item => new { item.Role, item.IsActive });
+        });
+
+        modelBuilder.Entity<ListeningHistory>(entity =>
+        {
+            entity.ToTable("ListeningHistory");
+            entity.Property(item => item.Progress).HasPrecision(5, 4);
+
+            entity.HasOne(item => item.AudioGuide)
+                .WithMany(guide => guide.ListeningHistories)
+                .HasForeignKey(item => item.AudioGuideId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(item => item.Location)
+                .WithMany(location => location.ListeningHistories)
+                .HasForeignKey(item => item.LocationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(item => item.AudioGuideId);
+            entity.HasIndex(item => item.LocationId);
+            entity.HasIndex(item => item.LastListenedAtUtc);
         });
     }
 }

@@ -25,7 +25,7 @@ public partial class App : Application
 
     public static void NavigateToQrScanner()
     {
-        MainThread.BeginInvokeOnMainThread(() => SetRootPage(new NavigationPage(new Views.QrScannerPage())));
+        MainThread.BeginInvokeOnMainThread(() => SetRootPage(CreateStyledNavigationPage(new Views.QrScannerPage())));
     }
 
     public static void NavigateToIntro()
@@ -49,11 +49,16 @@ public partial class App : Application
         MainThread.BeginInvokeOnMainThread(() => SetRootPage(new AppShell()));
     }
 
+    public static void NavigateToLanguageSelection()
+    {
+        MainThread.BeginInvokeOnMainThread(() => SetRootPage(new Views.LanguageSection()));
+    }
+
     public static async Task CompleteQrOnboardingAsync(QrAudioPayload payload)
     {
         _hasQrAccessInSession = true;
         _ = payload;
-        await OpenLanguageSelectionAfterQrAsync();
+        await OpenPaymentSelectionAfterQrAsync();
     }
 
     private static async Task ProcessPendingDeepLinkAsync()
@@ -79,17 +84,40 @@ public partial class App : Application
         await CompleteQrOnboardingAsync(payload);
     }
 
-    private static async Task OpenLanguageSelectionAfterQrAsync()
+    private static async Task OpenPaymentSelectionAfterQrAsync()
     {
-        await MainThread.InvokeOnMainThreadAsync(() =>
+        await MainThread.InvokeOnMainThreadAsync(async () =>
         {
             if (!_hasQrAccessInSession)
             {
                 return;
             }
 
-            SetRootPage(new Views.LanguageSection());
+            var app = Current;
+            var currentPage = app?.Windows.FirstOrDefault(w => w?.Page is not null)?.Page;
+            if (currentPage is NavigationPage navigationPage)
+            {
+                await navigationPage.PushAsync(new Views.PaymentPlanSelectionPage());
+                return;
+            }
+
+            SetRootPage(CreateStyledNavigationPage(new Views.PaymentPlanSelectionPage()));
         });
+    }
+
+    private static NavigationPage CreateStyledNavigationPage(Page rootPage)
+    {
+        var navPage = new NavigationPage(rootPage)
+        {
+            BarBackgroundColor = Application.Current?.Resources.TryGetValue("SurfaceContainerLowest", out var barBg) == true && barBg is Color bg
+                ? bg
+                : Colors.White,
+            BarTextColor = Application.Current?.Resources.TryGetValue("OnSurface", out var barText) == true && barText is Color fg
+                ? fg
+                : Colors.Black
+        };
+
+        return navPage;
     }
 
     private static void SetRootPage(Page rootPage)

@@ -69,6 +69,8 @@ public static class MauiProgram
         builder.Services.AddTransient<Views.HelpPage>();
         builder.Services.AddTransient<Views.AboutPage>();
         builder.Services.AddTransient<Views.LanguageSection>();
+        builder.Services.AddTransient<Views.PaymentPlanSelectionPage>();
+        builder.Services.AddTransient<Views.PaymentCheckoutPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();

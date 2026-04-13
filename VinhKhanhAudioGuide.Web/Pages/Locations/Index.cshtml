@@ -19,7 +19,38 @@
     <div class="alert alert-success alert-admin">@TempData["Success"]</div>
 }
 
+<div class="admin-card card-v2 mb-4">
+    <div class="p-3 p-md-4">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-5">
+                <label for="keyword" class="form-label">Tìm POI</label>
+                <input id="keyword" name="keyword" value="@Model.Keyword" class="form-control" placeholder="Tên, địa chỉ, mô tả..." />
+            </div>
+            <div class="col-md-4">
+                <label for="categoryId" class="form-label">Danh mục</label>
+                <select id="categoryId" name="categoryId" class="form-select">
+                    <option value="">Tất cả danh mục</option>
+                    @foreach (var category in Model.Categories)
+                    {
+                        <option value="@category.Id" selected="@(category.Id == Model.CategoryId)">@category.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <div class="form-check mt-4">
+                    <input id="onlyNoAudio" name="onlyNoAudio" value="true" type="checkbox" class="form-check-input" checked="@Model.OnlyNoAudio" />
+                    <label class="form-check-label" for="onlyNoAudio">Chỉ POI chưa có audio</label>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <button class="btn-admin btn-admin-primary w-100" type="submit">Lọc</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="admin-card card-v2">
+    <div class="p-3 small text-muted">Đang hiển thị @Model.Locations.Count POI.</div>
     <table class="admin-table table-v2">
         <thead>
             <tr>

@@ -19,7 +19,28 @@
     <div class="alert alert-success alert-admin">@TempData["Success"]</div>
 }
 
+<div class="admin-card card-v2 mb-4">
+    <div class="p-3 p-md-4">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-8">
+                <label for="keyword" class="form-label">Tìm tour</label>
+                <input id="keyword" name="keyword" value="@Model.Keyword" class="form-control" placeholder="Tên tour hoặc mô tả..." />
+            </div>
+            <div class="col-md-2">
+                <div class="form-check mt-4">
+                    <input id="featuredOnly" name="featuredOnly" value="true" type="checkbox" class="form-check-input" checked="@Model.FeaturedOnly" />
+                    <label class="form-check-label" for="featuredOnly">Chỉ tour nổi bật</label>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button class="btn-admin btn-admin-primary w-100" type="submit">Lọc</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="admin-card card-v2">
+    <div class="p-3 small text-muted">Đang hiển thị @Model.Tours.Count tour.</div>
     <table class="admin-table table-v2">
         <thead>
             <tr>
