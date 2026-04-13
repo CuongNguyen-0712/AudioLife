@@ -4,10 +4,8 @@ namespace VinhKhanhAudioGuide.Mobile.Services;
 
 public class GeolocationService : IGeolocationService, IDisposable
 {
-    private const double NearbyRadiusKm = 0.1; // 100m radius
     private const int TrackingIntervalSeconds = 60; // 1 minute like web
     private readonly IApiService _apiService;
-    private string? _lastNearestLocationId;
     private CancellationTokenSource? _cts;
     private bool _isTracking;
 
@@ -94,7 +92,6 @@ public class GeolocationService : IGeolocationService, IDisposable
     public void StopTracking()
     {
         _isTracking = false;
-        _lastNearestLocationId = null;
         _cts?.Cancel();
         _cts?.Dispose();
         _cts = null;
@@ -127,28 +124,25 @@ public class GeolocationService : IGeolocationService, IDisposable
     private async Task CheckNearbyLocationsAsync(double userLat, double userLng)
     {
         var locations = await _apiService.GetLocationsAsync();
+        if (locations.Count == 0)
+        {
+            return;
+        }
+
         var nearest = locations
             .Select(loc => new
             {
                 Location = loc,
                 DistanceKm = CalculateDistanceKm(userLat, userLng, loc.Latitude, loc.Longitude)
             })
-            .Where(x => x.DistanceKm <= NearbyRadiusKm)
             .OrderBy(x => x.DistanceKm)
             .FirstOrDefault();
 
         if (nearest == null)
         {
-            _lastNearestLocationId = null;
             return;
         }
 
-        if (string.Equals(_lastNearestLocationId, nearest.Location.Id, StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        _lastNearestLocationId = nearest.Location.Id;
         NearbyLocationDetected?.Invoke(this, new NearbyLocationEventArgs
         {
             LocationId = nearest.Location.Id,

@@ -24,12 +24,14 @@ public class RemoteApiService : IApiService
     };
 
     private readonly ApiService _fallback;
+    private readonly ILocalizationService _localizationService;
     private readonly HttpClient _httpClient;
     private string? _activeBaseUrl;
 
-    public RemoteApiService(ApiService fallback)
+    public RemoteApiService(ApiService fallback, ILocalizationService localizationService)
     {
         _fallback = fallback;
+        _localizationService = localizationService;
 
         var handler = new HttpClientHandler
         {
@@ -43,48 +45,128 @@ public class RemoteApiService : IApiService
     }
 
     public async Task<List<Location>> GetLocationsAsync()
-        => await TryGetAsync<List<Location>>("api/mobile/locations") ?? await _fallback.GetLocationsAsync();
+    {
+        var remote = await TryGetAsync<List<Location>>(WithLanguage("api/mobile/locations"));
+        if (remote is not null)
+        {
+            return ContentLocalizationMapper.LocalizeLocations(remote, GetCurrentLanguageCode());
+        }
+
+        return await _fallback.GetLocationsAsync();
+    }
 
     public async Task<Location?> GetLocationByIdAsync(string locationId)
-        => await TryGetAsync<Location>($"api/mobile/locations/{Uri.EscapeDataString(locationId)}")
-           ?? await _fallback.GetLocationByIdAsync(locationId);
+    {
+        var remote = await TryGetAsync<Location>(WithLanguage($"api/mobile/locations/{Uri.EscapeDataString(locationId)}"));
+        if (remote is not null)
+        {
+            return ContentLocalizationMapper.LocalizeLocation(remote, GetCurrentLanguageCode());
+        }
+
+        return await _fallback.GetLocationByIdAsync(locationId);
+    }
 
     public async Task<List<Location>> SearchLocationsAsync(string query)
-        => await TryGetAsync<List<Location>>($"api/mobile/locations/search?query={Uri.EscapeDataString(query)}")
-           ?? await _fallback.SearchLocationsAsync(query);
+    {
+        var remote = await TryGetAsync<List<Location>>(WithLanguage($"api/mobile/locations/search?query={Uri.EscapeDataString(query)}"));
+        if (remote is not null)
+        {
+            return ContentLocalizationMapper.LocalizeLocations(remote, GetCurrentLanguageCode());
+        }
+
+        return await _fallback.SearchLocationsAsync(query);
+    }
 
     public async Task<List<Location>> GetLocationsByCategoryAsync(string categoryId)
-        => await TryGetAsync<List<Location>>($"api/mobile/locations/by-category/{Uri.EscapeDataString(categoryId)}")
-           ?? await _fallback.GetLocationsByCategoryAsync(categoryId);
+    {
+        var remote = await TryGetAsync<List<Location>>(WithLanguage($"api/mobile/locations/by-category/{Uri.EscapeDataString(categoryId)}"));
+        if (remote is not null)
+        {
+            return ContentLocalizationMapper.LocalizeLocations(remote, GetCurrentLanguageCode());
+        }
+
+        return await _fallback.GetLocationsByCategoryAsync(categoryId);
+    }
 
     public async Task<List<Location>> GetNearbyLocationsAsync(double latitude, double longitude, double radiusKm = 0.1)
-        => await TryGetAsync<List<Location>>($"api/mobile/locations/nearby?latitude={latitude}&longitude={longitude}&radiusKm={radiusKm}")
-           ?? await _fallback.GetNearbyLocationsAsync(latitude, longitude, radiusKm);
+    {
+        var remote = await TryGetAsync<List<Location>>(WithLanguage($"api/mobile/locations/nearby?latitude={latitude}&longitude={longitude}&radiusKm={radiusKm}"));
+        if (remote is not null)
+        {
+            return ContentLocalizationMapper.LocalizeLocations(remote, GetCurrentLanguageCode());
+        }
+
+        return await _fallback.GetNearbyLocationsAsync(latitude, longitude, radiusKm);
+    }
 
     public async Task<List<Category>> GetCategoriesAsync()
-        => await TryGetAsync<List<Category>>("api/mobile/categories") ?? await _fallback.GetCategoriesAsync();
+    {
+        var remote = await TryGetAsync<List<Category>>(WithLanguage("api/mobile/categories"));
+        if (remote is not null)
+        {
+            return ContentLocalizationMapper.LocalizeCategories(remote, GetCurrentLanguageCode());
+        }
+
+        return await _fallback.GetCategoriesAsync();
+    }
 
     public async Task<List<Tour>> GetToursAsync()
-        => await TryGetAsync<List<Tour>>("api/mobile/tours") ?? await _fallback.GetToursAsync();
+    {
+        var remote = await TryGetAsync<List<Tour>>(WithLanguage("api/mobile/tours"));
+        if (remote is not null)
+        {
+            return ContentLocalizationMapper.LocalizeTours(remote, GetCurrentLanguageCode());
+        }
+
+        return await _fallback.GetToursAsync();
+    }
 
     public async Task<Tour?> GetTourByIdAsync(string tourId)
-        => await TryGetAsync<Tour>($"api/mobile/tours/{Uri.EscapeDataString(tourId)}")
-           ?? await _fallback.GetTourByIdAsync(tourId);
+    {
+        var remote = await TryGetAsync<Tour>(WithLanguage($"api/mobile/tours/{Uri.EscapeDataString(tourId)}"));
+        if (remote is not null)
+        {
+            return ContentLocalizationMapper.LocalizeTours(new[] { remote }, GetCurrentLanguageCode()).FirstOrDefault();
+        }
+
+        return await _fallback.GetTourByIdAsync(tourId);
+    }
 
     public async Task<List<Tour>> GetFeaturedToursAsync()
-        => await TryGetAsync<List<Tour>>("api/mobile/tours/featured") ?? await _fallback.GetFeaturedToursAsync();
+    {
+        var remote = await TryGetAsync<List<Tour>>(WithLanguage("api/mobile/tours/featured"));
+        if (remote is not null)
+        {
+            return ContentLocalizationMapper.LocalizeTours(remote, GetCurrentLanguageCode());
+        }
+
+        return await _fallback.GetFeaturedToursAsync();
+    }
 
     public async Task<List<AudioGuide>> GetAudioGuidesForLocationAsync(string locationId)
-        => await TryGetAsync<List<AudioGuide>>($"api/mobile/audio/by-location/{Uri.EscapeDataString(locationId)}")
-           ?? await _fallback.GetAudioGuidesForLocationAsync(locationId);
+    {
+        var remote = await TryGetAsync<List<AudioGuide>>(WithLanguage($"api/mobile/audio/by-location/{Uri.EscapeDataString(locationId)}"));
+        if (remote is not null)
+        {
+            return ContentLocalizationMapper.LocalizeAudioGuides(remote, GetCurrentLanguageCode(), locationId);
+        }
+
+        return await _fallback.GetAudioGuidesForLocationAsync(locationId);
+    }
 
     public async Task<AudioGuide?> GetAudioGuideByIdAsync(string audioGuideId)
-        => await TryGetAsync<AudioGuide>($"api/mobile/audio/{Uri.EscapeDataString(audioGuideId)}")
-           ?? await _fallback.GetAudioGuideByIdAsync(audioGuideId);
+    {
+        var remote = await TryGetAsync<AudioGuide>(WithLanguage($"api/mobile/audio/{Uri.EscapeDataString(audioGuideId)}"));
+        if (remote is not null)
+        {
+            return ContentLocalizationMapper.LocalizeAudioGuides(new[] { remote }, GetCurrentLanguageCode(), remote.LocationId)
+                .FirstOrDefault();
+        }
+
+        return await _fallback.GetAudioGuideByIdAsync(audioGuideId);
+    }
 
     // Keep user-specific features local for now.
-    public Task<UserProfile?> GetUserProfileAsync() => _fallback.GetUserProfileAsync();
-    public Task<bool> UpdateUserProfileAsync(UserProfile profile) => _fallback.UpdateUserProfileAsync(profile);
     public Task<bool> ToggleFavoriteAsync(string locationId) => _fallback.ToggleFavoriteAsync(locationId);
     public Task<List<Location>> GetFavoriteLocationsAsync() => _fallback.GetFavoriteLocationsAsync();
     public Task<List<ListeningHistory>> GetListeningHistoryAsync() => _fallback.GetListeningHistoryAsync();
@@ -117,6 +199,17 @@ public class RemoteApiService : IApiService
         }
 
         return default;
+    }
+
+    private string GetCurrentLanguageCode()
+    {
+        return ContentLocalizationMapper.ToLanguageCode(_localizationService.CurrentCulture.Name);
+    }
+
+    private string WithLanguage(string path)
+    {
+        var separator = path.Contains('?', StringComparison.Ordinal) ? '&' : '?';
+        return $"{path}{separator}language={Uri.EscapeDataString(GetCurrentLanguageCode())}";
     }
 
     private async Task<T?> TryGetFromBaseAsync<T>(string baseUrl, string relativePath)

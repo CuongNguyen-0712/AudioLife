@@ -20,59 +20,51 @@
 }
 
 <div class="admin-card card-v2">
-    <table class="admin-table table-v2">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Tiêu đề</th>
-                <th>Địa điểm</th>
-                <th>Ngôn ngữ</th>
-                <th>Thời lượng</th>
-                <th>Audio URL</th>
-                <th>Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var ag in Model.AudioGuides)
-            {
-                <tr>
-                    <td><code>@ag.Id</code></td>
-                    <td><strong>@ag.Title</strong><br/><small class="text-muted">@ag.Description</small></td>
-                    <td><span class="badge-admin badge-category">@(ag.Location?.Name ?? "N/A")</span></td>
-                    <td>
-                        @ag.Language.ToUpper()
-                        @if (ag.GeneratedFromTts)
-                        {
-                            <span class="badge bg-success ms-1" title="Tạo từ TTS"><i class="fas fa-robot"></i> TTS</span>
-                        }
-                    </td>
-                    <td>@ag.Duration phút</td>
-                    <td class="audio-preview-cell">
-                        @{ var selectedAudioUrl = !string.IsNullOrWhiteSpace(ag.AudioUrl) ? ag.AudioUrl : ag.CloudinaryAudioUrl; }
-                        @if (!string.IsNullOrEmpty(ag.CloudinaryAudioUrl) || !string.IsNullOrEmpty(ag.AudioUrl))
-                        {
-                            <div class="audio-preview-box">
-                                <audio controls class="audio-preview-player">
-                                    <source src="@selectedAudioUrl" type="audio/mpeg">
-                                </audio>
-                                <small class="audio-preview-url" title="@selectedAudioUrl">@selectedAudioUrl</small>
+    <div class="p-3 p-md-4">
+        @if (!Model.AudioGuides.Any())
+        {
+            <div class="empty-state"><i class="fas fa-headphones-alt d-block"></i>Chưa có audio guide nào</div>
+        }
+        else
+        {
+            <div class="row g-3">
+                @foreach (var ag in Model.AudioGuides)
+                {
+                    var selectedAudioUrl = !string.IsNullOrWhiteSpace(ag.AudioUrl) ? ag.AudioUrl : ag.CloudinaryAudioUrl;
+                    <div class="col-12 col-xl-6 col-xxl-4">
+                        <div class="audio-grid-card h-100">
+                            <div class="audio-grid-head">
+                                <div class="audio-grid-title">@ag.Title</div>
+                                <code class="audio-grid-id">@ag.Id</code>
                             </div>
-                        }
-                        else
-                        {
-                            <span class="text-muted small">Chưa có file audio</span>
-                        }
-                    </td>
-                    <td>
-                        <a asp-page="Edit" asp-route-id="@ag.Id" class="btn-admin btn-sm-admin btn-admin-warning"><i class="fas fa-edit"></i></a>
-                        <a asp-page="Delete" asp-route-id="@ag.Id" class="btn-admin btn-sm-admin btn-admin-danger"><i class="fas fa-trash"></i></a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    @if (!Model.AudioGuides.Any())
-    {
-        <div class="empty-state"><i class="fas fa-headphones-alt d-block"></i>Chưa có audio guide nào</div>
-    }
+                            <div class="audio-grid-body">
+                                <div class="audio-grid-meta"><span>Địa điểm</span><strong>@(ag.Location?.Name ?? "N/A")</strong></div>
+                                <div class="audio-grid-meta"><span>Ngôn ngữ</span><strong>@ag.Language.ToUpper()</strong></div>
+                                <div class="audio-grid-meta"><span>Thời lượng</span><strong>@ag.Duration phút</strong></div>
+                                @if (ag.GeneratedFromTts)
+                                {
+                                    <div class="audio-grid-badge"><span class="badge bg-success"><i class="fas fa-robot me-1"></i>TTS</span></div>
+                                }
+                                <p class="audio-grid-desc">@ag.Description</p>
+                                @if (!string.IsNullOrEmpty(selectedAudioUrl))
+                                {
+                                    <audio controls class="audio-preview-player">
+                                        <source src="@selectedAudioUrl" type="audio/mpeg">
+                                    </audio>
+                                }
+                                else
+                                {
+                                    <div class="text-muted small">Chưa có file audio</div>
+                                }
+                            </div>
+                            <div class="audio-grid-actions">
+                                <a asp-page="Edit" asp-route-id="@ag.Id" class="btn-admin btn-admin-warning"><i class="fas fa-edit"></i> Sửa</a>
+                                <a asp-page="Delete" asp-route-id="@ag.Id" class="btn-admin btn-admin-danger"><i class="fas fa-trash"></i> Xóa</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
 </div>

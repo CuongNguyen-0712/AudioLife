@@ -40,9 +40,11 @@
                     <td><strong>@cat.Name</strong></td>
                     <td>@cat.Description</td>
                     <td><span class="badge-admin badge-count">@cat.Locations.Count</span></td>
-                    <td>
-                        <a asp-page="Edit" asp-route-id="@cat.Id" class="btn-admin btn-sm-admin btn-admin-warning"><i class="fas fa-edit"></i></a>
-                        <a asp-page="Delete" asp-route-id="@cat.Id" class="btn-admin btn-sm-admin btn-admin-danger"><i class="fas fa-trash"></i></a>
+                    <td class="action-cell">
+                        <div class="action-buttons">
+                            <a asp-page="Edit" asp-route-id="@cat.Id" class="btn-admin btn-sm-admin btn-sm-icon btn-admin-warning" title="Chỉnh sửa"><i class="fas fa-edit"></i></a>
+                            <a asp-page="Delete" asp-route-id="@cat.Id" class="btn-admin btn-sm-admin btn-sm-icon btn-admin-danger" title="Xóa"><i class="fas fa-trash"></i></a>
+                        </div>
                     </td>
                 </tr>
             }

@@ -13,9 +13,9 @@ public class AppDbContext : DbContext
     public DbSet<Tour> Tours => Set<Tour>();
     public DbSet<TourLocation> TourLocations => Set<TourLocation>();
     public DbSet<AudioScriptSegment> AudioScriptSegments => Set<AudioScriptSegment>();
-    public DbSet<ListeningHistory> ListeningHistories => Set<ListeningHistory>();
-    public DbSet<AppUser> AppUsers => Set<AppUser>();
-    public DbSet<Feedback> Feedbacks => Set<Feedback>();
+    public DbSet<AuthUserAccount> AuthUserAccounts => Set<AuthUserAccount>();
+    public DbSet<PoiChangeRequest> PoiChangeRequests => Set<PoiChangeRequest>();
+    public DbSet<PoiAdminLocationAssignment> PoiAdminLocationAssignments => Set<PoiAdminLocationAssignment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -60,30 +60,25 @@ public class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<ListeningHistory>(entity =>
+        modelBuilder.Entity<PoiChangeRequest>(entity =>
         {
-            entity.HasOne(lh => lh.AudioGuide)
-                .WithMany(ag => ag.ListeningHistories)
-                .HasForeignKey(lh => lh.AudioGuideId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasOne(lh => lh.User)
-                .WithMany(u => u.ListeningHistories)
-                .HasForeignKey(lh => lh.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(item => item.Status);
+            entity.HasIndex(item => item.SubmittedByUsername);
+            entity.HasIndex(item => item.LocationId);
+            entity.HasIndex(item => item.SubmittedAtUtc);
         });
 
-        modelBuilder.Entity<Feedback>(entity =>
+        modelBuilder.Entity<PoiAdminLocationAssignment>(entity =>
         {
-            entity.HasOne(f => f.User)
-                .WithMany(u => u.Feedbacks)
-                .HasForeignKey(f => f.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(item => item.Username);
+            entity.HasIndex(item => item.LocationId);
+            entity.HasIndex(item => new { item.Username, item.LocationId }).IsUnique();
+        });
 
-            entity.HasOne(f => f.Location)
-                .WithMany(l => l.Feedbacks)
-                .HasForeignKey(f => f.LocationId)
-                .OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<AuthUserAccount>(entity =>
+        {
+            entity.HasIndex(item => item.Username).IsUnique();
+            entity.HasIndex(item => new { item.Role, item.IsActive });
         });
     }
 }

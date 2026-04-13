@@ -22,8 +22,6 @@ Table AudioGuide {
   Title String
   Description String
   AudioUrl String
-  CloudinaryAudioUrl String
-  CloudinaryPublicId String
   TranscriptText String
   Duration Int
   LocationId String
@@ -60,29 +58,31 @@ Table TourLocation {
   }
 }
 
-Table AppUser {
-  Id String [pk]
-  ScannedQrCode String
-  CreatedAt DateTime
+Table AuthUserAccount {
+  Id Int [pk, increment]
+  Username String
+  Password String
+  DisplayName String
+  Role String // SystemAdmin | PoiAdmin
   IsActive Boolean
+  CreatedAtUtc DateTime
+
+  indexes {
+    (Username) [unique]
+    (Role, IsActive)
+  }
 }
 
-Table ListeningHistory {
-  Id Int [pk]
-  UserId String
-  AudioGuideId String
-  ListenedSeconds Int
-  IsCompleted Boolean
-  LastListenedAt DateTime
-}
-
-Table Feedback {
-  Id Int [pk]
-  UserId String
+Table PoiAdminLocationAssignment {
+  Id Int [pk, increment]
+  Username String
   LocationId String
-  Rating Int
-  Comment String
-  CreatedAt DateTime
+
+  indexes {
+    (Username)
+    (LocationId)
+    (Username, LocationId) [unique]
+  }
 }
 
 // Relationships
@@ -91,7 +91,5 @@ Ref: AudioGuide.LocationId > Location.Id
 Ref: AudioScriptSegment.AudioGuideId > AudioGuide.Id
 Ref: TourLocation.TourId > Tour.Id
 Ref: TourLocation.LocationId > Location.Id
-Ref: ListeningHistory.UserId > AppUser.Id
-Ref: ListeningHistory.AudioGuideId > AudioGuide.Id
-Ref: Feedback.UserId > AppUser.Id
-Ref: Feedback.LocationId > Location.Id
+Ref: PoiAdminLocationAssignment.LocationId > Location.Id
+Ref: PoiAdminLocationAssignment.Username > AuthUserAccount.Username

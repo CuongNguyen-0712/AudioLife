@@ -27,9 +27,17 @@ public class LoginModel : PageModel
     {
         if (User.Identity?.IsAuthenticated == true)
         {
-            return User.IsInRole("Admin")
-                ? RedirectToPage("/Admin/Index")
-                : RedirectToPage("/Shop/Index");
+            if (User.IsInRole(RoleNames.SystemAdmin))
+            {
+                return RedirectToPage("/Admin/Index");
+            }
+
+            if (User.IsInRole(RoleNames.PoiAdmin))
+            {
+                return RedirectToPage("/Shop/Index");
+            }
+
+            return RedirectToPage("/Account/AccessDenied");
         }
 
         ReturnUrl = returnUrl;
@@ -46,7 +54,7 @@ public class LoginModel : PageModel
             return Page();
         }
 
-        var user = _authUserStore.FindByCredentials(Input.Username, Input.Password);
+        var user = await _authUserStore.FindByCredentialsAsync(Input.Username, Input.Password, HttpContext.RequestAborted);
         if (user is null)
         {
             ErrorMessage = "Sai tài khoản hoặc mật khẩu.";
@@ -75,7 +83,17 @@ public class LoginModel : PageModel
             return LocalRedirect(returnUrl);
         }
 
-        return user.Role == "Admin" ? RedirectToPage("/Admin/Index") : RedirectToPage("/Shop/Index");
+        if (RoleNames.IsSystemAdmin(user.Role))
+        {
+            return RedirectToPage("/Admin/Index");
+        }
+
+        if (RoleNames.IsPoiAdmin(user.Role))
+        {
+            return RedirectToPage("/Shop/Index");
+        }
+
+        return RedirectToPage("/Account/AccessDenied");
     }
 
     public class LoginInput

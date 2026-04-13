@@ -12,12 +12,17 @@
     <link rel="stylesheet" href="~/css/shop.css" asp-append-version="true" />
 </head>
 <body>
-    <div class="shop-wrapper">
-        <aside class="shop-sidebar">
+    <div class="shop-wrapper" id="shopWrapper">
+        <aside class="shop-sidebar" id="shopSidebar">
             <div class="shop-sidebar-brand-wrap">
-                <div class="shop-sidebar-brand">
-                    <i class="fas fa-store"></i>
-                    <span>POI Admin</span>
+                <div class="shop-sidebar-brand-row">
+                    <div class="shop-sidebar-brand">
+                        <i class="fas fa-store"></i>
+                        <span>POI Admin</span>
+                    </div>
+                    <button type="button" class="shop-sidebar-close-btn" id="shopSidebarClose" aria-label="Đóng thanh bên">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
                 <div class="shop-sidebar-subtitle">AudioAdmin - Vĩnh Khánh</div>
             </div>
@@ -29,27 +34,24 @@
                 <a asp-page="/Shop/AudioGuides/Index" class="shop-side-link @(ViewData["ActivePage"]?.ToString() == "ShopAudios" ? "active" : "")">
                     <i class="fas fa-headphones-alt"></i><span>Âm thanh</span>
                 </a>
-                <a asp-page="/Shop/Reviews" class="shop-side-link @(ViewData["ActivePage"]?.ToString() == "ShopReviews" ? "active" : "")">
-                    <i class="fas fa-comments"></i><span>Đánh giá</span>
-                </a>
                 <a asp-page="/Shop/Analytics" class="shop-side-link @(ViewData["ActivePage"]?.ToString() == "ShopAnalytics" ? "active" : "")">
-                    <i class="fas fa-chart-pie"></i><span>Thống kê</span>
+                    <i class="fas fa-chart-pie"></i><span>Phân tích</span>
                 </a>
-                @if (User.IsInRole("Admin"))
-                {
-                    <a asp-page="/Admin/Index" class="shop-side-link">
-                        <i class="fas fa-shield-halved"></i><span>Admin hệ thống</span>
-                    </a>
-                }
+                <a asp-page="/Shop/ChangeRequests" class="shop-side-link @(ViewData["ActivePage"]?.ToString() == "ShopRequests" ? "active" : "")">
+                    <i class="fas fa-paper-plane"></i><span>Theo dõi yêu cầu duyệt</span>
+                </a>
             </nav>
         </aside>
+        <div class="shop-sidebar-backdrop" id="shopSidebarBackdrop"></div>
 
         <div class="shop-main">
             <header class="shop-topbar">
+                <button type="button" class="btn btn-outline-light shop-sidebar-toggle" id="shopSidebarToggle" aria-label="Mở thanh bên">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <div class="shop-topbar-right d-flex align-items-center gap-2 ms-auto">
                     <span class="shop-role-pill"><i class="fas fa-map-pin"></i>Admin POI</span>
                     <span class="shop-link">@User.Identity?.Name</span>
-                    <a asp-page="/Index" class="shop-link">Cổng hệ thống</a>
                     <form method="post" asp-page="/Account/Logout" class="d-inline">
                         <button type="submit" class="btn btn-sm btn-outline-light">Đăng xuất</button>
                     </form>
@@ -63,6 +65,51 @@
     </div>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function () {
+            var wrapper = document.getElementById('shopWrapper');
+            var toggleBtn = document.getElementById('shopSidebarToggle');
+            var closeBtn = document.getElementById('shopSidebarClose');
+            var backdrop = document.getElementById('shopSidebarBackdrop');
+
+            if (!wrapper) {
+                return;
+            }
+
+            var mobileQuery = window.matchMedia('(max-width: 991px)');
+
+            function closeSidebar() {
+                if (mobileQuery.matches) {
+                    wrapper.classList.remove('shop-sidebar-open');
+                }
+                else {
+                    wrapper.classList.add('shop-sidebar-collapsed');
+                }
+            }
+
+            toggleBtn?.addEventListener('click', function () {
+                if (mobileQuery.matches) {
+                    wrapper.classList.toggle('shop-sidebar-open');
+                }
+                else {
+                    wrapper.classList.toggle('shop-sidebar-collapsed');
+                }
+            });
+
+            closeBtn?.addEventListener('click', closeSidebar);
+            backdrop?.addEventListener('click', closeSidebar);
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && mobileQuery.matches) {
+                    closeSidebar();
+                }
+            });
+
+            mobileQuery.addEventListener('change', function () {
+                wrapper.classList.remove('shop-sidebar-open');
+            });
+        })();
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

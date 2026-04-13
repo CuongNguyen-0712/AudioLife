@@ -74,7 +74,7 @@ public static class SampleData
                 CategoryId = "2",
                 AudioGuides = new List<AudioGuide>
                 {
-                    new() { Id = "ag_003_1", Title = "Giới thiệu quán", Description = "Thông tin bánh tráng", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934750/gioithieu_banhxeo_l94n9t.wav", Duration = 3, LocationId = "loc_003", Language = "vi" },
+                    new() { Id = "ag_003_1", Title = "Giới thiệu quán", Description = "Thông tin bánh tráng", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934750/gioithieu_banhtrang_ujedfy.wav", Duration = 3, LocationId = "loc_003", Language = "vi" },
                     new() { Id = "ag_003_2", Title = "Khám phá ẩm thực", Description = "Thưởng thức bánh tráng", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934748/amthuc_banhtrang_qglacj.wav", Duration = 4, LocationId = "loc_003", Language = "vi" },
                     new() { Id = "ag_003_3", Title = "Introduction", Description = "About Banh Trang Tron", AudioUrl = "", Duration = 3, LocationId = "loc_003", Language = "en", GeneratedFromTts = true, TtsSourceText = "Banh Trang Tron is one of Vietnam's most popular street snacks. It's a mix of shredded rice paper tossed with dried beef, quail eggs, green mango, herbs, and a spicy-sweet-sour dressing. Simple yet incredibly addictive, this snack captures the essence of Vietnamese street food." }
                 }
@@ -259,6 +259,57 @@ public static class SampleData
                 Price = 0,
                 IsFeatured = false
             }
+        };
+    }
+
+    public static List<AuthUserAccount> GetAuthUserAccounts()
+    {
+        return new List<AuthUserAccount>
+        {
+            new()
+            {
+                Username = "admin.system",
+                Password = "Admin@123",
+                DisplayName = "Admin Hệ Thống",
+                Role = "SystemAdmin",
+                IsActive = true,
+                CreatedAtUtc = DateTime.UtcNow
+            },
+            new()
+            {
+                Username = "admin.poi.01",
+                Password = "Poi@123",
+                DisplayName = "Admin POI - Khu Trung Tâm",
+                Role = "PoiAdmin",
+                IsActive = true,
+                CreatedAtUtc = DateTime.UtcNow
+            },
+            new()
+            {
+                Username = "admin.poi.02",
+                Password = "Poi@123",
+                DisplayName = "Admin POI - Khu Mở Rộng",
+                Role = "PoiAdmin",
+                IsActive = true,
+                CreatedAtUtc = DateTime.UtcNow
+            }
+        };
+    }
+
+    public static List<PoiAdminLocationAssignment> GetPoiAdminLocationAssignments()
+    {
+        return new List<PoiAdminLocationAssignment>
+        {
+            new() { Username = "admin.poi.01", LocationId = "loc_001" },
+            new() { Username = "admin.poi.01", LocationId = "loc_002" },
+            new() { Username = "admin.poi.01", LocationId = "loc_003" },
+            new() { Username = "admin.poi.01", LocationId = "loc_004" },
+            new() { Username = "admin.poi.01", LocationId = "loc_005" },
+            new() { Username = "admin.poi.02", LocationId = "loc_006" },
+            new() { Username = "admin.poi.02", LocationId = "loc_007" },
+            new() { Username = "admin.poi.02", LocationId = "loc_008" },
+            new() { Username = "admin.poi.02", LocationId = "loc_009" },
+            new() { Username = "admin.poi.02", LocationId = "loc_010" }
         };
     }
 }
