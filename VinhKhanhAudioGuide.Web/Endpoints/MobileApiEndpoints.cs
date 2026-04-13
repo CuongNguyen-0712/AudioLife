@@ -171,6 +171,106 @@ public static class MobileApiEndpoints
             return guide is null ? Results.NotFound() : Results.Ok(ToAudioGuideDto(guide, includeSegments: true));
         });
 
+        group.MapGet("/history", async (int? take, AppDbContext db) =>
+        {
+            var maxItems = Math.Clamp(take.GetValueOrDefault(50), 1, 200);
+            var history = await db.ListeningHistories
+                .AsNoTracking()
+                .OrderByDescending(item => item.LastListenedAtUtc)
+                .Take(maxItems)
+                .Select(item => new MobileListeningHistoryDto
+                {
+                    Id = item.Id,
+                    AudioGuideId = item.AudioGuideId,
+                    AudioTitle = item.AudioTitle,
+                    LocationId = item.LocationId,
+                    LocationName = item.LocationName,
+                    LocationImageUrl = item.LocationImageUrl,
+                    AudioDuration = item.AudioDuration,
+                    Progress = (double)item.Progress,
+                    ListenedSeconds = item.ListenedSeconds,
+                    IsCompleted = item.IsCompleted,
+                    LastListenedAt = item.LastListenedAtUtc,
+                    ListenedAt = item.LastListenedAtUtc,
+                    UserId = "anonymous"
+                })
+                .ToListAsync();
+
+            return Results.Ok(history);
+        });
+
+        group.MapPost("/history", async (MobileAddListeningHistoryRequest request, AppDbContext db) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.AudioGuideId) || string.IsNullOrWhiteSpace(request.LocationId))
+            {
+                return Results.BadRequest(new { message = "audioGuideId and locationId are required." });
+            }
+
+            var audio = await db.AudioGuides
+                .AsNoTracking()
+                .FirstOrDefaultAsync(item => item.Id == request.AudioGuideId);
+            if (audio is null)
+            {
+                return Results.NotFound(new { message = "Audio guide not found." });
+            }
+
+            var location = await db.Locations
+                .AsNoTracking()
+                .FirstOrDefaultAsync(item => item.Id == request.LocationId);
+            if (location is null)
+            {
+                return Results.NotFound(new { message = "Location not found." });
+            }
+
+            var progress = Math.Clamp((decimal)request.Progress, 0M, 1M);
+            var listenedSeconds = request.ListenedSeconds > 0
+                ? request.ListenedSeconds
+                : (int)Math.Round(audio.Duration * 60 * (double)progress);
+            var nowUtc = DateTime.UtcNow;
+
+            var existing = await db.ListeningHistories.FirstOrDefaultAsync(item => item.AudioGuideId == request.AudioGuideId);
+            if (existing is null)
+            {
+                existing = new ListeningHistory
+                {
+                    Id = $"hist_{request.AudioGuideId}",
+                    AudioGuideId = request.AudioGuideId,
+                    LocationId = request.LocationId
+                };
+
+                db.ListeningHistories.Add(existing);
+            }
+
+            existing.AudioTitle = audio.Title;
+            existing.LocationName = location.Name;
+            existing.LocationImageUrl = location.ImageUrl;
+            existing.AudioDuration = audio.Duration;
+            existing.LocationId = request.LocationId;
+            existing.Progress = progress;
+            existing.ListenedSeconds = listenedSeconds;
+            existing.IsCompleted = request.IsCompleted || progress >= 0.999M;
+            existing.LastListenedAtUtc = nowUtc;
+
+            await db.SaveChangesAsync();
+
+            return Results.Ok(new MobileListeningHistoryDto
+            {
+                Id = existing.Id,
+                AudioGuideId = existing.AudioGuideId,
+                AudioTitle = existing.AudioTitle,
+                LocationId = existing.LocationId,
+                LocationName = existing.LocationName,
+                LocationImageUrl = existing.LocationImageUrl,
+                AudioDuration = existing.AudioDuration,
+                Progress = (double)existing.Progress,
+                ListenedSeconds = existing.ListenedSeconds,
+                IsCompleted = existing.IsCompleted,
+                LastListenedAt = existing.LastListenedAtUtc,
+                ListenedAt = existing.LastListenedAtUtc,
+                UserId = "anonymous"
+            });
+        });
+
         return app;
     }
 
@@ -316,5 +416,31 @@ public static class MobileApiEndpoints
         public int StartTimeSeconds { get; set; }
         public int EndTimeSeconds { get; set; }
         public string ScriptText { get; set; } = string.Empty;
+    }
+
+    private sealed class MobileListeningHistoryDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string AudioGuideId { get; set; } = string.Empty;
+        public string AudioTitle { get; set; } = string.Empty;
+        public string LocationId { get; set; } = string.Empty;
+        public string LocationName { get; set; } = string.Empty;
+        public string LocationImageUrl { get; set; } = string.Empty;
+        public int AudioDuration { get; set; }
+        public double Progress { get; set; }
+        public DateTime ListenedAt { get; set; }
+        public string UserId { get; set; } = string.Empty;
+        public int ListenedSeconds { get; set; }
+        public bool IsCompleted { get; set; }
+        public DateTime LastListenedAt { get; set; }
+    }
+
+    private sealed class MobileAddListeningHistoryRequest
+    {
+        public string AudioGuideId { get; set; } = string.Empty;
+        public string LocationId { get; set; } = string.Empty;
+        public double Progress { get; set; }
+        public int ListenedSeconds { get; set; }
+        public bool IsCompleted { get; set; }
     }
 }

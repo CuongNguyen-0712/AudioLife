@@ -40,6 +40,9 @@
                 <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminReports" ? "active" : "")" asp-page="/Admin/Reports">
                     <i class="fas fa-chart-line"></i> <span>Báo cáo trực quan</span>
                 </a>
+                <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminUsageHistory" ? "active" : "")" asp-page="/Admin/UsageHistory">
+                    <i class="fas fa-clock-rotate-left"></i> <span>Lịch sử sử dụng</span>
+                </a>
                 <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminSettings" ? "active" : "")" asp-page="/Admin/Settings">
                     <i class="fas fa-sliders"></i> <span>Thiết lập hệ thống</span>
                 </a>
@@ -58,6 +61,9 @@
                 </a>
                 <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AudioGuides" ? "active" : "")" asp-page="/AudioGuides/Index">
                     <i class="fas fa-headphones-alt"></i> <span>Audio</span>
+                </a>
+                <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminTranslations" ? "active" : "")" asp-page="/Admin/Translations">
+                    <i class="fas fa-language"></i> <span>Bản dịch</span>
                 </a>
             </nav>
         </aside>

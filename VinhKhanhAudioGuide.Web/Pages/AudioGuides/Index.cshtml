@@ -19,8 +19,55 @@
     <div class="alert alert-success alert-admin">@TempData["Success"]</div>
 }
 
+<div class="admin-card card-v2 mb-4">
+    <div class="p-3 p-md-4">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label for="keyword" class="form-label">Tìm audio</label>
+                <input id="keyword" name="keyword" value="@Model.Keyword" class="form-control" placeholder="Tiêu đề, mô tả, transcript..." />
+            </div>
+            <div class="col-md-3">
+                <label for="locationId" class="form-label">POI</label>
+                <select id="locationId" name="locationId" class="form-select">
+                    <option value="">Tất cả POI</option>
+                    @foreach (var location in Model.Locations)
+                    {
+                        <option value="@location.Id" selected="@(location.Id == Model.LocationId)">@location.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="language" class="form-label">Ngôn ngữ</label>
+                <select id="language" name="language" class="form-select">
+                    <option value="">Tất cả</option>
+                    <option value="vi" selected="@(Model.Language == "vi")">VI</option>
+                    <option value="en" selected="@(Model.Language == "en")">EN</option>
+                    <option value="fr" selected="@(Model.Language == "fr")">FR</option>
+                    <option value="ja" selected="@(Model.Language == "ja")">JA</option>
+                    <option value="ko" selected="@(Model.Language == "ko")">KO</option>
+                    <option value="zh" selected="@(Model.Language == "zh")">ZH</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <div class="form-check mt-4">
+                    <input id="ttsOnly" name="ttsOnly" value="true" type="checkbox" class="form-check-input" checked="@Model.TtsOnly" />
+                    <label class="form-check-label" for="ttsOnly">Chỉ TTS</label>
+                </div>
+                <div class="form-check">
+                    <input id="onlyIssues" name="onlyIssues" value="true" type="checkbox" class="form-check-input" checked="@Model.OnlyIssues" />
+                    <label class="form-check-label" for="onlyIssues">Chỉ lỗi dữ liệu</label>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <button class="btn-admin btn-admin-primary w-100" type="submit">Lọc</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="admin-card card-v2">
     <div class="p-3 p-md-4">
+        <div class="small text-muted mb-3">Đang hiển thị @Model.AudioGuides.Count audio guide.</div>
         @if (!Model.AudioGuides.Any())
         {
             <div class="empty-state"><i class="fas fa-headphones-alt d-block"></i>Chưa có audio guide nào</div>
@@ -44,6 +91,10 @@
                                 @if (ag.GeneratedFromTts)
                                 {
                                     <div class="audio-grid-badge"><span class="badge bg-success"><i class="fas fa-robot me-1"></i>TTS</span></div>
+                                }
+                                @if (string.IsNullOrWhiteSpace(ag.TranscriptText) || (string.IsNullOrWhiteSpace(ag.AudioUrl) && string.IsNullOrWhiteSpace(ag.CloudinaryAudioUrl)))
+                                {
+                                    <div class="audio-grid-badge mt-2"><span class="badge bg-warning text-dark"><i class="fas fa-triangle-exclamation me-1"></i>Cần bổ sung dữ liệu</span></div>
                                 }
                                 <p class="audio-grid-desc">@ag.Description</p>
                                 @if (!string.IsNullOrEmpty(selectedAudioUrl))

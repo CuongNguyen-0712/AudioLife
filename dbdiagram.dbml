@@ -85,6 +85,53 @@ Table PoiAdminLocationAssignment {
   }
 }
 
+Table PoiChangeRequest {
+  Id Guid [pk]
+  SubmittedByUsername String
+  SubmittedByName String
+  LocationId String
+  LocationName String
+  Topic String
+  Title String
+  Details String
+  TargetType String // Location | AudioGuide
+  TargetEntityId String
+  ChangeSetJson String
+  Status String // Pending | InReview | Approved | Rejected
+  SubmittedAtUtc DateTime
+  UpdatedAtUtc DateTime
+  UpdatedBy String
+  ReviewNote String
+
+  indexes {
+    (Status)
+    (SubmittedByUsername)
+    (LocationId)
+    (SubmittedAtUtc)
+  }
+}
+
+Table ListeningHistory {
+  Id String [pk]
+  AudioGuideId String
+  LocationId String
+  AudioTitle String
+  LocationName String
+  LocationImageUrl String
+  AudioDuration Int
+  Progress Decimal
+  ListenedSeconds Int
+  IsCompleted Boolean
+  LastListenedAtUtc DateTime
+
+  indexes {
+    (AudioGuideId)
+    (LocationId)
+    (LastListenedAtUtc)
+    (LocationId, LastListenedAtUtc)
+  }
+}
+
 // Relationships
 Ref: Location.CategoryId > Category.Id
 Ref: AudioGuide.LocationId > Location.Id
@@ -93,3 +140,6 @@ Ref: TourLocation.TourId > Tour.Id
 Ref: TourLocation.LocationId > Location.Id
 Ref: PoiAdminLocationAssignment.LocationId > Location.Id
 Ref: PoiAdminLocationAssignment.Username > AuthUserAccount.Username
+Ref: PoiChangeRequest.LocationId > Location.Id
+Ref: ListeningHistory.AudioGuideId > AudioGuide.Id
+Ref: ListeningHistory.LocationId > Location.Id

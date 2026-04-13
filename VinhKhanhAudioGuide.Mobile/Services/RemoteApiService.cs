@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text;
 using VinhKhanhAudioGuide.Mobile.Models;
 using Location = VinhKhanhAudioGuide.Mobile.Models.Location;
 
@@ -166,12 +167,55 @@ public class RemoteApiService : IApiService
         return await _fallback.GetAudioGuideByIdAsync(audioGuideId);
     }
 
-    // Keep user-specific features local for now.
+    // Keep favorites/downloads local for now.
     public Task<bool> ToggleFavoriteAsync(string locationId) => _fallback.ToggleFavoriteAsync(locationId);
     public Task<List<Location>> GetFavoriteLocationsAsync() => _fallback.GetFavoriteLocationsAsync();
-    public Task<List<ListeningHistory>> GetListeningHistoryAsync() => _fallback.GetListeningHistoryAsync();
-    public Task AddListeningHistoryAsync(string audioGuideId, string locationId, double progress)
-        => _fallback.AddListeningHistoryAsync(audioGuideId, locationId, progress);
+
+    public async Task<List<ListeningHistory>> GetListeningHistoryAsync()
+    {
+        var remote = await TryGetAsync<List<ListeningHistory>>("api/mobile/history");
+        if (remote is not null)
+        {
+            foreach (var item in remote)
+            {
+                if (item.LastListenedAt == default)
+                {
+                    item.LastListenedAt = item.ListenedAt == default ? DateTime.UtcNow : item.ListenedAt;
+                }
+
+                if (item.ListenedAt == default)
+                {
+                    item.ListenedAt = item.LastListenedAt;
+                }
+            }
+
+            return remote
+                .OrderByDescending(item => item.LastListenedAt)
+                .ToList();
+        }
+
+        return await _fallback.GetListeningHistoryAsync();
+    }
+
+    public async Task AddListeningHistoryAsync(string audioGuideId, string locationId, double progress)
+    {
+        var request = new AddListeningHistoryRequest
+        {
+            AudioGuideId = audioGuideId,
+            LocationId = locationId,
+            Progress = progress,
+            IsCompleted = progress >= 0.999
+        };
+
+        var posted = await TryPostAsync("api/mobile/history", request);
+        if (posted)
+        {
+            return;
+        }
+
+        await _fallback.AddListeningHistoryAsync(audioGuideId, locationId, progress);
+    }
+
     public Task<List<DownloadedAudio>> GetDownloadedAudiosAsync() => _fallback.GetDownloadedAudiosAsync();
     public Task<bool> DownloadAudioAsync(string audioGuideId) => _fallback.DownloadAudioAsync(audioGuideId);
     public Task<bool> DeleteDownloadedAudioAsync(string audioGuideId) => _fallback.DeleteDownloadedAudioAsync(audioGuideId);
@@ -231,5 +275,54 @@ public class RemoteApiService : IApiService
         {
             return default;
         }
+    }
+
+    private async Task<bool> TryPostAsync<TBody>(string relativePath, TBody body)
+    {
+        if (!string.IsNullOrWhiteSpace(_activeBaseUrl))
+        {
+            var postedToActive = await TryPostToBaseAsync(_activeBaseUrl!, relativePath, body);
+            if (postedToActive)
+            {
+                return true;
+            }
+        }
+
+        foreach (var baseUrl in BaseUrls)
+        {
+            var posted = await TryPostToBaseAsync(baseUrl, relativePath, body);
+            if (posted)
+            {
+                _activeBaseUrl = baseUrl;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private async Task<bool> TryPostToBaseAsync<TBody>(string baseUrl, string relativePath, TBody body)
+    {
+        var requestUri = $"{baseUrl.TrimEnd('/')}/{relativePath.TrimStart('/')}";
+
+        try
+        {
+            var json = JsonSerializer.Serialize(body, JsonOptions);
+            using var content = new StringContent(json, Encoding.UTF8, "application/json");
+            using var response = await _httpClient.PostAsync(requestUri, content);
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private sealed class AddListeningHistoryRequest
+    {
+        public string AudioGuideId { get; set; } = string.Empty;
+        public string LocationId { get; set; } = string.Empty;
+        public double Progress { get; set; }
+        public bool IsCompleted { get; set; }
     }
 }

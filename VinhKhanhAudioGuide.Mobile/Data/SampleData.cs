@@ -341,6 +341,77 @@ public static class SampleData
         };
     }
 
+    public static List<ListeningHistory> GetListeningHistory(string userId = "local_user")
+    {
+        return new List<ListeningHistory>
+        {
+            new()
+            {
+                Id = "h1",
+                AudioGuideId = "ag_001_1",
+                AudioTitle = "Giới thiệu quán",
+                LocationId = "loc_001",
+                LocationName = "Bún mắm Vĩnh Khánh",
+                LocationImageUrl = "bun_mam.jpg",
+                AudioDuration = 3,
+                Progress = 0.8,
+                ListenedAt = DateTime.Today.AddHours(-2),
+                UserId = userId,
+                ListenedSeconds = 144,
+                LastListenedAt = DateTime.Today.AddHours(-2),
+                IsCompleted = false
+            },
+            new()
+            {
+                Id = "h2",
+                AudioGuideId = "ag_002_1",
+                AudioTitle = "Giới thiệu quán",
+                LocationId = "loc_002",
+                LocationName = "Bánh xèo miền Tây",
+                LocationImageUrl = "banh_xeo.jpg",
+                AudioDuration = 3,
+                Progress = 1.0,
+                ListenedAt = DateTime.Today.AddHours(-5),
+                UserId = userId,
+                ListenedSeconds = 180,
+                LastListenedAt = DateTime.Today.AddHours(-5),
+                IsCompleted = true
+            },
+            new()
+            {
+                Id = "h3",
+                AudioGuideId = "ag_007_1",
+                AudioTitle = "Giới thiệu quán",
+                LocationId = "loc_007",
+                LocationName = "Ốc xào bơ tỏi",
+                LocationImageUrl = "oc_xao_bo_toi.jpg",
+                AudioDuration = 3,
+                Progress = 0.45,
+                ListenedAt = DateTime.Today.AddDays(-1),
+                UserId = userId,
+                ListenedSeconds = 81,
+                LastListenedAt = DateTime.Today.AddDays(-1),
+                IsCompleted = false
+            },
+            new()
+            {
+                Id = "h4",
+                AudioGuideId = "ag_006_1",
+                AudioTitle = "Giới thiệu quán",
+                LocationId = "loc_006",
+                LocationName = "Phở khuya",
+                LocationImageUrl = "pho.png",
+                AudioDuration = 3,
+                Progress = 1.0,
+                ListenedAt = DateTime.Today.AddDays(-2),
+                UserId = userId,
+                ListenedSeconds = 180,
+                LastListenedAt = DateTime.Today.AddDays(-2),
+                IsCompleted = true
+            }
+        };
+    }
+
     public static Location? GetLocationById(string id)
     {
         return GetLocations().FirstOrDefault(l => l.Id == id);
