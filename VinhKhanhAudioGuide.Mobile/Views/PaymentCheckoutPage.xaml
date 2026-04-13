@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="VinhKhanhAudioGuide.Mobile.Views.PaymentCheckoutPage"
+             Title="Thanh toán"
+             BackgroundColor="{StaticResource Surface}"
+             NavigationPage.HasNavigationBar="True">
+
+    <NavigationPage.TitleView>
+        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+            <Image Source="tour.svg" HeightRequest="18" WidthRequest="18" VerticalOptions="Center" />
+            <Label Text="Thanh toán"
+                   FontFamily="RobotoCondensed-SemiBold"
+                   FontSize="20"
+                   TextColor="{StaticResource Primary}"
+                   VerticalOptions="Center" />
+        </HorizontalStackLayout>
+    </NavigationPage.TitleView>
+
+    <Grid>
+        <Grid Padding="20,24,20,20"
+              RowDefinitions="Auto,Auto,Auto,*,Auto"
+              RowSpacing="16">
+           
+                    <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                        <Label Text="Kiểm tra lại gói và hoàn tất thanh toán để mở khóa nội dung."
+                               FontFamily="RobotoCondensed-SemiBold"
+                               FontSize="24"
+                               TextColor="{StaticResource OnSurface}" />
+                    </VerticalStackLayout>
+            <Border Grid.Row="1"
+                    StrokeThickness="0"
+                    BackgroundColor="{StaticResource SurfaceContainerLowest}"
+                    Padding="18"
+                    Margin="0,2,0,0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="24" />
+                </Border.StrokeShape>
+
+                <VerticalStackLayout Spacing="14">
+                    <HorizontalStackLayout Spacing="10">
+                        <Border StrokeThickness="0"
+                                BackgroundColor="{StaticResource PrimaryContainer}"
+                                Padding="8"
+                                VerticalOptions="Center">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12" />
+                            </Border.StrokeShape>
+                            <Image Source="tour.svg"
+                                   WidthRequest="18"
+                                   HeightRequest="18"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
+                        </Border>
+
+                        <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                            <Label x:Name="PlanTitleLabel"
+                                   Text="10.000đ/ngày"
+                                   FontFamily="RobotoCondensed-SemiBold"
+                                   FontSize="18"
+                                   TextColor="{StaticResource OnSurface}" />
+                            <Label x:Name="PlanSubtitleLabel"
+                                   Text="Một ngày sử dụng"
+                                   FontFamily="RobotoCondensed-Regular"
+                                   FontSize="12"
+                                   TextColor="{StaticResource OnSurfaceVariant}" />
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+
+                    <Border StrokeThickness="0"
+                            BackgroundColor="{StaticResource SurfaceContainerLow}"
+                            Padding="14,12">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="18" />
+                        </Border.StrokeShape>
+                        <VerticalStackLayout Spacing="8">
+                            <HorizontalStackLayout>
+                                <Label Text="Giá tiền"
+                                       FontFamily="RobotoCondensed-Regular"
+                                       FontSize="13"
+                                       Margin="0,0,8,0"
+                                       TextColor="{StaticResource OnSurfaceVariant}" />
+                                <Label x:Name="PriceLabel"
+                                       Text="10.000đ"
+                                       FontFamily="RobotoCondensed-SemiBold"
+                                       FontSize="16"
+                                       TextColor="{StaticResource Primary}"
+                                       HorizontalOptions="End" />
+                            </HorizontalStackLayout>
+
+                            <Label x:Name="PlanDescriptionLabel"
+                                   Text="Phù hợp khi bạn muốn trải nghiệm nhanh trong một ngày, tối ưu cho khách ghé ngắn."
+                                   FontFamily="RobotoCondensed-Regular"
+                                   FontSize="13"
+                                   LineBreakMode="WordWrap"
+                                   TextColor="{StaticResource OnSurfaceVariant}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Grid.Row="2"
+                    StrokeThickness="0"
+                    BackgroundColor="{StaticResource TertiaryContainer}"
+                    Padding="14,12"
+                    Margin="0,2,0,0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="18" />
+                </Border.StrokeShape>
+                <HorizontalStackLayout Spacing="8">
+                    <Image Source="shield.svg"
+                           WidthRequest="16"
+                           HeightRequest="16"
+                           VerticalOptions="Center" />
+                    <Label Text="Giao dịch được xác nhận ngay sau khi bấm thanh toán."
+                           FontFamily="RobotoCondensed-Medium"
+                           FontSize="12"
+                           TextColor="{StaticResource OnTertiaryFixed}" />
+                </HorizontalStackLayout>
+            </Border>
+
+            <VerticalStackLayout Grid.Row="3" />
+
+            <Button Grid.Row="4"
+                    Text="Thanh toán"
+                    Style="{StaticResource PrimaryButton}"
+                    Clicked="OnPayClicked" />
+        </Grid>
+    </Grid>
+</ContentPage>

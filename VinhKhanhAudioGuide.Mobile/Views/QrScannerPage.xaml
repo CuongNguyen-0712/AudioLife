@@ -5,8 +5,25 @@
 	      xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
 	      x:Class="VinhKhanhAudioGuide.Mobile.Views.QrScannerPage"
 	      Title="{ext:Translate Qr_PageTitle}"
-	      BackgroundColor="Black"
-	      Shell.NavBarIsVisible="False">
+	      BackgroundColor="{StaticResource Primary}"
+	      NavigationPage.HasNavigationBar="True">
+
+    <NavigationPage.TitleView>
+		<HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+			<ImageButton Source="back_arrow.svg"
+					 WidthRequest="24"
+					 HeightRequest="24"
+					 Padding="2"
+					 BackgroundColor="Transparent"
+					 Clicked="OnBackToIntroClicked" />
+			<Image Source="qr.svg" HeightRequest="18" WidthRequest="18" VerticalOptions="Center" />
+			<Label Text="{ext:Translate Qr_PageTitle}"
+				   FontFamily="RobotoCondensed-SemiBold"
+				   FontSize="20"
+				   TextColor="{StaticResource Primary}"
+				   VerticalOptions="Center" />
+		</HorizontalStackLayout>
+	</NavigationPage.TitleView>
 
     <Grid>
 	 <zxing:CameraBarcodeReaderView x:Name="ScannerView"
@@ -16,21 +33,44 @@
 	 <Grid Padding="24,48,24,28"
 		RowDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto"
 		RowSpacing="10">
-	     <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="12">
-		  <ImageButton Source="back.svg"
-				 WidthRequest="36"
-				 HeightRequest="36"
-				 BackgroundColor="#1AFFFFFF"
-				 CornerRadius="18"
-				 Padding="8"
-				 Clicked="OnBackToIntroClicked" />
+	     <Grid Grid.Row="0" ColumnDefinitions="*">
+		  <Border
+			  StrokeThickness="0"
+			  BackgroundColor="#1AFFFFFF"
+			  Padding="12,10"
+			  HorizontalOptions="Fill">
+			  <Border.StrokeShape>
+				  <RoundRectangle CornerRadius="18" />
+			  </Border.StrokeShape>
 
-		  <Label Grid.Column="1"
-			  Text="{ext:Translate Qr_HeaderTitle}"
-			  FontFamily="RobotoCondensedSemiBold"
-			  FontSize="26"
-			  TextColor="White"
-			  VerticalOptions="Center" />
+			  <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+				  <Border StrokeThickness="0"
+					  BackgroundColor="{StaticResource PrimaryContainer}"
+					  Padding="7"
+					  VerticalOptions="Center">
+					  <Border.StrokeShape>
+						  <RoundRectangle CornerRadius="12" />
+					  </Border.StrokeShape>
+					  <Image Source="qr.svg"
+						 HeightRequest="18"
+						 WidthRequest="18"
+						 VerticalOptions="Center"
+						 HorizontalOptions="Center" />
+				  </Border>
+
+				  <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+					  <Label Text="{ext:Translate Qr_HeaderTitle}"
+						 FontFamily="RobotoCondensed-SemiBold"
+						 FontSize="18"
+						 TextColor="White"
+						 LineBreakMode="TailTruncation" />
+					  <Label Text="{ext:Translate Qr_PageTitle}"
+						 FontFamily="RobotoCondensed-Regular"
+						 FontSize="12"
+						 TextColor="#D9FFFFFF" />
+				  </VerticalStackLayout>
+			  </HorizontalStackLayout>
+		  </Border>
 	     </Grid>
 
 	     <Border Grid.Row="1"
@@ -60,7 +100,7 @@
 		      <Image x:Name="SeedQrImage"
 			      HeightRequest="84"
 			      WidthRequest="84"
-			      Aspect="AspectFill" />
+			      Aspect="AspectFill"/>
 
 		      <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
 			   <Label Text="{ext:Translate Qr_SeedTitle}"

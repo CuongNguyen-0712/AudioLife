@@ -20,7 +20,10 @@ public class MainActivity : MauiAppCompatActivity
 {
     protected override void OnCreate(Bundle? savedInstanceState)
     {
-        base.OnCreate(savedInstanceState);
+        // Prevent AndroidX from restoring stale MAUI fragments into a previous container id.
+        // The app can swap root pages during startup (intro/shell/deep-link), and restoring
+        // old fragment state can crash with: "No view found for id ... line1".
+        base.OnCreate(null);
         HandleIntent(Intent);
     }
 
