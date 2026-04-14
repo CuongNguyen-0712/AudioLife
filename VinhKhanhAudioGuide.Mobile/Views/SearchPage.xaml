@@ -1,194 +1,127 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:sys="clr-namespace:System;assembly=netstandard"
              xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
              x:Class="VinhKhanhAudioGuide.Mobile.Views.SearchPage"
              x:DataType="viewmodels:SearchViewModel"
-             Title="Khám phá"
-             Shell.NavBarIsVisible="False">
+             x:Name="SearchRoot"
+             Title="Kết quả"
+             Shell.NavBarIsVisible="True"
+             BackgroundColor="{StaticResource Gray100}">
 
-    <Grid RowDefinitions="Auto,Auto,*">
-
-        <!-- Search Header -->
-        <Frame Grid.Row="0"
-               BackgroundColor="{StaticResource White}"
-     
-               Padding="15,50,15,20"
-               CornerRadius="0">
-            <VerticalStackLayout Spacing="15">
-                <Label Text="Tìm kiếm"
-                       FontSize="24"
-                       FontAttributes="Bold"
-                       TextColor="{StaticResource PrimaryDark}"/>
-
-                <Frame Padding="6"
-                       CornerRadius="10"
-                       BackgroundColor="White"
-                       HasShadow="False">
-                    <Grid ColumnDefinitions="Auto,*,Auto">
-                        <Image Source="search_icon.png"
-                               HeightRequest="20"
-                               WidthRequest="20"
-                               Margin="5,0"/>
-                        <Entry Grid.Column="1"
-                               AutomationId="SearchInput"
-                               Placeholder="Tìm địa điểm, tour..."
-                               Text="{Binding SearchQuery}"
-                               ReturnCommand="{Binding SearchCommand}"
-                               BackgroundColor="Transparent"
-                               FontFamily="OpenSansRegular"
-                               FontSize="16"/>
-                        <ImageButton Grid.Column="2"
-                                     Source="close_icon.png"
-                                     IsVisible="{Binding HasSearchQuery}"
-                                     HeightRequest="20"
-                                     WidthRequest="20"
-                                     Command="{Binding ClearSearchCommand}"/>
-                    </Grid>
-                </Frame>
-            </VerticalStackLayout>
-        </Frame>
-
-        <!-- Category Filters -->
-        <ScrollView Grid.Row="1"
-                    Orientation="Horizontal"
-                    HorizontalScrollBarVisibility="Never"
-                    Padding="15,10">
-            <HorizontalStackLayout Spacing="10">
-                <Frame Padding="12,8"
-                       CornerRadius="20"
-                       BackgroundColor="{Binding AllSelected, Converter={StaticResource BoolToColorConverter}}"
-                       BorderColor="{StaticResource Primary}">
-                    <Label Text="Tất cả"
-                           FontSize="16"
-                           TextColor="{Binding AllSelected, Converter={StaticResource BoolToTextColorConverter}}"/>
-                    <Frame.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding SelectAllCommand}"/>
-                    </Frame.GestureRecognizers>
+    <Grid>
+        <Grid>
+            <VerticalStackLayout Spacing="0">
+                <Frame IsVisible="{Binding ShowResultContextTitle}"
+                       Margin="14,12,14,0"
+                       Padding="12,8"
+                       CornerRadius="12"
+                       HasShadow="False"
+                       BackgroundColor="{StaticResource SurfaceContainerLowest}">
+                    <Label Text="{Binding ResultContextTitle}"
+                           FontSize="13"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource OnSurface}" />
                 </Frame>
 
-                <CollectionView ItemsSource="{Binding Categories}"
-                                ItemsLayout="HorizontalList"
-                                HeightRequest="40">
+                <CollectionView IsVisible="{Binding ShowResults}"
+                                ItemsSource="{Binding SearchResults}"
+                                SelectionMode="None"
+                                Margin="10,10,10,8">
                     <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="viewmodels:CategoryFilter">
-                            <Frame Padding="8,6"
-                                   Margin="0,0,10,0"
-                                   CornerRadius="20"
-                                   BackgroundColor="{Binding IsSelected, Converter={StaticResource BoolToColorConverter}}"
-                                   BorderColor="{StaticResource Primary}">
-                                <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
-                                    <Label Text="{Binding Name}"
-                                           FontSize="13"
-                                           TextColor="{Binding IsSelected, Converter={StaticResource BoolToTextColorConverter}}"/>
-                                </HorizontalStackLayout>
+                        <DataTemplate x:DataType="viewmodels:SearchResultItem">
+                            <Frame Style="{StaticResource CardFrame}"
+                                   Padding="{StaticResource Space3}"
+                                   Margin="0,6">
                                 <Frame.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:SearchViewModel}}, Path=SelectCategoryCommand}"
-                                                          CommandParameter="{Binding .}"/>
+                                    <TapGestureRecognizer Command="{Binding Source={x:Reference SearchRoot}, Path=BindingContext.LocationSelectedCommand}"
+                                                          CommandParameter="{Binding .}" />
                                 </Frame.GestureRecognizers>
+
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="{StaticResource Space3}">
+                                    <Frame Style="{StaticResource SurfaceHighlightFrame}"
+                                           WidthRequest="80"
+                                           HeightRequest="80"
+                                           Padding="0"
+                                           Margin="0"
+                                           BackgroundColor="{StaticResource SurfaceContainerHigh}"
+                                           IsClippedToBounds="True">
+                                        <Image Source="{Binding ImageUrl}"
+                                               Aspect="AspectFill" />
+                                    </Frame>
+
+                                    <VerticalStackLayout Grid.Column="1"
+                                                         Spacing="{StaticResource Space2}"
+                                                         VerticalOptions="Center">
+                                        <Label Text="{Binding Name}"
+                                               FontSize="16"
+                                               FontAttributes="Bold"
+                                               LineHeight="1.2"
+                                               MaxLines="2"
+                                               Margin="0" />
+
+                                        <Label Text="{Binding CategoryName}"
+                                               FontSize="13"
+                                               TextColor="{StaticResource Primary}" />
+
+                                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                            <Image Source="time.svg" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" />
+                                            <Label Text="{Binding DurationDisplay}"
+                                                   FontSize="13"
+                                                   TextColor="{StaticResource OnSurfaceVariant}"
+                                                   Opacity="0.7"
+                                                   VerticalOptions="Center" />
+                                        </HorizontalStackLayout>
+
+                                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                            <Image Source="audio.svg" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" />
+                                            <Label Text="{Binding CountDisplay}"
+                                                   FontSize="13"
+                                                   TextColor="{StaticResource OnSurfaceVariant}"
+                                                   Opacity="0.7"
+                                                   VerticalOptions="Center" />
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
+
+                                    <Frame Grid.Column="2"
+                                           Style="{StaticResource CardFrameSmall}"
+                                           BackgroundColor="{StaticResource SecondaryContainer}"
+                                           VerticalOptions="Center"
+                                           Padding="8">
+                                        <Image Source="chevron_right.svg"
+                                               WidthRequest="16"
+                                               HeightRequest="16"
+                                               Aspect="AspectFit"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center" />
+                                    </Frame>
+                                </Grid>
                             </Frame>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
-            </HorizontalStackLayout>
-        </ScrollView>
+            </VerticalStackLayout>
 
-        <!-- Results -->
-        <Grid Grid.Row="2">
-            <!-- Loading -->
-            <ActivityIndicator IsRunning="{Binding IsLoading}"
-                               IsVisible="{Binding IsLoading}"
-                               Color="{StaticResource Primary}"
-                               VerticalOptions="Center"/>
-
-            <!-- No Results -->
             <VerticalStackLayout IsVisible="{Binding ShowNoResults}"
                                  VerticalOptions="Center"
                                  HorizontalOptions="Center"
-                                 Padding="40">
-                <Image Source="no_results.png"
-                       HeightRequest="100"
-                       WidthRequest="100"
-                       Opacity="0.5"/>
-                <Label Text="Không tìm thấy kết quả"
+                                 Padding="32"
+                                 Spacing="6">
+                <Label Text="Không có kết quả phù hợp"
                        FontSize="16"
                        FontAttributes="Bold"
-                       HorizontalOptions="Center"
-                       Margin="0,15,0,5"/>
-                <Label Text="{Binding SearchQuery, StringFormat='Không có kết quả phù hợp với &quot;{0}&quot;'}"
+                       HorizontalOptions="Center" />
+                <Label Text="Hãy thử từ khóa khác hoặc thay đổi bộ lọc."
                        FontSize="13"
-                       TextColor="{StaticResource Gray500}"
-                       HorizontalTextAlignment="Center"/>
+                       TextColor="{StaticResource OnSurfaceVariant}"
+                       HorizontalTextAlignment="Center" />
             </VerticalStackLayout>
 
-            <!-- Recent Searches (when no query) -->
-            <VerticalStackLayout IsVisible="{Binding ShowRecentSearches}"
-                                 Padding="15">
-                <Label Text="Tìm kiếm gần đây"
-                       FontSize="17"
-                       TextColor="{StaticResource PrimaryDark}"
-                       FontAttributes="Bold"
-                       Margin="0,0,0,10"/>
-
-                <CollectionView ItemsSource="{Binding RecentSearches}">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="sys:String">
-                            <Grid ColumnDefinitions="Auto,*,Auto" Padding="10" VerticalOptions="Center">
-                                <Image Source="history_icon" HeightRequest="18" WidthRequest="18" Opacity="0.6" />
-                                <Label Grid.Column="1" Text="{Binding .}" VerticalOptions="Center" Margin="12,0" FontSize="16" TextColor="Black"/>
-                                <ImageButton Grid.Column="2" Source="close_icon" HeightRequest="20" WidthRequest="20" Opacity="0.6"
-                                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:SearchViewModel}}, Path=RemoveRecentSearchCommand}"
-                                             CommandParameter="{Binding .}" />
-                                <Grid.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:SearchViewModel}}, Path=UseRecentSearchCommand}"
-                                                      CommandParameter="{Binding .}" />
-                                </Grid.GestureRecognizers>
-                            </Grid>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </VerticalStackLayout>
-
-            <!-- Search Results -->
-            <CollectionView IsVisible="{Binding ShowResults}"
-                            ItemsSource="{Binding SearchResults}"
-                            SelectionMode="None">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="viewmodels:SearchResultItem">
-                        <Frame Padding="0"
-                               Margin="15,5"
-                               CornerRadius="12"
-                               HasShadow="True">
-                            <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:SearchViewModel}}, Path=LocationSelectedCommand}"
-                                                      CommandParameter="{Binding .}" />
-                            </Frame.GestureRecognizers>
-                            <Grid ColumnDefinitions="90,*">
-                                <Image Source="{Binding ImageUrl}"
-                                       Aspect="AspectFill"
-                                       HeightRequest="90"/>
-                                <VerticalStackLayout Grid.Column="1"
-                                                     Padding="12"
-                                                     VerticalOptions="Center"
-                                                     Spacing="4">
-                                    <Label Text="{Binding Name}"
-                                           FontSize="16"
-                                           FontAttributes="Bold"/>
-                                    <Label Text="{Binding CategoryName}"
-                                         FontSize="13"
-                                           TextColor="{StaticResource Primary}"/>
-                                    <Label Text="{Binding Description}"
-                                         FontSize="12"
-                                           TextColor="{StaticResource Gray500}"
-                                           LineBreakMode="TailTruncation"
-                                           MaxLines="2"/>
-                                </VerticalStackLayout>
-                            </Grid>
-                        </Frame>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+            <ActivityIndicator IsVisible="{Binding IsLoading}"
+                               IsRunning="{Binding IsLoading}"
+                               Color="{StaticResource Primary}"
+                               VerticalOptions="Center"
+                               HorizontalOptions="Center" />
         </Grid>
     </Grid>
 

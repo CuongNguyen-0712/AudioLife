@@ -44,3 +44,4 @@ public partial class MapPage : ContentPage
         await viewModel.OpenPoiDetailByIdFromMapAsync(locationId);
     }
 }
+        

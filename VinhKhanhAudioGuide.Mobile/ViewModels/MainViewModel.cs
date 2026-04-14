@@ -5,6 +5,11 @@ using CommunityToolkit.Mvvm.Messaging;
 using VinhKhanhAudioGuide.Mobile.Messages;
 using VinhKhanhAudioGuide.Mobile.Models;
 using VinhKhanhAudioGuide.Mobile.Services;
+using MainThread = Microsoft.Maui.ApplicationModel.MainThread;
+using Preferences = Microsoft.Maui.Storage.Preferences;
+using ObservablePropertyAttribute = CommunityToolkit.Mvvm.ComponentModel.ObservablePropertyAttribute;
+using RelayCommandAttribute = CommunityToolkit.Mvvm.Input.RelayCommandAttribute;
+using WeakReferenceMessenger = CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger;
 using Location = VinhKhanhAudioGuide.Mobile.Models.Location;
 
 namespace VinhKhanhAudioGuide.Mobile.ViewModels;
@@ -277,7 +282,11 @@ public partial class MainViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(SearchText))
             return;
 
-        await _navigationService.NavigateToAsync("//SearchPage");
+        await _navigationService.NavigateToAsync(nameof(Views.SearchPage),
+            new Dictionary<string, object>
+            {
+                { "InitialQuery", SearchText.Trim() }
+            });
     }
 
     [RelayCommand]
@@ -291,7 +300,11 @@ public partial class MainViewModel : ObservableObject
             cat.IsSelected = (cat.Id == category.Id);
         }
 
-        await _navigationService.NavigateToAsync("//SearchPage");
+        await _navigationService.NavigateToAsync(nameof(Views.SearchPage),
+            new Dictionary<string, object>
+            {
+                { "InitialCategoryId", category.Id }
+            });
     }
 
     [RelayCommand]
@@ -321,7 +334,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task ViewAllLocationsAsync()
     {
-        await _navigationService.NavigateToAsync("//SearchPage");
+        await _navigationService.NavigateToAsync(nameof(Views.SearchPage));
     }
 
     [RelayCommand]
