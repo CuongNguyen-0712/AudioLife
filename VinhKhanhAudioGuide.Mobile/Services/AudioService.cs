@@ -10,6 +10,7 @@ public class AudioService : IAudioService, IDisposable
     private static readonly HttpClient HttpClient = new();
 
     private readonly IAudioManager _audioManager;
+    private readonly SemaphoreSlim _operationLock = new(1, 1);
     private IAudioPlayer? _player;
     private Stream? _sourceStream;
 
@@ -20,6 +21,7 @@ public class AudioService : IAudioService, IDisposable
     private AudioPlaybackState _state = AudioPlaybackState.None;
     private string? _currentAudioUrl;
     private IDispatcherTimer? _timer;
+    private long _playRequestVersion;
 
     public TimeSpan CurrentPosition => _currentPosition;
     public TimeSpan Duration => _duration;
@@ -37,20 +39,38 @@ public class AudioService : IAudioService, IDisposable
 
     public async Task PlayAsync(string audioUrl)
     {
-        if (_isPlaying)
+        if (string.IsNullOrWhiteSpace(audioUrl))
         {
-            await StopAsync();
+            SetState(AudioPlaybackState.Error, audioUrl);
+            return;
         }
 
-        _currentAudioUrl = audioUrl;
-        SetState(AudioPlaybackState.Loading);
+        var requestVersion = Interlocked.Increment(ref _playRequestVersion);
+        await _operationLock.WaitAsync();
 
         try
         {
+            SetState(AudioPlaybackState.Loading, audioUrl);
+
+            // Always dispose old player first to avoid overlap when users switch quickly.
+            StopPositionTimer();
+            CleanupPlayer();
+            _isPlaying = false;
+            _currentPosition = TimeSpan.Zero;
+            _duration = TimeSpan.Zero;
+
+            _currentAudioUrl = audioUrl;
             await LoadPlayerAsync(audioUrl);
             if (_player == null)
             {
                 throw new InvalidOperationException("Không thể khởi tạo audio player.");
+            }
+
+            // Ignore stale play requests that completed after a newer request.
+            if (requestVersion != _playRequestVersion)
+            {
+                CleanupPlayer();
+                return;
             }
 
             _player.Volume = _volume;
@@ -61,78 +81,130 @@ public class AudioService : IAudioService, IDisposable
             _currentPosition = TimeSpan.Zero;
             _isPlaying = true;
 
-            SetState(AudioPlaybackState.Playing);
+            SetState(AudioPlaybackState.Playing, _currentAudioUrl);
             StartPositionTimer();
+            RaisePositionChanged();
         }
         catch
         {
             CleanupPlayer();
-            SetState(AudioPlaybackState.Error);
-            throw;
-        }
-    }
-
-    public Task PauseAsync()
-    {
-        if (!_isPlaying || _player == null) return Task.CompletedTask;
-
-        _player.Pause();
-        _isPlaying = false;
-        StopPositionTimer();
-        SyncPositionFromPlayer();
-        SetState(AudioPlaybackState.Paused);
-        return Task.CompletedTask;
-    }
-
-    public Task ResumeAsync()
-    {
-        if (_isPlaying || _player == null || _currentAudioUrl == null) return Task.CompletedTask;
-
-        _player.Play();
-        _isPlaying = true;
-        SetState(AudioPlaybackState.Playing);
-        StartPositionTimer();
-        return Task.CompletedTask;
-    }
-
-    public Task StopAsync()
-    {
-        _player?.Stop();
-        StopPositionTimer();
-        CleanupPlayer();
-
-        _isPlaying = false;
-        _currentPosition = TimeSpan.Zero;
-        _duration = TimeSpan.Zero;
-        SetState(AudioPlaybackState.Stopped);
-        _currentAudioUrl = null;
-        return Task.CompletedTask;
-    }
-
-    public Task SeekAsync(TimeSpan position)
-    {
-        if (_player == null)
-        {
-            return Task.CompletedTask;
-        }
-
-        _currentPosition = position;
-        if (_currentPosition > _duration)
-            _currentPosition = _duration;
-        if (_currentPosition < TimeSpan.Zero)
+            _isPlaying = false;
             _currentPosition = TimeSpan.Zero;
-
-        if (_player.CanSeek)
-        {
-            _player.Seek(_currentPosition.TotalSeconds);
+            _duration = TimeSpan.Zero;
+            SetState(AudioPlaybackState.Error, _currentAudioUrl);
         }
-
-        PositionChanged?.Invoke(this, new AudioPositionChangedEventArgs
+        finally
         {
-            Position = _currentPosition,
-            Duration = _duration
-        });
-        return Task.CompletedTask;
+            _operationLock.Release();
+        }
+    }
+
+    public async Task PauseAsync()
+    {
+        await _operationLock.WaitAsync();
+        try
+        {
+            if (!_isPlaying || _player == null)
+            {
+                return;
+            }
+
+            _player.Pause();
+            _isPlaying = false;
+            StopPositionTimer();
+            SyncPositionFromPlayer();
+            SetState(AudioPlaybackState.Paused, _currentAudioUrl);
+            RaisePositionChanged();
+        }
+        finally
+        {
+            _operationLock.Release();
+        }
+    }
+
+    public async Task ResumeAsync()
+    {
+        await _operationLock.WaitAsync();
+        try
+        {
+            if (_isPlaying || _player == null || string.IsNullOrWhiteSpace(_currentAudioUrl))
+            {
+                return;
+            }
+
+            _player.Play();
+            _isPlaying = true;
+            SetState(AudioPlaybackState.Playing, _currentAudioUrl);
+            StartPositionTimer();
+            RaisePositionChanged();
+        }
+        finally
+        {
+            _operationLock.Release();
+        }
+    }
+
+    public async Task StopAsync()
+    {
+        await _operationLock.WaitAsync();
+        try
+        {
+            _player?.Stop();
+            StopPositionTimer();
+            CleanupPlayer();
+
+            _isPlaying = false;
+            _currentPosition = TimeSpan.Zero;
+            _duration = TimeSpan.Zero;
+
+            var stoppedUrl = _currentAudioUrl;
+            _currentAudioUrl = null;
+            SetState(AudioPlaybackState.Stopped, stoppedUrl);
+            RaisePositionChanged();
+        }
+        finally
+        {
+            _operationLock.Release();
+        }
+    }
+
+    public async Task SeekAsync(TimeSpan position)
+    {
+        await _operationLock.WaitAsync();
+        try
+        {
+            if (_player == null)
+            {
+                return;
+            }
+
+            var safeDuration = _duration > TimeSpan.Zero
+                ? _duration
+                : TimeSpan.FromSeconds(Math.Max(0, _player.Duration));
+
+            _currentPosition = position;
+            if (_currentPosition > safeDuration)
+            {
+                _currentPosition = safeDuration;
+            }
+
+            if (_currentPosition < TimeSpan.Zero)
+            {
+                _currentPosition = TimeSpan.Zero;
+            }
+
+            if (_player.CanSeek)
+            {
+                _player.Seek(_currentPosition.TotalSeconds);
+            }
+
+            _duration = safeDuration;
+            RaisePositionChanged();
+        }
+        finally
+        {
+            _operationLock.Release();
+        }
     }
 
     public Task SetVolumeAsync(double volume)
@@ -151,7 +223,7 @@ public class AudioService : IAudioService, IDisposable
         _timer = Application.Current?.Dispatcher.CreateTimer();
         if (_timer != null)
         {
-            _timer.Interval = TimeSpan.FromMilliseconds(300);
+            _timer.Interval = TimeSpan.FromMilliseconds(150);
             _timer.Tick += OnTimerTick;
             _timer.Start();
         }
@@ -179,22 +251,24 @@ public class AudioService : IAudioService, IDisposable
             _currentPosition = _duration;
             _isPlaying = false;
             StopPositionTimer();
-            SetState(AudioPlaybackState.Stopped);
+            SetState(AudioPlaybackState.Stopped, _currentAudioUrl);
         }
 
-        PositionChanged?.Invoke(this, new AudioPositionChangedEventArgs
-        {
-            Position = _currentPosition,
-            Duration = _duration
-        });
+        RaisePositionChanged();
     }
 
     private void OnPlaybackEnded(object? sender, EventArgs e)
     {
+        if (!ReferenceEquals(sender, _player))
+        {
+            return;
+        }
+
         _isPlaying = false;
         StopPositionTimer();
         SyncPositionFromPlayer();
-        SetState(AudioPlaybackState.Stopped);
+        SetState(AudioPlaybackState.Stopped, _currentAudioUrl);
+        RaisePositionChanged();
     }
 
     private async Task LoadPlayerAsync(string source)
@@ -248,13 +322,22 @@ public class AudioService : IAudioService, IDisposable
         }
     }
 
-    private void SetState(AudioPlaybackState state)
+    private void RaisePositionChanged()
+    {
+        PositionChanged?.Invoke(this, new AudioPositionChangedEventArgs
+        {
+            Position = _currentPosition,
+            Duration = _duration
+        });
+    }
+
+    private void SetState(AudioPlaybackState state, string? audioUrl)
     {
         _state = state;
         StateChanged?.Invoke(this, new AudioStateChangedEventArgs
         {
             State = state,
-            AudioUrl = _currentAudioUrl
+            AudioUrl = audioUrl
         });
     }
 

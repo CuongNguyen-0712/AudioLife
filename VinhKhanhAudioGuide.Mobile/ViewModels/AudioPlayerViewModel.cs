@@ -20,7 +20,11 @@ public partial class AudioPlayerViewModel : ObservableObject
     private readonly IAudioService _audioService;
     private readonly IApiService _apiService;
     private readonly SemaphoreSlim _guideSelectionLock = new(1, 1);
+    private readonly SemaphoreSlim _playerActionLock = new(1, 1);
+    private readonly Dictionary<string, DateTime> _lastActionAt = new(StringComparer.OrdinalIgnoreCase);
+    private readonly object _actionSync = new();
     private readonly List<AudioScriptSegment> _scriptSegments = new();
+    private static readonly TimeSpan ActionThrottleWindow = TimeSpan.FromMilliseconds(250);
     private int _activeScriptSegmentId = -1;
     private bool _isSubscribedToAudioEvents;
     private bool _isLoadingLocationData;
@@ -207,6 +211,7 @@ public partial class AudioPlayerViewModel : ObservableObject
             }
 
             IsPlaying = e.State == AudioPlaybackState.Playing;
+            IsSwitchingGuide = e.State == AudioPlaybackState.Loading;
             PlayPauseGlyph = e.State switch
             {
                 AudioPlaybackState.Loading => "loading.svg",
@@ -609,30 +614,39 @@ public partial class AudioPlayerViewModel : ObservableObject
     [RelayCommand]
     private async Task PlayPauseAsync()
     {
-        if (string.IsNullOrWhiteSpace(AudioUrl))
+        await ExecutePlayerActionAsync("play-pause", async () =>
         {
-            return;
-        }
+            if (string.IsNullOrWhiteSpace(AudioUrl))
+            {
+                return;
+            }
 
-        if (IsPlaying)
-        {
-            await _audioService.PauseAsync();
-            return;
-        }
+            if (IsPlaying)
+            {
+                await _audioService.PauseAsync();
+                return;
+            }
 
-        await StartSelectedAudioAsync(forceRestart: false);
+            await StartSelectedAudioAsync(forceRestart: false);
+        });
     }
 
     [RelayCommand]
     private async Task RewindAsync()
     {
-        await SeekToAsync(CurrentPosition - 10);
+        await ExecutePlayerActionAsync("seek-back-10", async () =>
+        {
+            await SeekToAsync(CurrentPosition - 10);
+        });
     }
 
     [RelayCommand]
     private async Task ForwardAsync()
     {
-        await SeekToAsync(CurrentPosition + 10);
+        await ExecutePlayerActionAsync("seek-next-10", async () =>
+        {
+            await SeekToAsync(CurrentPosition + 10);
+        });
     }
 
     [RelayCommand]
@@ -645,53 +659,72 @@ public partial class AudioPlayerViewModel : ObservableObject
     private async Task CompleteSeekAsync()
     {
         IsSliderDragging = false;
-        await SeekToAsync(CurrentPosition);
+        await ExecutePlayerActionAsync("seek-complete", async () =>
+        {
+            await SeekToAsync(CurrentPosition);
+        }, useThrottle: false);
     }
 
     [RelayCommand]
     private async Task PlayNextAsync()
     {
-        if (!CanPlayNext || IsSwitchingGuide)
+        await ExecutePlayerActionAsync("track-next", async () =>
         {
-            return;
-        }
+            if (!CanPlayNext || IsSwitchingGuide)
+            {
+                return;
+            }
 
-        MarkManualPlaybackSource();
-        await SetCurrentAudioGuideAsync(CurrentAudioGuideIndex + 1, autoPlay: true, forceRestart: true, persistAsUserSelection: true);
+            MarkManualPlaybackSource();
+            await SetCurrentAudioGuideAsync(CurrentAudioGuideIndex + 1, autoPlay: true, forceRestart: true, persistAsUserSelection: true);
+        });
     }
 
     [RelayCommand]
     private async Task PlayBackAsync()
     {
-        if (!CanPlayBack || IsSwitchingGuide)
+        await ExecutePlayerActionAsync("track-prev", async () =>
         {
-            return;
-        }
+            if (!CanPlayBack || IsSwitchingGuide)
+            {
+                return;
+            }
 
-        MarkManualPlaybackSource();
-        await SetCurrentAudioGuideAsync(CurrentAudioGuideIndex - 1, autoPlay: true, forceRestart: true, persistAsUserSelection: true);
+            MarkManualPlaybackSource();
+            await SetCurrentAudioGuideAsync(CurrentAudioGuideIndex - 1, autoPlay: true, forceRestart: true, persistAsUserSelection: true);
+        });
     }
 
     [RelayCommand]
     private async Task PlayAudioGuideAsync(AudioGuideItemViewModel? audioGuideItem)
     {
-        if (audioGuideItem is null || IsSwitchingGuide)
+        await ExecutePlayerActionAsync("track-select", async () =>
         {
-            return;
-        }
+            if (audioGuideItem is null || IsSwitchingGuide)
+            {
+                return;
+            }
 
-        var index = AudioGuides.IndexOf(audioGuideItem);
-        if (index < 0)
-        {
-            return;
-        }
+            var index = AudioGuides.IndexOf(audioGuideItem);
+            if (index < 0)
+            {
+                return;
+            }
 
-        MarkManualPlaybackSource();
-        await SetCurrentAudioGuideAsync(index, autoPlay: true, forceRestart: true, persistAsUserSelection: true);
+            MarkManualPlaybackSource();
+            await SetCurrentAudioGuideAsync(index, autoPlay: true, forceRestart: true, persistAsUserSelection: true);
+        });
     }
 
     private async Task SeekToAsync(double seconds)
     {
+        if (string.IsNullOrWhiteSpace(AudioUrl)
+            || string.IsNullOrWhiteSpace(_audioService.CurrentAudioUrl)
+            || !IsCurrentAudio(_audioService.CurrentAudioUrl))
+        {
+            return;
+        }
+
         var effectiveDuration = Duration > 0 ? Duration : _audioService.Duration.TotalSeconds;
         var clamped = Math.Max(0, seconds);
         if (effectiveDuration > 0)
@@ -703,6 +736,49 @@ public partial class AudioPlayerViewModel : ObservableObject
         CurrentPositionText = FormatTime(TimeSpan.FromSeconds(clamped));
         UpdateCurrentScriptText(TimeSpan.FromSeconds(clamped));
         await _audioService.SeekAsync(TimeSpan.FromSeconds(clamped));
+    }
+
+    private bool TryThrottleAction(string actionKey)
+    {
+        var now = DateTime.UtcNow;
+        lock (_actionSync)
+        {
+            if (_lastActionAt.TryGetValue(actionKey, out var lastTime)
+                && now - lastTime < ActionThrottleWindow)
+            {
+                return false;
+            }
+
+            _lastActionAt[actionKey] = now;
+            return true;
+        }
+    }
+
+    private async Task ExecutePlayerActionAsync(string actionKey, Func<Task> action, bool useThrottle = true)
+    {
+        if (useThrottle && !TryThrottleAction(actionKey))
+        {
+            return;
+        }
+
+        if (!await _playerActionLock.WaitAsync(0))
+        {
+            return;
+        }
+
+        try
+        {
+            await action();
+        }
+        catch
+        {
+            // Keep player UI stable if underlying playback fails unexpectedly.
+            SyncPlaybackStateFromService();
+        }
+        finally
+        {
+            _playerActionLock.Release();
+        }
     }
 
     private bool ShouldAutoPlayNextWithinPoi()

@@ -573,8 +573,7 @@ public partial class MainViewModel : ObservableObject
             _autoQueue.Clear();
             _autoQueue.AddRange(queue);
 
-            var preferredIndex = ResolvePreferredQueueIndex(locationId, _autoQueue);
-            _autoQueueIndex = preferredIndex >= 0 ? preferredIndex : 0;
+            _autoQueueIndex = 0;
             ApplyAutoQueueItem(_autoQueueIndex);
 
             // Update footer status
@@ -632,6 +631,11 @@ public partial class MainViewModel : ObservableObject
     private async Task<List<AutoQueueItem>> ResolveAutoAudioQueueAsync(string locationId)
     {
         var guides = await _apiService.GetAudioGuidesForLocationAsync(locationId);
+        guides = guides
+            .OrderBy(GetAutoPlaybackOrderPriority)
+            .ThenBy(g => g.Id, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
         var queue = guides
             .Select(g => new AutoQueueItem(g.Id, ResolveAudioSource(g)))
             .Where(item => !string.IsNullOrWhiteSpace(item.AudioUrl))
@@ -916,6 +920,30 @@ public partial class MainViewModel : ObservableObject
         return !string.IsNullOrWhiteSpace(guide.CloudinaryAudioUrl)
             ? guide.CloudinaryAudioUrl
             : guide.AudioUrl;
+    }
+
+    private static int GetAutoPlaybackOrderPriority(AudioGuide guide)
+    {
+        var id = guide.Id ?? string.Empty;
+        var title = guide.Title ?? string.Empty;
+
+        if (id.EndsWith("_1", StringComparison.OrdinalIgnoreCase)
+            || title.Contains("Giới thiệu", StringComparison.OrdinalIgnoreCase)
+            || title.Contains("Introduction", StringComparison.OrdinalIgnoreCase)
+            || title.Contains("介绍", StringComparison.OrdinalIgnoreCase))
+        {
+            return 0;
+        }
+
+        if (id.EndsWith("_2", StringComparison.OrdinalIgnoreCase)
+            || title.Contains("Khám phá", StringComparison.OrdinalIgnoreCase)
+            || title.Contains("Discovery", StringComparison.OrdinalIgnoreCase)
+            || title.Contains("探索", StringComparison.OrdinalIgnoreCase))
+        {
+            return 1;
+        }
+
+        return 2;
     }
 
     private static string GetPreferredAudioGuideKey(string locationId) => $"{PreferredAudioGuideKeyPrefix}{locationId}";

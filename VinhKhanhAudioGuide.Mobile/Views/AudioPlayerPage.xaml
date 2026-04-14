@@ -152,7 +152,7 @@
                                         <Image Source="play_icon.svg" Aspect="AspectFit">
                                             <Image.Triggers>
                                                 <DataTrigger TargetType="Image" Binding="{Binding IsCurrentPlaying}" Value="True">
-                                                    <Setter Property="Source" Value="pause.svg" />
+                                                    <Setter Property="Source" Value="pause_green.svg" />
                                                 </DataTrigger>
                                             </Image.Triggers>
                                         </Image>
@@ -221,15 +221,16 @@
                            HorizontalOptions="End" />
                 </Grid>
 
-                <Grid ColumnDefinitions="Auto,*,Auto,*,Auto" ColumnSpacing="8" VerticalOptions="Center">
+                <Grid ColumnDefinitions="*,*,Auto,*,*" ColumnSpacing="12" VerticalOptions="Center">
                     <Button Grid.Column="0"
                             Command="{Binding PlayBackCommand}"
                             IsEnabled="{Binding CanPlayBack}"
                             Style="{StaticResource SecondaryButton}"
                             BackgroundColor="{StaticResource SurfaceContainerHighest}"
                             Padding="8"
-                            HeightRequest="40"
-                            WidthRequest="40"
+                        HeightRequest="44"
+                        WidthRequest="44"
+                        HorizontalOptions="Center"
                             ImageSource="back.svg" />
 
                     <Button Grid.Column="1"
@@ -240,8 +241,9 @@
                             TextColor="{StaticResource OnSecondaryContainer}"
                             FontSize="18"
                             Padding="8"
-                            HeightRequest="50"
-                            HorizontalOptions="End" />
+                            HeightRequest="44"
+                            WidthRequest="64"
+                            HorizontalOptions="Center" />
 
                     <Button Grid.Column="2"
                             Text=""
@@ -261,8 +263,9 @@
                             TextColor="{StaticResource OnSecondaryContainer}"
                             FontSize="18"
                             Padding="8"
-                            HeightRequest="50"
-                            HorizontalOptions="Start" />
+                            HeightRequest="44"
+                            WidthRequest="64"
+                            HorizontalOptions="Center" />
 
                     <Button Grid.Column="4"
                             Command="{Binding PlayNextCommand}"
@@ -270,12 +273,25 @@
                             Style="{StaticResource SecondaryButton}"
                             BackgroundColor="{StaticResource SurfaceContainerHighest}"
                             Padding="8"
-                            HeightRequest="40"
-                            WidthRequest="40"
+                            HeightRequest="44"
+                            WidthRequest="44"
+                            HorizontalOptions="Center"
                             ImageSource="next.svg" />
                 </Grid>
             </VerticalStackLayout>
         </Frame>
+
+        <Grid InputTransparent="False"
+              IsVisible="{Binding IsSwitchingGuide}"
+              BackgroundColor="#33000000"
+              RowSpan="3">
+            <ActivityIndicator IsRunning="{Binding IsSwitchingGuide}"
+                               Color="{StaticResource Primary}"
+                               WidthRequest="40"
+                               HeightRequest="40"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+        </Grid>
 
     </Grid>
 
