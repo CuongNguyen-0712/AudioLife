@@ -1,22 +1,26 @@
 @page
 @model VinhKhanhAudioGuide.Web.Pages.Admin.TranslationsModel
 @{
-    ViewData["Title"] = "Quản lý bản dịch";
-    ViewData["ActivePage"] = "AdminTranslations";
+    ViewData["Title"] = "Audio và bản dịch";
+    ViewData["ActivePage"] = "AdminAudioTranslations";
+
+    var initialPreviewId = Model.TranslationItems.Any(item => string.Equals(item.Id, Model.SelectedId, StringComparison.OrdinalIgnoreCase))
+        ? Model.SelectedId ?? string.Empty
+        : Model.TranslationItems.FirstOrDefault()?.Id ?? string.Empty;
 }
 
 <div class="dashboard-hero mb-4">
     <div>
-        <p class="hero-kicker"><i class="fa-solid fa-language"></i> Nội dung đa ngôn ngữ</p>
-        <h1 class="hero-title">Quản lý bản dịch</h1>
-        <p class="hero-subtitle">Theo dõi độ phủ ngôn ngữ và xử lý audio/transcript còn thiếu theo từng POI.</p>
+        <p class="hero-kicker"><i class="fa-solid fa-headphones"></i> Audio và bản dịch</p>
+        <p class="hero-subtitle">Theo dõi độ phủ audio và bản dịch theo từng POI.</p>
+        <h1 class="hero-title">Kho nội dung</h1>
     </div>
-    <a asp-page="/AudioGuides/Create" class="btn-admin btn-admin-primary"><i class="fas fa-plus"></i> Thêm audio dịch</a>
 </div>
 
 <div class="admin-card card-v2 mb-4">
     <div class="p-3 p-md-4">
         <form method="get" class="row g-2 align-items-end">
+            <input type="hidden" name="selectedId" value="@Model.SelectedId" />
             <div class="col-md-4">
                 <label for="locationId" class="form-label">POI</label>
                 <select id="locationId" name="locationId" class="form-select">
@@ -127,7 +131,6 @@
                     <th>Audio file</th>
                     <th>Transcript</th>
                     <th>Trạng thái</th>
-                    <th class="text-end">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -135,7 +138,8 @@
                 {
                     foreach (var item in Model.TranslationItems)
                     {
-                        <tr>
+                        var rowIsActive = string.Equals(item.Id, initialPreviewId, StringComparison.OrdinalIgnoreCase);
+                        <tr class="translation-row @(rowIsActive ? "active" : string.Empty)" data-preview-id="@item.Id">
                             <td>
                                 <strong>@item.Title</strong>
                                 <div class="small text-muted">@item.Id</div>
@@ -176,19 +180,242 @@
                                     <span class="badge bg-success">Sẵn sàng</span>
                                 }
                             </td>
-                            <td class="text-end">
-                                <a asp-page="/AudioGuides/Edit" asp-route-id="@item.Id" class="btn-admin btn-sm-admin btn-sm-icon btn-admin-warning" title="Chỉnh sửa">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                            </td>
                         </tr>
                     }
                 }
                 else
                 {
-                    <tr><td colspan="7" class="text-center text-muted py-4">Không có audio phù hợp bộ lọc.</td></tr>
+                    <tr><td colspan="6" class="text-center text-muted py-4">Không có audio phù hợp bộ lọc.</td></tr>
                 }
             </tbody>
         </table>
     </div>
 </div>
+
+@if (Model.TranslationItems.Any())
+{
+    <div id="translationPreviewOverlay" class="translation-preview-overlay d-none" aria-hidden="true">
+        <div class="translation-preview-backdrop" data-overlay-close="true"></div>
+        <div class="translation-preview-modal" role="dialog" aria-modal="true" aria-labelledby="translationPreviewTitle">
+            <div class="translation-preview-modal-header">
+                <div>
+                    <div class="small text-muted">Preview audio & bản dịch</div>
+                    <div id="translationPreviewTitle" class="translation-preview-title">-</div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="translationPreviewCloseBtn">
+                    <i class="fas fa-xmark"></i> Đóng
+                </button>
+            </div>
+
+            <div class="translation-preview-modal-body">
+                <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                    <div id="previewMeta" class="small text-muted">-</div>
+                    <span id="previewStatus" class="badge bg-secondary">-</span>
+                </div>
+
+                <div class="translation-preview-grid mb-3">
+                    <div>
+                        <div class="small text-muted">Audio ID</div>
+                        <div id="previewId" class="fw-semibold">-</div>
+                    </div>
+                    <div>
+                        <div class="small text-muted">Nguồn audio</div>
+                        <div id="previewSource" class="fw-semibold">-</div>
+                    </div>
+                </div>
+
+                <div id="previewAudioBox" class="audio-preview-box mb-3 d-none">
+                    <audio id="previewPlayer" controls class="audio-preview-player audio-preview-player-form"></audio>
+                    <small id="previewAudioUrl" class="audio-preview-url"></small>
+                </div>
+
+                <div class="mb-3">
+                    <div class="small text-muted mb-1">Mô tả</div>
+                    <div id="previewDescription" class="translation-preview-text">(trống)</div>
+                </div>
+
+                <div>
+                    <div class="small text-muted mb-1">Transcript</div>
+                    <pre id="previewTranscript" class="translation-preview-transcript">(trống)</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @if (Model.TranslationItems.Any())
+    {
+        <script>
+            (function () {
+                const rows = Array.from(document.querySelectorAll('.translation-row[data-preview-id]'));
+                if (!rows.length) {
+                    return;
+                }
+
+                const filterSelectedId = document.querySelector('input[name="selectedId"]');
+                const overlayEl = document.getElementById('translationPreviewOverlay');
+                const closeBtnEl = document.getElementById('translationPreviewCloseBtn');
+
+                const previewData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                    Model.TranslationItems.Select(item => new
+                    {
+                        item.Id,
+                        item.Title,
+                        item.LocationName,
+                        item.NormalizedLanguage,
+                        item.Description,
+                        item.TranscriptText,
+                        item.AudioUrl,
+                        item.CloudinaryAudioUrl,
+                        item.GeneratedFromTts,
+                        item.IsSupportedLanguage,
+                        item.IsIssue,
+                        item.HasAudio,
+                        item.HasTranscript
+                    }),
+                    new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                    }));
+
+                const byId = new Map(previewData.map(item => [item.id, item]));
+
+                const titleEl = document.getElementById('translationPreviewTitle');
+                const metaEl = document.getElementById('previewMeta');
+                const statusEl = document.getElementById('previewStatus');
+                const idEl = document.getElementById('previewId');
+                const sourceEl = document.getElementById('previewSource');
+                const descriptionEl = document.getElementById('previewDescription');
+                const transcriptEl = document.getElementById('previewTranscript');
+                const audioBoxEl = document.getElementById('previewAudioBox');
+                const playerEl = document.getElementById('previewPlayer');
+                const audioUrlEl = document.getElementById('previewAudioUrl');
+
+                function buildStatus(item) {
+                    if (!item.isSupportedLanguage) {
+                        return { text: 'Ngôn ngữ chưa chuẩn', css: 'bg-warning text-dark' };
+                    }
+
+                    if (item.isIssue) {
+                        return { text: 'Cần bổ sung', css: 'bg-warning text-dark' };
+                    }
+
+                    return { text: 'Sẵn sàng', css: 'bg-success' };
+                }
+
+                function buildAudioSourceLabel(item) {
+                    if (!item.hasAudio) {
+                        return 'Chưa có file audio';
+                    }
+
+                    if (item.generatedFromTts) {
+                        return 'TTS';
+                    }
+
+                    return 'Upload/External';
+                }
+
+                function setActiveRow(targetId) {
+                    rows.forEach(row => {
+                        row.classList.toggle('active', row.getAttribute('data-preview-id') === targetId);
+                    });
+                }
+
+                function openOverlay() {
+                    if (!overlayEl) {
+                        return;
+                    }
+
+                    overlayEl.classList.remove('d-none');
+                    overlayEl.setAttribute('aria-hidden', 'false');
+                    document.body.classList.add('translation-preview-open');
+                }
+
+                function closeOverlay() {
+                    if (!overlayEl) {
+                        return;
+                    }
+
+                    overlayEl.classList.add('d-none');
+                    overlayEl.setAttribute('aria-hidden', 'true');
+                    document.body.classList.remove('translation-preview-open');
+                }
+
+                function render(item) {
+                    if (!item) {
+                        return;
+                    }
+
+                    const status = buildStatus(item);
+                    const selectedAudioUrl = (item.cloudinaryAudioUrl || '').trim() || (item.audioUrl || '').trim();
+
+                    titleEl.textContent = item.title || '-';
+                    metaEl.textContent = `${item.locationName || '-'} · ${(item.normalizedLanguage || '-').toUpperCase()}`;
+                    idEl.textContent = item.id || '-';
+                    sourceEl.textContent = buildAudioSourceLabel(item);
+                    descriptionEl.textContent = (item.description || '').trim() || '(trống)';
+                    transcriptEl.textContent = (item.transcriptText || '').trim() || '(trống)';
+
+                    statusEl.className = `badge ${status.css}`;
+                    statusEl.textContent = status.text;
+
+                    if (selectedAudioUrl) {
+                        audioBoxEl.classList.remove('d-none');
+                        playerEl.src = selectedAudioUrl;
+                        audioUrlEl.textContent = selectedAudioUrl;
+                        audioUrlEl.title = selectedAudioUrl;
+                    } else {
+                        audioBoxEl.classList.add('d-none');
+                        playerEl.removeAttribute('src');
+                        playerEl.load();
+                        audioUrlEl.textContent = '';
+                        audioUrlEl.removeAttribute('title');
+                    }
+                }
+
+                rows.forEach(row => {
+                    row.addEventListener('click', function () {
+                        const previewId = row.getAttribute('data-preview-id');
+                        const item = byId.get(previewId);
+                        setActiveRow(previewId);
+                        render(item);
+                        openOverlay();
+
+                        if (filterSelectedId) {
+                            filterSelectedId.value = previewId || '';
+                        }
+
+                        const url = new URL(window.location.href);
+                        if (previewId) {
+                            url.searchParams.set('selectedId', previewId);
+                        } else {
+                            url.searchParams.delete('selectedId');
+                        }
+
+                        window.history.replaceState(null, '', url.toString());
+                    });
+                });
+
+                overlayEl?.addEventListener('click', function (event) {
+                    if (event.target instanceof HTMLElement && event.target.dataset.overlayClose === 'true') {
+                        closeOverlay();
+                    }
+                });
+
+                closeBtnEl?.addEventListener('click', closeOverlay);
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape') {
+                        closeOverlay();
+                    }
+                });
+
+                const initialId = '@initialPreviewId' || rows[0].getAttribute('data-preview-id');
+                if (initialId) {
+                    setActiveRow(initialId);
+                }
+            })();
+        </script>
+    }
+}

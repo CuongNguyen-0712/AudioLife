@@ -34,6 +34,7 @@ public class IndexModel : PageModel
     public List<LocationAudioSummary> TopLocationsByAudio { get; set; } = new();
     public List<CategoryAudioSummary> CategorySummaries { get; set; } = new();
     public List<PoiAdminSummary> PoiAdminSummaries { get; set; } = new();
+    public List<RecentRequestSummary> RecentRequests { get; set; } = new();
 
     public async Task OnGetAsync()
     {
@@ -48,6 +49,19 @@ public class IndexModel : PageModel
         var requests = await _changeRequestService.GetAllAsync();
         PendingRequestCount = requests.Count(item => item.Status == PoiChangeRequestStatus.Pending);
         InReviewRequestCount = requests.Count(item => item.Status == PoiChangeRequestStatus.InReview);
+        RecentRequests = requests
+            .Take(8)
+            .Select(item => new RecentRequestSummary
+            {
+                Id = item.Id,
+                SubmittedAtUtc = item.SubmittedAtUtc,
+                SubmittedByName = item.SubmittedByName,
+                LocationName = item.LocationName,
+                Title = item.Title,
+                Status = item.Status,
+                ReviewNote = item.ReviewNote
+            })
+            .ToList();
 
         var assignedLocationIds = PoiAdminSummaries
             .SelectMany(summary => summary.LocationIds)
@@ -158,5 +172,28 @@ public class IndexModel : PageModel
         public string Username { get; set; } = string.Empty;
         public List<string> LocationIds { get; set; } = new();
         public List<string> LocationNames { get; set; } = new();
+    }
+
+    public class RecentRequestSummary
+    {
+        public Guid Id { get; set; }
+        public DateTime SubmittedAtUtc { get; set; }
+        public string SubmittedByName { get; set; } = string.Empty;
+        public string LocationName { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public PoiChangeRequestStatus Status { get; set; }
+        public string? ReviewNote { get; set; }
+    }
+
+    public static string GetStatusBadgeClass(PoiChangeRequestStatus status)
+    {
+        return status switch
+        {
+            PoiChangeRequestStatus.Pending => "text-bg-secondary",
+            PoiChangeRequestStatus.InReview => "text-bg-warning",
+            PoiChangeRequestStatus.Approved => "text-bg-success",
+            PoiChangeRequestStatus.Rejected => "text-bg-danger",
+            _ => "text-bg-secondary"
+        };
     }
 }

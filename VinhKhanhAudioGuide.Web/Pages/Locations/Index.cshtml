@@ -3,6 +3,29 @@
 @{
     ViewData["Title"] = "Địa điểm";
     ViewData["ActivePage"] = "Locations";
+
+    string NormalizeImageUrl(string? value)
+    {
+        var url = value?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return string.Empty;
+        }
+
+        if (url.StartsWith("~/", StringComparison.Ordinal))
+        {
+            return "/" + url[2..];
+        }
+
+        if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+            || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+            || url.StartsWith("/", StringComparison.Ordinal))
+        {
+            return url;
+        }
+
+        return "/" + url.TrimStart('.', '/');
+    }
 }
 
 <div class="dashboard-hero mb-4">
@@ -66,7 +89,7 @@
         <tbody>
             @foreach (var loc in Model.Locations)
             {
-                <tr>
+                <tr class="location-preview-row" data-location-id="@loc.Id">
                     <td><code>@loc.Id</code></td>
                     <td><strong>@loc.Name</strong></td>
                     <td><span class="badge-admin badge-category"><i class="fas @(loc.Category?.Icon ?? "fa-folder") me-1"></i>@(loc.Category?.Name ?? "N/A")</span></td>
@@ -88,3 +111,181 @@
         <div class="empty-state"><i class="fas fa-map-marker-alt d-block"></i>Chưa có địa điểm nào</div>
     }
 </div>
+
+@if (Model.Locations.Any())
+{
+    <div id="locationPreviewOverlay" class="translation-preview-overlay d-none" aria-hidden="true">
+        <div class="translation-preview-backdrop" data-location-overlay-close="true"></div>
+        <div class="translation-preview-modal location-preview-modal" role="dialog" aria-modal="true" aria-labelledby="locationPreviewTitle">
+            <div class="translation-preview-modal-header">
+                <div>
+                    <div class="small text-muted">Preview địa điểm</div>
+                    <div id="locationPreviewTitle" class="translation-preview-title">-</div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="locationPreviewCloseBtn">
+                    <i class="fas fa-xmark"></i> Đóng
+                </button>
+            </div>
+
+            <div class="translation-preview-modal-body">
+                <div class="location-preview-grid mb-3">
+                    <div>
+                        <div class="small text-muted">Mã địa điểm</div>
+                        <div id="locationPreviewId" class="fw-semibold">-</div>
+                    </div>
+                    <div>
+                        <div class="small text-muted">Danh mục</div>
+                        <div id="locationPreviewCategory" class="fw-semibold">-</div>
+                    </div>
+                    <div>
+                        <div class="small text-muted">Thời lượng</div>
+                        <div id="locationPreviewDuration" class="fw-semibold">-</div>
+                    </div>
+                    <div>
+                        <div class="small text-muted">Audio guide</div>
+                        <div id="locationPreviewAudioCount" class="fw-semibold">-</div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="small text-muted mb-1">Địa chỉ</div>
+                    <div id="locationPreviewAddress" class="translation-preview-text">-</div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="small text-muted mb-1">Toạ độ</div>
+                    <div id="locationPreviewCoordinates" class="translation-preview-text">-</div>
+                </div>
+
+                <div id="locationPreviewImageWrap" class="location-preview-image-wrap mb-3 d-none">
+                    <img id="locationPreviewImage" class="location-preview-image" alt="Preview hình địa điểm" />
+                </div>
+
+                <div>
+                    <div class="small text-muted mb-1">Mô tả</div>
+                    <pre id="locationPreviewDescription" class="translation-preview-transcript">(trống)</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @if (Model.Locations.Any())
+    {
+        <script>
+            (function () {
+                const rows = Array.from(document.querySelectorAll('.location-preview-row[data-location-id]'));
+                const overlayEl = document.getElementById('locationPreviewOverlay');
+                const closeBtnEl = document.getElementById('locationPreviewCloseBtn');
+
+                if (!rows.length || !overlayEl) {
+                    return;
+                }
+
+                const locationData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                    Model.Locations.Select(loc => new
+                    {
+                        loc.Id,
+                        loc.Name,
+                        CategoryName = loc.Category != null ? loc.Category.Name : "N/A",
+                        loc.Address,
+                        loc.Duration,
+                        AudioCount = loc.AudioGuides.Count,
+                        loc.Latitude,
+                        loc.Longitude,
+                        ImageUrl = NormalizeImageUrl(loc.ImageUrl),
+                        loc.Description
+                    }),
+                    new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                    }));
+
+                const byId = new Map(locationData.map(item => [item.id, item]));
+
+                const titleEl = document.getElementById('locationPreviewTitle');
+                const idEl = document.getElementById('locationPreviewId');
+                const categoryEl = document.getElementById('locationPreviewCategory');
+                const durationEl = document.getElementById('locationPreviewDuration');
+                const audioCountEl = document.getElementById('locationPreviewAudioCount');
+                const addressEl = document.getElementById('locationPreviewAddress');
+                const coordsEl = document.getElementById('locationPreviewCoordinates');
+                const imageWrapEl = document.getElementById('locationPreviewImageWrap');
+                const imageEl = document.getElementById('locationPreviewImage');
+                const descriptionEl = document.getElementById('locationPreviewDescription');
+
+                function setActiveRow(targetId) {
+                    rows.forEach(row => {
+                        row.classList.toggle('active', row.getAttribute('data-location-id') === targetId);
+                    });
+                }
+
+                function openOverlay() {
+                    overlayEl.classList.remove('d-none');
+                    overlayEl.setAttribute('aria-hidden', 'false');
+                    document.body.classList.add('translation-preview-open');
+                }
+
+                function closeOverlay() {
+                    overlayEl.classList.add('d-none');
+                    overlayEl.setAttribute('aria-hidden', 'true');
+                    document.body.classList.remove('translation-preview-open');
+                }
+
+                function render(item) {
+                    if (!item) {
+                        return;
+                    }
+
+                    titleEl.textContent = item.name || '-';
+                    idEl.textContent = item.id || '-';
+                    categoryEl.textContent = item.categoryName || '-';
+                    durationEl.textContent = `${item.duration || 0} phút`;
+                    audioCountEl.textContent = `${item.audioCount || 0} audio`;
+                    addressEl.textContent = (item.address || '').trim() || '(trống)';
+                    coordsEl.textContent = `${Number(item.latitude || 0).toFixed(6)}, ${Number(item.longitude || 0).toFixed(6)}`;
+                    descriptionEl.textContent = (item.description || '').trim() || '(trống)';
+
+                    const imageUrl = (item.imageUrl || '').trim();
+                    if (imageUrl) {
+                        imageWrapEl.classList.remove('d-none');
+                        imageEl.src = imageUrl;
+                    } else {
+                        imageWrapEl.classList.add('d-none');
+                        imageEl.removeAttribute('src');
+                    }
+                }
+
+                rows.forEach(row => {
+                    row.addEventListener('click', function (event) {
+                        if (event.target instanceof HTMLElement && event.target.closest('a, button')) {
+                            return;
+                        }
+
+                        const locationId = row.getAttribute('data-location-id');
+                        const item = byId.get(locationId);
+
+                        setActiveRow(locationId);
+                        render(item);
+                        openOverlay();
+                    });
+                });
+
+                overlayEl.addEventListener('click', function (event) {
+                    if (event.target instanceof HTMLElement && event.target.dataset.locationOverlayClose === 'true') {
+                        closeOverlay();
+                    }
+                });
+
+                closeBtnEl?.addEventListener('click', closeOverlay);
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape') {
+                        closeOverlay();
+                    }
+                });
+            })();
+        </script>
+    }
+}

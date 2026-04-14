@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using VinhKhanhAudioGuide.Web.Data;
 using VinhKhanhAudioGuide.Web.Models;
 using VinhKhanhAudioGuide.Web.Services;
@@ -10,10 +11,12 @@ namespace VinhKhanhAudioGuide.Web.Pages.Shop;
 public class IndexModel : PageModel
 {
     private readonly AppDbContext _db;
+    private readonly IPoiChangeRequestService _changeRequestService;
 
-    public IndexModel(AppDbContext db)
+    public IndexModel(AppDbContext db, IPoiChangeRequestService changeRequestService)
     {
         _db = db;
+        _changeRequestService = changeRequestService;
     }
 
     public List<Location> Locations { get; set; } = new();
@@ -24,6 +27,11 @@ public class IndexModel : PageModel
     public string CategoryName { get; set; } = string.Empty;
     public List<AudioGuide> RecentAudioGuides { get; set; } = new();
     public List<Tour> RelatedTours { get; set; } = new();
+    public List<PoiChangeRequest> RecentSubmittedRequests { get; set; } = new();
+    public int PendingRequestCount { get; set; }
+    public int InReviewRequestCount { get; set; }
+    public int ApprovedRequestCount { get; set; }
+    public int RejectedRequestCount { get; set; }
 
     [BindProperty(SupportsGet = true)]
     public string? SelectedLocationId { get; set; }
@@ -96,6 +104,34 @@ public class IndexModel : PageModel
         TourCount = RelatedTours.Count;
         CategoryName = SelectedLocation.Category?.Name ?? "Chưa phân loại";
 
+        var submitterAliases = new[]
+        {
+            User.FindFirstValue(ClaimTypes.NameIdentifier),
+            User.Identity?.Name
+        };
+
+        var submittedRequests = await _changeRequestService.GetBySubmitterAliasesAsync(submitterAliases);
+        RecentSubmittedRequests = submittedRequests
+            .Take(8)
+            .ToList();
+
+        PendingRequestCount = submittedRequests.Count(item => item.Status == PoiChangeRequestStatus.Pending);
+        InReviewRequestCount = submittedRequests.Count(item => item.Status == PoiChangeRequestStatus.InReview);
+        ApprovedRequestCount = submittedRequests.Count(item => item.Status == PoiChangeRequestStatus.Approved);
+        RejectedRequestCount = submittedRequests.Count(item => item.Status == PoiChangeRequestStatus.Rejected);
+
         return Page();
+    }
+
+    public static string GetStatusBadgeClass(PoiChangeRequestStatus status)
+    {
+        return status switch
+        {
+            PoiChangeRequestStatus.Pending => "text-bg-secondary",
+            PoiChangeRequestStatus.InReview => "text-bg-warning",
+            PoiChangeRequestStatus.Approved => "text-bg-success",
+            PoiChangeRequestStatus.Rejected => "text-bg-danger",
+            _ => "text-bg-secondary"
+        };
     }
 }

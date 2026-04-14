@@ -25,6 +25,9 @@ public class TranslationsModel : PageModel
     [BindProperty(SupportsGet = true)]
     public bool OnlyIssues { get; set; }
 
+    [BindProperty(SupportsGet = true)]
+    public string? SelectedId { get; set; }
+
     public List<LocationFilterItem> Locations { get; set; } = new();
     public List<LocationCoverageItem> CoverageByLocation { get; set; } = new();
     public List<AudioTranslationItem> TranslationItems { get; set; } = new();
@@ -112,7 +115,12 @@ public class TranslationsModel : PageModel
                 Language = item.Language,
                 HasAudio = !string.IsNullOrWhiteSpace(item.AudioUrl) || !string.IsNullOrWhiteSpace(item.CloudinaryAudioUrl),
                 HasTranscript = !string.IsNullOrWhiteSpace(item.TranscriptText),
-                Description = item.Description
+                Description = item.Description,
+                AudioUrl = item.AudioUrl,
+                CloudinaryAudioUrl = item.CloudinaryAudioUrl,
+                TranscriptText = item.TranscriptText,
+                GeneratedFromTts = item.GeneratedFromTts,
+                TtsSourceText = item.TtsSourceText
             })
             .ToListAsync();
 
@@ -126,6 +134,17 @@ public class TranslationsModel : PageModel
         if (OnlyIssues)
         {
             TranslationItems = TranslationItems.Where(item => item.IsIssue).ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(SelectedId)
+            && !TranslationItems.Any(item => string.Equals(item.Id, SelectedId, StringComparison.OrdinalIgnoreCase)))
+        {
+            SelectedId = null;
+        }
+
+        if (string.IsNullOrWhiteSpace(SelectedId))
+        {
+            SelectedId = TranslationItems.FirstOrDefault()?.Id;
         }
 
         TotalAudioCount = TranslationItems.Count;
@@ -172,5 +191,10 @@ public class TranslationsModel : PageModel
         public bool HasTranscript { get; set; }
         public bool IsIssue { get; set; }
         public string Description { get; set; } = string.Empty;
+        public string? AudioUrl { get; set; }
+        public string? CloudinaryAudioUrl { get; set; }
+        public string? TranscriptText { get; set; }
+        public bool GeneratedFromTts { get; set; }
+        public string? TtsSourceText { get; set; }
     }
 }

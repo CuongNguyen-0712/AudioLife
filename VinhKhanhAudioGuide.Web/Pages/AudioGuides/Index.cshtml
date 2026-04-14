@@ -8,10 +8,10 @@
 <div class="dashboard-hero mb-4">
     <div>
         <p class="hero-kicker"><i class="fa-solid fa-headphones"></i> Thư viện audio</p>
-        <h1 class="hero-title">Quản lý audio guide</h1>
-        <p class="hero-subtitle">Theo dõi nội dung audio toàn hệ thống và phân bổ theo điểm đến.</p>
+        <h1 class="hero-title">Theo dõi audio guide</h1>
+        <p class="hero-subtitle">Khu này ở chế độ xem-only. Vui lòng dùng màn Audio & bản dịch để theo dõi dữ liệu tổng hợp.</p>
     </div>
-    <a asp-page="Create" class="btn-admin btn-admin-primary"><i class="fas fa-plus"></i> Thêm audio guide</a>
+    <a asp-page="/Admin/Translations" class="btn-admin btn-admin-outline"><i class="fas fa-language"></i> Mở Audio & bản dịch</a>
 </div>
 
 @if (TempData["Success"] != null)
@@ -109,8 +109,7 @@
                                 }
                             </div>
                             <div class="audio-grid-actions">
-                                <a asp-page="Edit" asp-route-id="@ag.Id" class="btn-admin btn-admin-warning"><i class="fas fa-edit"></i> Sửa</a>
-                                <a asp-page="Delete" asp-route-id="@ag.Id" class="btn-admin btn-admin-danger"><i class="fas fa-trash"></i> Xóa</a>
+                                <span class="badge text-bg-light border">Chế độ xem-only</span>
                             </div>
                         </div>
                     </div>

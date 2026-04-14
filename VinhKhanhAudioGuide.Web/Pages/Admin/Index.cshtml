@@ -172,6 +172,51 @@
             </table>
         </div>
     </div>
+
+    <div class="admin-card card-v2 compact-card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="fa-solid fa-inbox me-2"></i>Yêu cầu review mới nhất từ POI</span>
+            <a asp-page="/Admin/ChangeRequests" class="btn btn-sm btn-outline-secondary">Mở màn duyệt</a>
+        </div>
+        <div class="table-responsive">
+            <table class="admin-table table-v2 mb-0">
+                <thead>
+                    <tr>
+                        <th>Thời gian</th>
+                        <th>Người gửi</th>
+                        <th>POI</th>
+                        <th>Tiêu đề</th>
+                        <th>Trạng thái</th>
+                        <th>Ghi chú review</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.RecentRequests.Any())
+                    {
+                        <tr><td colspan="6" class="text-center text-muted py-4">Chưa có dữ liệu request review.</td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var request in Model.RecentRequests)
+                        {
+                            <tr>
+                                <td>@request.SubmittedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@request.SubmittedByName</td>
+                                <td>@request.LocationName</td>
+                                <td>
+                                    <a asp-page="/Admin/ChangeRequests" asp-route-selectedId="@request.Id" class="link-primary text-decoration-none fw-semibold">
+                                        @request.Title
+                                    </a>
+                                </td>
+                                <td><span class="badge @IndexModel.GetStatusBadgeClass(request.Status)">@request.Status</span></td>
+                                <td>@(string.IsNullOrWhiteSpace(request.ReviewNote) ? "-" : request.ReviewNote)</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 @section Scripts {

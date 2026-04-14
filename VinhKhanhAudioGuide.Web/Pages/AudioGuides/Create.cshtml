@@ -90,27 +90,15 @@
 
             <!-- TTS Mode -->
             <div id="ttsSection" class="tts-section">
-                <div class="mb-3">
-                    <label for="TtsText" class="form-label">
-                        <i class="fas fa-keyboard"></i> Nhập văn bản để tạo audio
-                    </label>
-                    <textarea name="TtsText" id="TtsText" class="form-control" rows="6"
-                              placeholder="Nhập nội dung văn bản ở đây. Hệ thống sẽ tự động tạo audio từ văn bản này và upload lên Cloudinary...">@Model.TtsText</textarea>
-                    <small class="text-muted">
-                        <i class="fas fa-info-circle"></i>
-                        Hệ thống sử dụng Microsoft Edge Neural TTS để tạo giọng đọc tự nhiên.
-                        Hỗ trợ: Tiếng Việt, English, Français, 日本語, 한국어, 中文.
-                    </small>
-                </div>
                 <div class="alert alert-info py-2">
-                    <i class="fas fa-magic"></i>
-                    Audio sẽ được tạo tự động khi bạn nhấn <strong>Lưu</strong>.
+                    <i class="fas fa-circle-info"></i>
+                    Chế độ TTS sẽ dùng trực tiếp nội dung từ trường <strong>Transcript</strong> bên dưới để tạo audio tự động khi bạn nhấn <strong>Lưu</strong>.
                     Giọng đọc sẽ phụ thuộc vào ngôn ngữ đã chọn ở trên.
                 </div>
             </div>
 
             <div class="mb-3">
-                <label asp-for="AudioGuide.TranscriptText" class="form-label">Transcript</label>
+                <label asp-for="AudioGuide.TranscriptText" class="form-label">Transcript (nguồn cho TTS)</label>
                 <textarea asp-for="AudioGuide.TranscriptText" class="form-control" rows="5"></textarea>
             </div>
             <button type="submit" class="btn-admin btn-admin-primary"><i class="fas fa-save"></i> Lưu</button>

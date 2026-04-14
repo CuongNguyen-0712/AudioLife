@@ -12,6 +12,7 @@
         <p class="hero-subtitle">Quản trị nội dung audio theo từng địa điểm được cấp quyền.</p>
     </div>
     <div class="hero-actions-shop">
+        <a asp-page="/Shop/Locations/Create" class="btn btn-shop"><i class="fas fa-location-plus me-1"></i>Tạo POI mới (gửi duyệt)</a>
         <span class="hero-badge"><i class="fa-solid fa-location-dot"></i> Phạm vi theo địa điểm</span>
         <button type="button" class="hero-close-btn-shop" id="closePoiDashboardHero"><i class="fas fa-xmark"></i> Đóng</button>
     </div>
@@ -141,11 +142,74 @@
 
                     <div class="shop-action-buttons">
                         <a class="btn btn-outline-primary" asp-page="/Shop/Locations/Edit" asp-route-id="@Model.SelectedLocation.Id">Sửa thông tin địa điểm</a>
+                        <a class="btn btn-outline-secondary" asp-page="/Shop/Locations/Create">Tạo POI mới (gửi duyệt)</a>
                         <a class="btn btn-outline-success" asp-page="/Shop/AudioGuides/Index" asp-route-locationId="@Model.SelectedLocation.Id">Quản lý audio</a>
+                        <a class="btn btn-outline-dark" asp-page="/Shop/ChangeRequests">Theo dõi yêu cầu duyệt</a>
                     </div>
                     <p class="shop-muted small mt-2 mb-0">Mọi chỉnh sửa tại khu POI sẽ tự động gửi về Admin Hệ thống để duyệt trước khi áp dụng.</p>
                 }
             </div>
         </div>
+    </div>
+</div>
+
+<div class="shop-card card-v2 mt-4">
+    <div class="shop-card-header d-flex justify-content-between align-items-center">
+        <span>Yêu cầu review gần đây của bạn</span>
+        <a asp-page="/Shop/ChangeRequests" class="btn btn-sm btn-outline-secondary">Xem toàn bộ</a>
+    </div>
+    <div class="shop-card-body">
+        <div class="row g-3 mb-3">
+            <div class="col-sm-6 col-lg-3"><div class="p-2 border rounded"><div class="shop-muted small">Pending</div><div class="shop-stat">@Model.PendingRequestCount</div></div></div>
+            <div class="col-sm-6 col-lg-3"><div class="p-2 border rounded"><div class="shop-muted small">In Review</div><div class="shop-stat">@Model.InReviewRequestCount</div></div></div>
+            <div class="col-sm-6 col-lg-3"><div class="p-2 border rounded"><div class="shop-muted small">Approved</div><div class="shop-stat">@Model.ApprovedRequestCount</div></div></div>
+            <div class="col-sm-6 col-lg-3"><div class="p-2 border rounded"><div class="shop-muted small">Rejected</div><div class="shop-stat">@Model.RejectedRequestCount</div></div></div>
+        </div>
+
+        @if (!Model.RecentSubmittedRequests.Any())
+        {
+            <div class="shop-muted">Bạn chưa gửi yêu cầu review nào.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0 table-v2">
+                    <thead>
+                        <tr>
+                            <th>Thời gian</th>
+                            <th>POI</th>
+                            <th>Tiêu đề</th>
+                            <th>Trạng thái</th>
+                            <th>Review</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var request in Model.RecentSubmittedRequests)
+                    {
+                        <tr>
+                            <td>@request.SubmittedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@request.LocationName</td>
+                            <td>
+                                <div class="fw-semibold">@request.Title</div>
+                                <div class="small text-muted">@request.Topic</div>
+                            </td>
+                            <td><span class="badge @IndexModel.GetStatusBadgeClass(request.Status)">@request.Status</span></td>
+                            <td>
+                                @if (request.UpdatedAtUtc.HasValue)
+                                {
+                                    <div class="small text-muted">@request.UpdatedAtUtc.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
+                                    <div class="small text-muted">@request.UpdatedBy</div>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(request.ReviewNote))
+                                {
+                                    <div class="small">@request.ReviewNote</div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
     </div>
 </div>
