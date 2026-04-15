@@ -33,76 +33,17 @@ public class CreateModel : PageModel
     [BindProperty]
     public string AudioMode { get; set; } = "upload";
 
-    /// <summary>
-    /// Text input for TTS generation
-    /// </summary>
-    [BindProperty]
-    public string? TtsText { get; set; }
-
     public List<SelectListItem> LocationList { get; set; } = new();
 
-    public async Task OnGetAsync()
+    public IActionResult OnGetAsync()
     {
-        await LoadLocations();
+        TempData["Success"] = "Khu Audio hệ thống đang ở chế độ xem-only.";
+        return RedirectToPage("Index");
     }
 
-    public async Task<IActionResult> OnPostAsync()
+    public IActionResult OnPostAsync()
     {
-        ModelState.Remove("AudioGuide.Location");
-        ModelState.Remove("AudioGuide.AudioUrl");
-        ModelState.Remove("AudioGuide.Description");
-        ModelState.Remove("AudioGuide.TranscriptText");
-        ModelState.Remove("TtsText");
-
-        if (AudioMode == "tts" && !string.IsNullOrWhiteSpace(TtsText))
-        {
-            try
-            {
-                var audioBytes = await _ttsService.SynthesizeAsync(TtsText, AudioGuide.Language);
-
-                using var stream = new MemoryStream(audioBytes);
-                var fileName = $"tts_{AudioGuide.Language}_{Guid.NewGuid():N}.mp3";
-
-                var uploadResult = await _audioStorageService.UploadAudioAsync(
-                    stream, fileName, AudioGuide.Id ?? Guid.NewGuid().ToString("N"));
-
-                AudioGuide.AudioUrl = uploadResult.AudioUrl;
-                AudioGuide.CloudinaryAudioUrl = uploadResult.CloudinaryAudioUrl;
-                AudioGuide.CloudinaryPublicId = uploadResult.CloudinaryPublicId;
-
-                AudioGuide.GeneratedFromTts = true;
-                AudioGuide.TtsSourceText = TtsText;
-                AudioGuide.TranscriptText = TtsText;
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError(string.Empty, $"Lỗi tạo audio TTS: {ex.Message}");
-            }
-        }
-        else if (AudioFile is not null)
-        {
-            try
-            {
-                var uploadResult = await _audioStorageService.UploadAudioAsync(AudioFile, AudioGuide.Id ?? Guid.NewGuid().ToString("N"));
-                AudioGuide.AudioUrl = uploadResult.AudioUrl;
-                AudioGuide.CloudinaryAudioUrl = uploadResult.CloudinaryAudioUrl;
-                AudioGuide.CloudinaryPublicId = uploadResult.CloudinaryPublicId;
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError(string.Empty, ex.Message);
-            }
-        }
-
-        if (!ModelState.IsValid)
-        {
-            await LoadLocations();
-            return Page();
-        }
-
-        _db.AudioGuides.Add(AudioGuide);
-        await _db.SaveChangesAsync();
-        TempData["Success"] = $"Đã thêm audio guide \"{AudioGuide.Title}\"";
+        TempData["Success"] = "Khu Audio hệ thống đang ở chế độ xem-only.";
         return RedirectToPage("Index");
     }
 

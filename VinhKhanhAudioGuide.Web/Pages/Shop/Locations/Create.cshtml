@@ -1,0 +1,169 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Shop.Locations.CreateModel
+@{
+    ViewData["Title"] = "Tạo POI mới";
+    ViewData["ActivePage"] = "ShopLocationsCreate";
+}
+
+<div class="dashboard-hero mb-4">
+    <div>
+        <p class="hero-kicker"><i class="fa-solid fa-location-plus"></i> Tạo địa điểm mới</p>
+        <h1 class="hero-title">Gửi yêu cầu tạo POI</h1>
+        <p class="hero-subtitle">POI Admin có thể chọn tọa độ trên bản đồ hoặc nhập tay, sau đó gửi yêu cầu cho Admin Hệ thống duyệt.</p>
+    </div>
+    <a asp-page="/Shop/Index" class="btn btn-outline-secondary">Quay lại bảng điều khiển POI</a>
+</div>
+
+<div class="shop-card card-v2">
+    <div class="shop-card-body">
+        <form method="post" class="form-shell-xl">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+            }
+
+            <div class="approval-note mb-3">
+                <i class="fas fa-shield-check me-1"></i>
+                Yêu cầu tạo POI chỉ được áp dụng khi Admin Hệ thống duyệt trạng thái <strong>Approved</strong>.
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="Input.Id" class="form-label">Mã POI</label>
+                    <input asp-for="Input.Id" class="form-control" />
+                    <span asp-validation-for="Input.Id" class="text-danger"></span>
+                </div>
+                <div class="col-md-8">
+                    <label asp-for="Input.Name" class="form-label">Tên địa điểm</label>
+                    <input asp-for="Input.Name" class="form-control" />
+                    <span asp-validation-for="Input.Name" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Input.CategoryId" class="form-label">Danh mục</label>
+                    <select asp-for="Input.CategoryId" asp-items="Model.CategoryList" class="form-select">
+                        <option value="">-- Chọn danh mục --</option>
+                    </select>
+                    <span asp-validation-for="Input.CategoryId" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Input.Duration" class="form-label">Thời lượng đề xuất (phút)</label>
+                    <input asp-for="Input.Duration" type="number" min="0" class="form-control" />
+                    <span asp-validation-for="Input.Duration" class="text-danger"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="Input.Address" class="form-label">Địa chỉ</label>
+                    <input asp-for="Input.Address" class="form-control" />
+                </div>
+                <div class="col-12">
+                    <label asp-for="Input.Description" class="form-label">Mô tả</label>
+                    <textarea asp-for="Input.Description" rows="4" class="form-control"></textarea>
+                </div>
+                <div class="col-12">
+                    <label asp-for="Input.ImageUrl" class="form-label">URL hình ảnh</label>
+                    <input asp-for="Input.ImageUrl" class="form-control" placeholder="https://..." />
+                </div>
+            </div>
+
+            <div class="mt-4 mb-3">
+                <label class="form-label fw-semibold">Cách nhập vị trí</label>
+                <div class="btn-group w-100" role="group">
+                    <input type="radio" class="btn-check" name="CoordinateMode" id="modeMap" value="map" checked="@(Model.CoordinateMode == "map" ? "checked" : null)" onchange="toggleCoordinateMode()">
+                    <label class="btn btn-outline-primary" for="modeMap"><i class="fas fa-map-location-dot"></i> Chọn điểm trên bản đồ</label>
+
+                    <input type="radio" class="btn-check" name="CoordinateMode" id="modeManual" value="manual" checked="@(Model.CoordinateMode == "manual" ? "checked" : null)" onchange="toggleCoordinateMode()">
+                    <label class="btn btn-outline-secondary" for="modeManual"><i class="fas fa-keyboard"></i> Nhập tọa độ thủ công</label>
+                </div>
+            </div>
+
+            <div id="mapSection" class="mb-3">
+                <div class="alert alert-info py-2 mb-2">
+                    <i class="fas fa-circle-info me-1"></i>
+                    Nhấn trực tiếp lên bản đồ để đặt marker và tự động cập nhật Vĩ độ/Kinh độ.
+                </div>
+                <div id="poiPickerMap" style="height: 360px; border-radius: 12px; border: 1px solid #e2e8f0;"></div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="Input.LatitudeText" class="form-label">Vĩ độ (Latitude)</label>
+                    <input asp-for="Input.LatitudeText" class="form-control" id="latInput" />
+                    <span asp-validation-for="Input.LatitudeText" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Input.LongitudeText" class="form-label">Kinh độ (Longitude)</label>
+                    <input asp-for="Input.LongitudeText" class="form-control" id="lngInput" />
+                    <span asp-validation-for="Input.LongitudeText" class="text-danger"></span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-shop mt-3">Gửi yêu cầu tạo POI</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        function toggleCoordinateMode() {
+            const isMap = document.getElementById('modeMap').checked;
+            document.getElementById('mapSection').style.display = isMap ? '' : 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            toggleCoordinateMode();
+
+            const latInput = document.getElementById('latInput');
+            const lngInput = document.getElementById('lngInput');
+            const initialLat = parseFloat((latInput?.value || '10.760000').replace(',', '.'));
+            const initialLng = parseFloat((lngInput?.value || '106.704000').replace(',', '.'));
+            const center = [Number.isFinite(initialLat) ? initialLat : 10.760000, Number.isFinite(initialLng) ? initialLng : 106.704000];
+
+            const map = L.map('poiPickerMap').setView(center, 16);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            let marker = L.marker(center).addTo(map);
+
+            function updateInputs(lat, lng) {
+                if (latInput) {
+                    latInput.value = Number(lat).toFixed(6);
+                }
+
+                if (lngInput) {
+                    lngInput.value = Number(lng).toFixed(6);
+                }
+            }
+
+            map.on('click', function (event) {
+                const lat = event.latlng.lat;
+                const lng = event.latlng.lng;
+
+                marker.setLatLng([lat, lng]);
+                updateInputs(lat, lng);
+            });
+
+            function tryMoveMarkerFromInputs() {
+                const lat = parseFloat((latInput?.value || '').replace(',', '.'));
+                const lng = parseFloat((lngInput?.value || '').replace(',', '.'));
+
+                if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+                    return;
+                }
+
+                marker.setLatLng([lat, lng]);
+                map.panTo([lat, lng]);
+            }
+
+            latInput?.addEventListener('change', tryMoveMarkerFromInputs);
+            lngInput?.addEventListener('change', tryMoveMarkerFromInputs);
+
+            setTimeout(function () {
+                map.invalidateSize();
+            }, 150);
+        });
+    </script>
+}

@@ -13,22 +13,15 @@ public class DeleteModel : PageModel
     [BindProperty]
     public AudioGuide AudioGuide { get; set; } = new();
 
-    public async Task<IActionResult> OnGetAsync(string id)
+    public IActionResult OnGetAsync(string id)
     {
-        var ag = await _db.AudioGuides.FindAsync(id);
-        if (ag == null) return NotFound();
-        AudioGuide = ag;
-        return Page();
+        TempData["Success"] = "Khu Audio hệ thống đang ở chế độ xem-only.";
+        return RedirectToPage("Index");
     }
 
-    public async Task<IActionResult> OnPostAsync()
+    public IActionResult OnPostAsync()
     {
-        var ag = await _db.AudioGuides.FindAsync(AudioGuide.Id);
-        if (ag == null) return NotFound();
-
-        _db.AudioGuides.Remove(ag);
-        await _db.SaveChangesAsync();
-        TempData["Success"] = $"Đã xóa audio guide \"{ag.Title}\"";
+        TempData["Success"] = "Khu Audio hệ thống đang ở chế độ xem-only.";
         return RedirectToPage("Index");
     }
 }

@@ -334,7 +334,7 @@ public static class SampleData
                 Details = "Đề xuất làm rõ hơn phần giới thiệu món và lịch sử quán.",
                 TargetType = PoiChangeTargetType.AudioGuide,
                 TargetEntityId = "ag_003_1",
-                ChangeSetJson = "{\"Title\":\"Giới thiệu quán\",\"TranscriptText\":\"Nội dung mới\"}",
+                ChangeSetJson = "{\"Fields\":{\"Title\":\"Giới thiệu quán\",\"TranscriptText\":\"Nội dung mới\"}}",
                 Status = PoiChangeRequestStatus.Pending,
                 SubmittedAtUtc = SeedBaseUtc.AddDays(-2)
             },
@@ -350,7 +350,7 @@ public static class SampleData
                 Details = "Bổ sung thông tin giờ mở cửa và lưu ý món đặc trưng.",
                 TargetType = PoiChangeTargetType.Location,
                 TargetEntityId = "loc_008",
-                ChangeSetJson = "{\"Description\":\"Mô tả đã cập nhật\"}",
+                ChangeSetJson = "{\"Fields\":{\"Description\":\"Mô tả đã cập nhật\"}}",
                 Status = PoiChangeRequestStatus.Approved,
                 SubmittedAtUtc = SeedBaseUtc.AddDays(-5),
                 UpdatedAtUtc = SeedBaseUtc.AddDays(-4),

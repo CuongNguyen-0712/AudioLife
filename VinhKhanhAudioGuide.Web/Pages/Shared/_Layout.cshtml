@@ -12,6 +12,10 @@
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
 </head>
 <body>
+    @{
+        var isSystemAdmin = User.IsInRole("SystemAdmin");
+        var isPoiAdmin = User.IsInRole("PoiAdmin");
+    }
     <div class="admin-wrapper">
         <aside class="admin-sidebar" id="adminSidebar">
             <div class="sidebar-brand-wrap">
@@ -24,47 +28,63 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                <div class="sidebar-subtitle">Vĩnh Khánh Food Audio</div>
+                <div class="sidebar-subtitle">@(isPoiAdmin ? "POI Content Workspace" : "Vĩnh Khánh Food Audio")</div>
             </div>
             <nav class="sidebar-nav">
-                <div class="sidebar-heading">Điều hành</div>
-                <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "Dashboard" ? "active" : "")" asp-page="/Admin/Index">
-                    <i class="fas fa-tachometer-alt"></i> <span>Bảng điều khiển</span>
-                </a>
-                <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminUsers" ? "active" : "")" asp-page="/Admin/Users">
-                    <i class="fas fa-users"></i> <span>Tài khoản POI</span>
-                </a>
-                <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminRequests" ? "active" : "")" asp-page="/Admin/ChangeRequests">
-                    <i class="fas fa-inbox"></i> <span>Yêu cầu từ POI</span>
-                </a>
-                <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminReports" ? "active" : "")" asp-page="/Admin/Reports">
-                    <i class="fas fa-chart-line"></i> <span>Báo cáo trực quan</span>
-                </a>
-                <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminUsageHistory" ? "active" : "")" asp-page="/Admin/UsageHistory">
-                    <i class="fas fa-clock-rotate-left"></i> <span>Lịch sử sử dụng</span>
-                </a>
-                <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminSettings" ? "active" : "")" asp-page="/Admin/Settings">
-                    <i class="fas fa-sliders"></i> <span>Thiết lập hệ thống</span>
-                </a>
-                <div class="sidebar-heading">Nội dung</div>
-                <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "Categories" ? "active" : "")" asp-page="/Categories/Index">
-                    <i class="fas fa-folder"></i> <span>Danh mục</span>
-                </a>
-                <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "Locations" ? "active" : "")" asp-page="/Locations/Index">
-                    <i class="fas fa-map-marker-alt"></i> <span>Địa điểm</span>
-                </a>
-                <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "Map" ? "active" : "")" asp-page="/Locations/MapView">
-                    <i class="fas fa-map"></i> <span>Bản đồ POI</span>
-                </a>
-                <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "Tours" ? "active" : "")" asp-page="/Tours/Index">
-                    <i class="fas fa-route"></i> <span>Tour ẩm thực</span>
-                </a>
-                <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AudioGuides" ? "active" : "")" asp-page="/AudioGuides/Index">
-                    <i class="fas fa-headphones-alt"></i> <span>Audio</span>
-                </a>
-                <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminTranslations" ? "active" : "")" asp-page="/Admin/Translations">
-                    <i class="fas fa-language"></i> <span>Bản dịch</span>
-                </a>
+                @if (isPoiAdmin)
+                {
+                    <div class="sidebar-heading">Không gian POI</div>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "ShopDashboard" ? "active" : "")" asp-page="/Shop/Index">
+                        <i class="fas fa-store"></i> <span>Bảng điều khiển POI</span>
+                    </a>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "ShopAudios" ? "active" : "")" asp-page="/Shop/AudioGuides/Index">
+                        <i class="fas fa-headphones-alt"></i> <span>Quản lý audio</span>
+                    </a>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "ShopLocationsCreate" ? "active" : "")" asp-page="/Shop/Locations/Create">
+                        <i class="fas fa-location-plus"></i> <span>Tạo POI mới</span>
+                    </a>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "ShopRequests" ? "active" : "")" asp-page="/Shop/ChangeRequests">
+                        <i class="fas fa-inbox"></i> <span>Theo dõi yêu cầu duyệt</span>
+                    </a>
+                }
+                else
+                {
+                    <div class="sidebar-heading">Điều hành</div>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "Dashboard" ? "active" : "")" asp-page="/Admin/Index">
+                        <i class="fas fa-tachometer-alt"></i> <span>Bảng điều khiển</span>
+                    </a>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminUsers" ? "active" : "")" asp-page="/Admin/Users">
+                        <i class="fas fa-users"></i> <span>Tài khoản POI</span>
+                    </a>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminRequests" ? "active" : "")" asp-page="/Admin/ChangeRequests">
+                        <i class="fas fa-inbox"></i> <span>Yêu cầu từ POI</span>
+                    </a>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminReports" ? "active" : "")" asp-page="/Admin/Reports">
+                        <i class="fas fa-chart-line"></i> <span>Báo cáo trực quan</span>
+                    </a>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminUsageHistory" ? "active" : "")" asp-page="/Admin/UsageHistory">
+                        <i class="fas fa-clock-rotate-left"></i> <span>Lịch sử sử dụng</span>
+                    </a>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminSettings" ? "active" : "")" asp-page="/Admin/Settings">
+                        <i class="fas fa-sliders"></i> <span>Thiết lập hệ thống</span>
+                    </a>
+                    <div class="sidebar-heading">Nội dung</div>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "Categories" ? "active" : "")" asp-page="/Categories/Index">
+                        <i class="fas fa-folder"></i> <span>Danh mục</span>
+                    </a>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "Locations" ? "active" : "")" asp-page="/Locations/Index">
+                        <i class="fas fa-map-marker-alt"></i> <span>Địa điểm</span>
+                    </a>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "Map" ? "active" : "")" asp-page="/Locations/MapView">
+                        <i class="fas fa-map"></i> <span>Bản đồ POI</span>
+                    </a>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "Tours" ? "active" : "")" asp-page="/Tours/Index">
+                        <i class="fas fa-route"></i> <span>Tour ẩm thực</span>
+                    </a>
+                    <a class="sidebar-link @((ViewData["ActivePage"]?.ToString() == "AdminAudioTranslations" || ViewData["ActivePage"]?.ToString() == "AudioGuides") ? "active" : "")" asp-page="/Admin/Translations">
+                        <i class="fas fa-headphones-alt"></i> <span>Audio & bản dịch</span>
+                    </a>
+                }
             </nav>
         </aside>
         <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
@@ -75,7 +95,14 @@
                     <i class="fas fa-bars"></i>
                 </button>
                 <div class="topbar-right d-flex align-items-center gap-2">
-                    <span class="role-pill role-pill-admin"><i class="fas fa-crown"></i>Admin Hệ Thống</span>
+                    @if (isPoiAdmin)
+                    {
+                        <span class="role-pill role-pill-shop"><i class="fas fa-store"></i>Admin POI</span>
+                    }
+                    else
+                    {
+                        <span class="role-pill role-pill-admin"><i class="fas fa-crown"></i>Admin Hệ Thống</span>
+                    }
                     <span class="text-muted"><i class="fas fa-user-shield me-1"></i> @User.Identity?.Name</span>
                     <form method="post" asp-page="/Account/Logout" class="d-inline">
                         <button type="submit" class="btn btn-sm btn-outline-secondary">Đăng xuất</button>

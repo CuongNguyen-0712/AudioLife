@@ -36,7 +36,9 @@
                             <th>POI</th>
                             <th>Tiêu đề</th>
                             <th>Nhóm</th>
+                            <th>Mục tiêu</th>
                             <th>Trạng thái</th>
+                            <th>Kết quả review</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -50,7 +52,19 @@
                                 <div class="small text-muted">@item.Details</div>
                             </td>
                             <td>@item.Topic</td>
-                            <td><span class="badge text-bg-secondary">@item.Status</span></td>
+                            <td>@ChangeRequestsModel.GetTargetLabel(item.TargetType)</td>
+                            <td><span class="badge @ChangeRequestsModel.GetStatusBadgeClass(item.Status)">@item.Status</span></td>
+                            <td>
+                                @if (item.UpdatedAtUtc.HasValue)
+                                {
+                                    <div class="small text-muted">@item.UpdatedAtUtc.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
+                                    <div class="small text-muted">@item.UpdatedBy</div>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(item.ReviewNote))
+                                {
+                                    <div class="small mt-1">@item.ReviewNote</div>
+                                }
+                            </td>
                         </tr>
                     }
                     </tbody>

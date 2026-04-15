@@ -8,8 +8,8 @@
 <div class="dashboard-hero mb-4">
     <div>
         <p class="hero-kicker"><i class="fa-solid fa-pen-to-square"></i> Biên tập audio</p>
-        <h1 class="hero-title">Cập nhật transcript</h1>
-        <p class="hero-subtitle">POI Admin chỉ chỉnh transcript. Hệ thống sẽ gửi yêu cầu duyệt trước khi áp dụng chính thức.</p>
+        <h1 class="hero-title">Cập nhật Audio Guide</h1>
+        <p class="hero-subtitle">Sửa dữ liệu audio theo thiết kế DB hiện tại và gửi duyệt đến Admin Hệ thống.</p>
     </div>
     <a asp-page="/Shop/AudioGuides/Index" asp-route-locationId="@Model.AudioGuide.LocationId" class="btn btn-outline-secondary">Quay lại danh sách</a>
 </div>
@@ -33,22 +33,85 @@
             <div asp-validation-summary="All" class="d-none"></div>
             <input asp-for="AudioGuide.Id" type="hidden" />
             <input asp-for="AudioGuide.LocationId" type="hidden" />
-            <input asp-for="AudioGuide.Title" type="hidden" />
-            <input asp-for="AudioGuide.Language" type="hidden" />
 
             <div class="approval-note mb-3">
                 <i class="fas fa-shield-check me-1"></i>
                 Mọi thay đổi tại khu POI sẽ được gửi đến Admin Hệ thống để duyệt trước khi cập nhật dữ liệu chính thức.
             </div>
 
-            <div class="shop-card border mb-3 p-3 bg-light-subtle">
-                <div class="small text-muted">Audio đang chỉnh sửa</div>
-                <div class="fw-semibold">@Model.AudioGuide.Title</div>
-                <div class="small text-muted">Ngôn ngữ: @Model.AudioGuide.Language.ToUpper()</div>
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label asp-for="AudioGuide.Title" class="form-label">Tiêu đề</label>
+                    <input asp-for="AudioGuide.Title" class="form-control" />
+                    <span asp-validation-for="AudioGuide.Title" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="AudioGuide.Duration" class="form-label">Thời lượng (phút)</label>
+                    <input asp-for="AudioGuide.Duration" type="number" min="0" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="AudioGuide.Language" class="form-label">Ngôn ngữ</label>
+                    <select asp-for="AudioGuide.Language" class="form-select" id="languageSelect">
+                        <option value="vi">Tiếng Việt</option>
+                        <option value="en">English</option>
+                        <option value="fr">Français</option>
+                        <option value="ja">日本語</option>
+                        <option value="ko">한국어</option>
+                        <option value="zh">中文</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="AudioGuide.AudioUrl" class="form-label">Audio URL</label>
+                    <input asp-for="AudioGuide.AudioUrl" class="form-control" placeholder="https://..." />
+                </div>
+                <div class="col-12">
+                    <label asp-for="AudioGuide.Description" class="form-label">Mô tả</label>
+                    <textarea asp-for="AudioGuide.Description" rows="3" class="form-control"></textarea>
+                </div>
+            </div>
+
+            <div class="mt-3 mb-3">
+                <label class="form-label fw-semibold">Nguồn audio cập nhật</label>
+                <div class="btn-group w-100" role="group">
+                    <input type="radio" class="btn-check" name="AudioMode" id="modeUpload" value="upload" checked="@(Model.AudioMode == "upload" ? "checked" : null)" onchange="toggleAudioMode()">
+                    <label class="btn btn-outline-primary" for="modeUpload"><i class="fas fa-upload"></i> Upload audio</label>
+
+                    <input type="radio" class="btn-check" name="AudioMode" id="modeTts" value="tts" checked="@(Model.AudioMode == "tts" ? "checked" : null)" onchange="toggleAudioMode()">
+                    <label class="btn btn-outline-success" for="modeTts"><i class="fas fa-robot"></i> Tạo lại bằng TTS</label>
+                </div>
+            </div>
+
+            <div id="uploadSection" class="mb-3">
+                @{
+                    var audioSrc = !string.IsNullOrWhiteSpace(Model.AudioGuide.AudioUrl)
+                        ? Model.AudioGuide.AudioUrl
+                        : Model.AudioGuide.CloudinaryAudioUrl;
+                }
+                @if (!string.IsNullOrWhiteSpace(audioSrc))
+                {
+                    <div class="audio-preview-box mb-2">
+                        <small class="text-muted d-block mb-1">Audio hiện tại:</small>
+                        <audio controls class="audio-preview-player audio-preview-player-form">
+                            <source src="@audioSrc" type="audio/mpeg">
+                        </audio>
+                        <small class="audio-preview-url" title="@audioSrc">@audioSrc</small>
+                    </div>
+                }
+                <label asp-for="AudioFile" class="form-label">Upload file audio mới</label>
+                <input asp-for="AudioFile" type="file" class="form-control" accept="audio/*" />
+                <span asp-validation-for="AudioFile" class="text-danger"></span>
+                <div class="small text-muted mt-1">Nếu có upload file, hệ thống sẽ dùng file này để cập nhật Audio URL.</div>
+            </div>
+
+            <div id="ttsSection" class="tts-section mb-3">
+                <div class="alert alert-info py-2 mb-0">
+                    <i class="fas fa-circle-info me-1"></i>
+                    Chế độ TTS sẽ gửi nội dung <strong>Transcript</strong> để Admin Hệ thống duyệt; audio TTS sẽ được tạo và cập nhật khi duyệt <strong>Approved</strong>.
+                </div>
             </div>
 
             <div class="mb-3">
-                <label asp-for="AudioGuide.TranscriptText" class="form-label">Transcript</label>
+                <label asp-for="AudioGuide.TranscriptText" class="form-label">Transcript (luôn hiển thị)</label>
                 <textarea asp-for="AudioGuide.TranscriptText" rows="10" class="form-control" placeholder="Nhập transcript cần cập nhật..."></textarea>
             </div>
 
@@ -59,4 +122,13 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function toggleAudioMode() {
+            const isUpload = document.getElementById('modeUpload').checked;
+            document.getElementById('uploadSection').style.display = isUpload ? '' : 'none';
+            document.getElementById('ttsSection').style.display = isUpload ? 'none' : '';
+        }
+
+        document.addEventListener('DOMContentLoaded', toggleAudioMode);
+    </script>
 }

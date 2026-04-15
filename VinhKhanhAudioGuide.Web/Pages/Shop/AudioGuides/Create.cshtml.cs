@@ -13,20 +13,19 @@ namespace VinhKhanhAudioGuide.Web.Pages.Shop.AudioGuides;
 
 public class CreateModel : PageModel
 {
+    private const string TtsOnApprovalField = "__tts_on_approval";
+
     private readonly AppDbContext _db;
     private readonly IAudioStorageService _audioStorageService;
-    private readonly ITextToSpeechService _ttsService;
     private readonly IPoiChangeRequestService _changeRequestService;
 
     public CreateModel(
         AppDbContext db,
         IAudioStorageService audioStorageService,
-        ITextToSpeechService ttsService,
         IPoiChangeRequestService changeRequestService)
     {
         _db = db;
         _audioStorageService = audioStorageService;
-        _ttsService = ttsService;
         _changeRequestService = changeRequestService;
     }
 
@@ -102,28 +101,9 @@ public class CreateModel : PageModel
             }
             else
             {
-                try
-                {
-                    var ttsText = Input.TranscriptText.Trim();
-                    var audioBytes = await _ttsService.SynthesizeAsync(ttsText, Input.Language);
-                    using var stream = new MemoryStream(audioBytes);
-
-                    var uploadResult = await _audioStorageService.UploadAudioAsync(
-                        stream,
-                        $"tts_{Input.Language}_{Guid.NewGuid():N}.mp3",
-                        Input.Id);
-
-                    finalAudioUrl = uploadResult.AudioUrl;
-                    cloudinaryAudioUrl = uploadResult.CloudinaryAudioUrl;
-                    cloudinaryPublicId = uploadResult.CloudinaryPublicId;
-                    generatedFromTts = true;
-                    ttsSourceText = ttsText;
-                    Input.TranscriptText = ttsText;
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError(string.Empty, $"Lỗi tạo audio TTS: {ex.Message}");
-                }
+                generatedFromTts = true;
+                ttsSourceText = Input.TranscriptText.Trim();
+                Input.TranscriptText = ttsSourceText;
             }
         }
         else
@@ -163,6 +143,8 @@ public class CreateModel : PageModel
         var username = User.FindFirstValue(ClaimTypes.NameIdentifier)
                        ?? User.Identity?.Name
                        ?? string.Empty;
+        username = username.Trim();
+        var displayName = (User.Identity?.Name ?? username).Trim();
 
         var fields = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
         {
@@ -176,17 +158,20 @@ public class CreateModel : PageModel
             [nameof(AudioGuide.CloudinaryAudioUrl)] = cloudinaryAudioUrl,
             [nameof(AudioGuide.CloudinaryPublicId)] = cloudinaryPublicId,
             [nameof(AudioGuide.GeneratedFromTts)] = generatedFromTts.ToString(),
-            [nameof(AudioGuide.TtsSourceText)] = ttsSourceText
+            [nameof(AudioGuide.TtsSourceText)] = ttsSourceText,
+            [TtsOnApprovalField] = string.Equals(AudioMode, "tts", StringComparison.OrdinalIgnoreCase)
+                ? bool.TrueString
+                : bool.FalseString
         };
 
         var requestTopic = string.Equals(AudioMode, "tts", StringComparison.OrdinalIgnoreCase)
             ? "Thêm audio mới (TTS)"
             : "Thêm audio mới (Upload)";
 
-        await _changeRequestService.SubmitAsync(new PoiChangeRequest
+        var createdRequest = await _changeRequestService.SubmitAsync(new PoiChangeRequest
         {
             SubmittedByUsername = username,
-            SubmittedByName = User.Identity?.Name ?? username,
+            SubmittedByName = displayName,
             LocationId = Input.LocationId,
             LocationName = locationName,
             Topic = requestTopic,
@@ -197,8 +182,8 @@ public class CreateModel : PageModel
             ChangeSetJson = JsonSerializer.Serialize(new PoiChangeSet { Fields = fields })
         });
 
-        TempData["Success"] = "Đã gửi yêu cầu thêm audio cho Admin Hệ thống duyệt.";
-        return RedirectToPage("/Shop/AudioGuides/Index", new { locationId = Input.LocationId });
+        TempData["Success"] = $"Đã gửi yêu cầu thêm audio cho Admin Hệ thống duyệt. Mã yêu cầu: {createdRequest.Id}";
+        return RedirectToPage("/Shop/ChangeRequests");
     }
 
     private async Task LoadLocationsAsync()

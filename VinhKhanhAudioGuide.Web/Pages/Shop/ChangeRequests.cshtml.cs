@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using VinhKhanhAudioGuide.Web.Data;
 using VinhKhanhAudioGuide.Web.Models;
 using VinhKhanhAudioGuide.Web.Services;
@@ -36,13 +37,37 @@ public class ChangeRequestsModel : PageModel
             .OrderBy(location => location.Name)
             .ToListAsync();
 
-        var username = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                       ?? User.Identity?.Name
-                       ?? string.Empty;
+        var submitterAliases = new[]
+        {
+            User.FindFirstValue(ClaimTypes.NameIdentifier),
+            User.Identity?.Name
+        };
 
         SubmittedRequests = (await _changeRequestService
-            .GetBySubmitterAsync(username))
-            .Take(10)
+            .GetBySubmitterAliasesAsync(submitterAliases))
+            .Take(30)
             .ToList();
+    }
+
+    public static string GetStatusBadgeClass(PoiChangeRequestStatus status)
+    {
+        return status switch
+        {
+            PoiChangeRequestStatus.Pending => "text-bg-secondary",
+            PoiChangeRequestStatus.InReview => "text-bg-warning",
+            PoiChangeRequestStatus.Approved => "text-bg-success",
+            PoiChangeRequestStatus.Rejected => "text-bg-danger",
+            _ => "text-bg-secondary"
+        };
+    }
+
+    public static string GetTargetLabel(PoiChangeTargetType targetType)
+    {
+        return targetType switch
+        {
+            PoiChangeTargetType.Location => "POI",
+            PoiChangeTargetType.AudioGuide => "Audio",
+            _ => targetType.ToString()
+        };
     }
 }

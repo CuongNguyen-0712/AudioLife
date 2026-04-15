@@ -4,6 +4,14 @@
 @{
     ViewData["Title"] = "Yêu cầu thay đổi từ POI";
     ViewData["ActivePage"] = "AdminRequests";
+
+    var selectedPaneId = Model.SelectedId.HasValue
+        ? $"preview-{Model.SelectedId.Value:N}"
+        : string.Empty;
+
+    var initialPaneId = Model.ReviewRows.Any(row => $"preview-{row.Request.Id:N}" == selectedPaneId)
+        ? selectedPaneId
+        : (Model.ReviewRows.Any() ? $"preview-{Model.ReviewRows[0].Request.Id:N}" : string.Empty);
 }
 
 <div class="dashboard-hero mb-4">
@@ -20,6 +28,11 @@
     <div class="alert alert-success alert-admin mb-4">@message</div>
 }
 
+@if (TempData["Error"] is string errorMessage)
+{
+    <div class="alert alert-danger alert-admin mb-4">@errorMessage</div>
+}
+
 <div class="row g-3 mb-4">
     <div class="col-md-3"><div class="stat-card stat-card-v2"><div class="stat-icon bg-secondary"><i class="fa-solid fa-hourglass-start"></i></div><div><div class="stat-value">@Model.PendingCount</div><div class="stat-label">Chờ xử lý</div></div></div></div>
     <div class="col-md-3"><div class="stat-card stat-card-v2"><div class="stat-icon bg-warning"><i class="fa-solid fa-magnifying-glass"></i></div><div><div class="stat-value">@Model.InReviewCount</div><div class="stat-label">Đang review</div></div></div></div>
@@ -27,54 +40,220 @@
     <div class="col-md-3"><div class="stat-card stat-card-v2"><div class="stat-icon bg-danger"><i class="fa-solid fa-xmark"></i></div><div><div class="stat-value">@Model.RejectedCount</div><div class="stat-label">Từ chối</div></div></div></div>
 </div>
 
-<div class="admin-card card-v2">
-    <div class="card-header"><span><i class="fa-solid fa-list-check me-2"></i>Danh sách yêu cầu</span></div>
-    <div class="table-responsive">
-        <table class="admin-table table-v2 mb-0">
-            <thead>
-            <tr>
-                <th>Thời gian</th>
-                <th>Người gửi</th>
-                <th>POI</th>
-                <th>Nội dung</th>
-                <th>Trạng thái</th>
-                <th>Xử lý</th>
-            </tr>
-            </thead>
-            <tbody>
-            @if (!Model.Requests.Any())
+<div class="admin-card card-v2 mb-4 request-filter-toolbar">
+    <div class="card-body">
+        <div class="request-filter-topline">
+            <div class="request-filter-title"><i class="fa-solid fa-filter me-2"></i>Bộ lọc yêu cầu</div>
+            <a asp-page="/Admin/ChangeRequests" class="request-filter-reset">Xoá bộ lọc</a>
+        </div>
+
+        <form method="get" class="admin-form request-filter-grid">
+            <div class="filter-input-wrap filter-input-search">
+                <label for="keyword" class="form-label">Tìm nhanh</label>
+                <input id="keyword" name="keyword" value="@Model.Keyword" class="form-control" placeholder="POI, tiêu đề, người gửi..." />
+            </div>
+
+            <div class="filter-input-wrap">
+                <label for="statusFilter" class="form-label">Trạng thái</label>
+                <select id="statusFilter" asp-for="StatusFilter" class="form-select">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="@PoiChangeRequestStatus.Pending">Pending</option>
+                    <option value="@PoiChangeRequestStatus.InReview">InReview</option>
+                    <option value="@PoiChangeRequestStatus.Approved">Approved</option>
+                    <option value="@PoiChangeRequestStatus.Rejected">Rejected</option>
+                </select>
+            </div>
+
+            <div class="filter-input-wrap">
+                <label for="targetFilter" class="form-label">Loại mục tiêu</label>
+                <select id="targetFilter" asp-for="TargetFilter" class="form-select">
+                    <option value="">Tất cả mục tiêu</option>
+                    <option value="@PoiChangeTargetType.Location">POI</option>
+                    <option value="@PoiChangeTargetType.AudioGuide">Audio</option>
+                </select>
+            </div>
+
+            <div class="filter-actions-wrap">
+                <button type="submit" class="btn-admin btn-admin-primary">Áp dụng</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-4 request-workspace" data-initial-preview="@initialPaneId">
+    <div class="col-lg-4">
+        <div class="admin-card card-v2 h-100 request-list-panel">
+            <div class="card-header"><span><i class="fa-solid fa-list-check me-2"></i>Danh sách yêu cầu</span></div>
+            <div class="request-list-scroll">
+                @if (!Model.ReviewRows.Any())
+                {
+                    <div class="text-center text-muted py-4 px-3">Không có yêu cầu nào phù hợp bộ lọc.</div>
+                }
+                else
+                {
+                    @for (var i = 0; i < Model.ReviewRows.Count; i++)
+                    {
+                        var row = Model.ReviewRows[i];
+                        var item = row.Request;
+                        var paneId = $"preview-{item.Id:N}";
+                        var isActive = paneId == initialPaneId;
+                        <button type="button"
+                                class="request-item-btn @(isActive ? "active" : string.Empty)"
+                                data-preview-target="@paneId">
+                            <div class="d-flex justify-content-between align-items-start gap-2">
+                                <div class="request-item-title">@item.Title</div>
+                                <span class="badge @row.StatusBadgeClass">@item.Status</span>
+                            </div>
+                            <div class="request-item-meta mt-1">@item.LocationName</div>
+                            <div class="request-item-meta">@item.SubmittedByName · @item.SubmittedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
+                            <div class="request-item-meta">@item.TargetType / @item.TargetEntityId</div>
+                            @if (row.IsTtsOnApproval)
+                            {
+                                <div class="request-item-meta mt-1"><span class="badge text-bg-info">TTS sau duyệt</span></div>
+                            }
+                        </button>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="admin-card card-v2 h-100 request-preview-panel">
+            <div class="card-header"><span><i class="fa-solid fa-eye me-2"></i>Preview yêu cầu đã chọn</span></div>
+            @if (!Model.ReviewRows.Any())
             {
-                <tr><td colspan="6" class="text-center text-muted py-4">Chưa có yêu cầu thay đổi.</td></tr>
+                <div class="p-4 text-muted">Chọn bộ lọc khác để xem yêu cầu review.</div>
             }
             else
             {
-                @foreach (var item in Model.Requests)
-                {
-                    <tr>
-                        <td>@item.SubmittedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
-                        <td>
-                            <div class="fw-semibold">@item.SubmittedByName</div>
-                            <div class="small text-muted">@item.SubmittedByUsername</div>
-                        </td>
-                        <td>@item.LocationName</td>
-                        <td>
-                            <div class="fw-semibold">@item.Title</div>
-                            <div class="small text-muted mb-1">@item.Topic</div>
-                            <div class="small">@item.Details</div>
-                        </td>
-                        <td><span class="badge text-bg-secondary">@item.Status</span></td>
-                        <td class="action-cell">
-                            <form method="post" asp-page-handler="UpdateStatus" class="action-buttons-stack">
-                                <input type="hidden" name="id" value="@item.Id" />
-                                <button type="submit" name="status" value="@PoiChangeRequestStatus.InReview" class="btn-admin btn-sm-admin btn-admin-outline">Review</button>
-                                <button type="submit" name="status" value="@PoiChangeRequestStatus.Approved" class="btn-admin btn-sm-admin btn-admin-success">Duyệt</button>
-                                <button type="submit" name="status" value="@PoiChangeRequestStatus.Rejected" class="btn-admin btn-sm-admin btn-admin-danger">Từ chối</button>
-                            </form>
-                        </td>
-                    </tr>
-                }
+                <div class="request-preview-scroll">
+                    @for (var i = 0; i < Model.ReviewRows.Count; i++)
+                    {
+                        var row = Model.ReviewRows[i];
+                        var item = row.Request;
+                        var paneId = $"preview-{item.Id:N}";
+                        var isActive = paneId == initialPaneId;
+                        <div id="@paneId" class="request-preview-pane @(isActive ? string.Empty : "d-none")">
+                            <div class="p-3 p-md-4 border-bottom">
+                                <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                    <div>
+                                        <div class="fw-semibold">@item.Title</div>
+                                        <div class="small text-muted">@item.Topic</div>
+                                        @if (row.IsTtsOnApproval)
+                                        {
+                                            <div class="small mt-1"><span class="badge text-bg-info">TTS sẽ được tạo khi duyệt Approved</span></div>
+                                        }
+                                    </div>
+                                    <span class="badge @row.StatusBadgeClass">@item.Status</span>
+                                </div>
+                                <div class="small text-muted">POI: @item.LocationName · Người gửi: @item.SubmittedByName (@item.SubmittedByUsername)</div>
+                                <div class="small text-muted">Thời gian gửi: @item.SubmittedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
+                                <div class="small mt-2">@item.Details</div>
+                            </div>
+
+                            <div class="p-3 p-md-4 border-bottom">
+                                <div class="fw-semibold mb-2">So sánh dữ liệu</div>
+                                <div class="table-responsive">
+                                    <table class="admin-table table-v2 mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Field</th>
+                                                <th>DB hiện tại</th>
+                                                <th>Giá trị đề xuất</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        @foreach (var diff in row.Changes)
+                                        {
+                                            <tr>
+                                                <td class="fw-semibold">@diff.FieldName</td>
+                                                <td>@diff.CurrentValue</td>
+                                                <td>@diff.ProposedValue</td>
+                                            </tr>
+                                        }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="p-3 p-md-4">
+                                @if (row.CanReview)
+                                {
+                                    <form method="post" asp-page-handler="UpdateStatus" class="action-buttons-stack">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="statusFilter" value="@Model.StatusFilter" />
+                                        <input type="hidden" name="targetFilter" value="@Model.TargetFilter" />
+                                        <input type="hidden" name="keyword" value="@Model.Keyword" />
+                                        <input type="hidden" name="selectedId" value="@item.Id" />
+                                        <label class="form-label mb-1">Ghi chú review</label>
+                                        <textarea name="reviewNote" class="form-control form-control-sm mb-2" rows="3" placeholder="Ghi chú review (bắt buộc khi từ chối)">@item.ReviewNote</textarea>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <button type="submit" name="status" value="@PoiChangeRequestStatus.InReview" class="btn-admin btn-sm-admin btn-admin-outline">Chuyển review</button>
+                                            <button type="submit" name="status" value="@PoiChangeRequestStatus.Approved" class="btn-admin btn-sm-admin btn-admin-success">Duyệt</button>
+                                            <button type="submit" name="status" value="@PoiChangeRequestStatus.Rejected" class="btn-admin btn-sm-admin btn-admin-danger">Từ chối</button>
+                                        </div>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <div class="small text-muted mb-1">Yêu cầu đã hoàn tất xử lý.</div>
+                                    @if (item.UpdatedAtUtc.HasValue)
+                                    {
+                                        <div class="small text-muted">@item.UpdatedAtUtc.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm") · @item.UpdatedBy</div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(item.ReviewNote))
+                                    {
+                                        <div class="small mt-2"><span class="text-muted">Ghi chú:</span> @item.ReviewNote</div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
             }
-            </tbody>
-        </table>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const workspace = document.querySelector('.request-workspace[data-initial-preview]');
+            const buttons = document.querySelectorAll('.request-item-btn[data-preview-target]');
+            const panes = document.querySelectorAll('.request-preview-pane');
+
+            if (!buttons.length || !panes.length) {
+                return;
+            }
+
+            function activate(targetId) {
+                buttons.forEach(btn => {
+                    btn.classList.toggle('active', btn.getAttribute('data-preview-target') === targetId);
+                });
+
+                panes.forEach(pane => {
+                    pane.classList.toggle('d-none', pane.id !== targetId);
+                });
+            }
+
+            buttons.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const targetId = btn.getAttribute('data-preview-target');
+                    if (!targetId) {
+                        return;
+                    }
+
+                    activate(targetId);
+                });
+            });
+
+            const initialTarget = workspace?.getAttribute('data-initial-preview');
+            if (initialTarget) {
+                activate(initialTarget);
+                const activeButton = document.querySelector('.request-item-btn.active');
+                activeButton?.scrollIntoView({ block: 'nearest' });
+            }
+        })();
+    </script>
+}

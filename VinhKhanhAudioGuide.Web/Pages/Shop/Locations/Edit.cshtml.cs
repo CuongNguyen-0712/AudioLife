@@ -81,13 +81,15 @@ public class EditModel : PageModel
         var username = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
                        ?? User.Identity?.Name
                        ?? string.Empty;
+        username = username.Trim();
+        var displayName = (User.Identity?.Name ?? username).Trim();
 
         var changeSet = new PoiChangeSet { Fields = changedFields };
 
         await _changeRequestService.SubmitAsync(new PoiChangeRequest
         {
             SubmittedByUsername = username,
-            SubmittedByName = User.Identity?.Name ?? username,
+            SubmittedByName = displayName,
             LocationId = entity.Id,
             LocationName = entity.Name,
             Topic = "Thông tin địa điểm",
@@ -99,7 +101,7 @@ public class EditModel : PageModel
         });
 
         TempData["Success"] = "Đã gửi yêu cầu cập nhật địa điểm cho Admin Hệ thống duyệt.";
-        return RedirectToPage("/Shop/Index", new { locationId = entity.Id });
+        return RedirectToPage("/Shop/ChangeRequests");
     }
 
     private static void AddIfChanged(IDictionary<string, string?> changes, string key, string? original, string? incoming)
