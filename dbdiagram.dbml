@@ -113,6 +113,7 @@ Table PoiChangeRequest {
 
 Table ListeningHistory {
   Id String [pk]
+  UserId Guid
   AudioGuideId String
   LocationId String
   AudioTitle String
@@ -125,10 +126,85 @@ Table ListeningHistory {
   LastListenedAtUtc DateTime
 
   indexes {
+    (UserId)
     (AudioGuideId)
     (LocationId)
     (LastListenedAtUtc)
     (LocationId, LastListenedAtUtc)
+    (UserId, LastListenedAtUtc)
+  }
+}
+
+Table AppUser {
+  Id Guid [pk]
+  QrCodeValue String [unique] // mã/chuỗi lấy từ QR khi onboarding
+  Status String // Active | Blocked
+  CreatedAtUtc DateTime
+  LastSeenAtUtc DateTime
+
+  indexes {
+    (QrCodeValue) [unique]
+    (PhoneNumber)
+    (Email)
+    (Status)
+  }
+}
+
+Table PaymentPackage {
+  Id String [pk]
+  Name String
+  Description String
+  Price Decimal
+  Currency String
+  DurationDays Int
+  IsActive Boolean
+  CreatedAtUtc DateTime
+
+  indexes {
+    (IsActive)
+    (Price)
+  }
+}
+
+Table UserSubscription {
+  Id Guid [pk]
+  UserId Guid
+  PackageId String
+  Status String // Pending | Active | Expired | Cancelled
+  PurchasedAtUtc DateTime
+  StartsAtUtc DateTime
+  ExpiresAtUtc DateTime
+  PaymentReference String
+  LastVerifiedAtUtc DateTime
+
+  indexes {
+    (UserId)
+    (PackageId)
+    (Status)
+    (ExpiresAtUtc)
+    (UserId, Status)
+  }
+}
+
+Table UserAppSession {
+  Id Guid [pk]
+  UserId Guid
+  DeviceId String
+  TokenValue String [unique] // token lưu sau quét QR/login để mở app lần sau
+  RefreshToken String
+  IssuedAtUtc DateTime
+  ExpiresAtUtc DateTime
+  LastValidatedAtUtc DateTime
+  RevokedAtUtc DateTime
+  IsActive Boolean
+
+  indexes {
+    (UserId)
+    (DeviceId)
+    (TokenValue) [unique]
+    (IsActive)
+    (ExpiresAtUtc)
+    (UserId, DeviceId)
   }
 }
 
@@ -141,5 +217,9 @@ Ref: TourLocation.LocationId > Location.Id
 Ref: PoiAdminLocationAssignment.LocationId > Location.Id
 Ref: PoiAdminLocationAssignment.Username > AuthUserAccount.Username
 Ref: PoiChangeRequest.LocationId > Location.Id
+Ref: ListeningHistory.UserId > AppUser.Id
 Ref: ListeningHistory.AudioGuideId > AudioGuide.Id
 Ref: ListeningHistory.LocationId > Location.Id
+Ref: UserSubscription.UserId > AppUser.Id
+Ref: UserSubscription.PackageId > PaymentPackage.Id
+Ref: UserAppSession.UserId > AppUser.Id
