@@ -4,196 +4,166 @@
              xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
              x:Class="VinhKhanhAudioGuide.Mobile.Views.TourDetailPage"
              x:DataType="viewmodels:TourDetailViewModel"
-             Title="{Binding TourName}">
+             Title="{Binding TourName}"
+             BackgroundColor="{StaticResource Gray100}">
 
     <ScrollView>
-        <VerticalStackLayout Spacing="0">
+        <VerticalStackLayout Spacing="{StaticResource Space4}" Padding="{StaticResource Space4}">
 
-            <!-- Hero Image with overlay -->
-            <Grid HeightRequest="250">
-                <Image Source="{Binding ImageUrl}"
-                       Aspect="AspectFill"
-                       HeightRequest="250"/>
-                <BoxView BackgroundColor="Black"
-                        Opacity="0.3"/>
-                <VerticalStackLayout VerticalOptions="End"
-                        Padding="20,0,20,15">
-                    <Label Text="{Binding TourName}"
-                           TextColor="White"
-                           FontSize="24"
-                           FontAttributes="Bold"/>
-                    <HorizontalStackLayout Spacing="15"
-                            Margin="0,5,0,0">
-                        <Label Text="{Binding DurationText, StringFormat='⏱ {0}'}"
+            <Frame Style="{StaticResource CardFrameLarge}"
+                   Padding="0"
+                   IsClippedToBounds="True"
+                   Margin="0,4,0,0">
+                <Grid HeightRequest="280">
+                    <Image Source="{Binding ImageUrl}"
+                           Aspect="AspectFill"
+                           HeightRequest="280" />
+
+                    <BoxView BackgroundColor="#7A000000" />
+
+                    <Frame Style="{StaticResource PriceBadge}"
+                           HorizontalOptions="End"
+                           VerticalOptions="Start"
+                           Margin="12">
+                        <Label Text="{Binding PriceText}" Style="{StaticResource PriceBadgeText}" />
+                    </Frame>
+
+                    <VerticalStackLayout VerticalOptions="End"
+                                         Spacing="8"
+                                         Padding="16,0,16,16">
+                        <Label Text="{Binding TourName}"
                                TextColor="White"
-                                FontSize="13"
-                                Opacity="0.9"/>
-                        <Label Text="{Binding LocationCount, StringFormat='📍 {0} điểm'}"
-                               TextColor="White"
-                                FontSize="13"
-                                Opacity="0.9"/>
-                    </HorizontalStackLayout>
-                </VerticalStackLayout>
-                <!-- Price badge top right -->
-                <Frame Style="{StaticResource PriceBadge}"
-                       HorizontalOptions="End"
-                        VerticalOptions="Start"
-                       Margin="0,15,15,0">
-                    <Label Text="{Binding PriceText}"
-                            Style="{StaticResource PriceBadgeText}"/>
-                </Frame>
-            </Grid>
+                               FontFamily="RobotoCondensed-SemiBold"
+                               FontSize="30"
+                               LineHeight="1.1"
+                               MaxLines="2" />
 
-            <VerticalStackLayout Padding="20"
-                    Spacing="15">
+                        <HorizontalStackLayout Spacing="8">
+                            <Frame BackgroundColor="#66FFFFFF"
+                                   CornerRadius="999"
+                                   HasShadow="False"
+                                   Padding="10,6">
+                                <HorizontalStackLayout Spacing="6">
+                                    <Image Source="time.svg" WidthRequest="14" HeightRequest="14" />
+                                    <Label Text="{Binding DurationText}"
+                                           FontSize="12"
+                                           FontFamily="RobotoCondensed-Medium"
+                                           TextColor="{StaticResource PrimaryDark}" />
+                                </HorizontalStackLayout>
+                            </Frame>
 
-                <!-- Route Info Bar -->
-                <Grid ColumnDefinitions="*,*,*"
-                        ColumnSpacing="8">
-                    <Frame Grid.Column="0"
-                            Style="{StaticResource InfoBarFrame}">
-                        <VerticalStackLayout HorizontalOptions="Center"
-                                Spacing="2">
-                            <Label Text="⏱"
-                                    FontSize="16"
-                                    HorizontalOptions="Center"/>
-                            <Label Text="Thời gian"
-                                    FontSize="10"
-                                    TextColor="{StaticResource Gray500}"
-                                    HorizontalOptions="Center"/>
-                            <Label Text="{Binding DurationText}"
-                                    FontSize="12"
-                                    FontAttributes="Bold"
-                                    HorizontalOptions="Center"/>
-                        </VerticalStackLayout>
-                    </Frame>
-                    <Frame Grid.Column="1"
-                            Style="{StaticResource InfoBarFrame}">
-                        <VerticalStackLayout HorizontalOptions="Center"
-                                Spacing="2">
-                            <Label Text="📍"
-                                    FontSize="16"
-                                    HorizontalOptions="Center"/>
-                            <Label Text="Điểm đến"
-                                    FontSize="10"
-                                    TextColor="{StaticResource Gray500}"
-                                    HorizontalOptions="Center"/>
-                            <Label Text="{Binding LocationCount, StringFormat='{0} điểm'}"
-                                    FontSize="12"
-                                    FontAttributes="Bold"
-                                    HorizontalOptions="Center"/>
-                        </VerticalStackLayout>
-                    </Frame>
-                    <Frame Grid.Column="2"
-                            Style="{StaticResource InfoBarFrame}">
-                        <VerticalStackLayout HorizontalOptions="Center"
-                                Spacing="2">
-                            <Label Text="💰"
-                                    FontSize="16"
-                                    HorizontalOptions="Center"/>
-                            <Label Text="Giá"
-                                    FontSize="10"
-                                    TextColor="{StaticResource Gray500}"
-                                    HorizontalOptions="Center"/>
-                            <Label Text="{Binding PriceText}"
-                                    FontSize="12"
-                                    FontAttributes="Bold"
-                                    HorizontalOptions="Center"/>
-                        </VerticalStackLayout>
-                    </Frame>
+                            <Frame BackgroundColor="#66FFFFFF"
+                                   CornerRadius="999"
+                                   HasShadow="False"
+                                   Padding="10,6">
+                                <HorizontalStackLayout Spacing="6">
+                                    <Image Source="near_me.svg" WidthRequest="14" HeightRequest="14" />
+                                    <Label Text="{Binding LocationCount, StringFormat='{0} điểm'}"
+                                           FontSize="12"
+                                           FontFamily="RobotoCondensed-Medium"
+                                           TextColor="{StaticResource PrimaryDark}" />
+                                </HorizontalStackLayout>
+                            </Frame>
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
                 </Grid>
+            </Frame>
 
-                <Label Text="{Binding Description}"
-                       Style="{StaticResource BodyText}"/>
+        
+            <Frame Style="{StaticResource SurfaceSectionFrame}" Padding="16">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Giới thiệu lộ trình" Style="{StaticResource SubSectionHeader}" Margin="0" />
+                    <Label Text="{Binding Description}" Style="{StaticResource BodyText}" />
+                </VerticalStackLayout>
+            </Frame>
 
-                <Grid Style="{StaticResource LayerDivider}"/>
+            <Label Text="Lộ trình chi tiết" Style="{StaticResource SectionHeader}" Margin="0,2,0,0" />
 
-                <!-- Timeline Section -->
-                <Label Text="Lộ trình chi tiết"
-                       Style="{StaticResource SectionHeader}"/>
+            <CollectionView ItemsSource="{Binding TourLocations}" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="viewmodels:TourLocationItem">
+                        <Grid ColumnDefinitions="42,*"
+                              Padding="0"
+                              Margin="0,0,0,2">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TourDetailViewModel}}, Path=LocationTappedCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Grid.GestureRecognizers>
 
-                <CollectionView ItemsSource="{Binding TourLocations}">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="viewmodels:TourLocationItem">
-                            <Grid ColumnDefinitions="44,*"
-                                    RowDefinitions="Auto"
-                                    Padding="0,0,0,0"
-                                    Margin="0,0,0,0">
-                                <Grid.GestureRecognizers>
-                                    <TapGestureRecognizer
-                                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TourDetailViewModel}}, Path=LocationTappedCommand}"
-                                        CommandParameter="{Binding .}"/>
-                                </Grid.GestureRecognizers>
-                                <!-- Timeline column: number + line -->
-                                <VerticalStackLayout Grid.Column="0"
-                                        HorizontalOptions="Center"
-                                        Spacing="0">
-                                    <Frame Style="{StaticResource TimelineNumber}">
-                                        <Label Text="{Binding Order, StringFormat='{0}'}"
-                                               TextColor="White"
-                                               FontSize="13"
-                                               FontAttributes="Bold"
-                                               HorizontalOptions="Center"
-                                               VerticalOptions="Center"/>
-                                    </Frame>
-                                    <BoxView Style="{StaticResource TimelineLine}"
-                                             IsVisible="{Binding IsNotLast}"/>
-                                </VerticalStackLayout>
-
-                                <!-- Location card -->
-                                <Frame Grid.Column="1"
-                                        Padding="12"
-                                        CornerRadius="10"
-                                        BorderColor="{StaticResource Gray100}"
-                                        Margin="8,0,0,8"
-                                        HasShadow="False">
-                                    <VerticalStackLayout Spacing="4">
-                                        <Label Text="{Binding Name}"
-                                                FontSize="14"
-                                                FontAttributes="Bold"/>
-                                        <HorizontalStackLayout Spacing="10">
-                                            <Label Text="{Binding Duration, StringFormat='⏱ {0} phút'}"
-                                                    FontSize="11"
-                                                    TextColor="{StaticResource Gray500}"/>
-                                            <Label Text="{Binding AudioCount, StringFormat='🎧 {0} audio'}"
-                                                    FontSize="11"
-                                                    TextColor="{StaticResource Gray500}"/>
-                                        </HorizontalStackLayout>
-                                        <Frame BackgroundColor="{StaticResource Secondary}"
-                                               CornerRadius="8"
-                                                Padding="6,2"
-                                                HasShadow="False"
-                                               HorizontalOptions="Start">
-                                            <Label Text="{Binding CategoryName}"
-                                                    FontSize="10"
-                                                    TextColor="{StaticResource Primary}"/>
-                                        </Frame>
-                                    </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="0"
+                                                 HorizontalOptions="Center"
+                                                 Spacing="0"
+                                                 Margin="0,4,0,0">
+                                <Frame Style="{StaticResource TimelineNumber}">
+                                    <Label Text="{Binding Order}"
+                                           TextColor="White"
+                                           FontSize="13"
+                                           FontAttributes="Bold"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center" />
                                 </Frame>
-                            </Grid>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                                <BoxView Style="{StaticResource TimelineLine}"
+                                         IsVisible="{Binding IsNotLast}" />
+                            </VerticalStackLayout>
 
-                <!-- Map Preview -->
-                <Label Text="🗺 Bản đồ lộ trình"
-                       Style="{StaticResource SectionHeader}"/>
+                            <Frame Grid.Column="1"
+                                   Style="{StaticResource CardFrame}"
+                                   Padding="12"
+                                   Margin="8,0,0,10">
+                                <VerticalStackLayout Spacing="6">
+                                    <Label Text="{Binding Name}"
+                                           FontSize="15"
+                                           FontFamily="RobotoCondensed-SemiBold"
+                                           MaxLines="2" />
 
-                <Frame CornerRadius="12"
-                        Padding="0"
-                        HeightRequest="220"
-                        IsClippedToBounds="True"
-                        HasShadow="True">
-                    <WebView Source="{Binding MapHtmlSource}"/>
-                </Frame>
+                                    <HorizontalStackLayout Spacing="12">
+                                        <HorizontalStackLayout Spacing="6">
+                                            <Image Source="time.svg" WidthRequest="14" HeightRequest="14" />
+                                            <Label Text="{Binding Duration, StringFormat='{0} phút'}"
+                                                   FontSize="12"
+                                                   TextColor="{StaticResource OnSurfaceVariant}" />
+                                        </HorizontalStackLayout>
 
-                <!-- Start Button -->
-                <Button Text="Bắt đầu lộ trình"
-                        Style="{StaticResource AccentButton}"
-                        Command="{Binding StartTourCommand}"
-                        Margin="0,20,0,0"/>
+                                        <HorizontalStackLayout Spacing="6">
+                                            <Image Source="audio.svg" WidthRequest="14" HeightRequest="14" />
+                                            <Label Text="{Binding AudioCount, StringFormat='{0} audio'}"
+                                                   FontSize="12"
+                                                   TextColor="{StaticResource OnSurfaceVariant}" />
+                                        </HorizontalStackLayout>
+                                    </HorizontalStackLayout>
 
-            </VerticalStackLayout>
+                                    <Frame BackgroundColor="{StaticResource SecondaryContainer}"
+                                           CornerRadius="999"
+                                           Padding="10,4"
+                                           HasShadow="False"
+                                           HorizontalOptions="Start">
+                                        <Label Text="{Binding CategoryName}"
+                                               FontSize="11"
+                                               FontFamily="RobotoCondensed-Medium"
+                                               TextColor="{StaticResource OnSecondaryContainer}" />
+                                    </Frame>
+                                </VerticalStackLayout>
+                            </Frame>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Label Text="Bản đồ lộ trình" Style="{StaticResource SectionHeader}" Margin="0,2,0,0" />
+
+            <Frame Style="{StaticResource CardFrameLarge}"
+                   Padding="0"
+                   HeightRequest="240"
+                   IsClippedToBounds="True"
+                   HasShadow="False">
+                <WebView Source="{Binding MapHtmlSource}" />
+            </Frame>
+
+            <Button Text="Bắt đầu lộ trình"
+                    Style="{StaticResource AccentButton}"
+                    Command="{Binding StartTourCommand}"
+                    Margin="0,8,0,20" />
         </VerticalStackLayout>
     </ScrollView>
 

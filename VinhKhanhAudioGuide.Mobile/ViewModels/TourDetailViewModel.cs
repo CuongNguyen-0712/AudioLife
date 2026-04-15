@@ -70,7 +70,6 @@ public partial class TourDetailViewModel : ObservableObject
         ImageUrl = tour.ImageUrl;
         DurationText = FormatDuration(tour.Duration);
         LocationCount = tour.LocationIds.Count;
-        PriceText = tour.Price <= 0 ? "Miễn phí" : $"{tour.Price:N0} VNĐ";
 
         var allLocationsTask = _apiService.GetLocationsAsync();
         var categoriesTask = _apiService.GetCategoriesAsync();
@@ -123,28 +122,120 @@ public partial class TourDetailViewModel : ObservableObject
             var lat = l.loc.Latitude.ToString(CultureInfo.InvariantCulture);
             var lng = l.loc.Longitude.ToString(CultureInfo.InvariantCulture);
             var name = l.loc.Name.Replace("'", "\\'");
-            return $@"L.marker([{lat},{lng}],{{icon:L.divIcon({{className:'',html:'<div style=""width:28px;height:28px;background:#512BD4;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:12px"">{l.order}</div>',iconSize:[28,28],iconAnchor:[14,14]}})}}).addTo(map).bindPopup('<b>{l.order}. {name}</b>');";
+            return "L.marker([" + lat + "," + lng + "],{icon:L.divIcon({className:'tour-poi-icon',html:'<div class=\"tour-poi-wrapper\"><img src=\"location_icon.svg\" class=\"tour-poi-pin\"/><div class=\"tour-poi-order\">" + l.order + "</div></div>',iconSize:[48,56],iconAnchor:[24,52],popupAnchor:[0,-48]})}).addTo(map).bindPopup('<div style=\"font-family:RobotoCondensed-Regular,-apple-system,Segoe UI,sans-serif;font-size:13px;line-height:1.35;color:#191C1B;\"><b>" + l.order + ". " + name + "</b></div>');";
         }));
 
         var polylineCoords = string.Join(",", locations.Select(l =>
             $"[{l.loc.Latitude.ToString(CultureInfo.InvariantCulture)},{l.loc.Longitude.ToString(CultureInfo.InvariantCulture)}]"));
 
         var html = $@"<!DOCTYPE html>
-<html><head>
-<meta name='viewport' content='width=device-width,initial-scale=1'>
+<html>
+<head>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'/>
 <link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'/>
 <script src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'></script>
-<style>html,body,#map{{height:100%;margin:0;padding:0}}</style>
-</head><body>
+<style>
+html, body, #map {{ height:100%; margin:0; padding:0; }}
+
+.custom-zoom {{
+    position:absolute;
+    left:12px;
+    top:12px;
+    z-index:1000;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}}
+
+.custom-zoom button {{
+    width:38px;
+    height:38px;
+    border:0;
+    border-radius:12px;
+    background:#C5E6E8;
+    color:#49686A;
+    font-size:22px;
+    line-height:1;
+    font-weight:700;
+    box-shadow:0 4px 12px rgba(0,0,0,0.16);
+}}
+
+.tour-poi-wrapper {{
+    position:relative;
+    width:48px;
+    height:56px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+}}
+
+.tour-poi-pin {{
+    width:40px;
+    height:40px;
+    display:block;
+    filter:drop-shadow(0 3px 8px rgba(0,0,0,0.28));
+}}
+
+.tour-poi-order {{
+    position:absolute;
+    right:-2px;
+    top:-2px;
+    width:18px;
+    height:18px;
+    border-radius:9px;
+    background:#8A4F30;
+    color:#FFFFFF;
+    border:2px solid #FFFFFF;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:RobotoCondensed-SemiBold,-apple-system,Segoe UI,sans-serif;
+    font-size:10px;
+    line-height:1;
+    box-shadow:0 2px 6px rgba(0,0,0,0.26);
+}}
+</style>
+</head>
+<body>
 <div id='map'></div>
+<div class='custom-zoom'>
+    <button id='zoomInBtn' type='button'>+</button>
+    <button id='zoomOutBtn' type='button'>-</button>
+</div>
 <script>
-var map=L.map('map').setView([{centerLat.ToString(CultureInfo.InvariantCulture)},{centerLng.ToString(CultureInfo.InvariantCulture)}],14);
-L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png',{{maxZoom:19,attribution:'© OpenStreetMap'}}).addTo(map);
+var map = L.map('map', {{
+    zoomControl:false,
+    dragging:true,
+    touchZoom:true,
+    scrollWheelZoom:true,
+    doubleClickZoom:true,
+    boxZoom:true
+}}).setView([{centerLat.ToString(CultureInfo.InvariantCulture)},{centerLng.ToString(CultureInfo.InvariantCulture)}],14);
+
+L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png',{{
+    maxZoom:19,
+    attribution:'© OpenStreetMap'
+}}).addTo(map);
+
+document.getElementById('zoomInBtn').addEventListener('click', function() {{ map.zoomIn(); }});
+document.getElementById('zoomOutBtn').addEventListener('click', function() {{ map.zoomOut(); }});
+
 {markersJs}
-L.polyline([{polylineCoords}],{{color:'#512BD4',weight:3,opacity:0.7,dashArray:'8,8'}}).addTo(map);
-var bounds=L.latLngBounds([{polylineCoords}]);
-map.fitBounds(bounds.pad(0.15));
-</script></body></html>";
+
+var routeLine = L.polyline([{polylineCoords}],{{
+    color:'#13696D',
+    weight:4,
+    opacity:0.82,
+    lineJoin:'round'
+}}).addTo(map);
+
+var bounds = routeLine.getBounds();
+if (bounds && bounds.isValid()) {{
+    map.fitBounds(bounds.pad(0.18));
+}}
+</script>
+</body>
+</html>";
 
         MapHtmlSource = new HtmlWebViewSource { Html = html };
     }
