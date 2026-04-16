@@ -1,0 +1,72 @@
+@page
+@model PaymentPackageEditModel
+@{
+    ViewData["Title"] = Model.IsCreate ? "Tạo Gói Thanh Toán" : $"Sửa Gói: {Model.Package.Name}";
+    ViewData["ActivePage"] = "AdminPaymentPackages";
+}
+
+<div class="container py-4" style="max-width: 600px;">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                @(Model.IsCreate ? "Tạo Gói Thanh Toán Mới" : $"Sửa Gói: {Model.Package.Name}")
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                <div class="mb-3">
+                    <label class="form-label">Mã Gói *</label>
+                    <input type="text" asp-for="Package.Id" class="form-control" placeholder="daily, weekly, monthly, etc." readonly="@(!Model.IsCreate)" />
+                    <span asp-validation-for="Package.Id" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Tên Gói *</label>
+                    <input type="text" asp-for="Package.Name" class="form-control" placeholder="1 Ngày, Toàn Bộ Tour, etc." />
+                    <span asp-validation-for="Package.Name" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Mô Tả</label>
+                    <textarea asp-for="Package.Description" class="form-control" rows="3" placeholder="Mô tả chi tiết về gói..."></textarea>
+                    <span asp-validation-for="Package.Description" class="text-danger small"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Giá (VND) *</label>
+                        <input type="number" asp-for="Package.Price" class="form-control" placeholder="10000" />
+                        <span asp-validation-for="Package.Price" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Thời Hạn (Ngày) *</label>
+                        <input type="number" asp-for="Package.DurationDays" class="form-control" placeholder="1, 30, 90" />
+                        <span asp-validation-for="Package.DurationDays" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Đơn Vị Tiền Tệ *</label>
+                    <input type="text" asp-for="Package.Currency" class="form-control" value="VND" />
+                    <span asp-validation-for="Package.Currency" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input type="checkbox" asp-for="Package.IsActive" class="form-check-input" id="isActive" />
+                    <label class="form-check-label" for="isActive">
+                        Kích Hoạt Gói Này
+                    </label>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="@Url.Page("Index")" class="btn btn-secondary">Hủy</a>
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

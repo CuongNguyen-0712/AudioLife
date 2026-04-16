@@ -11,6 +11,9 @@ namespace VinhKhanhAudioGuide.Web.Pages.Admin;
 
 public class ChangeRequestsModel : PageModel
 {
+    private const string DeleteLocationAction = "delete-location";
+    private const string DeleteAudioGuideAction = "delete-audio-guide";
+
     private readonly AppDbContext _db;
     private readonly IPoiChangeRequestService _changeRequestService;
 
@@ -148,6 +151,9 @@ public class ChangeRequestsModel : PageModel
                 && string.Equals(action, "create-audio-guide", StringComparison.OrdinalIgnoreCase);
 
             var hasCreateLocationAction = string.Equals(action, "create-location", StringComparison.OrdinalIgnoreCase);
+            var hasDeleteLocationAction = string.Equals(action, DeleteLocationAction, StringComparison.OrdinalIgnoreCase);
+            var hasDeleteAudioAction = string.Equals(action, DeleteAudioGuideAction, StringComparison.OrdinalIgnoreCase);
+            row.IsDeleteRequest = hasDeleteLocationAction || hasDeleteAudioAction;
 
             foreach (var field in fields)
             {
@@ -173,6 +179,29 @@ public class ChangeRequestsModel : PageModel
                     FieldName = field.Key,
                     CurrentValue = FormatValue(currentValue),
                     ProposedValue = FormatValue(field.Value)
+                });
+            }
+
+            if (hasDeleteLocationAction)
+            {
+                row.Changes.Add(new ChangeFieldDiff
+                {
+                    FieldName = "Hành động",
+                    CurrentValue = locationLookup.TryGetValue(request.TargetEntityId, out var location)
+                        ? $"{location.Name} ({location.Id})"
+                        : "(POI không tồn tại trên DB)",
+                    ProposedValue = "Xóa POI sau duyệt"
+                });
+            }
+            else if (hasDeleteAudioAction)
+            {
+                row.Changes.Add(new ChangeFieldDiff
+                {
+                    FieldName = "Hành động",
+                    CurrentValue = audioLookup.TryGetValue(request.TargetEntityId, out var audioGuide)
+                        ? $"{audioGuide.Title} ({audioGuide.Id})"
+                        : "(audio không tồn tại trên DB)",
+                    ProposedValue = "Xóa audio sau duyệt"
                 });
             }
 
@@ -329,6 +358,7 @@ public class ChangeRequestsModel : PageModel
         public List<ChangeFieldDiff> Changes { get; set; } = new();
         public bool CanReview { get; set; }
         public bool IsTtsOnApproval { get; set; }
+        public bool IsDeleteRequest { get; set; }
         public string StatusBadgeClass { get; set; } = "text-bg-secondary";
     }
 

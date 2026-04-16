@@ -1,0 +1,260 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Admin.PaymentPackagesModel
+@{
+    ViewData["Title"] = "Quản Lý Gói Thanh Toán";
+    ViewData["ActivePage"] = "AdminPaymentPackages";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Quản Lý Gói Thanh Toán</h2>
+        <a href="@Url.Page("Edit")" class="btn btn-primary">
+            <i class="fa fa-plus"></i> Thêm Gói Mới
+        </a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card stat-card-v2">
+                <div class="stat-icon bg-primary"><i class="fa-solid fa-box"></i></div>
+                <div><div class="stat-value">@Model.Packages.Count</div><div class="stat-label">Tổng gói</div></div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card stat-card-v2">
+                <div class="stat-icon bg-success"><i class="fa-solid fa-circle-check"></i></div>
+                <div><div class="stat-value">@Model.ActivePackageCount</div><div class="stat-label">Đang kích hoạt</div></div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card stat-card-v2">
+                <div class="stat-icon bg-secondary"><i class="fa-solid fa-circle-minus"></i></div>
+                <div><div class="stat-value">@Model.InactivePackageCount</div><div class="stat-label">Đã ẩn</div></div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card stat-card-v2">
+                <div class="stat-icon bg-info"><i class="fa-solid fa-user-clock"></i></div>
+                <div><div class="stat-value">@Model.ActiveSubscriptionCount</div><div class="stat-label">Đang dùng</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <input type="text" name="searchTerm" class="form-control" placeholder="Tìm theo mã gói, tên, mô tả, tiền tệ..." value="@Model.SearchTerm" />
+                </div>
+                <div class="col-md-3">
+                    <select name="statusFilter" class="form-select">
+                        <option value="">-- Tất cả trạng thái --</option>
+                        <option value="Active" selected="@(Model.StatusFilter == "Active")">Active</option>
+                        <option value="Inactive" selected="@(Model.StatusFilter == "Inactive")">Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100"><i class="fa fa-search"></i> Lọc</button>
+                </div>
+                <div class="col-md-2 text-end">
+                    <a href="@Url.Page("Index")" class="btn btn-secondary">Xóa lọc</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model.Packages.Any())
+    {
+        <div class="admin-column-list admin-column-list-compact">
+            @foreach (var package in Model.Packages)
+            {
+                var subscriptionCount = package.Subscriptions.Count;
+                var activeCount = package.Subscriptions.Count(s => s.Status == "Active");
+                var pendingCount = package.Subscriptions.Count(s => s.Status == "Pending");
+                var templateId = $"package-overlay-{package.Id}";
+
+                <article class="admin-column-card">
+                    <header class="admin-column-card-head">
+                        <div>
+                            <h3 class="admin-column-card-title">@package.Name</h3>
+                            <div class="admin-column-card-subtitle">Mã: @package.Id</div>
+                        </div>
+                        @if (package.IsActive)
+                        {
+                            <span class="badge bg-success">Kích hoạt</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Vô hiệu</span>
+                        }
+                    </header>
+
+                    <div class="admin-column-meta-grid">
+                        <div><span>Giá</span><strong>@package.Price.ToString("N0") @package.Currency</strong></div>
+                        <div><span>Thời hạn</span><strong>@package.DurationDays ngày</strong></div>
+                        <div><span>Đăng ký</span><strong>@subscriptionCount tổng</strong></div>
+                        <div><span>Active/Pending</span><strong>@activeCount/@pendingCount</strong></div>
+                        <div><span>Ngày tạo</span><strong>@package.CreatedAtUtc.ToString("dd/MM/yyyy")</strong></div>
+                    </div>
+
+                    <p class="admin-column-desc">@package.Description</p>
+
+                    <div class="admin-column-actions">
+                        <button type="button"
+                                class="btn btn-sm btn-outline-dark js-open-entity-overlay"
+                                data-template-id="@templateId"
+                                data-overlay-title="Chi tiết gói thanh toán">
+                            <i class="fa fa-eye"></i> Xem
+                        </button>
+
+                        <a href="@Url.Page("Edit", new { id = package.Id })" class="btn btn-sm btn-primary">
+                            <i class="fa fa-edit"></i> Sửa
+                        </a>
+
+                        <form method="post" asp-page-handler="Toggle" class="d-inline">
+                            <input type="hidden" name="id" value="@package.Id" />
+                            <button type="submit" class="btn btn-sm @(package.IsActive ? "btn-warning" : "btn-success")">
+                                <i class="fa @(package.IsActive ? "fa-times" : "fa-check")"></i> @(package.IsActive ? "Ẩn" : "Kích hoạt")
+                            </button>
+                        </form>
+
+                        <form method="post" asp-page-handler="Delete" class="d-inline">
+                            <input type="hidden" name="id" value="@package.Id" />
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Xóa gói này?')">
+                                <i class="fa fa-trash"></i> Xóa
+                            </button>
+                        </form>
+                    </div>
+                </article>
+
+                <template id="@templateId">
+                    <div class="entity-overlay-body-grid">
+                        <section class="entity-overlay-panel">
+                            <h4>Thông tin gói</h4>
+                            <dl>
+                                <dt>Mã gói</dt><dd>@package.Id</dd>
+                                <dt>Tên gói</dt><dd>@package.Name</dd>
+                                <dt>Giá</dt><dd>@package.Price.ToString("N0") @package.Currency</dd>
+                                <dt>Thời hạn</dt><dd>@package.DurationDays ngày</dd>
+                                <dt>Trạng thái</dt><dd>@(package.IsActive ? "Kích hoạt" : "Vô hiệu")</dd>
+                                <dt>Ngày tạo</dt><dd>@package.CreatedAtUtc.ToString("dd/MM/yyyy HH:mm")</dd>
+                            </dl>
+                        </section>
+
+                        <section class="entity-overlay-panel">
+                            <h4>Mô tả</h4>
+                            <p class="mb-3">@(string.IsNullOrWhiteSpace(package.Description) ? "(Không có mô tả)" : package.Description)</p>
+
+                            <h4>Thống kê đăng ký</h4>
+                            <dl>
+                                <dt>Tổng đăng ký</dt><dd>@subscriptionCount</dd>
+                                <dt>Đang active</dt><dd>@activeCount</dd>
+                                <dt>Pending</dt><dd>@pendingCount</dd>
+                            </dl>
+                        </section>
+
+                        <section class="entity-overlay-panel entity-overlay-panel-full">
+                            <h4>6 đăng ký gần nhất</h4>
+                            @if (package.Subscriptions.Any())
+                            {
+                                <ul class="entity-overlay-list">
+                                    @foreach (var sub in package.Subscriptions.OrderByDescending(s => s.PurchasedAtUtc).Take(6))
+                                    {
+                                        <li>
+                                            <strong>@(sub.User?.DisplayName ?? sub.User?.Email ?? sub.UserId.ToString())</strong>
+                                            <span>@sub.Status • @sub.PurchasedAtUtc.ToString("dd/MM/yyyy HH:mm")</span>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <div class="text-muted small">Chưa có người đăng ký gói này.</div>
+                            }
+                        </section>
+                    </div>
+                </template>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-body text-center text-muted py-4">
+                <i class="fa fa-inbox fa-2x mb-2 d-block"></i>
+                Không có gói thanh toán
+            </div>
+        </div>
+    }
+
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const overlay = document.getElementById('entityOverlay');
+            const titleNode = document.getElementById('entityOverlayTitle');
+            const contentNode = document.getElementById('entityOverlayContent');
+            const closeButtons = overlay ? overlay.querySelectorAll('[data-close-overlay]') : [];
+
+            if (!overlay || !titleNode || !contentNode) return;
+
+            const closeOverlay = () => {
+                overlay.classList.add('d-none');
+                document.body.classList.remove('translation-preview-open');
+                contentNode.innerHTML = '';
+            };
+
+            closeButtons.forEach(btn => btn.addEventListener('click', closeOverlay));
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && !overlay.classList.contains('d-none')) {
+                    closeOverlay();
+                }
+            });
+
+            document.querySelectorAll('.js-open-entity-overlay').forEach(button => {
+                button.addEventListener('click', () => {
+                    const templateId = button.getAttribute('data-template-id');
+                    const title = button.getAttribute('data-overlay-title') || 'Chi tiết';
+                    const template = templateId ? document.getElementById(templateId) : null;
+                    if (!template) return;
+
+                    titleNode.textContent = title;
+                    contentNode.innerHTML = template.innerHTML;
+                    overlay.classList.remove('d-none');
+                    document.body.classList.add('translation-preview-open');
+                });
+            });
+        })();
+    </script>
+}
+
+<div class="entity-overlay d-none" id="entityOverlay" aria-hidden="true">
+    <div class="entity-overlay-backdrop" data-close-overlay="true"></div>
+    <div class="entity-overlay-dialog" role="dialog" aria-modal="true" aria-labelledby="entityOverlayTitle">
+        <div class="entity-overlay-header">
+            <h3 id="entityOverlayTitle" class="mb-0">Chi tiết</h3>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-close-overlay="true">
+                <i class="fa fa-xmark"></i>
+            </button>
+        </div>
+        <div class="entity-overlay-content" id="entityOverlayContent"></div>
+    </div>
+</div>

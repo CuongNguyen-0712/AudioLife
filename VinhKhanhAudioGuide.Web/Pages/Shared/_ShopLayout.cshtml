@@ -34,6 +34,9 @@
                 <a asp-page="/Shop/AudioGuides/Index" class="shop-side-link @(ViewData["ActivePage"]?.ToString() == "ShopAudios" ? "active" : "")">
                     <i class="fas fa-headphones-alt"></i><span>Âm thanh</span>
                 </a>
+                <a asp-page="/Shop/Locations/Index" class="shop-side-link @(ViewData["ActivePage"]?.ToString() == "ShopLocations" ? "active" : "")">
+                    <i class="fas fa-map-location-dot"></i><span>Địa điểm</span>
+                </a>
                 <a asp-page="/Shop/Analytics" class="shop-side-link @(ViewData["ActivePage"]?.ToString() == "ShopAnalytics" ? "active" : "")">
                     <i class="fas fa-chart-pie"></i><span>Phân tích</span>
                 </a>

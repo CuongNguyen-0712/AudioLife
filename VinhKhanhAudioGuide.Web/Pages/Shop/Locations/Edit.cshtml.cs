@@ -75,7 +75,7 @@ public class EditModel : PageModel
         if (changedFields.Count == 0)
         {
             TempData["Success"] = "Không có thay đổi mới để gửi duyệt.";
-            return RedirectToPage("/Shop/Index", new { locationId = entity.Id });
+            return RedirectToPage("/Shop/Locations/Index");
         }
 
         var username = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
