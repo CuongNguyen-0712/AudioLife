@@ -9,4 +9,6 @@ public static class DeepLinkConstants
     public const string LocationIdParam = "locationId";
     public const string AudioGuideIdParam = "audioGuideId";
     public const string AudioUrlParam = "audioUrl";
+    public const string IdentityTokenParam = "token";
+    public const string PaymentPackageIdParam = "packageId";
 }

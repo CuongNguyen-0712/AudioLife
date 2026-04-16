@@ -242,7 +242,8 @@
                 </HorizontalStackLayout>
             </Border>
 
-            <Button Grid.Row="3"
+                <Button x:Name="ContinueButton"
+                    Grid.Row="3"
                     Text="Tiếp tục"
                     Style="{StaticResource PrimaryButton}"
                     Clicked="OnContinueClicked"

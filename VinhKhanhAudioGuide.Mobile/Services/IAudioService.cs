@@ -2,6 +2,7 @@ namespace VinhKhanhAudioGuide.Mobile.Services;
 
 /// <summary>
 /// Audio playback service with event-based state notifications.
+/// Includes built-in cooldown to prevent rapid successive plays.
 /// </summary>
 public interface IAudioService
 {
@@ -10,6 +11,8 @@ public interface IAudioService
     bool IsPlaying { get; }
     double Volume { get; }
     string? CurrentAudioUrl { get; }
+    DateTime LastPlayAttemptUtc { get; }
+    TimeSpan PlayCooldown { get; }
 
     event EventHandler<AudioStateChangedEventArgs>? StateChanged;
     event EventHandler<AudioPositionChangedEventArgs>? PositionChanged;

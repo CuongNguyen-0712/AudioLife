@@ -5,7 +5,12 @@ namespace VinhKhanhAudioGuide.Mobile.Services;
 public class GeolocationService : IGeolocationService, IDisposable
 {
     private const int TrackingIntervalSeconds = 60; // 1 minute like web
+    private const double MinimumScanRadiusMeters = 50;
+    private const double MaximumScanRadiusMeters = 150;
+    private const double AccuracyRadiusMultiplier = 1.5;
+    private const double DistanceTieThresholdMeters = 5;
     private readonly IApiService _apiService;
+    private readonly List<string> _nearbyQueue = new();
     private CancellationTokenSource? _cts;
     private bool _isTracking;
 
@@ -59,7 +64,7 @@ public class GeolocationService : IGeolocationService, IDisposable
                     {
                         CurrentLatitude = location.Latitude;
                         CurrentLongitude = location.Longitude;
-                        await CheckNearbyLocationsAsync(location.Latitude, location.Longitude);
+                        await CheckNearbyLocationsAsync(location.Latitude, location.Longitude, location.Accuracy);
                     }
                 }
                 catch (FeatureNotSupportedException)
@@ -121,49 +126,97 @@ public class GeolocationService : IGeolocationService, IDisposable
         return null;
     }
 
-    private async Task CheckNearbyLocationsAsync(double userLat, double userLng)
+    private async Task CheckNearbyLocationsAsync(double userLat, double userLng, double? locationAccuracyMeters)
     {
-        var locations = await _apiService.GetLocationsAsync();
-        if (locations.Count == 0)
+        var scanRadiusMeters = GetEffectiveScanRadiusMeters(locationAccuracyMeters);
+        var nearbyLocations = await _apiService.GetNearbyLocationsAsync(userLat, userLng, scanRadiusMeters / 1000d);
+        if (nearbyLocations.Count == 0)
         {
+            _nearbyQueue.Clear();
+            NearbyLocationDetected?.Invoke(this, new NearbyLocationEventArgs
+            {
+                LocationId = string.Empty,
+                LocationName = string.Empty,
+                DistanceMeters = double.MaxValue
+            });
             return;
         }
 
-        var nearest = locations
+        var ranked = nearbyLocations
             .Select(loc => new
             {
                 Location = loc,
-                DistanceKm = CalculateDistanceKm(userLat, userLng, loc.Latitude, loc.Longitude)
+                DistanceMeters = CalculateDistanceKm(userLat, userLng, loc.Latitude, loc.Longitude) * 1000d
             })
-            .OrderBy(x => x.DistanceKm)
-            .FirstOrDefault();
+            .OrderBy(item => item.DistanceMeters)
+            .ThenByDescending(item => item.Location.Priority)
+            .ThenBy(item => item.Location.Id, StringComparer.OrdinalIgnoreCase)
+            .Select(item => new NearbyCandidate(item.Location, item.DistanceMeters))
+            .ToList();
 
-        if (nearest == null)
+        var first = ranked[0];
+        var tieCandidates = ranked
+            .Where(item => Math.Abs(item.DistanceMeters - first.DistanceMeters) <= DistanceTieThresholdMeters
+                           && item.Location.Priority == first.Location.Priority)
+            .ToList();
+
+        var selected = ResolveByQueue(tieCandidates);
+        if (selected is null)
         {
             return;
         }
 
         NearbyLocationDetected?.Invoke(this, new NearbyLocationEventArgs
         {
-            LocationId = nearest.Location.Id,
-            LocationName = nearest.Location.Name,
-            DistanceMeters = nearest.DistanceKm * 1000
+            LocationId = selected.Location.Id,
+            LocationName = selected.Location.Name,
+            DistanceMeters = selected.DistanceMeters
         });
     }
 
-    private static double CalculateDistanceKm(double lat1, double lon1, double lat2, double lon2)
+    private static double GetEffectiveScanRadiusMeters(double? locationAccuracyMeters)
     {
-        const double R = 6371;
-        var dLat = ToRadians(lat2 - lat1);
-        var dLon = ToRadians(lon2 - lon1);
-        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
-                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
-        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-        return R * c;
+        var accuracy = locationAccuracyMeters.GetValueOrDefault(MinimumScanRadiusMeters);
+        var adjusted = Math.Max(MinimumScanRadiusMeters, accuracy * AccuracyRadiusMultiplier);
+        return Math.Min(MaximumScanRadiusMeters, adjusted);
     }
 
-    private static double ToRadians(double degrees) => degrees * Math.PI / 180.0;
+    private NearbyCandidate? ResolveByQueue(IReadOnlyList<NearbyCandidate> tieCandidates)
+    {
+        if (tieCandidates.Count == 0)
+        {
+            return null;
+        }
+
+        foreach (var queuedLocationId in _nearbyQueue)
+        {
+            var queued = tieCandidates.FirstOrDefault(item =>
+                string.Equals(item.Location.Id, queuedLocationId, StringComparison.OrdinalIgnoreCase));
+            if (queued is not null)
+            {
+                return queued;
+            }
+        }
+
+        var chosen = tieCandidates[0];
+        var chosenId = chosen.Location.Id;
+        _nearbyQueue.RemoveAll(id => string.Equals(id, chosenId, StringComparison.OrdinalIgnoreCase));
+        _nearbyQueue.Add(chosenId);
+        if (_nearbyQueue.Count > 30)
+        {
+            _nearbyQueue.RemoveRange(0, _nearbyQueue.Count - 30);
+        }
+
+        return chosen;
+    }
+
+    /// <summary>
+    /// Calculate distance in km between two GPS coordinates using Haversine formula.
+    /// </summary>
+    private static double CalculateDistanceKm(double lat1, double lon1, double lat2, double lon2)
+        => DistanceCalculator.CalculateDistanceKm(lat1, lon1, lat2, lon2);
+
+    private sealed record NearbyCandidate(Models.Location Location, double DistanceMeters);
 
     public void Dispose()
     {

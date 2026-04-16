@@ -105,7 +105,7 @@ public partial class TourDetailViewModel : ObservableObject
             }
         }
 
-        var orderedLocations = OptimizeTourLocationsByDistance(routeLocations);
+        var orderedLocations = routeLocations;
 
         int order = 1;
         var totalCount = orderedLocations.Count;
@@ -312,74 +312,6 @@ map.scrollWheelZoom.enable();
         }
     }
 
-    private static List<Models.Location> OptimizeTourLocationsByDistance(List<Models.Location> locations)
-    {
-        if (locations.Count <= 2)
-        {
-            return locations;
-        }
-
-        var valid = new List<Models.Location>();
-        var invalid = new List<Models.Location>();
-        foreach (var location in locations)
-        {
-            if (HasValidCoordinate(location))
-            {
-                valid.Add(location);
-            }
-            else
-            {
-                invalid.Add(location);
-            }
-        }
-
-        if (valid.Count <= 2)
-        {
-            valid.AddRange(invalid);
-            return valid;
-        }
-
-        var ordered = new List<Models.Location>();
-        var remaining = new List<Models.Location>(valid);
-
-        ordered.Add(remaining[0]);
-        remaining.RemoveAt(0);
-
-        while (remaining.Count > 0)
-        {
-            var current = ordered[^1];
-            var nearest = remaining
-                .OrderBy(candidate => CalculateDistanceMeters(current, candidate))
-                .First();
-
-            ordered.Add(nearest);
-            remaining.Remove(nearest);
-        }
-
-        ordered.AddRange(invalid);
-        return ordered;
-    }
-
-    private static bool HasValidCoordinate(Models.Location location)
-    {
-        return location.Latitude is >= -90 and <= 90
-               && location.Longitude is >= -180 and <= 180
-               && (Math.Abs(location.Latitude) > 0.000001 || Math.Abs(location.Longitude) > 0.000001);
-    }
-
-    private static double CalculateDistanceMeters(Models.Location from, Models.Location to)
-    {
-        const double EarthRadiusKm = 6371;
-        var dLat = ToRadians(to.Latitude - from.Latitude);
-        var dLon = ToRadians(to.Longitude - from.Longitude);
-        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2)
-                + Math.Cos(ToRadians(from.Latitude)) * Math.Cos(ToRadians(to.Latitude))
-                * Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
-        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-        return EarthRadiusKm * c * 1000;
-    }
-
-    private static double ToRadians(double degrees) => degrees * Math.PI / 180.0;
 }
 
 public class TourLocationItem

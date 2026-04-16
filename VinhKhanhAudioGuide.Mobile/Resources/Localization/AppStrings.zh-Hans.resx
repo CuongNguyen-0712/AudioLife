@@ -141,6 +141,7 @@
   <data name="Footer_CheckGps" xml:space="preserve"><value>请检查 GPS 连接</value></data>
   <data name="Footer_NoPoi" xml:space="preserve"><value>待机：无 POI</value></data>
   <data name="Footer_NoPoiData" xml:space="preserve"><value>当前没有可播放的地点数据</value></data>
+  <data name="Footer_NoNearbyPoiAutoPlay" xml:space="preserve"><value>暂时无法自动播放：当前扫描半径内没有 POI</value></data>
   <data name="Footer_Waiting" xml:space="preserve"><value>等待中</value></data>
   <data name="Footer_FindNearestError" xml:space="preserve"><value>待机：查找最近 POI 失败</value></data>
   <data name="Footer_PleaseRetry" xml:space="preserve"><value>请重试</value></data>

@@ -33,6 +33,8 @@ public static class SampleData
                 Address = "Vĩnh Khánh, Q4, TP.HCM",
                 Latitude = 10.7595,
                 Longitude = 106.7038,
+                Priority = 95,
+                DetectionRadiusMeters = 120,
                 Duration = 30,
                 CategoryId = "1",
                 AudioGuides = new List<AudioGuide>
@@ -54,6 +56,8 @@ public static class SampleData
                 Address = "Vĩnh Khánh, Q4, TP.HCM",
                 Latitude = 10.7611,
                 Longitude = 106.7051,
+                Priority = 90,
+                DetectionRadiusMeters = 100,
                 Duration = 25,
                 CategoryId = "1",
                 AudioGuides = new List<AudioGuide>
@@ -76,6 +80,8 @@ public static class SampleData
                 Address = "Vĩnh Khánh, Q4, TP.HCM",
                 Latitude = 10.7608,
                 Longitude = 106.7046,
+                Priority = 86,
+                DetectionRadiusMeters = 85,
                 Duration = 15,
                 CategoryId = "2",
                 AudioGuides = new List<AudioGuide>
@@ -95,6 +101,8 @@ public static class SampleData
                 Address = "Vĩnh Khánh, Q4, TP.HCM",
                 Latitude = 10.7599,
                 Longitude = 106.7029,
+                Priority = 80,
+                DetectionRadiusMeters = 90,
                 Duration = 20,
                 CategoryId = "2",
                 AudioGuides = new List<AudioGuide>
@@ -115,6 +123,8 @@ public static class SampleData
                 Address = "Vĩnh Khánh, Q4, TP.HCM",
                 Latitude = 10.7604,
                 Longitude = 106.7041,
+                Priority = 84,
+                DetectionRadiusMeters = 95,
                 Duration = 20,
                 CategoryId = "3",
                 AudioGuides = new List<AudioGuide>
@@ -134,6 +144,8 @@ public static class SampleData
                 Address = "Vĩnh Khánh, Q4, TP.HCM",
                 Latitude = 10.7601,
                 Longitude = 106.7036,
+                Priority = 88,
+                DetectionRadiusMeters = 105,
                 Duration = 30,
                 CategoryId = "3",
                 AudioGuides = new List<AudioGuide>
@@ -154,6 +166,8 @@ public static class SampleData
                 Address = "Vĩnh Khánh, Q4, TP.HCM",
                 Latitude = 10.7597,
                 Longitude = 106.7032,
+                Priority = 92,
+                DetectionRadiusMeters = 110,
                 Duration = 35,
                 CategoryId = "4",
                 AudioGuides = new List<AudioGuide>
@@ -173,6 +187,8 @@ public static class SampleData
                 Address = "Vĩnh Khánh, Q4, TP.HCM",
                 Latitude = 10.7614,
                 Longitude = 106.7056,
+                Priority = 91,
+                DetectionRadiusMeters = 115,
                 Duration = 40,
                 CategoryId = "4",
                 AudioGuides = new List<AudioGuide>
@@ -193,6 +209,8 @@ public static class SampleData
                 Address = "Vĩnh Khánh, Q4, TP.HCM",
                 Latitude = 10.7609,
                 Longitude = 106.7049,
+                Priority = 75,
+                DetectionRadiusMeters = 80,
                 Duration = 15,
                 CategoryId = "5",
                 AudioGuides = new List<AudioGuide>
@@ -212,6 +230,8 @@ public static class SampleData
                 Address = "Vĩnh Khánh, Q4, TP.HCM",
                 Latitude = 10.7593,
                 Longitude = 106.7026,
+                Priority = 78,
+                DetectionRadiusMeters = 85,
                 Duration = 20,
                 CategoryId = "5",
                 AudioGuides = new List<AudioGuide>

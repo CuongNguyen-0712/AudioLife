@@ -18,6 +18,8 @@ public partial class MainViewModel : ObservableObject
 {
     private const string PreferredAudioGuideKeyPrefix = "AutoNearestPreferredAudioGuide:";
     private const string PreferredAudioUrlKeyPrefix = "AutoNearestPreferredAudioUrl:";
+    private const double DefaultUserScanRadiusMeters = 50;
+    private const double GeoEventDebounceSeconds = 2.5; // Debounce interval for geofence event processing
 
     private readonly INavigationService _navigationService;
     private readonly IApiService _apiService;
@@ -30,6 +32,7 @@ public partial class MainViewModel : ObservableObject
     private bool _isGeoTrackingSubscribed;
     private double _currentPoiDistanceMeters = double.MaxValue;
     private int _autoQueueIndex = -1;
+    private DateTime _lastGeoEventProcessedUtc = DateTime.MinValue; // Debounce: track last geofence event
 
     [ObservableProperty]
     private bool _isRefreshing;
@@ -508,7 +511,7 @@ public partial class MainViewModel : ObservableObject
             var locations = await _apiService.GetLocationsAsync();
             if (locations.Count == 0)
             {
-                FooterStatusText = T("Footer_NoPoi");
+                FooterStatusText = T("Footer_NoNearbyPoiAutoPlay");
                 FooterHintText = T("Footer_NoPoiData");
                 FooterActionText = T("Footer_Waiting");
                 IsFooterActionEnabled = false;
@@ -523,10 +526,23 @@ public partial class MainViewModel : ObservableObject
                         userLatitude,
                         userLongitude,
                         loc.Latitude,
-                        loc.Longitude)
+                        loc.Longitude),
+                    PoiRadiusMeters = Math.Max(loc.DetectionRadiusMeters, 0)
                 })
+                .Where(x => x.DistanceMeters <= DefaultUserScanRadiusMeters + x.PoiRadiusMeters)
                 .OrderBy(x => x.DistanceMeters)
+                .ThenByDescending(x => x.Location.Priority)
+                .ThenBy(x => x.Location.Id, StringComparer.OrdinalIgnoreCase)
                 .First();
+
+            if (nearest is null)
+            {
+                FooterStatusText = T("Footer_NoNearbyPoiAutoPlay");
+                FooterHintText = T("Footer_NoPoiData");
+                FooterActionText = T("Footer_Waiting");
+                IsFooterActionEnabled = false;
+                return null;
+            }
 
             return (nearest.Location, nearest.DistanceMeters);
         }
@@ -627,6 +643,11 @@ public partial class MainViewModel : ObservableObject
 
             if (string.IsNullOrWhiteSpace(e.LocationId))
             {
+                FooterStatusText = T("Footer_NoNearbyPoiAutoPlay");
+                FooterHintText = T("Footer_NoPoiData");
+                FooterActionText = T("Footer_Waiting");
+                IsFooterActionEnabled = false;
+                UpdateFooterPlaybackUi();
                 return;
             }
 
@@ -637,6 +658,14 @@ public partial class MainViewModel : ObservableObject
                 return;
             }
 
+            // Apply debounce: prevent rapid successive geofence event processing (spam prevention).
+            var timeSinceLastEvent = DateTime.UtcNow - _lastGeoEventProcessedUtc;
+            if (timeSinceLastEvent.TotalSeconds < GeoEventDebounceSeconds)
+            {
+                return; // Debounce active, ignore this geofence event.
+            }
+
+            _lastGeoEventProcessedUtc = DateTime.UtcNow;
             await PlayAutoAudioForLocationAsync(e.LocationId, e.DistanceMeters);
         });
     }

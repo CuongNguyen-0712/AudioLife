@@ -22,6 +22,7 @@ public static class DbInitializer
         EnsureApprovalTables(context);
         EnsureListeningHistoryTable(context);
         EnsureLegacyTablesRemoved(context);
+        EnsureLocationSpatialColumns(context);
 
         var hasVinhKhanhSeed = context.Locations
             .AsNoTracking()
@@ -359,6 +360,24 @@ BEGIN
     )
     BEGIN
         CREATE INDEX [IX_ListeningHistory_UserId_LastListenedAtUtc] ON [dbo].[ListeningHistory]([UserId], [LastListenedAtUtc]);
+    END
+END
+");
+    }
+
+    private static void EnsureLocationSpatialColumns(AppDbContext context)
+    {
+        context.Database.ExecuteSqlRaw(@"
+IF OBJECT_ID(N'dbo.Locations', N'U') IS NOT NULL
+BEGIN
+    IF COL_LENGTH('dbo.Locations', 'Priority') IS NULL
+    BEGIN
+        ALTER TABLE [dbo].[Locations] ADD [Priority] int NOT NULL CONSTRAINT [DF_Locations_Priority] DEFAULT (100);
+    END
+
+    IF COL_LENGTH('dbo.Locations', 'DetectionRadiusMeters') IS NULL
+    BEGIN
+        ALTER TABLE [dbo].[Locations] ADD [DetectionRadiusMeters] float NOT NULL CONSTRAINT [DF_Locations_DetectionRadiusMeters] DEFAULT (80);
     END
 END
 ");

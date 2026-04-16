@@ -1,37 +1,49 @@
+using Microsoft.Extensions.DependencyInjection;
+using VinhKhanhAudioGuide.Mobile.Models;
 using VinhKhanhAudioGuide.Mobile.Services;
 
 namespace VinhKhanhAudioGuide.Mobile;
 
 public partial class App : Application
 {
-    private static bool _hasQrAccessInSession;
     private static string? _pendingDeepLink;
     private static bool _isProcessingDeepLink;
+    private static QrAudioPayload? _pendingQrPayload;
 
     public App()
     {
-        LocalizationService.ApplyDefaultVietnamese();
+        LocalizationService.ApplyDefaultVietnamese(persist: false);
         InitializeComponent();
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        var hasQrAccess = _hasQrAccessInSession;
-        Page rootPage = hasQrAccess ? new AppShell() : new Views.IntroPage();
-        var window = new Window(rootPage);
+        var window = new Window(new Views.StartupLoadingPage());
 
         _ = SafeProcessPendingDeepLinkAsync();
         return window;
     }
 
+    public static bool HasPendingDeepLink => !string.IsNullOrWhiteSpace(_pendingDeepLink);
+
+    public static QrAudioPayload? PendingQrPayload => _pendingQrPayload;
+
     public static void NavigateToQrScanner()
     {
-        MainThread.BeginInvokeOnMainThread(() => SetRootPage(CreateStyledNavigationPage(new Views.QrScannerPage())));
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            ApplyPreAuthVietnameseCulture();
+            SetRootPage(CreateStyledNavigationPage(new Views.QrScannerPage()));
+        });
     }
 
     public static void NavigateToIntro()
     {
-        MainThread.BeginInvokeOnMainThread(() => SetRootPage(new Views.IntroPage()));
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            ApplyPreAuthVietnameseCulture();
+            SetRootPage(new Views.IntroPage());
+        });
     }
 
     public static void HandleIncomingDeepLink(string? deepLink)
@@ -47,19 +59,98 @@ public partial class App : Application
 
     public static void NavigateToShellRoot()
     {
-        MainThread.BeginInvokeOnMainThread(() => SetRootPage(new AppShell()));
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            ApplyPersistedCultureForAuthenticatedShell();
+            SetRootPage(new AppShell());
+        });
+    }
+
+    public static void StorePendingQrPayload(QrAudioPayload payload)
+    {
+        _pendingQrPayload = payload;
+    }
+
+    public static void ClearPendingQrPayload()
+    {
+        _pendingQrPayload = null;
     }
 
     public static void NavigateToLanguageSelection()
     {
-        MainThread.BeginInvokeOnMainThread(() => SetRootPage(new Views.LanguageSection()));
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            ApplyPreAuthVietnameseCulture();
+            SetRootPage(new Views.LanguageSection());
+        });
     }
 
     public static async Task CompleteQrOnboardingAsync(QrAudioPayload payload)
     {
-        _hasQrAccessInSession = true;
-        _ = payload;
+        StorePendingQrPayload(payload);
+
+        var services = Current?.Handler?.MauiContext?.Services;
+        var sessionStore = services?.GetService<IAppSessionStore>();
+        var apiService = services?.GetService<IApiService>();
+
+        if (sessionStore is not null && apiService is not null)
+        {
+            try
+            {
+                var deviceId = await sessionStore.GetOrCreateDeviceIdAsync();
+                _ = await apiService.SyncQrScanAsync(payload, deviceId);
+            }
+            catch
+            {
+                // QR onboarding should continue even when backend sync is temporarily unavailable.
+            }
+        }
+
         await OpenPaymentSelectionAfterQrAsync();
+    }
+
+    public static async Task InitializeStartupAsync()
+    {
+        if (HasPendingDeepLink)
+        {
+            return;
+        }
+
+        var services = Current?.Handler?.MauiContext?.Services;
+        var sessionStore = services?.GetService<IAppSessionStore>();
+        var apiService = services?.GetService<IApiService>();
+
+        if (sessionStore is null || apiService is null)
+        {
+            NavigateToIntro();
+            return;
+        }
+
+        var deviceId = await sessionStore.GetOrCreateDeviceIdAsync();
+        var check = await apiService.CheckDeviceSessionAsync(deviceId);
+        if (check is null || !check.HasSession)
+        {
+            NavigateToIntro();
+            return;
+        }
+
+        var validation = await apiService.ValidateSessionAsync(check.SessionToken, deviceId);
+        if (validation is null || !validation.IsValid)
+        {
+            LocalizationService.ClearPersistedCulture();
+            if (services?.GetService<ILocalizationService>() is ILocalizationService localizationService)
+            {
+                localizationService.ResetToDefaultCulture();
+            }
+            else
+            {
+                LocalizationService.ApplyDefaultVietnamese(persist: false);
+            }
+            NavigateToIntro();
+            return;
+        }
+
+        NavigateToShellRoot();
     }
 
     private static async Task ProcessPendingDeepLinkAsync()
@@ -127,7 +218,7 @@ public partial class App : Application
     {
         await MainThread.InvokeOnMainThreadAsync(async () =>
         {
-            if (!_hasQrAccessInSession)
+            if (_pendingQrPayload is null)
             {
                 return;
             }
@@ -136,12 +227,39 @@ public partial class App : Application
             var currentPage = app?.Windows.FirstOrDefault(w => w?.Page is not null)?.Page;
             if (currentPage is NavigationPage navigationPage)
             {
+                ApplyPreAuthVietnameseCulture();
                 await navigationPage.PushAsync(new Views.PaymentPlanSelectionPage());
                 return;
             }
 
+            ApplyPreAuthVietnameseCulture();
             SetRootPage(CreateStyledNavigationPage(new Views.PaymentPlanSelectionPage()));
         });
+    }
+
+    private static void ApplyPreAuthVietnameseCulture()
+    {
+        var services = Current?.Handler?.MauiContext?.Services;
+        if (services?.GetService<ILocalizationService>() is ILocalizationService localizationService)
+        {
+            localizationService.ResetToDefaultCulture();
+            return;
+        }
+
+        LocalizationService.ApplyDefaultVietnamese(persist: false);
+    }
+
+    private static void ApplyPersistedCultureForAuthenticatedShell()
+    {
+        var persistedCulture = LocalizationService.GetPersistedOrDefaultCulture();
+        var services = Current?.Handler?.MauiContext?.Services;
+        if (services?.GetService<ILocalizationService>() is ILocalizationService localizationService)
+        {
+            localizationService.SetCulture(persistedCulture);
+            return;
+        }
+
+        LocalizationService.ApplyPersistedCulture();
     }
 
     private static NavigationPage CreateStyledNavigationPage(Page rootPage)

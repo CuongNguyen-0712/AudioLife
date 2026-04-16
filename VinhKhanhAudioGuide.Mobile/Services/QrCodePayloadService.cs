@@ -3,11 +3,21 @@ using QRCoder;
 
 namespace VinhKhanhAudioGuide.Mobile.Services;
 
-public sealed record QrAudioPayload(string LocationId, string AudioGuideId, string AudioUrl);
+public sealed record QrAudioPayload(
+    string LocationId,
+    string AudioGuideId,
+    string AudioUrl,
+    string IdentityToken,
+    string PaymentPackageId);
 
 public static class QrCodePayloadService
 {
-    public static string BuildAudioDeepLink(string locationId, string? audioGuideId = null, string? audioUrl = null)
+    public static string BuildAudioDeepLink(
+        string locationId,
+        string? audioGuideId = null,
+        string? audioUrl = null,
+        string? identityToken = null,
+        string? paymentPackageId = null)
     {
         var queryParts = new List<string>
         {
@@ -24,6 +34,16 @@ public static class QrCodePayloadService
             queryParts.Add($"{DeepLinkConstants.AudioUrlParam}={Uri.EscapeDataString(audioUrl)}");
         }
 
+        if (!string.IsNullOrWhiteSpace(identityToken))
+        {
+            queryParts.Add($"{DeepLinkConstants.IdentityTokenParam}={Uri.EscapeDataString(identityToken)}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(paymentPackageId))
+        {
+            queryParts.Add($"{DeepLinkConstants.PaymentPackageIdParam}={Uri.EscapeDataString(paymentPackageId)}");
+        }
+
         return $"{DeepLinkConstants.UrlScheme}://{DeepLinkConstants.UrlHost}{DeepLinkConstants.AudioPath}?{string.Join("&", queryParts)}";
     }
 
@@ -37,7 +57,7 @@ public static class QrCodePayloadService
 
     public static bool TryParseAudioPayload(string rawValue, out QrAudioPayload payload)
     {
-        payload = new QrAudioPayload(string.Empty, string.Empty, string.Empty);
+        payload = new QrAudioPayload(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty);
 
         if (string.IsNullOrWhiteSpace(rawValue))
         {
@@ -73,8 +93,15 @@ public static class QrCodePayloadService
 
         queryMap.TryGetValue(DeepLinkConstants.AudioGuideIdParam, out var audioGuideId);
         queryMap.TryGetValue(DeepLinkConstants.AudioUrlParam, out var audioUrl);
+        queryMap.TryGetValue(DeepLinkConstants.IdentityTokenParam, out var identityToken);
+        queryMap.TryGetValue(DeepLinkConstants.PaymentPackageIdParam, out var paymentPackageId);
 
-        payload = new QrAudioPayload(locationId, audioGuideId ?? string.Empty, audioUrl ?? string.Empty);
+        payload = new QrAudioPayload(
+            locationId,
+            audioGuideId ?? string.Empty,
+            audioUrl ?? string.Empty,
+            identityToken ?? string.Empty,
+            paymentPackageId ?? string.Empty);
         return true;
     }
 

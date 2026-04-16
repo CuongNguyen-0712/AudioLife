@@ -321,6 +321,9 @@
   <data name="Footer_NoPoiData" xml:space="preserve">
     <value>Hiện chưa có dữ liệu địa điểm để phát audio</value>
   </data>
+    <data name="Footer_NoNearbyPoiAutoPlay" xml:space="preserve">
+      <value>Auto playback cannot start yet: no POI is currently within the scan radius</value>
+    </data>
   <data name="Footer_Waiting" xml:space="preserve">
     <value>Đang chờ</value>
   </data>
