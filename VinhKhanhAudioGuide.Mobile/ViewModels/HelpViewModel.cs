@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace VinhKhanhAudioGuide.Mobile.ViewModels;
 
-public partial class HelpViewModel : ObservableObject
+public partial class HelpViewModel : LoadStateViewModel
 {
     [ObservableProperty]
     private List<FaqItem> _faqItems;
@@ -48,6 +48,8 @@ public partial class HelpViewModel : ObservableObject
                 Answer = "Nội dung audio được biên soạn bởi các chuyên gia lịch sử và văn hóa. Chúng tôi thường xuyên cập nhật và kiểm tra tính chính xác của thông tin."
             }
         };
+
+        CompleteLoading(_faqItems.Count > 0);
     }
 
     [RelayCommand]

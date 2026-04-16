@@ -45,13 +45,76 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _themeMode = string.Empty;
 
+    [ObservableProperty]
+    private bool _isLoading;
+
+    [ObservableProperty]
+    private bool _hasData;
+
+    [ObservableProperty]
+    private bool _isEmpty = true;
+
+    [ObservableProperty]
+    private bool _isError;
+
+    [ObservableProperty]
+    private string _errorMessage = string.Empty;
+
+    private bool _hasLoaded;
+
     public SettingsViewModel(INavigationService navigationService, ILocalizationService localizationService)
     {
         _navigationService = navigationService;
         _localizationService = localizationService;
 
         _localizationService.CultureChanged += OnCultureChanged;
-        LoadSettings();
+    }
+
+    private void BeginLoading()
+    {
+        IsError = false;
+        ErrorMessage = string.Empty;
+        IsLoading = true;
+    }
+
+    private void CompleteLoading(bool hasData)
+    {
+        HasData = hasData;
+        IsEmpty = !hasData;
+        IsError = false;
+        ErrorMessage = string.Empty;
+        IsLoading = false;
+    }
+
+    private void FailLoading(string errorMessage)
+    {
+        HasData = false;
+        IsEmpty = true;
+        IsError = true;
+        ErrorMessage = errorMessage;
+        IsLoading = false;
+    }
+
+    public Task OnAppearingAsync()
+    {
+        if (_hasLoaded)
+        {
+            return Task.CompletedTask;
+        }
+
+        BeginLoading();
+        try
+        {
+            LoadSettings();
+            _hasLoaded = true;
+            CompleteLoading(true);
+        }
+        catch (Exception ex)
+        {
+            FailLoading(ex.Message);
+        }
+
+        return Task.CompletedTask;
     }
 
     private void LoadSettings()

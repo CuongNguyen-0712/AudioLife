@@ -6,6 +6,7 @@ public partial class App : Application
 {
     private static bool _hasQrAccessInSession;
     private static string? _pendingDeepLink;
+    private static bool _isProcessingDeepLink;
 
     public App()
     {
@@ -19,7 +20,7 @@ public partial class App : Application
         Page rootPage = hasQrAccess ? new AppShell() : new Views.IntroPage();
         var window = new Window(rootPage);
 
-        _ = ProcessPendingDeepLinkAsync();
+        _ = SafeProcessPendingDeepLinkAsync();
         return window;
     }
 
@@ -41,7 +42,7 @@ public partial class App : Application
         }
 
         _pendingDeepLink = deepLink;
-        _ = ProcessPendingDeepLinkAsync();
+        _ = SafeProcessPendingDeepLinkAsync();
     }
 
     public static void NavigateToShellRoot()
@@ -63,6 +64,8 @@ public partial class App : Application
 
     private static async Task ProcessPendingDeepLinkAsync()
     {
+        await WaitForWindowReadyAsync();
+
         if (string.IsNullOrWhiteSpace(_pendingDeepLink))
         {
             return;
@@ -82,6 +85,42 @@ public partial class App : Application
 
         _pendingDeepLink = null;
         await CompleteQrOnboardingAsync(payload);
+    }
+
+    private static async Task SafeProcessPendingDeepLinkAsync()
+    {
+        if (_isProcessingDeepLink)
+        {
+            return;
+        }
+
+        _isProcessingDeepLink = true;
+        try
+        {
+            await ProcessPendingDeepLinkAsync();
+        }
+        catch
+        {
+            // Never crash app startup due to deep-link timing or transient navigation errors.
+        }
+        finally
+        {
+            _isProcessingDeepLink = false;
+        }
+    }
+
+    private static async Task WaitForWindowReadyAsync()
+    {
+        for (var i = 0; i < 15; i++)
+        {
+            var hasWindow = Current?.Windows.Any(w => w?.Page is not null) == true;
+            if (hasWindow)
+            {
+                return;
+            }
+
+            await Task.Delay(100);
+        }
     }
 
     private static async Task OpenPaymentSelectionAfterQrAsync()

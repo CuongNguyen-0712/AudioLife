@@ -7,12 +7,56 @@ using VinhKhanhAudioGuide.Mobile.Services;
 
 namespace VinhKhanhAudioGuide.Mobile.ViewModels;
 
-public partial class MapViewModel : ObservableObject
+[QueryProperty(nameof(TourId), "TourId")]
+[QueryProperty(nameof(ResumeLocationId), "ResumeLocationId")]
+[QueryProperty(nameof(ResumeAudioGuideId), "ResumeAudioGuideId")]
+[QueryProperty(nameof(ResumeAudioUrl), "ResumeAudioUrl")]
+[QueryProperty(nameof(ResumePositionSeconds), "ResumePositionSeconds")]
+[QueryProperty(nameof(ResumeSessionId), "ResumeSessionId")]
+public partial class MapViewModel : LoadStateViewModel
 {
     private readonly INavigationService _navigationService;
     private readonly IGeolocationService _geolocationService;
     private readonly IApiService _apiService;
+    private readonly IAudioService _audioService;
+    private readonly ITourCheckpointService _tourCheckpointService;
+    private readonly ITourPlaybackSessionService _tourPlaybackSessionService;
     private readonly SemaphoreSlim _loadMapLock = new(1, 1);
+    private bool _hasLoadedMapData;
+    private bool _isSubscribedToAudioEvents;
+    private bool _pendingTourRouteLoad;
+    private string _loadedTourId = string.Empty;
+    private string _currentTourAudioUrl = string.Empty;
+
+    [ObservableProperty]
+    private string _tourId = string.Empty;
+
+    [ObservableProperty]
+    private bool _isTourRouteMode;
+
+    [ObservableProperty]
+    private bool _isTourPaused;
+
+    [ObservableProperty]
+    private string _resumeLocationId = string.Empty;
+
+    [ObservableProperty]
+    private string _resumeAudioGuideId = string.Empty;
+
+    [ObservableProperty]
+    private string _resumeAudioUrl = string.Empty;
+
+    [ObservableProperty]
+    private double _resumePositionSeconds;
+
+    [ObservableProperty]
+    private string _resumeSessionId = string.Empty;
+
+    [ObservableProperty]
+    private string _sectionTitle = "ĐỊA ĐIỂM GẦN ĐÂY";
+
+    [ObservableProperty]
+    private string _sectionHint = "Theo khoảng cách";
 
     [ObservableProperty]
     private string _searchQuery = string.Empty;
@@ -32,32 +76,359 @@ public partial class MapViewModel : ObservableObject
     public ObservableCollection<MapMarker> MapMarkers { get; } = new();
     public ObservableCollection<NearbyLocation> NearbyLocations { get; } = new();
 
-    public MapViewModel(INavigationService navigationService, IGeolocationService geolocationService, IApiService apiService)
+    public MapViewModel(
+        INavigationService navigationService,
+        IGeolocationService geolocationService,
+        IApiService apiService,
+        IAudioService audioService,
+        ITourCheckpointService tourCheckpointService,
+        ITourPlaybackSessionService tourPlaybackSessionService)
     {
         _navigationService = navigationService;
         _geolocationService = geolocationService;
         _apiService = apiService;
-        InitializeMapAsync();
+        _audioService = audioService;
+        _tourCheckpointService = tourCheckpointService;
+        _tourPlaybackSessionService = tourPlaybackSessionService;
     }
 
-    /// <summary>
-    /// Initialize map with automatic user location detection and POI updates.
-    /// </summary>
-    private async void InitializeMapAsync()
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        try
+        if (query is null || query.Count == 0)
         {
-            // Step 1: Get user location automatically
-            var userLocation = await GetUserLocationAsync();
-            
-            // Step 2: Load map data with user location
-            await LoadMapDataAsync();
+            return;
         }
-        catch
+
+        if (query.TryGetValue("TourId", out var tourIdValue))
         {
-            // Fallback: load map with default location if geolocation fails
-            await LoadMapDataAsync();
+            TourId = tourIdValue?.ToString() ?? string.Empty;
         }
+
+        if (query.TryGetValue("ResumeLocationId", out var resumeLocationValue))
+        {
+            ResumeLocationId = resumeLocationValue?.ToString() ?? string.Empty;
+        }
+
+        if (query.TryGetValue("ResumeAudioGuideId", out var resumeGuideValue))
+        {
+            ResumeAudioGuideId = resumeGuideValue?.ToString() ?? string.Empty;
+        }
+
+        if (query.TryGetValue("ResumeAudioUrl", out var resumeAudioUrlValue))
+        {
+            ResumeAudioUrl = resumeAudioUrlValue?.ToString() ?? string.Empty;
+        }
+
+        if (query.TryGetValue("ResumePositionSeconds", out var resumePositionValue)
+            && double.TryParse(resumePositionValue?.ToString(), out var parsedPositionSeconds))
+        {
+            ResumePositionSeconds = parsedPositionSeconds;
+        }
+
+        if (query.TryGetValue("ResumeSessionId", out var resumeSessionValue))
+        {
+            ResumeSessionId = resumeSessionValue?.ToString() ?? string.Empty;
+        }
+    }
+
+    partial void OnTourIdChanged(string value)
+    {
+        IsTourRouteMode = !string.IsNullOrWhiteSpace(value);
+        _hasLoadedMapData = false;
+        IsTourPaused = false;
+
+        if (IsTourRouteMode)
+        {
+            _pendingTourRouteLoad = true;
+            // Don't call LoadTourRouteAsync here - let OnAppearingAsync handle it
+            // This prevents race conditions and ensures data loads before UI appears
+        }
+    }
+
+    partial void OnIsTourRouteModeChanged(bool value)
+    {
+        OnPropertyChanged(nameof(TourActionText));
+        OnPropertyChanged(nameof(IsTourActionVisible));
+    }
+
+    partial void OnIsTourPausedChanged(bool value)
+    {
+        OnPropertyChanged(nameof(TourActionText));
+        OnPropertyChanged(nameof(IsTourActionVisible));
+    }
+
+    partial void OnResumeSessionIdChanged(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return;
+        }
+
+        IsTourPaused = false;
+        _hasLoadedMapData = false;
+        _pendingTourRouteLoad = true;
+
+        // Don't call LoadTourRouteAsync here - let OnAppearingAsync handle it
+        // This prevents race conditions and ensures data loads before UI appears
+    }
+
+    public async Task OnAppearingAsync()
+    {
+        if (!_isSubscribedToAudioEvents)
+        {
+            _audioService.StateChanged += OnAudioStateChanged;
+            _isSubscribedToAudioEvents = true;
+        }
+
+        // Check actual TourId property (in case [QueryProperty] just applied it)
+        var hasTourId = !string.IsNullOrWhiteSpace(TourId);
+        var isTourRouteMode = hasTourId;
+
+        if (isTourRouteMode
+            && _hasLoadedMapData
+            && string.Equals(_loadedTourId, TourId, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        if (!isTourRouteMode && _hasLoadedMapData)
+        {
+            await RefreshMapWithLocationAsync();
+            return;
+        }
+
+        if (isTourRouteMode || _pendingTourRouteLoad)
+        {
+            _pendingTourRouteLoad = false;
+            await LoadTourRouteAsync();
+            return;
+        }
+
+        await RefreshMapWithLocationAsync(forceRefresh: true);
+    }
+
+    [RelayCommand]
+    private async Task TourActionAsync()
+    {
+        if (!IsTourRouteMode)
+        {
+            return;
+        }
+
+        if (IsTourPaused)
+        {
+            await ContinueTourAsync();
+            return;
+        }
+
+        await ShowTourActionSheetAsync();
+    }
+
+    public async Task<bool> RequestExitTourAsync()
+    {
+        if (!IsTourRouteMode)
+        {
+            return false;
+        }
+
+        if (IsTourPaused)
+        {
+            return false;
+        }
+
+        await ShowTourActionSheetAsync();
+        return true;
+    }
+
+    public string TourActionText => !IsTourRouteMode
+        ? string.Empty
+        : (IsTourPaused ? "Tiếp tục" : "Tạm dừng");
+
+    public bool IsTourActionVisible => IsTourRouteMode;
+
+    private async Task ShowTourActionSheetAsync()
+    {
+        var action = await MainThread.InvokeOnMainThreadAsync(async () =>
+            await Application.Current!.MainPage!.DisplayActionSheet(
+                "Thoát lộ trình",
+                "Tiếp tục lộ trình",
+                null,
+                "Tạm dừng & Lưu",
+                "Kết thúc tour"));
+
+        if (string.Equals(action, "Tạm dừng & Lưu", StringComparison.Ordinal))
+        {
+            await SaveCheckpointAsync();
+            await _audioService.StopAsync();
+            IsTourPaused = true;
+            OnPropertyChanged(nameof(TourActionText));
+            OnPropertyChanged(nameof(IsTourActionVisible));
+            return;
+        }
+
+        if (string.Equals(action, "Kết thúc tour", StringComparison.Ordinal))
+        {
+            await _tourCheckpointService.ClearAsync();
+            await _audioService.StopAsync();
+            await ExitTourToNormalMapAsync();
+            return;
+        }
+    }
+
+    private async Task ContinueTourAsync()
+    {
+        var checkpoint = await _tourCheckpointService.GetAsync();
+        if (checkpoint == null || string.IsNullOrWhiteSpace(checkpoint.TourId))
+        {
+            IsTourPaused = false;
+            OnPropertyChanged(nameof(TourActionText));
+            return;
+        }
+
+        await ResumeTourAudioAsync(checkpoint.AudioUrl, checkpoint.AudioPositionSeconds);
+        await _tourCheckpointService.ClearAsync();
+        IsTourPaused = false;
+        OnPropertyChanged(nameof(TourActionText));
+    }
+
+    public void OnDisappearing()
+    {
+        if (!_isSubscribedToAudioEvents)
+        {
+            return;
+        }
+
+        _audioService.StateChanged -= OnAudioStateChanged;
+        _isSubscribedToAudioEvents = false;
+    }
+
+    private async Task ResumeTourAudioAsync(string audioUrl, double positionSeconds)
+    {
+        if (string.IsNullOrWhiteSpace(audioUrl))
+        {
+            return;
+        }
+
+        await _audioService.PlayAsync(audioUrl);
+
+        if (positionSeconds > 0)
+        {
+            await _audioService.SeekAsync(TimeSpan.FromSeconds(positionSeconds));
+        }
+    }
+
+    private async Task PlayCurrentTourPoiAsync()
+    {
+        if (!IsTourRouteMode || CurrentPoiLocation is null)
+        {
+            return;
+        }
+
+        var (_, audioUrl) = await ResolveTourLocationAudioAsync(CurrentPoiLocation.Id);
+        if (string.IsNullOrWhiteSpace(audioUrl))
+        {
+            await AdvanceTourLocationAsync();
+            return;
+        }
+
+        _currentTourAudioUrl = audioUrl;
+        await _audioService.PlayAsync(audioUrl);
+    }
+
+    private async Task<(string audioGuideId, string audioUrl)> ResolveTourLocationAudioAsync(string locationId)
+    {
+        var location = await _apiService.GetLocationByIdAsync(locationId);
+        if (location == null)
+        {
+            return (string.Empty, string.Empty);
+        }
+
+        var guide = location.AudioGuides.FirstOrDefault();
+        if (guide == null)
+        {
+            return (string.Empty, string.Empty);
+        }
+
+        var audioUrl = !string.IsNullOrWhiteSpace(guide.CloudinaryAudioUrl)
+            ? guide.CloudinaryAudioUrl
+            : guide.AudioUrl;
+
+        return (guide.Id, audioUrl);
+    }
+
+    private void OnAudioStateChanged(object? sender, AudioStateChangedEventArgs e)
+    {
+        if (!IsTourRouteMode || !_tourPlaybackSessionService.IsActive)
+        {
+            return;
+        }
+
+        if (e.State != AudioPlaybackState.Stopped || string.IsNullOrWhiteSpace(e.AudioUrl))
+        {
+            return;
+        }
+
+        if (!string.Equals(e.AudioUrl, _currentTourAudioUrl, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        _ = MainThread.InvokeOnMainThreadAsync(AdvanceTourLocationAsync);
+    }
+
+    private async Task AdvanceTourLocationAsync()
+    {
+        if (!_tourPlaybackSessionService.TryMoveNextLocation(out var nextLocationId))
+        {
+            await FinishTourAsync();
+            return;
+        }
+
+        var (_, audioUrl) = await ResolveTourLocationAudioAsync(nextLocationId);
+        if (string.IsNullOrWhiteSpace(audioUrl))
+        {
+            await AdvanceTourLocationAsync();
+            return;
+        }
+
+        _currentTourAudioUrl = audioUrl;
+        await _audioService.PlayAsync(audioUrl);
+    }
+
+    private async Task FinishTourAsync()
+    {
+        _tourPlaybackSessionService.Reset();
+        _currentTourAudioUrl = string.Empty;
+
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+            await Application.Current!.MainPage!.DisplayAlert(
+                "Hoàn thành tour",
+                "Bạn đã nghe hết các địa điểm trong tour.",
+                "Về bản đồ"));
+
+        await ExitTourToNormalMapAsync();
+    }
+
+    private async Task ExitTourToNormalMapAsync()
+    {
+        IsTourRouteMode = false;
+        IsTourPaused = false;
+        TourId = string.Empty;
+        ResumeLocationId = string.Empty;
+        ResumeAudioGuideId = string.Empty;
+        ResumeAudioUrl = string.Empty;
+        ResumePositionSeconds = 0;
+        ResumeSessionId = string.Empty;
+        _loadedTourId = string.Empty;
+        _hasLoadedMapData = false;
+        _pendingTourRouteLoad = false;
+        _tourPlaybackSessionService.Reset();
+        _currentTourAudioUrl = string.Empty;
+        OnPropertyChanged(nameof(TourActionText));
+        OnPropertyChanged(nameof(IsTourActionVisible));
+
+        await GetUserLocationAsync();
+        await LoadMapDataAsync();
     }
 
     /// <summary>
@@ -91,26 +462,234 @@ public partial class MapViewModel : ObservableObject
     /// <summary>
     /// Refresh map by getting user location and reloading map data (called from MapPage OnAppearing).
     /// </summary>
-    public void RefreshMapWithLocation()
+    public async Task RefreshMapWithLocationAsync(bool forceRefresh = false)
     {
-        _ = RefreshMapWithLocationAsync();
-    }
+        if (!string.IsNullOrWhiteSpace(TourId))
+        {
+            await LoadTourRouteAsync();
+            return;
+        }
 
-    private async Task RefreshMapWithLocationAsync()
-    {
+        if (_hasLoadedMapData && !forceRefresh)
+        {
+            return;
+        }
+
         try
         {
-            // Get updated user location
             await GetUserLocationAsync();
-            
-            // Reload map with new location
-            await LoadMapDataAsync();
         }
         catch
         {
-            // Fallback: just reload map data if location fetch fails
-            await LoadMapDataAsync();
+            // Keep previous/default coordinates.
         }
+
+        await LoadMapDataAsync();
+    }
+
+    private async Task<Tour?> ResolveTourByIdAsync(string tourId)
+    {
+        var tour = await _apiService.GetTourByIdAsync(tourId);
+        if (tour != null)
+        {
+            return tour;
+        }
+
+        var tours = await _apiService.GetToursAsync();
+        return tours.ElementAtOrDefault(int.TryParse(tourId, out var idx) ? idx - 1 : -1);
+    }
+
+    private async Task LoadTourRouteAsync()
+    {
+        await _loadMapLock.WaitAsync();
+        try
+        {
+            BeginLoading();
+            IsTourPaused = false;
+            MapMarkers.Clear();
+            NearbyLocations.Clear();
+
+            if (string.IsNullOrWhiteSpace(TourId))
+            {
+                FailLoading("Không tìm thấy lộ trình.");
+                return;
+            }
+
+            await GetUserLocationAsync();
+
+            var tour = await ResolveTourByIdAsync(TourId);
+            if (tour == null)
+            {
+                FailLoading("Không tìm thấy lộ trình.");
+                return;
+            }
+
+            var locationsTask = _apiService.GetLocationsAsync();
+            var categoriesTask = _apiService.GetCategoriesAsync();
+            await Task.WhenAll(locationsTask, categoriesTask);
+
+            var allLocations = locationsTask.Result;
+            var categories = categoriesTask.Result;
+
+            var routeLocations = new List<Models.Location>();
+            foreach (var locationId in tour.LocationIds)
+            {
+                var found = allLocations.FirstOrDefault(l => l.Id == locationId);
+                if (found != null)
+                {
+                    routeLocations.Add(found);
+                }
+            }
+
+            routeLocations = OptimizeTourLocationsByDistance(routeLocations);
+
+            if (routeLocations.Count == 0)
+            {
+                FailLoading("Lộ trình chưa có địa điểm.");
+                return;
+            }
+
+            var locationPoints = routeLocations
+                .Select((location, index) => BuildLocationPoint(location, index))
+                .ToList();
+
+            _tourPlaybackSessionService.Initialize(
+                TourId,
+                routeLocations.Select(location => location.Id).ToList(),
+                !string.IsNullOrWhiteSpace(ResumeLocationId) ? ResumeLocationId : routeLocations.First().Id);
+
+            for (var i = 0; i < locationPoints.Count; i++)
+            {
+                var point = locationPoints[i];
+                var location = point.Location;
+                var category = categories.FirstOrDefault(c => c.Id == location.CategoryId);
+
+                MapMarkers.Add(new MapMarker
+                {
+                    Id = location.Id,
+                    Name = location.Name,
+                    Latitude = point.Latitude,
+                    Longitude = point.Longitude
+                });
+
+                NearbyLocations.Add(new NearbyLocation
+                {
+                    Id = location.Id,
+                    Name = location.Name,
+                    ImageUrl = location.ImageUrl,
+                    CategoryName = category?.Name ?? "Khác",
+                    Address = location.Address,
+                    AudioCount = location.AudioGuides?.Count ?? 0,
+                    IsNearest = i == 0,
+                    IsHot = i == 0,
+                    TourOrder = i + 1,
+                    MetaText = $"Điểm dừng {i + 1}/{locationPoints.Count}",
+                    BadgeText = $"POI {i + 1}",
+                    IsBadgeVisible = true
+                });
+            }
+
+            CurrentPoiLocation = NearbyLocations.FirstOrDefault();
+            ApplyResumeCheckpointToCurrentPoi();
+            SectionTitle = "ĐIỂM DỪNG LỘ TRÌNH";
+            SectionHint = "Theo thứ tự";
+
+            GenerateMapHtml(locationPoints, categories, showRoute: true);
+
+            if (!string.IsNullOrWhiteSpace(ResumeSessionId) && !string.IsNullOrWhiteSpace(ResumeAudioUrl))
+            {
+                _currentTourAudioUrl = ResumeAudioUrl;
+                await ResumeTourAudioAsync(ResumeAudioUrl, ResumePositionSeconds);
+                await _tourCheckpointService.ClearAsync();
+            }
+            else
+            {
+                await PlayCurrentTourPoiAsync();
+            }
+
+            _loadedTourId = TourId;
+            _hasLoadedMapData = true;
+            CompleteLoading(MapMarkers.Count > 0);
+        }
+        catch (Exception ex)
+        {
+            FailLoading(ex.Message);
+        }
+        finally
+        {
+            _loadMapLock.Release();
+        }
+    }
+
+    private void ApplyResumeCheckpointToCurrentPoi()
+    {
+        if (string.IsNullOrWhiteSpace(ResumeLocationId))
+        {
+            return;
+        }
+
+        var resumed = NearbyLocations.FirstOrDefault(item => string.Equals(item.Id, ResumeLocationId, StringComparison.OrdinalIgnoreCase));
+        if (resumed == null)
+        {
+            return;
+        }
+
+        foreach (var item in NearbyLocations)
+        {
+            item.IsNearest = false;
+        }
+
+        resumed.IsNearest = true;
+        resumed.BadgeText = "Đang tiếp tục";
+        resumed.IsBadgeVisible = true;
+        resumed.MetaText = $"Tiếp tục từ điểm dừng {resumed.TourOrder}/{NearbyLocations.Count}";
+        CurrentPoiLocation = resumed;
+    }
+
+    private async Task SaveCheckpointAsync()
+    {
+        if (!IsTourRouteMode || string.IsNullOrWhiteSpace(TourId))
+        {
+            return;
+        }
+
+        var locationId = CurrentPoiLocation?.Id ?? string.Empty;
+        var locationName = CurrentPoiLocation?.Name ?? "điểm dừng hiện tại";
+        var audioUrl = _audioService.CurrentAudioUrl ?? string.Empty;
+        var audioGuideId = string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(locationId) && !string.IsNullOrWhiteSpace(audioUrl))
+        {
+            audioGuideId = await ResolveAudioGuideIdAsync(locationId, audioUrl);
+        }
+
+        var checkpoint = new TourCheckpoint
+        {
+            TourId = TourId,
+            LocationId = locationId,
+            LocationName = locationName,
+            AudioGuideId = audioGuideId,
+            AudioUrl = audioUrl,
+            AudioPositionSeconds = Math.Max(0, _audioService.CurrentPosition.TotalSeconds),
+            SavedAtUtc = DateTime.UtcNow
+        };
+
+        await _tourCheckpointService.SaveAsync(checkpoint);
+    }
+
+    private async Task<string> ResolveAudioGuideIdAsync(string locationId, string audioUrl)
+    {
+        var location = await _apiService.GetLocationByIdAsync(locationId);
+        if (location == null)
+        {
+            return string.Empty;
+        }
+
+        var guide = location.AudioGuides.FirstOrDefault(item =>
+            string.Equals(item.AudioUrl, audioUrl, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(item.CloudinaryAudioUrl, audioUrl, StringComparison.OrdinalIgnoreCase));
+
+        return guide?.Id ?? string.Empty;
     }
 
     public async Task LoadMapDataAsync()
@@ -118,6 +697,7 @@ public partial class MapViewModel : ObservableObject
         await _loadMapLock.WaitAsync();
         try
         {
+            BeginLoading();
             MapMarkers.Clear();
             NearbyLocations.Clear();
 
@@ -159,7 +739,8 @@ public partial class MapViewModel : ObservableObject
                     Address = location.Address,
                     Distance = Math.Round(distanceMeters),
                     AudioCount = location.AudioGuides?.Count ?? 0,
-                    IsHot = featuredLocationIds.Contains(location.Id)
+                    IsHot = featuredLocationIds.Contains(location.Id),
+                    MetaText = $"Cách bạn {Math.Round(distanceMeters):F0} m"
                 });
             }
 
@@ -170,13 +751,24 @@ public partial class MapViewModel : ObservableObject
             {
                 var loc = sorted[i];
                 loc.IsNearest = i == 0;
+                loc.IsBadgeVisible = i == 0;
+                loc.BadgeText = i == 0 ? "Gần nhất" : string.Empty;
                 NearbyLocations.Add(loc);
             }
 
             CurrentPoiLocation = NearbyLocations.FirstOrDefault(x => x.IsNearest) ?? NearbyLocations.FirstOrDefault();
+            SectionTitle = "ĐỊA ĐIỂM GẦN ĐÂY";
+            SectionHint = "Theo khoảng cách";
 
             // Generate Leaflet map HTML
-            GenerateMapHtml(locationPoints, categories);
+            GenerateMapHtml(locationPoints, categories, showRoute: false);
+            _hasLoadedMapData = true;
+            _loadedTourId = string.Empty;
+            CompleteLoading(MapMarkers.Count > 0);
+        }
+        catch (Exception ex)
+        {
+            FailLoading(ex.Message);
         }
         finally
         {
@@ -184,7 +776,7 @@ public partial class MapViewModel : ObservableObject
         }
     }
 
-    private void GenerateMapHtml(List<LocationPoint> locations, List<Category> categories)
+    private void GenerateMapHtml(List<LocationPoint> locations, List<Category> categories, bool showRoute)
     {
         var primary = GetThemeColorHex("Primary", "#13696D");
         var onPrimary = GetThemeColorHex("OnPrimary", "#FFFFFF");
@@ -201,6 +793,9 @@ public partial class MapViewModel : ObservableObject
         var primarySweepFade = HexToRgba(primary, 0.03);
 
         var nearestLocationId = NearbyLocations.FirstOrDefault(x => x.IsNearest)?.Id;
+        var orderByLocationId = NearbyLocations
+            .Where(item => item.TourOrder > 0 && !string.IsNullOrWhiteSpace(item.Id))
+            .ToDictionary(item => item.Id, item => item.TourOrder, StringComparer.OrdinalIgnoreCase);
         var markersJs = new StringBuilder();
         const string audioMetaIcon = "audio.svg";
         const string timeMetaIcon = "time.svg";
@@ -216,7 +811,10 @@ public partial class MapViewModel : ObservableObject
             var escapedImage = Uri.EscapeDataString(loc.ImageUrl);
             var audioCount = loc.AudioGuides?.Count ?? 0;
             var isNearest = string.Equals(nearestLocationId, loc.Id, StringComparison.Ordinal);
-            var markerIcon = isNearest ? "nearestIcon" : "customIcon";
+            var order = orderByLocationId.TryGetValue(loc.Id, out var tourOrder) ? tourOrder : 0;
+            var markerIcon = showRoute && order > 0
+                ? "L.divIcon({className:'tour-route-marker',html:'<div class=\"tour-poi-wrapper\"><img src=\"location_icon.svg\" class=\"tour-poi-pin\"/><div class=\"tour-poi-order\">" + order + "</div></div>',iconSize:[48,56],iconAnchor:[24,52],popupAnchor:[0,-48]})"
+                : (isNearest ? "nearestIcon" : "customIcon");
             var nearestTag = isNearest
                 ? $"<br/><span style=\"display:inline-block;margin-top:4px;padding:2px 8px;border-radius:999px;background:{tertiaryFixed};color:{onTertiaryFixed};font-size:11px;font-weight:700;\">Gần nhất</span>"
                 : string.Empty;
@@ -231,6 +829,25 @@ public partial class MapViewModel : ObservableObject
                 $"<div style=\"display:flex;align-items:center;gap:4px;margin-top:2px;font-size:10px;color:{onSurfaceVariant};\"><img src=\"{timeMetaIcon}\" style=\"width:12px;height:12px;flex:0 0 12px;opacity:0.95;\"/> <span>{loc.Duration} phút</span></div></div>" +
                 $"<div style=\"flex:0 0 30px;display:flex;align-items:center;justify-content:center;align-self:center;\"><a href=\"app://poi/{escapedId}\" style=\"width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:{secondaryContainer};color:{onSecondaryContainer};text-decoration:none;flex:0 0 30px;\"><img src=\"{showMoreIcon}\" style=\"width:16px;height:16px;display:block;\" /></a></div>" +
                 $"</div></div>');");
+        }
+
+        var routeJs = string.Empty;
+        if (showRoute && locations.Count > 1)
+        {
+            var routeCoords = string.Join(",", locations.Select(point =>
+                $"[{point.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture)},{point.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}]"));
+            routeJs = $@"
+    var routeLine = L.polyline([{routeCoords}], {{
+        color:'#13696D',
+        weight:4,
+        opacity:0.85,
+        lineJoin:'round'
+    }}).addTo(map);
+
+    var bounds = routeLine.getBounds();
+    if (bounds && bounds.isValid()) {{
+        map.fitBounds(bounds.pad(0.2));
+    }}";
         }
 
         var html = $@"<!DOCTYPE html>
@@ -292,6 +909,38 @@ public partial class MapViewModel : ObservableObject
             border: 3px solid {surfaceContainerLowest};
             box-shadow: 0 2px 6px rgba(0,0,0,0.22);
             z-index: 3;
+        }}
+        .tour-poi-wrapper {{
+            position:relative;
+            width:48px;
+            height:56px;
+            display:flex;
+            align-items:flex-start;
+            justify-content:center;
+        }}
+        .tour-poi-pin {{
+            width:40px;
+            height:40px;
+            display:block;
+            filter:drop-shadow(0 3px 8px rgba(0,0,0,0.28));
+        }}
+        .tour-poi-order {{
+            position:absolute;
+            right:-2px;
+            top:-2px;
+            width:18px;
+            height:18px;
+            border-radius:9px;
+            background:#8A4F30;
+            color:#FFFFFF;
+            border:2px solid #FFFFFF;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-family:RobotoCondensed-SemiBold,-apple-system,Segoe UI,sans-serif;
+            font-size:10px;
+            line-height:1;
+            box-shadow:0 2px 6px rgba(0,0,0,0.26);
         }}
         @keyframes radarSweep {{
             from {{ transform: rotate(0deg); }}
@@ -360,6 +1009,7 @@ public partial class MapViewModel : ObservableObject
 
     // Location markers
     {markersJs}
+    {routeJs}
 </script>
 </body>
 </html>";
@@ -523,6 +1173,53 @@ public partial class MapViewModel : ObservableObject
         var lng = centerLng + (Math.Cos(angle) * radius);
         return (lat, lng);
     }
+
+    private static List<Models.Location> OptimizeTourLocationsByDistance(List<Models.Location> locations)
+    {
+        if (locations.Count <= 2)
+        {
+            return locations;
+        }
+
+        var valid = new List<Models.Location>();
+        var invalid = new List<Models.Location>();
+        foreach (var location in locations)
+        {
+            if (HasValidCoordinate(location.Latitude, location.Longitude))
+            {
+                valid.Add(location);
+            }
+            else
+            {
+                invalid.Add(location);
+            }
+        }
+
+        if (valid.Count <= 2)
+        {
+            valid.AddRange(invalid);
+            return valid;
+        }
+
+        var ordered = new List<Models.Location>();
+        var remaining = new List<Models.Location>(valid);
+        ordered.Add(remaining[0]);
+        remaining.RemoveAt(0);
+
+        while (remaining.Count > 0)
+        {
+            var current = ordered[^1];
+            var nearest = remaining
+                .OrderBy(candidate => CalculateDistance(current.Latitude, current.Longitude, candidate.Latitude, candidate.Longitude))
+                .First();
+
+            ordered.Add(nearest);
+            remaining.Remove(nearest);
+        }
+
+        ordered.AddRange(invalid);
+        return ordered;
+    }
 }
 
 public sealed class LocationPoint
@@ -558,4 +1255,8 @@ public class NearbyLocation
     public int AudioCount { get; set; }
     public bool IsHot { get; set; }
     public bool IsNearest { get; set; }
+    public int TourOrder { get; set; }
+    public string MetaText { get; set; } = string.Empty;
+    public string BadgeText { get; set; } = string.Empty;
+    public bool IsBadgeVisible { get; set; }
 }

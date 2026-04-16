@@ -69,7 +69,29 @@
                 </Grid>
             </Frame>
 
-        
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <Frame Grid.Column="0" Style="{StaticResource InfoBarFrame}">
+                    <VerticalStackLayout HorizontalOptions="Center" Spacing="3">
+                        <Label Text="Thời gian" Style="{StaticResource SmallText}" HorizontalOptions="Center" />
+                        <Label Text="{Binding DurationText}" FontSize="13" FontFamily="RobotoCondensed-SemiBold" HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Frame Grid.Column="1" Style="{StaticResource InfoBarFrame}">
+                    <VerticalStackLayout HorizontalOptions="Center" Spacing="3">
+                        <Label Text="Điểm đến" Style="{StaticResource SmallText}" HorizontalOptions="Center" />
+                        <Label Text="{Binding LocationCount, StringFormat='{0} điểm'}" FontSize="13" FontFamily="RobotoCondensed-SemiBold" HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Frame Grid.Column="2" Style="{StaticResource InfoBarFrame}">
+                    <VerticalStackLayout HorizontalOptions="Center" Spacing="3">
+                        <Label Text="Giá" Style="{StaticResource SmallText}" HorizontalOptions="Center" />
+                        <Label Text="{Binding PriceText}" FontSize="13" FontFamily="RobotoCondensed-SemiBold" HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Frame>
+            </Grid>
+
             <Frame Style="{StaticResource SurfaceSectionFrame}" Padding="16">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="Giới thiệu lộ trình" Style="{StaticResource SubSectionHeader}" Margin="0" />

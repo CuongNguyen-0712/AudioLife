@@ -36,6 +36,26 @@
                 Padding="8"
                 Command="{Binding MoveToCurrentLocationCommand}" />
         </Border>
+
+            <Border
+                HorizontalOptions="End"
+                VerticalOptions="Start"
+                Margin="0,16,16,0"
+                ZIndex="20"
+                Background="{StaticResource Primary}"
+                StrokeThickness="0"
+                Padding="0"
+                StrokeShape="RoundRectangle 18"
+                IsVisible="{Binding IsTourActionVisible}">
+                <Button
+                Text="{Binding TourActionText}"
+                Command="{Binding TourActionCommand}"
+                BackgroundColor="Transparent"
+                TextColor="White"
+                FontAttributes="Bold"
+                HeightRequest="38"
+                Padding="14,8" />
+            </Border>
  
          <!-- Current POI View (single card from bound data) -->
          <Border VerticalOptions="End"
@@ -82,7 +102,7 @@
                             WidthRequest="18"
                             HeightRequest="18"
                             VerticalOptions="Center" />
-                        <Label Text="{Binding CurrentPoiLocation.Distance, StringFormat='Cách bạn {0:F0} m'}"
+                        <Label Text="{Binding CurrentPoiLocation.MetaText}"
                             FontSize="12"
                             TextColor="{StaticResource OnSurfaceVariant}" />
                     </HorizontalStackLayout>
@@ -132,13 +152,13 @@
 
                     <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="10" Padding="14,0">
                         <Label Grid.Column="0"
-                               Text="ĐIA ĐIỂM GẦN ĐÂY"
+                               Text="{Binding SectionTitle}"
                                FontSize="18"
                                FontAttributes="Bold"
                                TextColor="{StaticResource Secondary}"
                                VerticalOptions="End" />
                         <Label Grid.Column="1"
-                               Text="Theo khoảng cách"
+                               Text="{Binding SectionHint}"
                                FontSize="12"
                                FontAttributes="Bold"
                                TextColor="{StaticResource Primary}"
@@ -199,14 +219,14 @@
                                                LineBreakMode="TailTruncation" />
 
                                              <Label Grid.Row="1"
-                                                 Text="Gần nhất"
+                                                 Text="{Binding BadgeText}"
                                                  FontSize="10"
                                                  FontAttributes="Bold"
                                                  HorizontalOptions="End"
                                                  VerticalOptions="Start"
                                                  Margin="0,0,0,0"
                                                     TextColor="{StaticResource OnSecondaryContainer}"
-                                                 IsVisible="{Binding IsNearest}" />
+                                                 IsVisible="{Binding IsBadgeVisible}" />
 
                                          <HorizontalStackLayout Grid.Row="2" Spacing="4" VerticalOptions="Center">
                                              <Image
@@ -215,7 +235,7 @@
                                                  HeightRequest="18"
                                                  VerticalOptions="Center" />
                                              <Label
-                                                 Text="{Binding Distance, StringFormat='Cách bạn {0:F0} m'}"
+                                                 Text="{Binding MetaText}"
                                                  FontSize="12"
                                                  TextColor="{StaticResource OnSurfaceVariant}"
                                                  VerticalOptions="Center" />
@@ -227,6 +247,46 @@
                     </CollectionView>
                 </Grid>
         </Border>
+
+         <Grid IsVisible="{Binding IsLoading}"
+            BackgroundColor="#CCFFFFFF"
+            ZIndex="50">
+             <VerticalStackLayout VerticalOptions="Center"
+                         HorizontalOptions="Center"
+                         Spacing="12">
+              <ActivityIndicator IsRunning="True" Color="{StaticResource Primary}" />
+              <Label Text="Đang tải bản đồ..."
+                  TextColor="{StaticResource OnSurfaceVariant}"
+                  HorizontalTextAlignment="Center" />
+             </VerticalStackLayout>
+         </Grid>
+
+         <VerticalStackLayout IsVisible="{Binding IsError}"
+                     VerticalOptions="Center"
+                     HorizontalOptions="Center"
+                     Padding="28"
+                     Spacing="10"
+                     ZIndex="51">
+             <Label Text="Không tải được dữ liệu bản đồ"
+                 FontSize="18"
+                 FontAttributes="Bold"
+                 HorizontalTextAlignment="Center" />
+             <Label Text="{Binding ErrorMessage}"
+                 FontSize="13"
+                 TextColor="{StaticResource OnSurfaceVariant}"
+                 HorizontalTextAlignment="Center" />
+         </VerticalStackLayout>
+
+         <VerticalStackLayout IsVisible="{Binding IsEmpty}"
+                     VerticalOptions="Center"
+                     HorizontalOptions="Center"
+                     Padding="28"
+                     ZIndex="51">
+             <Label Text="Không có địa điểm để hiển thị"
+                 FontSize="16"
+                 FontAttributes="Bold"
+                 HorizontalTextAlignment="Center" />
+         </VerticalStackLayout>
     </Grid>
 
 </ContentPage>

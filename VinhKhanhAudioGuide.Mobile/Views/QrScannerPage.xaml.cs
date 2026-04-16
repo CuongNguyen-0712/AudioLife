@@ -13,6 +13,8 @@ namespace VinhKhanhAudioGuide.Mobile.Views;
 public partial class QrScannerPage : ContentPage
 {
 	private bool _isHandlingResult;
+	private bool _isPageActive;
+	private bool _scannerConfigured;
 	private readonly string _seedQrDeepLink = QrCodePayloadService.BuildAudioDeepLink("loc_001", "ag_001_1");
 	private readonly ILocalizationService _localizationService;
 
@@ -26,7 +28,19 @@ public partial class QrScannerPage : ContentPage
 	protected override async void OnAppearing()
 	{
 		base.OnAppearing();
+		_isPageActive = true;
+		await StartScannerAsync();
+	}
 
+	protected override void OnDisappearing()
+	{
+		base.OnDisappearing();
+		_isPageActive = false;
+		StopScanner();
+	}
+
+	private async Task StartScannerAsync()
+	{
 		var status = await Permissions.CheckStatusAsync<Permissions.Camera>();
 		if (status != PermissionStatus.Granted)
 		{
@@ -43,26 +57,51 @@ public partial class QrScannerPage : ContentPage
 			return;
 		}
 
+		await ResumeScannerAsync(forceCameraRefresh: true);
+	}
+
+	private void ConfigureScannerIfNeeded()
+	{
+		if (_scannerConfigured)
+		{
+			return;
+		}
+
+		ScannerView.Options = new BarcodeReaderOptions
+		{
+			Formats = BarcodeFormats.TwoDimensional,
+			AutoRotate = true,
+			Multiple = false
+		};
+
+		ScannerView.CameraLocation = CameraLocation.Rear;
+		_scannerConfigured = true;
+	}
+
+	private async Task<bool> WaitForScannerHandlerReadyAsync()
+	{
+		for (var i = 0; i < 20; i++)
+		{
+			if (ScannerView.Handler is not null)
+			{
+				return true;
+			}
+
+			await Task.Delay(80);
+		}
+
+		return ScannerView.Handler is not null;
+	}
+
+	private void StopScanner()
+	{
 		try
 		{
-			ScannerView.Options = new BarcodeReaderOptions
-			{
-				Formats = BarcodeFormats.TwoDimensional,
-				AutoRotate = true,
-				Multiple = false
-			};
-
-			ScannerView.CameraLocation = CameraLocation.Rear;
 			ScannerView.IsDetecting = false;
-			await Task.Delay(120);
-
-			_isHandlingResult = false;
-			ScannerView.IsDetecting = true;
-			StatusLabel.Text = _localizationService.GetString("Qr_StatusPrompt");
 		}
 		catch
 		{
-			StatusLabel.Text = _localizationService.GetString("Qr_StatusCameraFailed");
+			// Ignore teardown errors when page is leaving.
 		}
 	}
 
@@ -81,7 +120,7 @@ public partial class QrScannerPage : ContentPage
 
 	private void OnBarcodesDetected(object? sender, BarcodeDetectionEventArgs e)
 	{
-		if (_isHandlingResult)
+		if (_isHandlingResult || !_isPageActive)
 		{
 			return;
 		}
@@ -94,18 +133,33 @@ public partial class QrScannerPage : ContentPage
 		}
 
 		_isHandlingResult = true;
-		ScannerView.IsDetecting = false;
+		StopScanner();
 
 		MainThread.BeginInvokeOnMainThread(async () => await HandleScannedValueAsync(rawValue));
 	}
 
 	private async Task HandleScannedValueAsync(string rawValue)
 	{
+		StatusLabel.Text = $"Đã quét: {rawValue}";
+
 		if (!QrCodePayloadService.TryParseAudioPayload(rawValue, out var payload))
 		{
-			StatusLabel.Text = _localizationService.GetString("Qr_StatusInvalid");
-			_isHandlingResult = false;
-			ScannerView.IsDetecting = true;
+			await DisplayAlert(
+				_localizationService.GetString("Common_Notice"),
+				$"QR đã đọc được nhưng không đúng định dạng deep link:\n{rawValue}",
+				_localizationService.GetString("Common_Understood"));
+
+			if (_isPageActive)
+			{
+				StatusLabel.Text = _localizationService.GetString("Qr_StatusInvalid");
+				await ResumeScannerAsync();
+			}
+
+			return;
+		}
+
+		if (!_isPageActive)
+		{
 			return;
 		}
 
@@ -113,10 +167,52 @@ public partial class QrScannerPage : ContentPage
 		await App.CompleteQrOnboardingAsync(payload);
 	}
 
+	private async Task ResumeScannerAsync(bool forceCameraRefresh = false)
+	{
+		if (!_isPageActive)
+		{
+			return;
+		}
+
+		ConfigureScannerIfNeeded();
+
+		try
+		{
+			_isHandlingResult = false;
+			StopScanner();
+
+			if (forceCameraRefresh)
+			{
+				ScannerView.IsEnabled = false;
+				await Task.Delay(220);
+				ScannerView.IsEnabled = true;
+			}
+
+			var ready = await WaitForScannerHandlerReadyAsync();
+			if (!ready || !_isPageActive)
+			{
+				StatusLabel.Text = _localizationService.GetString("Qr_StatusCameraFailed");
+				return;
+			}
+
+			await Task.Delay(120);
+			if (!_isPageActive)
+			{
+				return;
+			}
+
+			ScannerView.IsDetecting = true;
+			StatusLabel.Text = _localizationService.GetString("Qr_StatusPrompt");
+		}
+		catch
+		{
+			StatusLabel.Text = _localizationService.GetString("Qr_StatusCameraFailed");
+		}
+	}
+
 	private void OnRescanClicked(object sender, EventArgs e)
 	{
-		_isHandlingResult = false;
-		ScannerView.IsDetecting = true;
+		_ = ResumeScannerAsync(forceCameraRefresh: true);
 		StatusLabel.Text = _localizationService.GetString("Qr_StatusPrompt");
 	}
 
@@ -172,13 +268,13 @@ public partial class QrScannerPage : ContentPage
 		}
 
 		_isHandlingResult = true;
-		ScannerView.IsDetecting = false;
+		StopScanner();
 		await HandleScannedValueAsync(_seedQrDeepLink);
 	}
 
 	private void OnBackToIntroClicked(object sender, EventArgs e)
 	{
-		ScannerView.IsDetecting = false;
+		StopScanner();
 		App.NavigateToIntro();
 	}
 

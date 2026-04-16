@@ -33,6 +33,12 @@
     <WindowsPackageType Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">None</WindowsPackageType>
     <WindowsAppSDKSelfContained Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">true</WindowsAppSDKSelfContained>
     <RuntimeIdentifier Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">win-x64</RuntimeIdentifier>
+
+    <!-- Avoid design-time/background build races that can lock Resizetizer outputs. -->
+    <EnableMauiImageProcessing Condition="'$(DesignTimeBuild)' == 'true'">false</EnableMauiImageProcessing>
+
+    <!-- Avoid intermittent linker file locks in local Android debug builds. -->
+    <AndroidLinkMode Condition="'$(Configuration)|$(TargetFramework)' == 'Debug|net8.0-android'">None</AndroidLinkMode>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,18 +46,30 @@
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#ffffff" />
 
     <!-- Splash Screen -->
-    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#13696D" BaseSize="512,512" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#13696D" BaseSize="512,512"
+              Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'android'" />
 
     <!-- Images -->
     <MauiImage Include="Resources\Images\*" />
     <MauiImage Update="Resources\Images\dotnet_bot.svg" BaseSize="168,208" />
     <MauiImage Update="Resources\Images\language_bg.svg" BaseSize="1080,1920" Resize="true" />
+    <MauiImage Remove="Resources\Images\*.exe" />
+    <None Include="Resources\Images\*.exe" />
 
     <!-- Custom Fonts -->
     <MauiFont Include="Resources\Fonts\*" />
 
     <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Prevent duplicate resource processing from the legacy Services/Resources tree. -->
+    <MauiIcon Remove="Services\Resources\AppIcon\**\*" />
+    <MauiSplashScreen Remove="Services\Resources\Splash\**\*" />
+    <MauiImage Remove="Services\Resources\Images\**\*" />
+    <MauiFont Remove="Services\Resources\Fonts\**\*" />
+    <MauiAsset Remove="Services\Resources\Raw\**\*" />
   </ItemGroup>
 
   <ItemGroup>

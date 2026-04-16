@@ -27,7 +27,8 @@
 
     <Grid>
 	 <zxing:CameraBarcodeReaderView x:Name="ScannerView"
-					    IsDetecting="True"
+					    IsDetecting="False"
+					    IsEnabled="True"
 					    BarcodesDetected="OnBarcodesDetected" />
 
 	 <Grid Padding="24,48,24,28"
