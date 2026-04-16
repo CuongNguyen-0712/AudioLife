@@ -6,11 +6,36 @@
 }
 
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Quản Lý Gói Thanh Toán</h2>
-        <a href="@Url.Page("Edit")" class="btn btn-primary">
-            <i class="fa fa-plus"></i> Thêm Gói Mới
-        </a>
+    <div class="admin-page-hero mb-4">
+        <div class="admin-page-hero-copy">
+            <p class="hero-kicker"><i class="fa-solid fa-credit-card"></i> Admin hệ thống</p>
+            <h1 class="admin-page-hero-title">Quản Lý Gói Thanh Toán</h1>
+            <p class="admin-page-hero-subtitle">Tinh gọn phần quản trị gói thanh toán với header rõ hơn, thống kê nhanh hơn và thao tác tạo gói nổi bật hơn.</p>
+            <div class="admin-page-hero-badges">
+                <span class="hero-badge"><i class="fa-solid fa-circle-check"></i> @Model.ActivePackageCount active</span>
+                <span class="hero-badge"><i class="fa-solid fa-circle-minus"></i> @Model.InactivePackageCount ẩn</span>
+                <span class="hero-badge"><i class="fa-solid fa-user-clock"></i> @Model.ActiveSubscriptionCount đang dùng</span>
+            </div>
+        </div>
+
+        <div class="admin-page-hero-actions">
+            <div class="admin-page-hero-kpis">
+                <div class="admin-page-hero-kpi">
+                    <span>Tổng gói</span>
+                    <strong>@Model.Packages.Count</strong>
+                </div>
+                <div class="admin-page-hero-kpi">
+                    <span>Đang dùng</span>
+                    <strong>@Model.ActiveSubscriptionCount</strong>
+                </div>
+                <div class="admin-page-hero-kpi">
+                    <span>Thao tác</span>
+                    <a href="@Url.Page("Edit")" class="btn btn-primary btn-sm w-100 mt-1">
+                        <i class="fa fa-plus"></i> Thêm gói mới
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="row g-3 mb-4">

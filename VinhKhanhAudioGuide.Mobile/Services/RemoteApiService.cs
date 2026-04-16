@@ -16,23 +16,21 @@ public class RemoteApiService : IApiService
         PropertyNameCaseInsensitive = true
     };
 
-    private static readonly string[] BaseUrls =
-    {
-        "https://10.0.2.2:7275",
-        "http://10.0.2.2:5275",
-        "https://localhost:7275",
-        "http://localhost:5275"
-    };
+    private const string CategoriesCacheKey = "catalog.categories";
+    private const string LocationsCacheKey = "catalog.locations";
+    private const string ToursCacheKey = "catalog.tours";
 
     private readonly ApiService _fallback;
     private readonly ILocalizationService _localizationService;
+    private readonly ILocalDatabaseService _localDatabaseService;
     private readonly HttpClient _httpClient;
     private string? _activeBaseUrl;
 
-    public RemoteApiService(ApiService fallback, ILocalizationService localizationService)
+    public RemoteApiService(ApiService fallback, ILocalizationService localizationService, ILocalDatabaseService localDatabaseService)
     {
         _fallback = fallback;
         _localizationService = localizationService;
+        _localDatabaseService = localDatabaseService;
 
         var handler = new HttpClientHandler
         {
@@ -50,7 +48,16 @@ public class RemoteApiService : IApiService
         var remote = await TryGetAsync<List<Location>>(WithLanguage("api/mobile/locations"));
         if (remote is not null)
         {
-            return ContentLocalizationMapper.LocalizeLocations(remote, GetCurrentLanguageCode());
+            var normalized = NormalizeLocations(remote);
+            await UpsertCacheAsync(LocationsCacheKey, normalized);
+            return ContentLocalizationMapper.LocalizeLocations(normalized, GetCurrentLanguageCode());
+        }
+
+        var cached = await GetCachedAsync<List<Location>>(LocationsCacheKey);
+        if (cached is { Count: > 0 })
+        {
+            var normalized = NormalizeLocations(cached);
+            return ContentLocalizationMapper.LocalizeLocations(normalized, GetCurrentLanguageCode());
         }
 
         return await _fallback.GetLocationsAsync();
@@ -61,7 +68,15 @@ public class RemoteApiService : IApiService
         var remote = await TryGetAsync<Location>(WithLanguage($"api/mobile/locations/{Uri.EscapeDataString(locationId)}"));
         if (remote is not null)
         {
-            return ContentLocalizationMapper.LocalizeLocation(remote, GetCurrentLanguageCode());
+            return ContentLocalizationMapper.LocalizeLocation(NormalizeLocation(remote), GetCurrentLanguageCode());
+        }
+
+        var cachedLocations = await GetCachedAsync<List<Location>>(LocationsCacheKey);
+        var cached = cachedLocations?
+            .FirstOrDefault(location => string.Equals(location.Id, locationId, StringComparison.OrdinalIgnoreCase));
+        if (cached is not null)
+        {
+            return ContentLocalizationMapper.LocalizeLocation(NormalizeLocation(cached), GetCurrentLanguageCode());
         }
 
         return await _fallback.GetLocationByIdAsync(locationId);
@@ -72,7 +87,27 @@ public class RemoteApiService : IApiService
         var remote = await TryGetAsync<List<Location>>(WithLanguage($"api/mobile/locations/search?query={Uri.EscapeDataString(query)}"));
         if (remote is not null)
         {
-            return ContentLocalizationMapper.LocalizeLocations(remote, GetCurrentLanguageCode());
+            return ContentLocalizationMapper.LocalizeLocations(NormalizeLocations(remote), GetCurrentLanguageCode());
+        }
+
+        var normalizedQuery = (query ?? string.Empty).Trim();
+        if (!string.IsNullOrWhiteSpace(normalizedQuery))
+        {
+            var cachedLocations = await GetCachedAsync<List<Location>>(LocationsCacheKey);
+            if (cachedLocations is { Count: > 0 })
+            {
+                var filtered = cachedLocations
+                    .Where(location =>
+                        location.Name.Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase) ||
+                        location.Description.Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase) ||
+                        location.Address.Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                if (filtered.Count > 0)
+                {
+                    return ContentLocalizationMapper.LocalizeLocations(NormalizeLocations(filtered), GetCurrentLanguageCode());
+                }
+            }
         }
 
         return await _fallback.SearchLocationsAsync(query);
@@ -83,7 +118,20 @@ public class RemoteApiService : IApiService
         var remote = await TryGetAsync<List<Location>>(WithLanguage($"api/mobile/locations/by-category/{Uri.EscapeDataString(categoryId)}"));
         if (remote is not null)
         {
-            return ContentLocalizationMapper.LocalizeLocations(remote, GetCurrentLanguageCode());
+            return ContentLocalizationMapper.LocalizeLocations(NormalizeLocations(remote), GetCurrentLanguageCode());
+        }
+
+        var cachedLocations = await GetCachedAsync<List<Location>>(LocationsCacheKey);
+        if (cachedLocations is { Count: > 0 })
+        {
+            var filtered = cachedLocations
+                .Where(location => string.Equals(location.CategoryId, categoryId, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (filtered.Count > 0)
+            {
+                return ContentLocalizationMapper.LocalizeLocations(NormalizeLocations(filtered), GetCurrentLanguageCode());
+            }
         }
 
         return await _fallback.GetLocationsByCategoryAsync(categoryId);
@@ -94,7 +142,27 @@ public class RemoteApiService : IApiService
         var remote = await TryGetAsync<List<Location>>(WithLanguage($"api/mobile/locations/nearby?latitude={latitude}&longitude={longitude}&radiusKm={radiusKm}"));
         if (remote is not null)
         {
-            return ContentLocalizationMapper.LocalizeLocations(remote, GetCurrentLanguageCode());
+            return ContentLocalizationMapper.LocalizeLocations(NormalizeLocations(remote), GetCurrentLanguageCode());
+        }
+
+        var cachedLocations = await GetCachedAsync<List<Location>>(LocationsCacheKey);
+        if (cachedLocations is { Count: > 0 })
+        {
+            var nearby = cachedLocations
+                .Select(location => new
+                {
+                    Location = location,
+                    DistanceKm = CalculateDistance(latitude, longitude, location.Latitude, location.Longitude)
+                })
+                .Where(item => item.DistanceKm <= radiusKm)
+                .OrderBy(item => item.DistanceKm)
+                .Select(item => item.Location)
+                .ToList();
+
+            if (nearby.Count > 0)
+            {
+                return ContentLocalizationMapper.LocalizeLocations(NormalizeLocations(nearby), GetCurrentLanguageCode());
+            }
         }
 
         return await _fallback.GetNearbyLocationsAsync(latitude, longitude, radiusKm);
@@ -105,7 +173,14 @@ public class RemoteApiService : IApiService
         var remote = await TryGetAsync<List<Category>>(WithLanguage("api/mobile/categories"));
         if (remote is not null)
         {
+            await UpsertCacheAsync(CategoriesCacheKey, remote);
             return ContentLocalizationMapper.LocalizeCategories(remote, GetCurrentLanguageCode());
+        }
+
+        var cached = await GetCachedAsync<List<Category>>(CategoriesCacheKey);
+        if (cached is { Count: > 0 })
+        {
+            return ContentLocalizationMapper.LocalizeCategories(cached, GetCurrentLanguageCode());
         }
 
         return await _fallback.GetCategoriesAsync();
@@ -116,7 +191,14 @@ public class RemoteApiService : IApiService
         var remote = await TryGetAsync<List<Tour>>(WithLanguage("api/mobile/tours"));
         if (remote is not null)
         {
+            await UpsertCacheAsync(ToursCacheKey, remote);
             return ContentLocalizationMapper.LocalizeTours(remote, GetCurrentLanguageCode());
+        }
+
+        var cached = await GetCachedAsync<List<Tour>>(ToursCacheKey);
+        if (cached is { Count: > 0 })
+        {
+            return ContentLocalizationMapper.LocalizeTours(cached, GetCurrentLanguageCode());
         }
 
         return await _fallback.GetToursAsync();
@@ -130,6 +212,14 @@ public class RemoteApiService : IApiService
             return ContentLocalizationMapper.LocalizeTours(new[] { remote }, GetCurrentLanguageCode()).FirstOrDefault();
         }
 
+        var cached = await GetCachedAsync<List<Tour>>(ToursCacheKey);
+        var cachedTour = cached?
+            .FirstOrDefault(tour => string.Equals(tour.Id, tourId, StringComparison.OrdinalIgnoreCase));
+        if (cachedTour is not null)
+        {
+            return ContentLocalizationMapper.LocalizeTours(new[] { cachedTour }, GetCurrentLanguageCode()).FirstOrDefault();
+        }
+
         return await _fallback.GetTourByIdAsync(tourId);
     }
 
@@ -139,6 +229,16 @@ public class RemoteApiService : IApiService
         if (remote is not null)
         {
             return ContentLocalizationMapper.LocalizeTours(remote, GetCurrentLanguageCode());
+        }
+
+        var cached = await GetCachedAsync<List<Tour>>(ToursCacheKey);
+        if (cached is { Count: > 0 })
+        {
+            var featured = cached.Where(tour => tour.IsFeatured).ToList();
+            if (featured.Count > 0)
+            {
+                return ContentLocalizationMapper.LocalizeTours(featured, GetCurrentLanguageCode());
+            }
         }
 
         return await _fallback.GetFeaturedToursAsync();
@@ -152,6 +252,14 @@ public class RemoteApiService : IApiService
             return ContentLocalizationMapper.LocalizeAudioGuides(remote, GetCurrentLanguageCode(), locationId);
         }
 
+        var cachedLocations = await GetCachedAsync<List<Location>>(LocationsCacheKey);
+        var cachedLocation = cachedLocations?
+            .FirstOrDefault(location => string.Equals(location.Id, locationId, StringComparison.OrdinalIgnoreCase));
+        if (cachedLocation is not null)
+        {
+            return ContentLocalizationMapper.LocalizeAudioGuides(cachedLocation.AudioGuides, GetCurrentLanguageCode(), locationId);
+        }
+
         return await _fallback.GetAudioGuidesForLocationAsync(locationId);
     }
 
@@ -161,6 +269,19 @@ public class RemoteApiService : IApiService
         if (remote is not null)
         {
             return ContentLocalizationMapper.LocalizeAudioGuides(new[] { remote }, GetCurrentLanguageCode(), remote.LocationId)
+                .FirstOrDefault();
+        }
+
+        var cachedLocations = await GetCachedAsync<List<Location>>(LocationsCacheKey);
+        var cachedGuide = cachedLocations?
+            .SelectMany(location => location.AudioGuides)
+            .FirstOrDefault(guide => string.Equals(guide.Id, audioGuideId, StringComparison.OrdinalIgnoreCase));
+        if (cachedGuide is not null)
+        {
+            return ContentLocalizationMapper.LocalizeAudioGuides(
+                    new[] { cachedGuide },
+                    GetCurrentLanguageCode(),
+                    cachedGuide.LocationId)
                 .FirstOrDefault();
         }
 
@@ -232,7 +353,7 @@ public class RemoteApiService : IApiService
             }
         }
 
-        foreach (var baseUrl in BaseUrls)
+        foreach (var baseUrl in GetCandidateBaseUrls())
         {
             var data = await TryGetFromBaseAsync<T>(baseUrl, relativePath);
             if (data is not null)
@@ -288,7 +409,7 @@ public class RemoteApiService : IApiService
             }
         }
 
-        foreach (var baseUrl in BaseUrls)
+        foreach (var baseUrl in GetCandidateBaseUrls())
         {
             var posted = await TryPostToBaseAsync(baseUrl, relativePath, body);
             if (posted)
@@ -316,6 +437,88 @@ public class RemoteApiService : IApiService
         {
             return false;
         }
+    }
+
+    private async Task<T?> GetCachedAsync<T>(string cacheKey)
+    {
+        var json = await _localDatabaseService.GetCachedJsonAsync(cacheKey);
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return default;
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<T>(json, JsonOptions);
+        }
+        catch
+        {
+            return default;
+        }
+    }
+
+    private async Task UpsertCacheAsync<T>(string cacheKey, T payload)
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(payload, JsonOptions);
+            await _localDatabaseService.UpsertCachedJsonAsync(cacheKey, json);
+        }
+        catch
+        {
+            // Keep cache best-effort; request should still succeed.
+        }
+    }
+
+    private static List<Location> NormalizeLocations(IEnumerable<Location> locations)
+    {
+        return locations.Select(NormalizeLocation).ToList();
+    }
+
+    private static Location NormalizeLocation(Location location)
+    {
+        location.AudioGuides ??= new List<AudioGuide>();
+        foreach (var guide in location.AudioGuides)
+        {
+            guide.ScriptSegments ??= new List<AudioScriptSegment>();
+        }
+
+        return location;
+    }
+
+    private static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+    {
+        const double R = 6371;
+        var dLat = ToRad(lat2 - lat1);
+        var dLon = ToRad(lon2 - lon1);
+        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                Math.Cos(ToRad(lat1)) * Math.Cos(ToRad(lat2)) *
+                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        return R * c;
+    }
+
+    private static double ToRad(double deg) => deg * Math.PI / 180.0;
+
+    private static IReadOnlyList<string> GetCandidateBaseUrls()
+    {
+#if ANDROID
+        return new[]
+        {
+            "https://10.0.2.2:7275",
+            "http://10.0.2.2:5275",
+            "https://localhost:7275",
+            "http://localhost:5275"
+        };
+#else
+        return new[]
+        {
+            "https://localhost:7275",
+            "http://localhost:5275",
+            "https://10.0.2.2:7275",
+            "http://10.0.2.2:5275"
+        };
+#endif
     }
 
     private sealed class AddListeningHistoryRequest

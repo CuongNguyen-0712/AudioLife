@@ -33,9 +33,6 @@ public static class DbInitializer
             EnsurePoiAdminAssignments(context);
             EnsureListeningHistory(context);
             EnsurePaymentPackages(context);
-            EnsureAppUsers(context);
-            EnsureUserSubscriptions(context);
-            EnsureUserAppSessions(context);
             return;
         }
 
@@ -93,9 +90,6 @@ public static class DbInitializer
         EnsurePoiAdminAssignments(context);
         EnsureListeningHistory(context);
         EnsurePaymentPackages(context);
-        EnsureAppUsers(context);
-        EnsureUserSubscriptions(context);
-        EnsureUserAppSessions(context);
     }
 
     private static void EnsureAuthUserAccounts(AppDbContext context)
@@ -199,42 +193,6 @@ public static class DbInitializer
             existing.IsActive = seed.IsActive;
         }
 
-        context.SaveChanges();
-    }
-
-    private static void EnsureAppUsers(AppDbContext context)
-    {
-        if (context.AppUsers.Any())
-        {
-            return;
-        }
-
-        var users = SampleData.GetSampleAppUsers();
-        context.AppUsers.AddRange(users);
-        context.SaveChanges();
-    }
-
-    private static void EnsureUserSubscriptions(AppDbContext context)
-    {
-        if (context.UserSubscriptions.Any())
-        {
-            return;
-        }
-
-        var subscriptions = SampleData.GetSampleUserSubscriptions();
-        context.UserSubscriptions.AddRange(subscriptions);
-        context.SaveChanges();
-    }
-
-    private static void EnsureUserAppSessions(AppDbContext context)
-    {
-        if (context.UserAppSessions.Any())
-        {
-            return;
-        }
-
-        var sessions = SampleData.GetSampleUserAppSessions();
-        context.UserAppSessions.AddRange(sessions);
         context.SaveChanges();
     }
 

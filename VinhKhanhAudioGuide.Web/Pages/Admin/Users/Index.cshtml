@@ -6,8 +6,34 @@
 }
 
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Quản Lý Người Dùng</h2>
+    <div class="admin-page-hero mb-4">
+        <div class="admin-page-hero-copy">
+            <p class="hero-kicker"><i class="fa-solid fa-users-gear"></i> Admin hệ thống</p>
+            <h1 class="admin-page-hero-title">Quản Lý Người Dùng</h1>
+            <p class="admin-page-hero-subtitle">Theo dõi trạng thái, gói active, phiên đăng nhập và lịch sử nghe trong một giao diện gọn hơn, rõ hơn.</p>
+            <div class="admin-page-hero-badges">
+                <span class="hero-badge"><i class="fa-solid fa-circle-check"></i> @Model.ActiveUserCount active</span>
+                <span class="hero-badge"><i class="fa-solid fa-ban"></i> @Model.BlockedUserCount blocked</span>
+                <span class="hero-badge"><i class="fa-solid fa-ticket"></i> @Model.UsersWithActiveSubscriptionCount có gói active</span>
+            </div>
+        </div>
+
+        <div class="admin-page-hero-actions">
+            <div class="admin-page-hero-kpis">
+                <div class="admin-page-hero-kpi">
+                    <span>Tổng</span>
+                    <strong>@Model.TotalUserCount</strong>
+                </div>
+                <div class="admin-page-hero-kpi">
+                    <span>Phiên active</span>
+                    <strong>@Model.ActiveSessionCount</strong>
+                </div>
+                <div class="admin-page-hero-kpi">
+                    <span>Lọc hiện tại</span>
+                    <strong>@(string.IsNullOrWhiteSpace(Model.SearchTerm) ? "Tất cả" : Model.SearchTerm)</strong>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="row g-3 mb-4">

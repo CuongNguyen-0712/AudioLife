@@ -18,6 +18,7 @@ public class LocalDatabaseService : ILocalDatabaseService
         await _database.CreateTableAsync<FavoriteLocationEntity>();
         await _database.CreateTableAsync<ListeningHistoryEntity>();
         await _database.CreateTableAsync<DownloadedAudioEntity>();
+        await _database.CreateTableAsync<CachedJsonEntity>();
     }
 
     public async Task<List<string>> GetFavoriteLocationIdsAsync()
@@ -84,6 +85,40 @@ public class LocalDatabaseService : ILocalDatabaseService
     {
         await EnsureInitializedAsync();
         await _database.DeleteAsync<DownloadedAudioEntity>(audioGuideId);
+    }
+
+    public async Task<string?> GetCachedJsonAsync(string cacheKey)
+    {
+        await EnsureInitializedAsync();
+
+        if (string.IsNullOrWhiteSpace(cacheKey))
+        {
+            return null;
+        }
+
+        var entity = await _database.Table<CachedJsonEntity>()
+            .FirstOrDefaultAsync(item => item.CacheKey == cacheKey);
+
+        return entity?.JsonPayload;
+    }
+
+    public async Task UpsertCachedJsonAsync(string cacheKey, string jsonPayload)
+    {
+        await EnsureInitializedAsync();
+
+        if (string.IsNullOrWhiteSpace(cacheKey) || string.IsNullOrWhiteSpace(jsonPayload))
+        {
+            return;
+        }
+
+        var entity = new CachedJsonEntity
+        {
+            CacheKey = cacheKey,
+            JsonPayload = jsonPayload,
+            UpdatedAtUtcTicks = DateTime.UtcNow.Ticks
+        };
+
+        await _database.InsertOrReplaceAsync(entity);
     }
 
     private static ListeningHistoryEntity ToEntity(ListeningHistory model)
@@ -179,5 +214,13 @@ public class LocalDatabaseService : ILocalDatabaseService
         public string LocalPath { get; set; } = string.Empty;
         public long DownloadedAtUtcTicks { get; set; }
         public long FileSize { get; set; }
+    }
+
+    private sealed class CachedJsonEntity
+    {
+        [PrimaryKey]
+        public string CacheKey { get; set; } = string.Empty;
+        public string JsonPayload { get; set; } = string.Empty;
+        public long UpdatedAtUtcTicks { get; set; }
     }
 }

@@ -13,4 +13,7 @@ public interface ILocalDatabaseService
     Task<List<DownloadedAudio>> GetDownloadedAudiosAsync();
     Task UpsertDownloadedAudioAsync(DownloadedAudio download);
     Task DeleteDownloadedAudioAsync(string audioGuideId);
+
+    Task<string?> GetCachedJsonAsync(string cacheKey);
+    Task UpsertCachedJsonAsync(string cacheKey, string jsonPayload);
 }
