@@ -8,8 +8,9 @@
              Title="{ext:Translate Settings_PageTitle}"
              BackgroundColor="{StaticResource Surface}">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="16" Spacing="14">
+    <Grid>
+        <ScrollView IsVisible="{Binding HasData}">
+            <VerticalStackLayout Padding="16" Spacing="14">
 
             <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
                 <Button Grid.Column="0" Text="{ext:Translate Settings_Favorites}" FontSize="12" Command="{Binding GoToFavoritesCommand}" Style="{StaticResource OutlineButton}" />
@@ -118,7 +119,36 @@
                     </Grid>
                 </VerticalStackLayout>
             </Frame>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Grid IsVisible="{Binding IsLoading}"
+              BackgroundColor="{StaticResource Background}"
+              Opacity="0.96">
+            <VerticalStackLayout VerticalOptions="Center"
+                                 HorizontalOptions="Center"
+                                 Spacing="12">
+                <ActivityIndicator IsRunning="True" Color="{StaticResource Primary}" />
+                <Label Text="Đang tải cài đặt..."
+                       TextColor="{StaticResource OnSurfaceVariant}"
+                       HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+        </Grid>
+
+        <VerticalStackLayout IsVisible="{Binding IsError}"
+                             VerticalOptions="Center"
+                             HorizontalOptions="Center"
+                             Padding="30"
+                             Spacing="10">
+            <Label Text="Không tải được cài đặt"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   HorizontalTextAlignment="Center" />
+            <Label Text="{Binding ErrorMessage}"
+                   FontSize="13"
+                   TextColor="{StaticResource OnSurfaceVariant}"
+                   HorizontalTextAlignment="Center" />
         </VerticalStackLayout>
-    </ScrollView>
+    </Grid>
 
 </ContentPage>

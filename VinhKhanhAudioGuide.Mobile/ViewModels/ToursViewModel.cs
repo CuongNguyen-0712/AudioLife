@@ -10,6 +10,9 @@ public partial class ToursViewModel : ObservableObject
 {
     private readonly INavigationService _navigationService;
     private readonly IApiService _apiService;
+    private readonly ITourCheckpointService _tourCheckpointService;
+    private bool _resumePromptHandled;
+    private string _lastPromptedCheckpoint = string.Empty;
 
     [ObservableProperty]
     private bool _isRefreshing;
@@ -17,11 +20,61 @@ public partial class ToursViewModel : ObservableObject
     public ObservableCollection<TourDisplayModel> FeaturedTours { get; } = new();
     public ObservableCollection<TourDisplayModel> AllTours { get; } = new();
 
-    public ToursViewModel(INavigationService navigationService, IApiService apiService)
+    public ToursViewModel(INavigationService navigationService, IApiService apiService, ITourCheckpointService tourCheckpointService)
     {
         _navigationService = navigationService;
         _apiService = apiService;
+        _tourCheckpointService = tourCheckpointService;
         _ = LoadToursAsync();
+    }
+
+    public async Task OnAppearingAsync()
+    {
+        var checkpoint = await _tourCheckpointService.GetAsync();
+        if (checkpoint == null || string.IsNullOrWhiteSpace(checkpoint.TourId))
+        {
+            _resumePromptHandled = false;
+            _lastPromptedCheckpoint = string.Empty;
+            return;
+        }
+
+        var checkpointKey = $"{checkpoint.TourId}|{checkpoint.LocationId}|{checkpoint.AudioGuideId}|{checkpoint.AudioPositionSeconds:0.##}";
+        if (_resumePromptHandled && string.Equals(_lastPromptedCheckpoint, checkpointKey, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        _resumePromptHandled = true;
+        _lastPromptedCheckpoint = checkpointKey;
+
+        var savedAt = checkpoint.SavedAtUtc == default
+            ? DateTime.Now
+            : checkpoint.SavedAtUtc.ToLocalTime();
+
+        var resume = await MainThread.InvokeOnMainThreadAsync(async () =>
+            await Application.Current!.MainPage!.DisplayAlert(
+                "Tiếp tục lộ trình?",
+                $"Bạn đã tạm dừng tại {checkpoint.LocationName} lúc {savedAt:HH:mm, dd/MM}. Tiếp tục từ điểm dừng trước?",
+                "Tiếp tục",
+                "Để sau"));
+
+        if (!resume)
+        {
+            return;
+        }
+
+        await _tourCheckpointService.ClearAsync();
+
+        await _navigationService.NavigateToAsync("///MapPage",
+            new Dictionary<string, object>
+            {
+                { "TourId", checkpoint.TourId },
+                { "ResumeLocationId", checkpoint.LocationId },
+                { "ResumeAudioGuideId", checkpoint.AudioGuideId },
+                { "ResumeAudioUrl", checkpoint.AudioUrl },
+                { "ResumePositionSeconds", checkpoint.AudioPositionSeconds },
+                { "ResumeSessionId", Guid.NewGuid().ToString("N") }
+            });
     }
 
     private async Task LoadToursAsync()

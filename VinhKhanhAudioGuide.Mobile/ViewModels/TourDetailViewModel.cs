@@ -12,6 +12,8 @@ public partial class TourDetailViewModel : ObservableObject
 {
     private readonly INavigationService _navigationService;
     private readonly IApiService _apiService;
+    private string _pendingTourId = string.Empty;
+    private string _loadedTourId = string.Empty;
 
     [ObservableProperty]
     private string _tourId = string.Empty;
@@ -47,10 +49,23 @@ public partial class TourDetailViewModel : ObservableObject
 
     partial void OnTourIdChanged(string value)
     {
-        if (!string.IsNullOrEmpty(value))
+        _pendingTourId = value ?? string.Empty;
+    }
+
+    public async Task OnAppearingAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_pendingTourId))
         {
-            _ = LoadTourDetailsAsync(value);
+            _pendingTourId = TourId;
         }
+
+        if (string.IsNullOrWhiteSpace(_pendingTourId)
+            || string.Equals(_pendingTourId, _loadedTourId, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        await LoadTourDetailsAsync(_pendingTourId);
     }
 
     private async Task LoadTourDetailsAsync(string tourId)
@@ -70,6 +85,7 @@ public partial class TourDetailViewModel : ObservableObject
         ImageUrl = tour.ImageUrl;
         DurationText = FormatDuration(tour.Duration);
         LocationCount = tour.LocationIds.Count;
+        PriceText = tour.Price <= 0 ? "Miễn phí" : $"{tour.Price:N0} VNĐ";
 
         var allLocationsTask = _apiService.GetLocationsAsync();
         var categoriesTask = _apiService.GetCategoriesAsync();
@@ -79,35 +95,44 @@ public partial class TourDetailViewModel : ObservableObject
         var categories = categoriesTask.Result;
         TourLocations.Clear();
 
-        int order = 1;
-        var totalCount = tour.LocationIds.Count;
-        var resolvedLocations = new List<(Models.Location loc, int order)>();
-
+        var routeLocations = new List<Models.Location>();
         foreach (var locationId in tour.LocationIds)
         {
             var location = allLocations.FirstOrDefault(l => l.Id == locationId);
             if (location != null)
             {
-                var cat = categories.FirstOrDefault(c => c.Id == location.CategoryId);
-                TourLocations.Add(new TourLocationItem
-                {
-                    Id = location.Id,
-                    Name = location.Name,
-                    Duration = location.Duration,
-                    Order = order,
-                    AudioCount = location.AudioGuides.Count,
-                    CategoryName = cat?.Name ?? "Di tích",
-                    IsNotLast = order < totalCount,
-                    Latitude = location.Latitude,
-                    Longitude = location.Longitude
-                });
-                resolvedLocations.Add((location, order));
-                order++;
+                routeLocations.Add(location);
             }
+        }
+
+        var orderedLocations = OptimizeTourLocationsByDistance(routeLocations);
+
+        int order = 1;
+        var totalCount = orderedLocations.Count;
+        var resolvedLocations = new List<(Models.Location loc, int order)>();
+
+        foreach (var location in orderedLocations)
+        {
+            var cat = categories.FirstOrDefault(c => c.Id == location.CategoryId);
+            TourLocations.Add(new TourLocationItem
+            {
+                Id = location.Id,
+                Name = location.Name,
+                Duration = location.Duration,
+                Order = order,
+                AudioCount = location.AudioGuides.Count,
+                CategoryName = cat?.Name ?? "Di tích",
+                IsNotLast = order < totalCount,
+                Latitude = location.Latitude,
+                Longitude = location.Longitude
+            });
+            resolvedLocations.Add((location, order));
+            order++;
         }
 
         // Build map HTML with route
         BuildMapHtml(resolvedLocations);
+        _loadedTourId = tourId;
     }
 
     private void BuildMapHtml(List<(Models.Location loc, int order)> locations)
@@ -136,6 +161,7 @@ public partial class TourDetailViewModel : ObservableObject
 <script src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'></script>
 <style>
 html, body, #map {{ height:100%; margin:0; padding:0; }}
+#map {{ touch-action: pan-x pan-y; }}
 
 .custom-zoom {{
     position:absolute;
@@ -206,10 +232,17 @@ html, body, #map {{ height:100%; margin:0; padding:0; }}
 var map = L.map('map', {{
     zoomControl:false,
     dragging:true,
+    inertia:true,
+    inertiaDeceleration:3000,
+    inertiaMaxSpeed:6000,
+    easeLinearity:0.2,
     touchZoom:true,
+    bounceAtZoomLimits:false,
     scrollWheelZoom:true,
     doubleClickZoom:true,
-    boxZoom:true
+    boxZoom:true,
+    zoomAnimation:true,
+    markerZoomAnimation:true
 }}).setView([{centerLat.ToString(CultureInfo.InvariantCulture)},{centerLng.ToString(CultureInfo.InvariantCulture)}],14);
 
 L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png',{{
@@ -233,6 +266,10 @@ var bounds = routeLine.getBounds();
 if (bounds && bounds.isValid()) {{
     map.fitBounds(bounds.pad(0.18));
 }}
+
+map.dragging.enable();
+map.touchZoom.enable();
+map.scrollWheelZoom.enable();
 </script>
 </body>
 </html>";
@@ -262,19 +299,87 @@ if (bounds && bounds.isValid()) {{
     [RelayCommand]
     private async Task OpenMapAsync()
     {
-        await _navigationService.NavigateToAsync("//MapPage");
+        await _navigationService.NavigateToAsync("///MapPage");
     }
 
     [RelayCommand]
     private async Task StartTourAsync()
     {
-        var firstLocation = TourLocations.FirstOrDefault();
-        if (firstLocation != null)
+        if (!string.IsNullOrWhiteSpace(TourId))
         {
-            await _navigationService.NavigateToAsync(nameof(Views.LocationDetailPage),
-                new Dictionary<string, object> { { "LocationId", firstLocation.Id } });
+            await _navigationService.NavigateToAsync("///MapPage",
+                new Dictionary<string, object> { { "TourId", TourId } });
         }
     }
+
+    private static List<Models.Location> OptimizeTourLocationsByDistance(List<Models.Location> locations)
+    {
+        if (locations.Count <= 2)
+        {
+            return locations;
+        }
+
+        var valid = new List<Models.Location>();
+        var invalid = new List<Models.Location>();
+        foreach (var location in locations)
+        {
+            if (HasValidCoordinate(location))
+            {
+                valid.Add(location);
+            }
+            else
+            {
+                invalid.Add(location);
+            }
+        }
+
+        if (valid.Count <= 2)
+        {
+            valid.AddRange(invalid);
+            return valid;
+        }
+
+        var ordered = new List<Models.Location>();
+        var remaining = new List<Models.Location>(valid);
+
+        ordered.Add(remaining[0]);
+        remaining.RemoveAt(0);
+
+        while (remaining.Count > 0)
+        {
+            var current = ordered[^1];
+            var nearest = remaining
+                .OrderBy(candidate => CalculateDistanceMeters(current, candidate))
+                .First();
+
+            ordered.Add(nearest);
+            remaining.Remove(nearest);
+        }
+
+        ordered.AddRange(invalid);
+        return ordered;
+    }
+
+    private static bool HasValidCoordinate(Models.Location location)
+    {
+        return location.Latitude is >= -90 and <= 90
+               && location.Longitude is >= -180 and <= 180
+               && (Math.Abs(location.Latitude) > 0.000001 || Math.Abs(location.Longitude) > 0.000001);
+    }
+
+    private static double CalculateDistanceMeters(Models.Location from, Models.Location to)
+    {
+        const double EarthRadiusKm = 6371;
+        var dLat = ToRadians(to.Latitude - from.Latitude);
+        var dLon = ToRadians(to.Longitude - from.Longitude);
+        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2)
+                + Math.Cos(ToRadians(from.Latitude)) * Math.Cos(ToRadians(to.Latitude))
+                * Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        return EarthRadiusKm * c * 1000;
+    }
+
+    private static double ToRadians(double degrees) => degrees * Math.PI / 180.0;
 }
 
 public class TourLocationItem

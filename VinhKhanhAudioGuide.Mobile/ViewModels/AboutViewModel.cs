@@ -4,7 +4,7 @@ using VinhKhanhAudioGuide.Mobile.Services;
 
 namespace VinhKhanhAudioGuide.Mobile.ViewModels;
 
-public partial class AboutViewModel : ObservableObject
+public partial class AboutViewModel : LoadStateViewModel
 {
     private readonly IApiService _apiService;
 
@@ -20,23 +20,45 @@ public partial class AboutViewModel : ObservableObject
     [ObservableProperty]
     private int _tourCount;
 
+    private bool _hasLoaded;
+
     public AboutViewModel(IApiService apiService)
     {
         _apiService = apiService;
-        _ = LoadStatsAsync();
+    }
+
+    public async Task OnAppearingAsync()
+    {
+        if (_hasLoaded)
+        {
+            return;
+        }
+
+        await LoadStatsAsync();
     }
 
     private async Task LoadStatsAsync()
     {
-        var locationsTask = _apiService.GetLocationsAsync();
-        var toursTask = _apiService.GetToursAsync();
-        await Task.WhenAll(locationsTask, toursTask);
+        BeginLoading();
+        try
+        {
+            var locationsTask = _apiService.GetLocationsAsync();
+            var toursTask = _apiService.GetToursAsync();
+            await Task.WhenAll(locationsTask, toursTask);
 
-        var locations = locationsTask.Result;
-        var tours = toursTask.Result;
-        LocationCount = locations.Count;
-        AudioCount = locations.Sum(l => l.AudioGuides.Count);
-        TourCount = tours.Count;
+            var locations = locationsTask.Result;
+            var tours = toursTask.Result;
+            LocationCount = locations.Count;
+            AudioCount = locations.Sum(l => l.AudioGuides.Count);
+            TourCount = tours.Count;
+
+            _hasLoaded = true;
+            CompleteLoading(true);
+        }
+        catch (Exception ex)
+        {
+            FailLoading(ex.Message);
+        }
     }
 
     [RelayCommand]

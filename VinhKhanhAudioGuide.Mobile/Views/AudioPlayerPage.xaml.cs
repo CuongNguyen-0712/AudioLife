@@ -13,10 +13,10 @@ public partial class AudioPlayerPage : ContentPage
         BindingContext = viewModel;
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
-        _viewModel.OnAppearing();
+        await _viewModel.OnAppearingAsync();
     }
 
     protected override void OnDisappearing()

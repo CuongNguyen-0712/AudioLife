@@ -12,13 +12,16 @@ namespace VinhKhanhAudioGuide.Mobile.ViewModels;
 [QueryProperty(nameof(AudioUrl), "AudioUrl")]
 [QueryProperty(nameof(AudioGuideId), "AudioGuideId")]
 [QueryProperty(nameof(PlaybackSource), "PlaybackSource")]
+[QueryProperty(nameof(ResumePositionSeconds), "ResumePositionSeconds")]
 public partial class AudioPlayerViewModel : ObservableObject
 {
     private const string PreferredAudioGuideKeyPrefix = "AutoNearestPreferredAudioGuide:";
     private const string PreferredAudioUrlKeyPrefix = "AutoNearestPreferredAudioUrl:";
 
+    private readonly INavigationService _navigationService;
     private readonly IAudioService _audioService;
     private readonly IApiService _apiService;
+    private readonly ITourPlaybackSessionService _tourPlaybackSessionService;
     private readonly SemaphoreSlim _guideSelectionLock = new(1, 1);
     private readonly SemaphoreSlim _playerActionLock = new(1, 1);
     private readonly Dictionary<string, DateTime> _lastActionAt = new(StringComparer.OrdinalIgnoreCase);
@@ -110,14 +113,28 @@ public partial class AudioPlayerViewModel : ObservableObject
     private bool _isAutoPlaybackSource;
 
     [ObservableProperty]
+    private bool _isTourPlaybackSource;
+
+    [ObservableProperty]
     private string _playbackSourceText = "THỦ CÔNG";
+
+    [ObservableProperty]
+    private double _resumePositionSeconds;
+
+    private bool _resumePositionApplied;
 
     public ObservableCollection<AudioGuideItemViewModel> AudioGuides { get; } = new();
 
-    public AudioPlayerViewModel(IAudioService audioService, IApiService apiService)
+    public AudioPlayerViewModel(
+        INavigationService navigationService,
+        IAudioService audioService,
+        IApiService apiService,
+        ITourPlaybackSessionService tourPlaybackSessionService)
     {
+        _navigationService = navigationService;
         _audioService = audioService;
         _apiService = apiService;
+        _tourPlaybackSessionService = tourPlaybackSessionService;
         UpdatePlaybackSourceUi();
     }
 
@@ -126,10 +143,18 @@ public partial class AudioPlayerViewModel : ObservableObject
         UpdatePlaybackSourceUi();
     }
 
+    partial void OnResumePositionSecondsChanged(double value)
+    {
+        _resumePositionApplied = false;
+    }
+
     private void UpdatePlaybackSourceUi()
     {
         IsAutoPlaybackSource = string.Equals(PlaybackSource, "AutoNearest", StringComparison.OrdinalIgnoreCase);
-        PlaybackSourceText = IsAutoPlaybackSource ? "TỰ ĐỘNG (POI GẦN NHẤT)" : "THỦ CÔNG";
+        IsTourPlaybackSource = PlaybackSource.StartsWith("Tour", StringComparison.OrdinalIgnoreCase);
+        PlaybackSourceText = IsTourPlaybackSource
+            ? "LỘ TRÌNH"
+            : (IsAutoPlaybackSource ? "TỰ ĐỘNG (POI GẦN NHẤT)" : "THỦ CÔNG");
     }
 
     private void MarkManualPlaybackSource()
@@ -147,6 +172,16 @@ public partial class AudioPlayerViewModel : ObservableObject
         }
 
         SyncPlaybackStateFromService();
+    }
+
+    public async Task OnAppearingAsync()
+    {
+        OnAppearing();
+
+        if (!string.IsNullOrWhiteSpace(LocationId) && AudioGuides.Count == 0 && !_isLoadingLocationData)
+        {
+            await LoadLocationDataAsync(LocationId);
+        }
     }
 
     public void OnDisappearing()
@@ -226,6 +261,12 @@ public partial class AudioPlayerViewModel : ObservableObject
                 if (!_isAutoAdvancing && ShouldAutoPlayNextWithinPoi() && matchedIndex == CurrentAudioGuideIndex && CanPlayNext)
                 {
                     _ = AutoAdvanceToNextGuideAsync();
+                    return;
+                }
+
+                if (!_isAutoAdvancing && IsTourPlaybackSource && matchedIndex == CurrentAudioGuideIndex)
+                {
+                    _ = AdvanceTourLocationAsync();
                 }
             }
 
@@ -289,12 +330,29 @@ public partial class AudioPlayerViewModel : ObservableObject
 
             if (AudioGuides.Count == 0)
             {
+                if (IsTourPlaybackSource)
+                {
+                    await AdvanceTourLocationAsync();
+                    return;
+                }
+
                 ResetPlaybackState();
                 return;
             }
 
             var selectedIndex = ResolveInitialGuideIndex();
-            await SetCurrentAudioGuideAsync(selectedIndex, autoPlay: false, forceRestart: false, persistAsUserSelection: false);
+            await SetCurrentAudioGuideAsync(selectedIndex, autoPlay: IsTourPlaybackSource, forceRestart: false, persistAsUserSelection: false);
+
+            if (!_resumePositionApplied && ResumePositionSeconds > 0 && !string.IsNullOrWhiteSpace(AudioUrl))
+            {
+                _resumePositionApplied = true;
+                if (!string.Equals(_audioService.CurrentAudioUrl, AudioUrl, StringComparison.OrdinalIgnoreCase) || !_audioService.IsPlaying)
+                {
+                    await _audioService.PlayAsync(AudioUrl);
+                }
+
+                await _audioService.SeekAsync(TimeSpan.FromSeconds(ResumePositionSeconds));
+            }
         }
         finally
         {
@@ -807,6 +865,41 @@ public partial class AudioPlayerViewModel : ObservableObject
         {
             _isAutoAdvancing = false;
         }
+    }
+
+    private async Task AdvanceTourLocationAsync()
+    {
+        if (IsSwitchingGuide || string.IsNullOrWhiteSpace(LocationId))
+        {
+            return;
+        }
+
+        if (!_tourPlaybackSessionService.TryMoveNextLocation(out var nextLocationId))
+        {
+            await FinishTourAsync();
+            return;
+        }
+
+        await _navigationService.NavigateToAsync("///AudioPlayerPage", new Dictionary<string, object>
+        {
+            { "LocationId", nextLocationId },
+            { "PlaybackSource", "TourRoute" }
+        });
+    }
+
+    private async Task FinishTourAsync()
+    {
+        _tourPlaybackSessionService.Reset();
+
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+        {
+            await Application.Current!.MainPage!.DisplayAlert(
+                "Hoàn thành tour",
+                "Bạn đã nghe hết các địa điểm trong tour.",
+                "Về bản đồ");
+        });
+
+        await _navigationService.NavigateToAsync("///MapPage");
     }
 
     private static string GetPreferredAudioGuideKey(string locationId) => $"{PreferredAudioGuideKeyPrefix}{locationId}";

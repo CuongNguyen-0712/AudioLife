@@ -17,8 +17,19 @@ public partial class MainPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        StartPulseAnimation();
-        await _viewModel.OnAppearingAsync();
+        try
+        {
+            StartPulseAnimation();
+            if (_viewModel != null)
+            {
+                await _viewModel.OnAppearingAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"MainPage.OnAppearing error: {ex}");
+            await DisplayAlert("Lỗi", $"Không thể tải dữ liệu: {ex.Message}", "OK");
+        }
     }
 
     protected override void OnDisappearing()
