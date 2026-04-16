@@ -255,7 +255,7 @@ public partial class MainViewModel : ObservableObject
         }
 
         await SyncAutoAudioSelectionWithUserPreferenceAsync(location.Id);
-        FooterHintText = F("Footer_NearestHintFormat", Math.Round(distanceMeters));
+        FooterHintText = F("Footer_NearestHintFormat", DistanceFormatService.FormatDistance(distanceMeters));
         _currentPoiDistanceMeters = distanceMeters;
         UpdateFooterPlaybackUi();
     }
@@ -946,7 +946,7 @@ public partial class MainViewModel : ObservableObject
     private string BuildQueueProgressHint(double distanceMeters)
     {
         var distanceHint = distanceMeters < double.MaxValue
-            ? F("Footer_NearestHintFormat", Math.Round(distanceMeters))
+            ? F("Footer_NearestHintFormat", DistanceFormatService.FormatDistance(distanceMeters))
             : T("Footer_NearestShort");
 
         if (_autoQueue.Count <= 0 || _autoQueueIndex < 0)

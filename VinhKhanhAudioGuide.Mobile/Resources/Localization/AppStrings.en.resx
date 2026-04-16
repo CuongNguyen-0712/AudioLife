@@ -157,7 +157,7 @@
   <data name="Footer_UpdatedAudioFormat" xml:space="preserve"><value>Standby: Updated audio for {0}</value></data>
   <data name="Footer_FinishedAtPoiFormat" xml:space="preserve"><value>Standby: Finished all audio at {0}, waiting for new POI</value></data>
   <data name="Footer_WaitForNewNearest" xml:space="preserve"><value>Will auto switch when a new nearest POI is detected</value></data>
-  <data name="Footer_NearestHintFormat" xml:space="preserve"><value>Nearest POI • {0} m</value></data>
+  <data name="Footer_NearestHintFormat" xml:space="preserve"><value>Nearest POI • {0}</value></data>
   <data name="Footer_NearestShort" xml:space="preserve"><value>Nearest POI</value></data>
   <data name="Footer_QueueHintFormat" xml:space="preserve"><value>{0} • Track {1}/{2}</value></data>
 </root>

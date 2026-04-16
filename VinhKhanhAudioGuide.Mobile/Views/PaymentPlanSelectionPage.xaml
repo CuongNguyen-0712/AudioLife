@@ -41,16 +41,44 @@
         <Grid Padding="20,24,20,20"
               RowDefinitions="Auto,Auto,Auto,Auto"
               RowSpacing="16">
-            <VerticalStackLayout Grid.Row="0" Spacing="8" Margin="2,4,2,0">
-                <Label Text="Chọn gói phù hợp nhất"
-                       FontFamily="RobotoCondensed-SemiBold"
-                       FontSize="24"
-                       TextColor="{StaticResource OnSurface}" />
-                <Label Text="Mỗi gói được thiết kế để bạn bắt đầu nhanh và dễ theo dõi chi phí."
-                       FontFamily="RobotoCondensed-Regular"
-                       FontSize="14"
-                       TextColor="{StaticResource OnSurfaceVariant}" />
-            </VerticalStackLayout>
+                 <VerticalStackLayout Grid.Row="0" Spacing="8" Margin="0">
+                    <Label Text="Chọn gói phù hợp với bạn"
+                            FontAttributes="Bold"
+                           FontSize="24"
+                           TextColor="{StaticResource Primary}" />
+
+                    <VerticalStackLayout Spacing="15" Margin="0,4,0,0">
+                        <!-- Feature 1 -->
+                        <Grid ColumnDefinitions="28,*" ColumnSpacing="14">
+                            <Image Source="qr.svg" HeightRequest="20" WidthRequest="20" Margin="4,2,0,0" />
+                            <Label Grid.Column="1" Text="Quét QR mở nội dung tức thì"
+                                   FontFamily="RobotoCondensed-Regular"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource OnSurface}" />
+                        </Grid>
+
+                        <!-- Feature 2 -->
+                        <Grid ColumnDefinitions="28,*" ColumnSpacing="10">
+                            <Image Source="audio.svg" HeightRequest="20" WidthRequest="20" Margin="4,2,0,0" />
+                            <Label Grid.Column="1" Text="Tự động phát theo vị trí thực"
+                                   FontFamily="RobotoCondensed-Regular"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource OnSurface}" />
+                        </Grid>
+
+                        <!-- Feature 3 -->
+                        <Grid ColumnDefinitions="28,*" ColumnSpacing="10">
+                            <Image Source="user.svg" HeightRequest="20" WidthRequest="20" Margin="4,2,0,0" />
+                            <Label Grid.Column="1" Text="Cá nhân hóa: ngôn ngữ, tốc độ"
+                                   FontFamily="RobotoCondensed-Regular"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource OnSurface}" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
 
             <VerticalStackLayout Grid.Row="1" Spacing="12">
                 <Border x:Name="DailyPlanCard"

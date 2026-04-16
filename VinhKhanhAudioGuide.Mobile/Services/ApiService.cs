@@ -35,7 +35,7 @@ public class ApiService : IApiService
         _tours = SampleData.GetTours();
             _paymentPackages = CreateDefaultPaymentPackages();
         _favoriteLocationIds = CreateDefaultFavoriteLocationIds();
-        _history = CreateDefaultHistory();
+        _history = new List<ListeningHistory>();
         _downloads = new List<DownloadedAudio>();
     }
 
@@ -272,6 +272,7 @@ public class ApiService : IApiService
                 existing.ListenedSeconds = (int)Math.Round(audio.Duration * 60 * progress);
                 existing.LastListenedAt = existing.ListenedAt;
                 existing.IsCompleted = progress >= 0.999;
+                existing.Language = audio.Language;
                 await _localDatabaseService.UpsertListeningHistoryAsync(existing);
             }
             else
@@ -290,7 +291,8 @@ public class ApiService : IApiService
                     UserId = LocalUserId,
                     ListenedSeconds = (int)Math.Round(audio.Duration * 60 * progress),
                     LastListenedAt = DateTime.Now,
-                    IsCompleted = progress >= 0.999
+                    IsCompleted = progress >= 0.999,
+                    Language = audio.Language
                 };
                 _history.Add(item);
                 await _localDatabaseService.UpsertListeningHistoryAsync(item);
@@ -433,16 +435,7 @@ public class ApiService : IApiService
 
             var savedHistory = await _localDatabaseService.GetListeningHistoryAsync();
             _history.Clear();
-            if (savedHistory.Count == 0)
-            {
-                var defaults = CreateDefaultHistory();
-                foreach (var item in defaults)
-                {
-                    _history.Add(item);
-                    await _localDatabaseService.UpsertListeningHistoryAsync(item);
-                }
-            }
-            else
+            if (savedHistory.Count > 0)
             {
                 _history.AddRange(savedHistory);
             }
@@ -462,11 +455,6 @@ public class ApiService : IApiService
     private static HashSet<string> CreateDefaultFavoriteLocationIds()
     {
         return new HashSet<string>(new[] { "loc_001", "loc_002", "loc_006" }, StringComparer.OrdinalIgnoreCase);
-    }
-
-    private static List<ListeningHistory> CreateDefaultHistory()
-    {
-        return SampleData.GetListeningHistory(LocalUserId);
     }
 
     // ──────── Helpers ────────

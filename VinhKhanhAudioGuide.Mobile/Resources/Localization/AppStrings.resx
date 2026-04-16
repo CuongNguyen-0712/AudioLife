@@ -370,7 +370,7 @@
     <value>Hệ thống sẽ tự chuyển khi có POI gần nhất mới</value>
   </data>
   <data name="Footer_NearestHintFormat" xml:space="preserve">
-    <value>POI gần nhất • {0} m</value>
+    <value>POI gần nhất • {0}</value>
   </data>
   <data name="Footer_NearestShort" xml:space="preserve">
     <value>POI gần nhất</value>

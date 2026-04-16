@@ -157,7 +157,7 @@
   <data name="Footer_UpdatedAudioFormat" xml:space="preserve"><value>待机：已更新 {0} 的音频</value></data>
   <data name="Footer_FinishedAtPoiFormat" xml:space="preserve"><value>待机：已播完 {0} 的全部音频，等待新 POI</value></data>
   <data name="Footer_WaitForNewNearest" xml:space="preserve"><value>检测到新的最近 POI 时将自动切换</value></data>
-  <data name="Footer_NearestHintFormat" xml:space="preserve"><value>最近 POI • {0} 米</value></data>
+  <data name="Footer_NearestHintFormat" xml:space="preserve"><value>最近 POI • {0}</value></data>
   <data name="Footer_NearestShort" xml:space="preserve"><value>最近 POI</value></data>
   <data name="Footer_QueueHintFormat" xml:space="preserve"><value>{0} • 第 {1}/{2} 条</value></data>
 </root>
