@@ -11,6 +11,8 @@ public partial class Location : ObservableObject
     public string Address { get; set; } = string.Empty;
     public double Latitude { get; set; }
     public double Longitude { get; set; }
+    public int Priority { get; set; } = 100;
+    public double DetectionRadiusMeters { get; set; } = 80;
     public int Duration { get; set; } // Duration in minutes
     public string CategoryId { get; set; } = string.Empty;
     public List<AudioGuide> AudioGuides { get; set; } = new();

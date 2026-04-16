@@ -13,6 +13,8 @@ Table Location {
   Address String
   Latitude Float
   Longitude Float
+  Priority Int
+  DetectionRadiusMeters Float
   Duration Int
   CategoryId String
 }
@@ -137,7 +139,10 @@ Table ListeningHistory {
 
 Table AppUser {
   Id Guid [pk]
-  QrCodeValue String [unique] // mã/chuỗi lấy từ QR khi onboarding
+  QrCodeValue String [unique] // token định danh lấy từ QR khi onboarding
+  DisplayName String
+  PhoneNumber String
+  Email String
   Status String // Active | Blocked
   CreatedAtUtc DateTime
   LastSeenAtUtc DateTime

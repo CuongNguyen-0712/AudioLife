@@ -24,6 +24,7 @@ public partial class MapViewModel : LoadStateViewModel
     private readonly SemaphoreSlim _loadMapLock = new(1, 1);
     private bool _hasLoadedMapData;
     private bool _isSubscribedToAudioEvents;
+    private bool _isPageAppearing;
     private bool _pendingTourRouteLoad;
     private string _loadedTourId = string.Empty;
     private string _currentTourAudioUrl = string.Empty;
@@ -139,9 +140,15 @@ public partial class MapViewModel : LoadStateViewModel
 
         if (IsTourRouteMode)
         {
-            _pendingTourRouteLoad = true;
-            // Don't call LoadTourRouteAsync here - let OnAppearingAsync handle it
-            // This prevents race conditions and ensures data loads before UI appears
+            // If page is already appearing, load tour immediately; otherwise let OnAppearingAsync handle it
+            if (_isPageAppearing)
+            {
+                _ = LoadTourRouteAsync();
+            }
+            else
+            {
+                _pendingTourRouteLoad = true;
+            }
         }
     }
 
@@ -174,6 +181,8 @@ public partial class MapViewModel : LoadStateViewModel
 
     public async Task OnAppearingAsync()
     {
+        _isPageAppearing = true;
+
         if (!_isSubscribedToAudioEvents)
         {
             _audioService.StateChanged += OnAudioStateChanged;
@@ -191,7 +200,7 @@ public partial class MapViewModel : LoadStateViewModel
             return;
         }
 
-        if (!isTourRouteMode && _hasLoadedMapData)
+        if (!isTourRouteMode && _hasLoadedMapData && !_pendingTourRouteLoad)
         {
             await RefreshMapWithLocationAsync();
             return;
@@ -293,6 +302,8 @@ public partial class MapViewModel : LoadStateViewModel
 
     public void OnDisappearing()
     {
+        _isPageAppearing = false;
+
         if (!_isSubscribedToAudioEvents)
         {
             return;
@@ -319,9 +330,19 @@ public partial class MapViewModel : LoadStateViewModel
 
     private async Task PlayCurrentTourPoiAsync()
     {
-        if (!IsTourRouteMode || CurrentPoiLocation is null)
+        if (!IsTourRouteMode || CurrentPoiLocation is null || !_tourPlaybackSessionService.IsActive)
         {
             return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(_tourPlaybackSessionService.CurrentLocationId))
+        {
+            var sessionLocation = NearbyLocations.FirstOrDefault(item =>
+                string.Equals(item.Id, _tourPlaybackSessionService.CurrentLocationId, StringComparison.OrdinalIgnoreCase));
+            if (sessionLocation != null)
+            {
+                CurrentPoiLocation = sessionLocation;
+            }
         }
 
         var (_, audioUrl) = await ResolveTourLocationAudioAsync(CurrentPoiLocation.Id);
@@ -343,7 +364,12 @@ public partial class MapViewModel : LoadStateViewModel
             return (string.Empty, string.Empty);
         }
 
-        var guide = location.AudioGuides.FirstOrDefault();
+        var guide = location.AudioGuides
+            .OrderByDescending(item => !string.IsNullOrWhiteSpace(item.CloudinaryAudioUrl))
+            .ThenBy(item => string.IsNullOrWhiteSpace(item.Title) ? 1 : 0)
+            .ThenBy(item => item.Title)
+            .ThenBy(item => item.Id)
+            .FirstOrDefault();
         if (guide == null)
         {
             return (string.Empty, string.Empty);
@@ -540,8 +566,6 @@ public partial class MapViewModel : LoadStateViewModel
                     routeLocations.Add(found);
                 }
             }
-
-            routeLocations = OptimizeTourLocationsByDistance(routeLocations);
 
             if (routeLocations.Count == 0)
             {
@@ -1035,17 +1059,11 @@ public partial class MapViewModel : LoadStateViewModel
         LoadMapData();
     }
 
+    /// <summary>
+    /// Calculate distance in km between two GPS coordinates using Haversine formula.
+    /// </summary>
     private static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
-    {
-        var R = 6371;
-        var dLat = (lat2 - lat1) * Math.PI / 180;
-        var dLon = (lon2 - lon1) * Math.PI / 180;
-        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                Math.Cos(lat1 * Math.PI / 180) * Math.Cos(lat2 * Math.PI / 180) *
-                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
-        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-        return R * c;
-    }
+        => DistanceCalculator.CalculateDistanceKm(lat1, lon1, lat2, lon2);
 
     [RelayCommand]
     private async Task LocationTappedAsync(NearbyLocation? location)
@@ -1174,52 +1192,6 @@ public partial class MapViewModel : LoadStateViewModel
         return (lat, lng);
     }
 
-    private static List<Models.Location> OptimizeTourLocationsByDistance(List<Models.Location> locations)
-    {
-        if (locations.Count <= 2)
-        {
-            return locations;
-        }
-
-        var valid = new List<Models.Location>();
-        var invalid = new List<Models.Location>();
-        foreach (var location in locations)
-        {
-            if (HasValidCoordinate(location.Latitude, location.Longitude))
-            {
-                valid.Add(location);
-            }
-            else
-            {
-                invalid.Add(location);
-            }
-        }
-
-        if (valid.Count <= 2)
-        {
-            valid.AddRange(invalid);
-            return valid;
-        }
-
-        var ordered = new List<Models.Location>();
-        var remaining = new List<Models.Location>(valid);
-        ordered.Add(remaining[0]);
-        remaining.RemoveAt(0);
-
-        while (remaining.Count > 0)
-        {
-            var current = ordered[^1];
-            var nearest = remaining
-                .OrderBy(candidate => CalculateDistance(current.Latitude, current.Longitude, candidate.Latitude, candidate.Longitude))
-                .First();
-
-            ordered.Add(nearest);
-            remaining.Remove(nearest);
-        }
-
-        ordered.AddRange(invalid);
-        return ordered;
-    }
 }
 
 public sealed class LocationPoint

@@ -4,10 +4,12 @@ using Plugin.Maui.Audio;
 
 /// <summary>
 /// Audio playback service backed by Plugin.Maui.Audio.
+/// Includes cooldown mechanism to prevent rapid successive plays (spam prevention).
 /// </summary>
 public class AudioService : IAudioService, IDisposable
 {
     private static readonly HttpClient HttpClient = new();
+    private const double DefaultPlayCooldownSeconds = 2.5;
 
     private readonly IAudioManager _audioManager;
     private readonly SemaphoreSlim _operationLock = new(1, 1);
@@ -22,12 +24,16 @@ public class AudioService : IAudioService, IDisposable
     private string? _currentAudioUrl;
     private IDispatcherTimer? _timer;
     private long _playRequestVersion;
+    private DateTime _lastPlayAttemptUtc = DateTime.MinValue;
+    private readonly TimeSpan _playCooldown = TimeSpan.FromSeconds(DefaultPlayCooldownSeconds);
 
     public TimeSpan CurrentPosition => _currentPosition;
     public TimeSpan Duration => _duration;
     public bool IsPlaying => _isPlaying;
     public double Volume => _volume;
     public string? CurrentAudioUrl => _currentAudioUrl;
+    public DateTime LastPlayAttemptUtc => _lastPlayAttemptUtc;
+    public TimeSpan PlayCooldown => _playCooldown;
 
     public event EventHandler<AudioStateChangedEventArgs>? StateChanged;
     public event EventHandler<AudioPositionChangedEventArgs>? PositionChanged;
@@ -45,6 +51,14 @@ public class AudioService : IAudioService, IDisposable
             return;
         }
 
+        // Apply cooldown: prevent rapid successive play attempts (spam prevention).
+        var timeSinceLastAttempt = DateTime.UtcNow - _lastPlayAttemptUtc;
+        if (timeSinceLastAttempt < _playCooldown)
+        {
+            return; // Cooldown active, ignore this play request.
+        }
+
+        _lastPlayAttemptUtc = DateTime.UtcNow;
         var requestVersion = Interlocked.Increment(ref _playRequestVersion);
         await _operationLock.WaitAsync();
 

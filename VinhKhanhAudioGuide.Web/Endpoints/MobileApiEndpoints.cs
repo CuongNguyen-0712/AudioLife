@@ -15,6 +15,369 @@ public static class MobileApiEndpoints
 
         group.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
+        group.MapGet("/payment/packages", async (AppDbContext db) =>
+        {
+            var packages = await db.PaymentPackages
+                .AsNoTracking()
+                .OrderBy(item => item.Price)
+                .Select(item => new MobilePaymentPackageDto
+                {
+                    Id = item.Id,
+                    Name = item.Name,
+                    Description = item.Description,
+                    Price = item.Price,
+                    Currency = item.Currency,
+                    DurationDays = item.DurationDays,
+                    IsActive = item.IsActive,
+                    CreatedAtUtc = item.CreatedAtUtc
+                })
+                .ToListAsync();
+
+            return Results.Ok(packages);
+        });
+
+        group.MapPost("/session/scan", async (MobileSessionScanRequest request, AppDbContext db) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.DeviceId))
+            {
+                return Results.BadRequest(new MobileSessionScanResponse
+                {
+                    Success = false,
+                    Message = "DeviceId là bắt buộc.",
+                    UserAppId = string.Empty,
+                    SessionToken = request.SessionToken ?? string.Empty,
+                    RefreshToken = null,
+                    QrToken = request.QrToken,
+                    PackageId = request.PackageId,
+                    PaymentStatus = "Pending",
+                    ExpiresAtUtc = DateTime.UtcNow,
+                    LastValidatedAtUtc = DateTime.UtcNow
+                });
+            }
+
+            var nowUtc = DateTime.UtcNow;
+            var qrToken = string.IsNullOrWhiteSpace(request.QrToken) ? request.DeviceId : request.QrToken;
+            var user = await db.AppUsers.FirstOrDefaultAsync(item => item.QrCodeValue == qrToken);
+            if (user is null)
+            {
+                user = new AppUser
+                {
+                    QrCodeValue = qrToken,
+                    DisplayName = qrToken,
+                    Status = "Active",
+                    CreatedAtUtc = nowUtc,
+                    LastSeenAtUtc = nowUtc
+                };
+
+                db.AppUsers.Add(user);
+                await db.SaveChangesAsync();
+            }
+            else
+            {
+                user.LastSeenAtUtc = nowUtc;
+            }
+
+            var sessionToken = string.IsNullOrWhiteSpace(request.SessionToken)
+                ? Guid.NewGuid().ToString("N")
+                : request.SessionToken;
+
+            var session = await db.UserAppSessions
+                .FirstOrDefaultAsync(item => item.TokenValue == sessionToken || (item.UserId == user.Id && item.DeviceId == request.DeviceId));
+
+            if (session is null)
+            {
+                session = new UserAppSession
+                {
+                    UserId = user.Id,
+                    DeviceId = request.DeviceId,
+                    TokenValue = sessionToken,
+                    RefreshToken = request.RefreshToken,
+                    IssuedAtUtc = nowUtc,
+                    ExpiresAtUtc = nowUtc.AddMinutes(30),
+                    LastValidatedAtUtc = nowUtc,
+                    IsActive = true,
+                    RevokedAtUtc = null
+                };
+
+                db.UserAppSessions.Add(session);
+            }
+            else
+            {
+                session.DeviceId = request.DeviceId;
+                session.TokenValue = sessionToken;
+                session.RefreshToken = request.RefreshToken;
+                session.LastValidatedAtUtc = nowUtc;
+                session.ExpiresAtUtc = nowUtc.AddMinutes(30);
+                session.IsActive = true;
+                session.RevokedAtUtc = null;
+            }
+
+            await db.SaveChangesAsync();
+
+            return Results.Ok(new MobileSessionScanResponse
+            {
+                Success = true,
+                Message = "Đã lưu phiên quét QR.",
+                UserAppId = user.Id.ToString(),
+                SessionToken = session.TokenValue,
+                RefreshToken = session.RefreshToken,
+                QrToken = qrToken,
+                PackageId = request.PackageId,
+                PaymentStatus = "Pending",
+                ExpiresAtUtc = session.ExpiresAtUtc,
+                LastValidatedAtUtc = nowUtc
+            });
+        });
+
+        group.MapPost("/payment/complete", async (MobilePaymentCompletionRequest request, AppDbContext db) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.DeviceId) || string.IsNullOrWhiteSpace(request.PackageId))
+            {
+                return Results.BadRequest(new MobilePaymentCompletionResponse
+                {
+                    Success = false,
+                    Message = "DeviceId và PackageId là bắt buộc.",
+                    UserAppId = string.Empty,
+                    SessionToken = request.SessionToken ?? string.Empty,
+                    RefreshToken = request.RefreshToken,
+                    PackageId = request.PackageId,
+                    PaymentStatus = request.PaymentStatus,
+                    PaymentReference = request.PaymentReference,
+                    ExpiresAtUtc = DateTime.UtcNow,
+                    LastValidatedAtUtc = DateTime.UtcNow
+                });
+            }
+
+            var package = await db.PaymentPackages.FirstOrDefaultAsync(item => item.Id == request.PackageId && item.IsActive);
+            if (package is null)
+            {
+                return Results.NotFound(new MobilePaymentCompletionResponse
+                {
+                    Success = false,
+                    Message = "Gói thanh toán không tồn tại.",
+                    UserAppId = string.Empty,
+                    SessionToken = request.SessionToken ?? string.Empty,
+                    RefreshToken = request.RefreshToken,
+                    PackageId = request.PackageId,
+                    PaymentStatus = request.PaymentStatus,
+                    PaymentReference = request.PaymentReference,
+                    ExpiresAtUtc = DateTime.UtcNow,
+                    LastValidatedAtUtc = DateTime.UtcNow
+                });
+            }
+
+            var nowUtc = DateTime.UtcNow;
+            var qrToken = ResolveQrToken(request);
+            var user = await db.AppUsers.FirstOrDefaultAsync(item => item.QrCodeValue == qrToken);
+            if (user is null)
+            {
+                user = new AppUser
+                {
+                    QrCodeValue = qrToken,
+                    DisplayName = request.UserAppId ?? qrToken,
+                    Status = "Active",
+                    CreatedAtUtc = nowUtc,
+                    LastSeenAtUtc = nowUtc
+                };
+
+                db.AppUsers.Add(user);
+                await db.SaveChangesAsync();
+            }
+
+            user.LastSeenAtUtc = nowUtc;
+
+            var isPaid = IsSuccessfulPaymentStatus(request.PaymentStatus);
+            var subscription = await db.UserSubscriptions
+                .Where(item => item.UserId == user.Id && item.PackageId == package.Id)
+                .OrderByDescending(item => item.PurchasedAtUtc)
+                .FirstOrDefaultAsync();
+
+            if (subscription is null)
+            {
+                subscription = new UserSubscription
+                {
+                    UserId = user.Id,
+                    PackageId = package.Id
+                };
+
+                db.UserSubscriptions.Add(subscription);
+            }
+
+            subscription.Status = isPaid ? "Active" : request.PaymentStatus;
+            subscription.PurchasedAtUtc = nowUtc;
+            subscription.StartsAtUtc = isPaid ? nowUtc : null;
+            subscription.ExpiresAtUtc = isPaid ? nowUtc.AddDays(Math.Max(package.DurationDays, 1)) : null;
+            subscription.PaymentReference = request.PaymentReference;
+            subscription.LastVerifiedAtUtc = nowUtc;
+
+            var sessionToken = string.IsNullOrWhiteSpace(request.SessionToken)
+                ? Guid.NewGuid().ToString("N")
+                : request.SessionToken;
+
+            var session = await db.UserAppSessions.FirstOrDefaultAsync(item => item.TokenValue == sessionToken || (item.UserId == user.Id && item.DeviceId == request.DeviceId));
+            if (session is null)
+            {
+                session = new UserAppSession
+                {
+                    UserId = user.Id,
+                    DeviceId = request.DeviceId,
+                    TokenValue = sessionToken,
+                    RefreshToken = request.RefreshToken,
+                    IssuedAtUtc = nowUtc,
+                    ExpiresAtUtc = isPaid ? nowUtc.AddDays(Math.Max(package.DurationDays, 1)) : nowUtc.AddMinutes(5),
+                    LastValidatedAtUtc = nowUtc,
+                    IsActive = isPaid
+                };
+
+                db.UserAppSessions.Add(session);
+            }
+            else
+            {
+                session.DeviceId = request.DeviceId;
+                session.TokenValue = sessionToken;
+                session.RefreshToken = request.RefreshToken;
+                session.LastValidatedAtUtc = nowUtc;
+                session.IsActive = isPaid;
+                session.RevokedAtUtc = isPaid ? null : nowUtc;
+                session.ExpiresAtUtc = isPaid ? nowUtc.AddDays(Math.Max(package.DurationDays, 1)) : nowUtc.AddMinutes(5);
+            }
+
+            await db.SaveChangesAsync();
+
+            return Results.Ok(new MobilePaymentCompletionResponse
+            {
+                Success = isPaid,
+                Message = isPaid ? "Thanh toán đã được xác nhận." : "Thanh toán đang chờ xử lý.",
+                UserAppId = qrToken,
+                SessionToken = sessionToken,
+                RefreshToken = request.RefreshToken,
+                PackageId = package.Id,
+                PaymentStatus = subscription.Status,
+                PaymentReference = request.PaymentReference,
+                ExpiresAtUtc = session.ExpiresAtUtc,
+                LastValidatedAtUtc = nowUtc
+            });
+        });
+
+        group.MapGet("/session/validate", async (string sessionToken, string deviceId, AppDbContext db) =>
+        {
+            if (string.IsNullOrWhiteSpace(sessionToken) || string.IsNullOrWhiteSpace(deviceId))
+            {
+                return Results.Ok(new SessionValidationResult
+                {
+                    IsValid = false,
+                    Message = "Thiếu token phiên hoặc deviceId.",
+                    UserAppId = string.Empty,
+                    SessionToken = sessionToken ?? string.Empty,
+                    RefreshToken = null,
+                    PackageId = null,
+                    PaymentStatus = null,
+                    ExpiresAtUtc = DateTime.UtcNow,
+                    LastValidatedAtUtc = DateTime.UtcNow
+                });
+            }
+
+            var session = await db.UserAppSessions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(item => item.TokenValue == sessionToken && item.DeviceId == deviceId);
+
+            if (session is null || !session.IsActive || session.RevokedAtUtc is not null || session.ExpiresAtUtc <= DateTime.UtcNow)
+            {
+                return Results.Ok(new SessionValidationResult
+                {
+                    IsValid = false,
+                    Message = "Phiên không hợp lệ hoặc đã hết hạn.",
+                    UserAppId = string.Empty,
+                    SessionToken = sessionToken,
+                    RefreshToken = null,
+                    PackageId = null,
+                    PaymentStatus = null,
+                    ExpiresAtUtc = session?.ExpiresAtUtc ?? DateTime.UtcNow,
+                    LastValidatedAtUtc = DateTime.UtcNow
+                });
+            }
+
+            var activeSubscription = await db.UserSubscriptions
+                .AsNoTracking()
+                .Where(item => item.UserId == session.UserId && item.Status == "Active")
+                .OrderByDescending(item => item.ExpiresAtUtc)
+                .FirstOrDefaultAsync();
+
+            return Results.Ok(new SessionValidationResult
+            {
+                IsValid = activeSubscription is not null,
+                Message = activeSubscription is null ? "Không tìm thấy gói hoạt động." : "Phiên hợp lệ.",
+                UserAppId = session.UserId.ToString(),
+                SessionToken = session.TokenValue,
+                RefreshToken = session.RefreshToken,
+                PackageId = activeSubscription?.PackageId,
+                PaymentStatus = activeSubscription?.Status,
+                ExpiresAtUtc = session.ExpiresAtUtc,
+                LastValidatedAtUtc = DateTime.UtcNow
+            });
+        });
+
+        group.MapGet("/session/by-device", async (string deviceId, AppDbContext db) =>
+        {
+            if (string.IsNullOrWhiteSpace(deviceId))
+            {
+                return Results.Ok(new DeviceSessionCheckResult
+                {
+                    HasSession = false,
+                    Message = "Thiếu deviceId.",
+                    UserAppId = string.Empty,
+                    SessionToken = string.Empty,
+                    RefreshToken = null,
+                    PackageId = null,
+                    PaymentStatus = null,
+                    ExpiresAtUtc = DateTime.UtcNow,
+                    LastValidatedAtUtc = DateTime.UtcNow
+                });
+            }
+
+            var nowUtc = DateTime.UtcNow;
+            var session = await db.UserAppSessions
+                .AsNoTracking()
+                .Where(item => item.DeviceId == deviceId && item.IsActive && item.RevokedAtUtc == null)
+                .OrderByDescending(item => item.LastValidatedAtUtc ?? item.IssuedAtUtc)
+                .FirstOrDefaultAsync();
+
+            if (session is null || session.ExpiresAtUtc <= nowUtc)
+            {
+                return Results.Ok(new DeviceSessionCheckResult
+                {
+                    HasSession = false,
+                    Message = "Không tìm thấy phiên hợp lệ cho thiết bị.",
+                    UserAppId = string.Empty,
+                    SessionToken = string.Empty,
+                    RefreshToken = null,
+                    PackageId = null,
+                    PaymentStatus = null,
+                    ExpiresAtUtc = session?.ExpiresAtUtc ?? nowUtc,
+                    LastValidatedAtUtc = nowUtc
+                });
+            }
+
+            var activeSubscription = await db.UserSubscriptions
+                .AsNoTracking()
+                .Where(item => item.UserId == session.UserId && item.Status == "Active")
+                .OrderByDescending(item => item.ExpiresAtUtc)
+                .FirstOrDefaultAsync();
+
+            return Results.Ok(new DeviceSessionCheckResult
+            {
+                HasSession = true,
+                Message = "Đã tìm thấy phiên thiết bị.",
+                UserAppId = session.UserId.ToString(),
+                SessionToken = session.TokenValue,
+                RefreshToken = session.RefreshToken,
+                PackageId = activeSubscription?.PackageId,
+                PaymentStatus = activeSubscription?.Status,
+                ExpiresAtUtc = session.ExpiresAtUtc,
+                LastValidatedAtUtc = session.LastValidatedAtUtc ?? nowUtc
+            });
+        });
+
         group.MapGet("/categories", async (AppDbContext db) =>
         {
             var categories = await db.Categories
@@ -95,7 +458,7 @@ public static class MobileApiEndpoints
 
         group.MapGet("/locations/nearby", async (double latitude, double longitude, double? radiusKm, string? language, AppDbContext db) =>
         {
-            var radius = radiusKm.GetValueOrDefault(0.1);
+            var userScanRadiusKm = radiusKm.GetValueOrDefault(0.1);
             var locations = await db.Locations
                 .AsNoTracking()
                 .Include(l => l.Category)
@@ -106,10 +469,13 @@ public static class MobileApiEndpoints
                 .Select(l => new
                 {
                     Location = l,
-                    DistanceKm = CalculateDistanceKm(latitude, longitude, l.Latitude, l.Longitude)
+                    DistanceKm = CalculateDistanceKm(latitude, longitude, l.Latitude, l.Longitude),
+                    PoiRadiusKm = Math.Max(l.DetectionRadiusMeters, 0) / 1000d
                 })
-                .Where(x => x.DistanceKm <= radius)
+                .Where(x => x.DistanceKm <= userScanRadiusKm + x.PoiRadiusKm)
                 .OrderBy(x => x.DistanceKm)
+                .ThenByDescending(x => x.Location.Priority)
+                .ThenBy(x => x.Location.Id)
                 .Select(x => ToLocationDto(x.Location, includeAudioGuides: true, language))
                 .ToList();
 
@@ -293,6 +659,8 @@ public static class MobileApiEndpoints
             Address = location.Address,
             Latitude = location.Latitude,
             Longitude = location.Longitude,
+            Priority = location.Priority,
+            DetectionRadiusMeters = location.DetectionRadiusMeters,
             Duration = location.Duration,
             CategoryId = location.CategoryId,
             CategoryName = location.Category?.Name ?? string.Empty,
@@ -423,6 +791,29 @@ public static class MobileApiEndpoints
 
     private static double ToRadians(double angle) => angle * Math.PI / 180.0;
 
+    private static bool IsSuccessfulPaymentStatus(string? status)
+    {
+        return string.Equals(status, "Paid", StringComparison.OrdinalIgnoreCase)
+               || string.Equals(status, "Success", StringComparison.OrdinalIgnoreCase)
+               || string.Equals(status, "Completed", StringComparison.OrdinalIgnoreCase)
+               || string.Equals(status, "Active", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string ResolveQrToken(MobilePaymentCompletionRequest request)
+    {
+        if (!string.IsNullOrWhiteSpace(request.QrToken))
+        {
+            return request.QrToken;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.UserAppId))
+        {
+            return request.UserAppId;
+        }
+
+        return request.DeviceId;
+    }
+
     private sealed class MobileCategoryDto
     {
         public string Id { get; set; } = string.Empty;
@@ -441,6 +832,8 @@ public static class MobileApiEndpoints
         public string Address { get; set; } = string.Empty;
         public double Latitude { get; set; }
         public double Longitude { get; set; }
+        public int Priority { get; set; }
+        public double DetectionRadiusMeters { get; set; }
         public int Duration { get; set; }
         public string CategoryId { get; set; } = string.Empty;
         public string CategoryName { get; set; } = string.Empty;
@@ -503,6 +896,99 @@ public static class MobileApiEndpoints
         public int ListenedSeconds { get; set; }
         public bool IsCompleted { get; set; }
         public DateTime LastListenedAt { get; set; }
+    }
+
+    private sealed class MobilePaymentPackageDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public decimal Price { get; set; }
+        public string Currency { get; set; } = string.Empty;
+        public int DurationDays { get; set; }
+        public bool IsActive { get; set; }
+        public DateTime CreatedAtUtc { get; set; }
+    }
+
+    private sealed class MobileSessionScanRequest
+    {
+        public string DeviceId { get; set; } = string.Empty;
+        public string? SessionToken { get; set; }
+        public string? RefreshToken { get; set; }
+        public string? LocationId { get; set; }
+        public string? AudioGuideId { get; set; }
+        public string? AudioUrl { get; set; }
+        public string? QrToken { get; set; }
+        public string? PackageId { get; set; }
+    }
+
+    private sealed class MobileSessionScanResponse
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public string UserAppId { get; set; } = string.Empty;
+        public string SessionToken { get; set; } = string.Empty;
+        public string? RefreshToken { get; set; }
+        public string? QrToken { get; set; }
+        public string? PackageId { get; set; }
+        public string? PaymentStatus { get; set; }
+        public DateTime ExpiresAtUtc { get; set; }
+        public DateTime LastValidatedAtUtc { get; set; }
+    }
+
+    private sealed class MobilePaymentCompletionRequest
+    {
+        public string DeviceId { get; set; } = string.Empty;
+        public string SessionToken { get; set; } = string.Empty;
+        public string? RefreshToken { get; set; }
+        public string? QrToken { get; set; }
+        public string? UserAppId { get; set; }
+        public string? LocationId { get; set; }
+        public string? AudioGuideId { get; set; }
+        public string? AudioUrl { get; set; }
+        public string PackageId { get; set; } = string.Empty;
+        public string PaymentStatus { get; set; } = string.Empty;
+        public string? PaymentReference { get; set; }
+    }
+
+    private sealed class MobilePaymentCompletionResponse
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public string UserAppId { get; set; } = string.Empty;
+        public string SessionToken { get; set; } = string.Empty;
+        public string? RefreshToken { get; set; }
+        public string PackageId { get; set; } = string.Empty;
+        public string PaymentStatus { get; set; } = string.Empty;
+        public string? PaymentReference { get; set; }
+        public DateTime ExpiresAtUtc { get; set; }
+        public DateTime LastValidatedAtUtc { get; set; }
+    }
+
+    private sealed class SessionValidationResult
+    {
+        public bool IsValid { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public string UserAppId { get; set; } = string.Empty;
+        public string SessionToken { get; set; } = string.Empty;
+        public string? RefreshToken { get; set; }
+        public string? PackageId { get; set; }
+        public string? PaymentStatus { get; set; }
+        public DateTime ExpiresAtUtc { get; set; }
+        public DateTime LastValidatedAtUtc { get; set; }
+    }
+
+    private sealed class DeviceSessionCheckResult
+    {
+        public bool HasSession { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public string UserAppId { get; set; } = string.Empty;
+        public string SessionToken { get; set; } = string.Empty;
+        public string? RefreshToken { get; set; }
+        public string? PackageId { get; set; }
+        public string? PaymentStatus { get; set; }
+        public DateTime ExpiresAtUtc { get; set; }
+        public DateTime LastValidatedAtUtc { get; set; }
     }
 
     private sealed class MobileAddListeningHistoryRequest

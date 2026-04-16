@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Storage;
 using VinhKhanhAudioGuide.Mobile.Services;
 using ZXing.Net.Maui;
-using System.IO;
 using SkiaSharp;
 using ZXing.SkiaSharp;
 using ZXing.Common;
@@ -15,14 +14,19 @@ public partial class QrScannerPage : ContentPage
 	private bool _isHandlingResult;
 	private bool _isPageActive;
 	private bool _scannerConfigured;
-	private readonly string _seedQrDeepLink = QrCodePayloadService.BuildAudioDeepLink("loc_001", "ag_001_1");
+	private static readonly string[] SampleQrImageCandidates =
+	{
+		"qr_code.png",
+		"Resources/Raw/qr_code.png",
+		"Resources/Images/qr_code.png",
+		"qr_code.scale-100.png"
+	};
 	private readonly ILocalizationService _localizationService;
 
 	public QrScannerPage()
 	{
 		InitializeComponent();
 		_localizationService = ResolveLocalizationService();
-		LoadSeedQrPreview();
 	}
 
 	protected override async void OnAppearing()
@@ -102,19 +106,6 @@ public partial class QrScannerPage : ContentPage
 		catch
 		{
 			// Ignore teardown errors when page is leaving.
-		}
-	}
-
-	private void LoadSeedQrPreview()
-	{
-		try
-		{
-			var qrBytes = QrCodePayloadService.GenerateQrCodePng(_seedQrDeepLink, 8);
-			SeedQrImage.Source = ImageSource.FromStream(() => new MemoryStream(qrBytes));
-		}
-		catch
-		{
-			// Keep scanner usable even if preview generation fails.
 		}
 	}
 
@@ -260,16 +251,62 @@ public partial class QrScannerPage : ContentPage
 		}
 	}
 
-	private async void OnUseSeedQrClicked(object sender, EventArgs e)
+	private async void OnUseSampleQrCodeClicked(object sender, EventArgs e)
 	{
 		if (_isHandlingResult)
 		{
 			return;
 		}
 
-		_isHandlingResult = true;
-		StopScanner();
-		await HandleScannedValueAsync(_seedQrDeepLink);
+		try
+		{
+			await using var input = await OpenSampleQrImageStreamAsync();
+			using var memory = new MemoryStream();
+			await input.CopyToAsync(memory);
+			var imageBytes = memory.ToArray();
+
+			PickedQrImage.Source = ImageSource.FromStream(() => new MemoryStream(imageBytes));
+			PickedQrFrame.IsVisible = true;
+
+			var qrText = TryDecodeQrTextFromImage(imageBytes);
+			if (string.IsNullOrWhiteSpace(qrText) || !QrCodePayloadService.TryParseAudioPayload(qrText, out _))
+			{
+				qrText = BuildFallbackSampleDeepLink();
+				StatusLabel.Text = "QR mẫu chưa đúng định dạng, đang dùng payload mẫu nội bộ...";
+			}
+
+			_isHandlingResult = true;
+			StopScanner();
+			await HandleScannedValueAsync(qrText);
+		}
+		catch
+		{
+			StatusLabel.Text = _localizationService.GetString("Qr_StatusImageReadFailed");
+		}
+	}
+
+	private static async Task<Stream> OpenSampleQrImageStreamAsync()
+	{
+		foreach (var candidate in SampleQrImageCandidates)
+		{
+			try
+			{
+				return await FileSystem.OpenAppPackageFileAsync(candidate);
+			}
+			catch
+			{
+				// Try next candidate path.
+			}
+		}
+
+		throw new FileNotFoundException("Sample QR image not found in app package.");
+	}
+
+	private static string BuildFallbackSampleDeepLink()
+	{
+		return QrCodePayloadService.BuildAudioDeepLink(
+			locationId: "vk-sample-location",
+			identityToken: "sample-token");
 	}
 
 	private void OnBackToIntroClicked(object sender, EventArgs e)

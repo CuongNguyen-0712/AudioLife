@@ -15,6 +15,8 @@ public interface ILocalizationService
     string GetString(string key, CultureInfo? culture = null);
 
     void SetCulture(string cultureName);
+
+    void ResetToDefaultCulture();
 }
 
 public sealed record SupportedLanguage(string CultureName, string DisplayName);

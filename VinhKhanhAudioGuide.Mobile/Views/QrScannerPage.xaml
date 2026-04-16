@@ -32,7 +32,7 @@
 					    BarcodesDetected="OnBarcodesDetected" />
 
 	 <Grid Padding="24,48,24,28"
-		RowDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto"
+		RowDefinitions="Auto,*,Auto,Auto,Auto,Auto"
 		RowSpacing="10">
 	     <Grid Grid.Row="0" ColumnDefinitions="*">
 		  <Border
@@ -93,31 +93,6 @@
 		     HorizontalTextAlignment="Center" />
 
 	     <Frame Grid.Row="3"
-		     BackgroundColor="#1AFFFFFF"
-		     CornerRadius="14"
-		     HasShadow="False"
-		     Padding="12,10">
-		  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-		      <Image x:Name="SeedQrImage"
-			      HeightRequest="84"
-			      WidthRequest="84"
-			      Aspect="AspectFill"/>
-
-		      <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
-			   <Label Text="{ext:Translate Qr_SeedTitle}"
-				   TextColor="White"
-				   FontFamily="RobotoCondensedSemiBold"
-				   FontSize="14" />
-			   <Label Text="{ext:Translate Qr_SeedSubtitle}"
-				   TextColor="#D9FFFFFF"
-				   FontFamily="RobotoCondensedRegular"
-				   FontSize="12"
-				   LineBreakMode="WordWrap" />
-		      </VerticalStackLayout>
-		  </Grid>
-	     </Frame>
-
-	     <Frame Grid.Row="4"
 		     x:Name="PickedQrFrame"
 		     IsVisible="False"
 		     BackgroundColor="#1AFFFFFF"
@@ -144,13 +119,7 @@
 		  </Grid>
 	     </Frame>
 
-	     <Button Grid.Row="5"
-		      Margin="0,4,0,0"
-		      Text="{ext:Translate Qr_UseSeedButton}"
-		      Style="{StaticResource PrimaryButton}"
-		      Clicked="OnUseSeedQrClicked" />
-
-	     <Grid Grid.Row="6" ColumnDefinitions="*,*" ColumnSpacing="10">
+	     <Grid Grid.Row="4" ColumnDefinitions="*,*" ColumnSpacing="10">
 		  <Button Grid.Column="0"
 			  Margin="0,4,0,0"
 			  Text="{ext:Translate Qr_PickImageButton}"
@@ -163,6 +132,12 @@
 			  Style="{StaticResource SecondaryButton}"
 			  Clicked="OnRescanClicked" />
 	     </Grid>
+
+	     <Button Grid.Row="5"
+		      Margin="0,4,0,0"
+		      Text="Sử dụng QR mẫu"
+		      Style="{StaticResource PrimaryButton}"
+		      Clicked="OnUseSampleQrCodeClicked" />
 	 </Grid>
     </Grid>
 

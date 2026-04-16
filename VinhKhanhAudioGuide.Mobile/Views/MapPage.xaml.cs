@@ -17,6 +17,8 @@ public partial class MapPage : ContentPage, IQueryAttributable
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        // Note: ApplyQueryAttributes should already be called by the framework before OnAppearing,
+        // but we defensively ensure the viewmodel's async initialization runs after query params are applied.
         await _viewModel.OnAppearingAsync();
     }
 

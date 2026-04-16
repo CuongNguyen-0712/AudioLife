@@ -35,6 +35,12 @@ public sealed class LocalizationService : ILocalizationService
         CultureInfo.DefaultThreadCurrentUICulture = culture;
     }
 
+    public static void ClearPersistedCulture()
+    {
+        Preferences.Default.Remove(AppLanguageKey);
+        Preferences.Default.Remove(LegacyLanguageKey);
+    }
+
     public static void ApplyDefaultVietnamese(bool persist = true)
     {
         var culture = CultureInfo.GetCultureInfo(DefaultCultureName);
@@ -54,8 +60,7 @@ public sealed class LocalizationService : ILocalizationService
             "VinhKhanhAudioGuide.Mobile.Resources.Localization.AppStrings",
             typeof(LocalizationService).GetTypeInfo().Assembly);
 
-        var savedCulture = GetPersistedOrDefaultCulture();
-        SetCultureInternal(savedCulture, persist: false);
+        SetCultureInternal(DefaultCultureName, persist: false);
     }
 
     public CultureInfo CurrentCulture => _currentCulture;
@@ -87,12 +92,28 @@ public sealed class LocalizationService : ILocalizationService
         SetCultureInternal(cultureName, persist: true);
     }
 
+    public void ResetToDefaultCulture()
+    {
+        SetCultureInternal(DefaultCultureName, persist: false);
+    }
+
     private void SetCultureInternal(string cultureName, bool persist)
     {
         var normalizedCulture = NormalizeCulture(cultureName);
         var culture = CultureInfo.GetCultureInfo(normalizedCulture);
 
-        if (string.Equals(_currentCulture.Name, culture.Name, StringComparison.OrdinalIgnoreCase) && persist)
+        var isSameCulture = string.Equals(_currentCulture.Name, culture.Name, StringComparison.OrdinalIgnoreCase);
+
+        if (persist)
+        {
+            Preferences.Default.Set(AppLanguageKey, culture.Name);
+            var displayName = SupportedLanguages.FirstOrDefault(language =>
+                string.Equals(language.CultureName, culture.Name, StringComparison.OrdinalIgnoreCase))?.DisplayName
+                ?? SupportedLanguages[0].DisplayName;
+            Preferences.Default.Set(LegacyLanguageKey, displayName);
+        }
+
+        if (isSameCulture)
         {
             return;
         }
@@ -100,12 +121,6 @@ public sealed class LocalizationService : ILocalizationService
         _currentCulture = culture;
         CultureInfo.DefaultThreadCurrentCulture = culture;
         CultureInfo.DefaultThreadCurrentUICulture = culture;
-
-        if (persist)
-        {
-            Preferences.Default.Set(AppLanguageKey, culture.Name);
-            Preferences.Default.Set(LegacyLanguageKey, GetCurrentLanguageDisplayName());
-        }
 
         CultureChanged?.Invoke(this, EventArgs.Empty);
     }

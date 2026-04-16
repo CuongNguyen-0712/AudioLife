@@ -25,6 +25,10 @@ public class Location
     public double Latitude { get; set; }
     public double Longitude { get; set; }
 
+    public int Priority { get; set; } = 100;
+
+    public double DetectionRadiusMeters { get; set; } = 80;
+
     public int Duration { get; set; }
 
     [MaxLength(50)]

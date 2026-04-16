@@ -141,6 +141,7 @@
   <data name="Footer_CheckGps" xml:space="preserve"><value>Please check GPS connectivity</value></data>
   <data name="Footer_NoPoi" xml:space="preserve"><value>Standby: No POI</value></data>
   <data name="Footer_NoPoiData" xml:space="preserve"><value>No location data available for playback</value></data>
+  <data name="Footer_NoNearbyPoiAutoPlay" xml:space="preserve"><value>Auto playback cannot start yet: no POI is currently within the scan radius</value></data>
   <data name="Footer_Waiting" xml:space="preserve"><value>Waiting</value></data>
   <data name="Footer_FindNearestError" xml:space="preserve"><value>Standby: Failed to find nearest POI</value></data>
   <data name="Footer_PleaseRetry" xml:space="preserve"><value>Please try again</value></data>

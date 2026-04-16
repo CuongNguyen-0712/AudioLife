@@ -139,6 +139,8 @@ internal static class ContentLocalizationMapper
             Address = source.Address,
             Latitude = source.Latitude,
             Longitude = source.Longitude,
+            Priority = source.Priority,
+            DetectionRadiusMeters = source.DetectionRadiusMeters,
             Duration = source.Duration,
             CategoryId = source.CategoryId,
             CategoryName = source.CategoryName,

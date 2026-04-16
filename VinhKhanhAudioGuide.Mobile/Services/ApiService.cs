@@ -19,6 +19,7 @@ public class ApiService : IApiService
     private readonly List<Location> _locations;
     private readonly List<Category> _categories;
     private readonly List<Tour> _tours;
+        private readonly List<PaymentPackage> _paymentPackages;
     private readonly HashSet<string> _favoriteLocationIds;
     private readonly List<ListeningHistory> _history;
     private readonly List<DownloadedAudio> _downloads;
@@ -32,6 +33,7 @@ public class ApiService : IApiService
         _locations = SampleData.GetLocations();
         _categories = SampleData.GetCategories();
         _tours = SampleData.GetTours();
+            _paymentPackages = CreateDefaultPaymentPackages();
         _favoriteLocationIds = CreateDefaultFavoriteLocationIds();
         _history = CreateDefaultHistory();
         _downloads = new List<DownloadedAudio>();
@@ -76,11 +78,19 @@ public class ApiService : IApiService
     public Task<List<Location>> GetNearbyLocationsAsync(double latitude, double longitude, double radiusKm = 0.1)
     {
         var localizedLocations = ContentLocalizationMapper.LocalizeLocations(_locations, GetCurrentLanguageCode(), _favoriteLocationIds);
-        var nearby = localizedLocations.Where(l =>
-        {
-            var distance = CalculateDistance(latitude, longitude, l.Latitude, l.Longitude);
-            return distance <= radiusKm;
-        }).OrderBy(l => CalculateDistance(latitude, longitude, l.Latitude, l.Longitude)).ToList();
+        var nearby = localizedLocations
+            .Select(location => new
+            {
+                Location = location,
+                DistanceKm = CalculateDistance(latitude, longitude, location.Latitude, location.Longitude),
+                PoiRadiusKm = Math.Max(location.DetectionRadiusMeters, 0) / 1000d
+            })
+            .Where(item => item.DistanceKm <= radiusKm + item.PoiRadiusKm)
+            .OrderBy(item => item.DistanceKm)
+            .ThenByDescending(item => item.Location.Priority)
+            .ThenBy(item => item.Location.Id, StringComparer.OrdinalIgnoreCase)
+            .Select(item => item.Location)
+            .ToList();
 
         return Task.FromResult(nearby);
     }
@@ -116,6 +126,76 @@ public class ApiService : IApiService
         var localized = ContentLocalizationMapper.LocalizeTours(_tours.Where(t => t.IsFeatured), GetCurrentLanguageCode());
         return Task.FromResult(localized);
     }
+
+        // ──────── Payments / Session ────────
+
+        public Task<List<PaymentPackage>> GetPaymentPackagesAsync()
+        {
+            return Task.FromResult(_paymentPackages
+                .Where(item => item.IsActive)
+                .OrderBy(item => item.Price)
+                .ToList());
+        }
+
+        public Task<DeviceSessionCheckResult?> CheckDeviceSessionAsync(string deviceId)
+        {
+            return Task.FromResult<DeviceSessionCheckResult?>(new DeviceSessionCheckResult(
+                false,
+                "Chưa có phiên lưu trên server.",
+                string.Empty,
+                string.Empty,
+                null,
+                null,
+                null,
+                DateTime.UtcNow,
+                DateTime.UtcNow));
+        }
+
+        public Task<QrScanSyncResult?> SyncQrScanAsync(QrAudioPayload payload, string deviceId, string? sessionToken = null)
+        {
+            return Task.FromResult<QrScanSyncResult?>(new QrScanSyncResult(
+                false,
+                "Không thể đồng bộ quét QR vì đang ở chế độ offline/local. Vui lòng kết nối máy chủ.",
+                string.Empty,
+                sessionToken ?? string.Empty,
+                null,
+                payload.IdentityToken,
+                payload.PaymentPackageId,
+                "Pending",
+                DateTime.UtcNow,
+                DateTime.UtcNow));
+        }
+
+        public async Task<PaymentCompletionResult?> CompletePaymentAsync(PaymentCompletionRequest request)
+        {
+            await Task.Yield();
+
+            return new PaymentCompletionResult(
+                false,
+                "Không thể xác nhận thanh toán vì đang ở chế độ offline/local. Giao dịch chưa được ghi DB.",
+                string.Empty,
+                request.SessionToken,
+                request.RefreshToken,
+                request.PackageId,
+                request.PaymentStatus,
+                request.PaymentReference,
+                DateTime.UtcNow,
+                DateTime.UtcNow);
+        }
+
+        public Task<SessionValidationResult?> ValidateSessionAsync(string sessionToken, string deviceId)
+        {
+            return Task.FromResult<SessionValidationResult?>(new SessionValidationResult(
+                false,
+                "Không thể xác thực phiên vì đang ở chế độ offline/local. Vui lòng kết nối máy chủ.",
+                string.Empty,
+                sessionToken,
+                null,
+                null,
+                null,
+                DateTime.UtcNow,
+                DateTime.UtcNow));
+        }
 
     // ──────── Audio ────────
 
@@ -173,7 +253,8 @@ public class ApiService : IApiService
 
     private string GetCurrentLanguageCode()
     {
-        return ContentLocalizationMapper.ToLanguageCode(_localizationService.CurrentCulture.Name);
+        var persistedCulture = LocalizationService.GetPersistedOrDefaultCulture();
+        return ContentLocalizationMapper.ToLanguageCode(persistedCulture);
     }
 
     public async Task AddListeningHistoryAsync(string audioGuideId, string locationId, double progress)
@@ -390,17 +471,17 @@ public class ApiService : IApiService
 
     // ──────── Helpers ────────
 
+    /// <summary>
+    /// Calculate distance in km between two GPS coordinates using Haversine formula.
+    /// </summary>
     private static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+        => DistanceCalculator.CalculateDistanceKm(lat1, lon1, lat2, lon2);
+    private static List<PaymentPackage> CreateDefaultPaymentPackages()
     {
-        const double R = 6371; // km
-        var dLat = ToRad(lat2 - lat1);
-        var dLon = ToRad(lon2 - lon1);
-        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                Math.Cos(ToRad(lat1)) * Math.Cos(ToRad(lat2)) *
-                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
-        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-        return R * c;
+        return new List<PaymentPackage>
+        {
+            new("daily", "10.000đ/ngày", "Một ngày sử dụng. Phù hợp khi bạn muốn trải nghiệm nhanh trong một ngày, tối ưu cho khách ghé ngắn.", 10000m, "VND", 1, true, DateTime.UtcNow.AddDays(-30)),
+            new("full-tour", "29.000đ/full tour", "Một lần thanh toán. Mở khóa toàn bộ tour, phù hợp khi bạn muốn nghe trọn vẹn nội dung đã quét.", 29000m, "VND", 90, true, DateTime.UtcNow.AddDays(-30))
+        };
     }
-
-    private static double ToRad(double deg) => deg * Math.PI / 180.0;
 }

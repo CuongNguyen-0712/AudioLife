@@ -24,6 +24,13 @@ public interface IApiService
     Task<Tour?> GetTourByIdAsync(string tourId);
     Task<List<Tour>> GetFeaturedToursAsync();
 
+    // Payments / Session
+    Task<List<PaymentPackage>> GetPaymentPackagesAsync();
+    Task<DeviceSessionCheckResult?> CheckDeviceSessionAsync(string deviceId);
+    Task<QrScanSyncResult?> SyncQrScanAsync(QrAudioPayload payload, string deviceId, string? sessionToken = null);
+    Task<PaymentCompletionResult?> CompletePaymentAsync(PaymentCompletionRequest request);
+    Task<SessionValidationResult?> ValidateSessionAsync(string sessionToken, string deviceId);
+
     // Audio
     Task<List<AudioGuide>> GetAudioGuidesForLocationAsync(string locationId);
     Task<AudioGuide?> GetAudioGuideByIdAsync(string audioGuideId);
