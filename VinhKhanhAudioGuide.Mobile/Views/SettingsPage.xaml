@@ -8,117 +8,288 @@
              Title="{ext:Translate Settings_PageTitle}"
              BackgroundColor="{StaticResource Surface}">
 
+    <ContentPage.Resources>
+        <Style x:Key="SettingsSwitchStyle" TargetType="Switch">
+            <Setter Property="OnColor" Value="{StaticResource Primary}" />
+            <Setter Property="ThumbColor" Value="{StaticResource SecondaryContainer}" />
+        </Style>
+    </ContentPage.Resources>
+
     <Grid>
         <ScrollView IsVisible="{Binding HasData}">
-            <VerticalStackLayout Padding="16" Spacing="14">
+            <VerticalStackLayout Padding="16,12,16,24" Spacing="16">
 
-            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                <Button Grid.Column="0" Text="{ext:Translate Settings_Favorites}" FontSize="12" Command="{Binding GoToFavoritesCommand}" Style="{StaticResource OutlineButton}" />
-                <Button Grid.Column="1" Text="{ext:Translate Settings_Downloads}" FontSize="12" Command="{Binding GoToDownloadsCommand}" Style="{StaticResource OutlineButton}" />
-                <Button Grid.Column="2" Text="{ext:Translate Settings_History}" FontSize="12" Command="{Binding GoToHistoryCommand}" Style="{StaticResource OutlineButton}" />
-            </Grid>
+                <Frame Style="{StaticResource SurfaceHighlightFrame}" Padding="18" BackgroundColor="{StaticResource SurfaceContainerLow}">
+                    <VerticalStackLayout Spacing="14">
+                        <Grid ColumnDefinitions="64,*" ColumnSpacing="14">
+                            <Frame HeightRequest="64"
+                                   WidthRequest="64"
+                                   CornerRadius="32"
+                                   Padding="14"
+                                   BackgroundColor="{StaticResource SecondaryContainer}"
+                                   HasShadow="False"
+                                   VerticalOptions="Center">
+                                <Image Source="setting.svg"
+                                       HeightRequest="36"
+                                       WidthRequest="36"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
+                            </Frame>
 
-            <Label Text="{ext:Translate Settings_AutoPlayByLocationSection}" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource OnSurfaceVariant}" Margin="2,6,2,0" />
-            <Frame CornerRadius="12" Padding="0" HasShadow="True">
-                <VerticalStackLayout>
-                    <Grid Padding="14" ColumnDefinitions="*,Auto">
-                        <VerticalStackLayout Spacing="2">
-                            <Label Text="{ext:Translate Settings_AutoNearestTitle}" FontSize="15" />
-                            <Label Text="{ext:Translate Settings_AutoNearestDescription}" FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
-                        </VerticalStackLayout>
-                        <Switch Grid.Column="1" IsToggled="{Binding AutoNearestPoiPlayback}" OnColor="{StaticResource Primary}" />
-                    </Grid>
-                    <Grid Style="{StaticResource LayerDivider}" Margin="14,0" />
-                    <Grid Padding="14" ColumnDefinitions="*,Auto">
-                        <Label Text="{ext:Translate Settings_LocationScanCycle}" FontSize="15" />
-                        <Label Grid.Column="1" Text="{Binding LocationScanInterval}" FontSize="13" TextColor="{StaticResource Primary}" VerticalOptions="Center" />
-                    </Grid>
-                </VerticalStackLayout>
-            </Frame>
+                            <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
+                                <Label Text="{ext:Translate Settings_PageTitle}"
+                                       FontFamily="RobotoCondensed-SemiBold"
+                                       FontSize="24"
+                                       TextColor="{StaticResource Primary}" />
+                                <Label Text="Cá nhân hoá trải nghiệm nghe, ngôn ngữ và phát lại"
+                                       FontSize="13"
+                                       TextColor="{StaticResource Gray500}" />
+                            </VerticalStackLayout>
+                        </Grid>
 
-            <Label Text="{ext:Translate Settings_PlaybackSection}" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource OnSurfaceVariant}" Margin="2,6,2,0" />
-            <Frame CornerRadius="12" Padding="0" HasShadow="True">
-                <VerticalStackLayout>
-                    <Grid Padding="14" ColumnDefinitions="*,Auto">
-                        <VerticalStackLayout Spacing="2">
-                            <Label Text="{ext:Translate Settings_AutoPlayNextTitle}" FontSize="15" />
-                            <Label Text="{ext:Translate Settings_AutoPlayNextDescription}" FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
-                        </VerticalStackLayout>
-                        <Switch Grid.Column="1" IsToggled="{Binding AutoPlayNext}" OnColor="{StaticResource Primary}" />
-                    </Grid>
-                    <Grid Style="{StaticResource LayerDivider}" Margin="14,0" />
-                    <Grid Padding="14" ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                        <VerticalStackLayout>
-                            <Label Text="{ext:Translate Settings_PlaybackSpeed}" FontSize="15" />
-                            <Label Text="{Binding PlaybackSpeed, StringFormat='{0}x'}" FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
-                        </VerticalStackLayout>
-                        <Image Grid.Column="1" Source="chevron_right.svg" HeightRequest="14" WidthRequest="14" VerticalOptions="Center" />
-                        <Grid.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding SelectPlaybackSpeedCommand}" />
-                        </Grid.GestureRecognizers>
-                    </Grid>
-                    <Grid Style="{StaticResource LayerDivider}" Margin="14,0" />
-                    <Grid Padding="14" ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                        <VerticalStackLayout>
-                            <Label Text="{ext:Translate Settings_SkipInterval}" FontSize="15" />
-                            <Label Text="{Binding SkipInterval, StringFormat='{0} giây'}" FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
-                        </VerticalStackLayout>
-                        <Image Grid.Column="1" Source="chevron_right.svg" HeightRequest="14" WidthRequest="14" VerticalOptions="Center" />
-                        <Grid.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding SelectSkipIntervalCommand}" />
-                        </Grid.GestureRecognizers>
-                    </Grid>
-                </VerticalStackLayout>
-            </Frame>
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                            <Frame Grid.Column="0" Style="{StaticResource CardFrameSmall}" Padding="12" BackgroundColor="{StaticResource SurfaceContainerLowest}">
+                                <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+                                    <Image Source="heart_filled.svg" HeightRequest="22" WidthRequest="22" HorizontalOptions="Center" />
+                                    <Label Text="{ext:Translate Settings_Favorites}" FontSize="12" HorizontalTextAlignment="Center" />
+                                </VerticalStackLayout>
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding GoToFavoritesCommand}" />
+                                </Frame.GestureRecognizers>
+                            </Frame>
 
-            <Label Text="{ext:Translate Settings_AppSection}" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource OnSurfaceVariant}" Margin="2,6,2,0" />
-            <Frame CornerRadius="12" Padding="0" HasShadow="True">
-                <VerticalStackLayout>
-                    <Grid Padding="14" ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                        <VerticalStackLayout>
-                            <Label Text="{ext:Translate Settings_Language}" FontSize="15" />
-                            <Label Text="{Binding SelectedLanguage}" FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
-                        </VerticalStackLayout>
-                        <Image Grid.Column="1" Source="chevron_right.svg" HeightRequest="14" WidthRequest="14" VerticalOptions="Center" />
-                        <Grid.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding SelectLanguageCommand}" />
-                        </Grid.GestureRecognizers>
+                            <Frame Grid.Column="1" Style="{StaticResource CardFrameSmall}" Padding="12" BackgroundColor="{StaticResource SurfaceContainerLowest}">
+                                <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+                                    <Image Source="download.svg" HeightRequest="22" WidthRequest="22" HorizontalOptions="Center" />
+                                    <Label Text="{ext:Translate Settings_Downloads}" FontSize="12" HorizontalTextAlignment="Center" />
+                                </VerticalStackLayout>
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding GoToDownloadsCommand}" />
+                                </Frame.GestureRecognizers>
+                            </Frame>
+
+                            <Frame Grid.Column="2" Style="{StaticResource CardFrameSmall}" Padding="12" BackgroundColor="{StaticResource SurfaceContainerLowest}">
+                                <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+                                    <Image Source="history.svg" HeightRequest="22" WidthRequest="22" HorizontalOptions="Center" />
+                                    <Label Text="{ext:Translate Settings_History}" FontSize="12" HorizontalTextAlignment="Center" />
+                                </VerticalStackLayout>
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding GoToHistoryCommand}" />
+                                </Frame.GestureRecognizers>
+                            </Frame>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Label Text="{ext:Translate Settings_AutoPlayByLocationSection}"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       TextColor="{StaticResource Primary}"
+                       Margin="2,2,2,0" />
+
+                <Frame Style="{StaticResource CardFrameLarge}" Padding="0" BackgroundColor="{StaticResource SurfaceContainerLowest}">
+                    <VerticalStackLayout Spacing="0">
+                        <Grid Padding="16" ColumnDefinitions="30,*,Auto" ColumnSpacing="12">
+                            <Image Source="camera.svg" HeightRequest="20" WidthRequest="20" VerticalOptions="Center" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                <Label Text="{ext:Translate Settings_AutoNearestTitle}" FontSize="15" FontFamily="RobotoCondensed-SemiBold" />
+                                <Label Text="{ext:Translate Settings_AutoNearestDescription}" FontSize="12" TextColor="{StaticResource Gray500}" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="2"
+                                    IsToggled="{Binding AutoNearestPoiPlayback}"
+                                    Style="{StaticResource SettingsSwitchStyle}"
+                                    VerticalOptions="Center" />
+                        </Grid>
+
+                        <Grid Style="{StaticResource LayerDivider}" Margin="16,0" />
+
+                        <Grid Padding="16" ColumnDefinitions="30,*,Auto" ColumnSpacing="12">
+                            <Image Source="audio.svg" HeightRequest="20" WidthRequest="20" VerticalOptions="Center" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                <Label Text="{ext:Translate Settings_LocationScanCycle}" FontSize="15" FontFamily="RobotoCondensed-SemiBold" />
+                                <Label Text="Tần suất quét tự động theo vị trí" FontSize="12" TextColor="{StaticResource Outline}" />
+                            </VerticalStackLayout>
+                            <Label Grid.Column="2"
+                                   Text="{Binding LocationScanInterval}"
+                                   FontSize="13"
+                                   TextColor="{StaticResource Primary}"
+                                   VerticalOptions="Center" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Label Text="{ext:Translate Settings_PlaybackSection}"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       TextColor="{StaticResource Primary}"
+                       Margin="2,2,2,0" />
+
+                <Frame Style="{StaticResource CardFrameLarge}" Padding="0" BackgroundColor="{StaticResource SurfaceContainerLowest}">
+                    <VerticalStackLayout Spacing="0">
+                        <Grid Padding="16" ColumnDefinitions="30,*,Auto" ColumnSpacing="12">
+                            <Image Source="pause_green.svg" HeightRequest="20" WidthRequest="20" VerticalOptions="Center" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                <Label Text="{ext:Translate Settings_AutoPlayNextTitle}" FontSize="15" FontFamily="RobotoCondensed-SemiBold" />
+                                <Label Text="{ext:Translate Settings_AutoPlayNextDescription}" FontSize="12" TextColor="{StaticResource Gray500}" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="2"
+                                    IsToggled="{Binding AutoPlayNext}"
+                                    Style="{StaticResource SettingsSwitchStyle}"
+                                    VerticalOptions="Center" />
+                        </Grid>
+
+                        <Grid Style="{StaticResource LayerDivider}" Margin="16,0" />
+
+                        <Grid Padding="16" ColumnDefinitions="30,*,Auto" ColumnSpacing="12">
+                            <Image Source="audio.svg" HeightRequest="20" WidthRequest="20" VerticalOptions="Center" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                <Label Text="{ext:Translate Settings_PlaybackSpeed}" FontSize="15" FontFamily="RobotoCondensed-SemiBold" />
+                                <Label Text="{Binding PlaybackSpeed, StringFormat='{0}x'}" FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
+                            </VerticalStackLayout>
+                            <Image Grid.Column="2" Source="chevron_right.svg" HeightRequest="14" WidthRequest="14" VerticalOptions="Center" />
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectPlaybackSpeedCommand}" />
+                            </Grid.GestureRecognizers>
+                        </Grid>
+
+                        <Grid Style="{StaticResource LayerDivider}" Margin="16,0" />
+
+                        <Grid Padding="16" ColumnDefinitions="30,*,Auto" ColumnSpacing="12">
+                            <Image Source="back.svg" HeightRequest="20" WidthRequest="20" VerticalOptions="Center" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                <Label Text="{ext:Translate Settings_SkipInterval}" FontSize="15" FontFamily="RobotoCondensed-SemiBold" />
+                                <Label Text="{Binding SkipInterval, StringFormat='{0} giây'}" FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
+                            </VerticalStackLayout>
+                            <Image Grid.Column="2" Source="chevron_right.svg" HeightRequest="14" WidthRequest="14" VerticalOptions="Center" />
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectSkipIntervalCommand}" />
+                            </Grid.GestureRecognizers>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Label Text="{ext:Translate Settings_AppSection}"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       TextColor="{StaticResource Primary}"
+                       Margin="2,2,2,0" />
+
+                <Frame Style="{StaticResource CardFrameLarge}" Padding="0" BackgroundColor="{StaticResource SurfaceContainerLowest}">
+                    <Grid Padding="16" RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" RowSpacing="12" ColumnSpacing="12">
+                        <Frame Grid.Row="0"
+                               Grid.Column="0"
+                               Style="{StaticResource CardFrameLarge}"
+                               BackgroundColor="{StaticResource SecondaryContainer}"
+                               HeightRequest="122"
+                               Padding="14"
+                               HasShadow="False">
+                            <Grid RowDefinitions="Auto,*,Auto" RowSpacing="8">
+                                <Image Source="language_icon.svg"
+                                       HeightRequest="24"
+                                       WidthRequest="24"
+                                       HorizontalOptions="Start"
+                                       VerticalOptions="Start" />
+                                <VerticalStackLayout Grid.Row="2" Spacing="2">
+                                    <Label Text="{ext:Translate Settings_Language}"
+                                           FontSize="15"
+                                           FontFamily="RobotoCondensed-SemiBold"
+                                           TextColor="{StaticResource OnSecondaryContainer}" />
+                                    <Label Text="{Binding SelectedLanguage}"
+                                           FontSize="12"
+                                           TextColor="{StaticResource OnSecondaryContainer}" />
+                                </VerticalStackLayout>
+                            </Grid>
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectLanguageCommand}" />
+                            </Frame.GestureRecognizers>
+                        </Frame>
+
+                        <Frame Grid.Row="0"
+                               Grid.Column="1"
+                               Style="{StaticResource CardFrameLarge}"
+                               BackgroundColor="{StaticResource PrimaryFixed}"
+                               HeightRequest="122"
+                               Padding="14"
+                               HasShadow="False">
+                            <Grid RowDefinitions="Auto,*,Auto" RowSpacing="8">
+                                <Image Source="setting.svg"
+                                       HeightRequest="24"
+                                       WidthRequest="24"
+                                       HorizontalOptions="Start"
+                                       VerticalOptions="Start" />
+                                <VerticalStackLayout Grid.Row="2" Spacing="2">
+                                    <Label Text="{ext:Translate Settings_Theme}"
+                                           FontSize="15"
+                                           FontFamily="RobotoCondensed-SemiBold"
+                                           TextColor="{StaticResource OnPrimaryContainer}" />
+                                    <Label Text="{Binding ThemeMode}"
+                                           FontSize="12"
+                                           TextColor="{StaticResource OnPrimaryContainer}" />
+                                </VerticalStackLayout>
+                            </Grid>
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectThemeCommand}" />
+                            </Frame.GestureRecognizers>
+                        </Frame>
+
+                        <Frame Grid.Row="1"
+                               Grid.Column="0"
+                               Style="{StaticResource CardFrameLarge}"
+                               BackgroundColor="{StaticResource SurfaceContainerHigh}"
+                               HeightRequest="122"
+                               Padding="14"
+                               HasShadow="False">
+                            <Grid RowDefinitions="Auto,*,Auto" RowSpacing="8">
+                                <Image Source="help.svg"
+                                       HeightRequest="24"
+                                       WidthRequest="24"
+                                       HorizontalOptions="Start"
+                                       VerticalOptions="Start" />
+                                <VerticalStackLayout Grid.Row="2" Spacing="2">
+                                    <Label Text="{ext:Translate Settings_Help}"
+                                           FontSize="15"
+                                           FontFamily="RobotoCondensed-SemiBold"
+                                           TextColor="{StaticResource OnSurface}" />
+                                    <Label Text="{ext:Translate Settings_HelpSubtitle}"
+                                           FontSize="12"
+                                           TextColor="{StaticResource Gray500}" />
+                                </VerticalStackLayout>
+                            </Grid>
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding GoToHelpCommand}" />
+                            </Frame.GestureRecognizers>
+                        </Frame>
+
+                        <Frame Grid.Row="1"
+                               Grid.Column="1"
+                               Style="{StaticResource CardFrameLarge}"
+                               BackgroundColor="{StaticResource TertiaryFixed}"
+                               HeightRequest="122"
+                               Padding="14"
+                               HasShadow="False">
+                            <Grid RowDefinitions="Auto,*,Auto" RowSpacing="8">
+                                <Image Source="information.svg"
+                                       HeightRequest="24"
+                                       WidthRequest="24"
+                                       HorizontalOptions="Start"
+                                       VerticalOptions="Start" />
+                                <VerticalStackLayout Grid.Row="2" Spacing="2">
+                                    <Label Text="{ext:Translate Settings_About}"
+                                           FontSize="15"
+                                           FontFamily="RobotoCondensed-SemiBold"
+                                           TextColor="{StaticResource OnTertiaryFixed}" />
+                                    <Label Text="{ext:Translate Settings_AboutSubtitle}"
+                                           FontSize="12"
+                                           TextColor="{StaticResource OnTertiaryFixed}" />
+                                </VerticalStackLayout>
+                            </Grid>
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding GoToAboutCommand}" />
+                            </Frame.GestureRecognizers>
+                        </Frame>
                     </Grid>
-                    <Grid Style="{StaticResource LayerDivider}" Margin="14,0" />
-                    <Grid Padding="14" ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                        <VerticalStackLayout>
-                            <Label Text="{ext:Translate Settings_Theme}" FontSize="15" />
-                            <Label Text="{Binding ThemeMode}" FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
-                        </VerticalStackLayout>
-                        <Image Grid.Column="1" Source="chevron_right.svg" HeightRequest="14" WidthRequest="14" VerticalOptions="Center" />
-                        <Grid.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding SelectThemeCommand}" />
-                        </Grid.GestureRecognizers>
-                    </Grid>
-                    <Grid Style="{StaticResource LayerDivider}" Margin="14,0" />
-                    <Grid Padding="14" ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                        <VerticalStackLayout>
-                            <Label Text="{ext:Translate Settings_Help}" FontSize="15" />
-                            <Label Text="{ext:Translate Settings_HelpSubtitle}" FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
-                        </VerticalStackLayout>
-                        <Image Grid.Column="1" Source="chevron_right.svg" HeightRequest="14" WidthRequest="14" VerticalOptions="Center" />
-                        <Grid.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding GoToHelpCommand}" />
-                        </Grid.GestureRecognizers>
-                    </Grid>
-                    <Grid Style="{StaticResource LayerDivider}" Margin="14,0" />
-                    <Grid Padding="14" ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                        <VerticalStackLayout>
-                            <Label Text="{ext:Translate Settings_About}" FontSize="15" />
-                            <Label Text="{ext:Translate Settings_AboutSubtitle}" FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
-                        </VerticalStackLayout>
-                        <Image Grid.Column="1" Source="chevron_right.svg" HeightRequest="14" WidthRequest="14" VerticalOptions="Center" />
-                        <Grid.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding GoToAboutCommand}" />
-                        </Grid.GestureRecognizers>
-                    </Grid>
-                </VerticalStackLayout>
-            </Frame>
+                </Frame>
+
             </VerticalStackLayout>
         </ScrollView>
 
@@ -130,7 +301,7 @@
                                  Spacing="12">
                 <ActivityIndicator IsRunning="True" Color="{StaticResource Primary}" />
                 <Label Text="Đang tải cài đặt..."
-                       TextColor="{StaticResource OnSurfaceVariant}"
+                       TextColor="{StaticResource Gray500}"
                        HorizontalTextAlignment="Center" />
             </VerticalStackLayout>
         </Grid>
@@ -146,7 +317,7 @@
                    HorizontalTextAlignment="Center" />
             <Label Text="{Binding ErrorMessage}"
                    FontSize="13"
-                   TextColor="{StaticResource OnSurfaceVariant}"
+                   TextColor="{StaticResource Gray500}"
                    HorizontalTextAlignment="Center" />
         </VerticalStackLayout>
     </Grid>

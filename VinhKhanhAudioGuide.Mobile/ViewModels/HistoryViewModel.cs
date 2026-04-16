@@ -32,6 +32,7 @@ public partial class HistoryViewModel : ObservableObject
         try
         {
             var history = await _apiService.GetListeningHistoryAsync();
+            await EnrichHistoryLanguageAsync(history);
             HasHistory = history.Count > 0;
 
             HistoryGroups.Clear();
@@ -53,6 +54,36 @@ public partial class HistoryViewModel : ObservableObject
         {
             IsLoading = false;
         }
+    }
+
+    private async Task EnrichHistoryLanguageAsync(List<ListeningHistory> history)
+    {
+        var missingLanguageItems = history
+            .Where(item => string.IsNullOrWhiteSpace(item.Language) && !string.IsNullOrWhiteSpace(item.AudioGuideId))
+            .ToList();
+
+        if (missingLanguageItems.Count == 0)
+        {
+            return;
+        }
+
+        var tasks = missingLanguageItems.Select(async item =>
+        {
+            try
+            {
+                var audioGuide = await _apiService.GetAudioGuideByIdAsync(item.AudioGuideId);
+                if (!string.IsNullOrWhiteSpace(audioGuide?.Language))
+                {
+                    item.Language = audioGuide.Language;
+                }
+            }
+            catch
+            {
+                // Keep default display language fallback when metadata fetch fails.
+            }
+        });
+
+        await Task.WhenAll(tasks);
     }
 
     [RelayCommand]

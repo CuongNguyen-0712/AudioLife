@@ -740,7 +740,7 @@ public partial class MapViewModel : LoadStateViewModel
                     Distance = Math.Round(distanceMeters),
                     AudioCount = location.AudioGuides?.Count ?? 0,
                     IsHot = featuredLocationIds.Contains(location.Id),
-                    MetaText = $"Cách bạn {Math.Round(distanceMeters):F0} m"
+                    MetaText = $"Cách bạn {DistanceFormatService.FormatDistance(distanceMeters)}"
                 });
             }
 

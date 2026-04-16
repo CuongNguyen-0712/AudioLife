@@ -5,73 +5,133 @@
              xmlns:models="clr-namespace:VinhKhanhAudioGuide.Mobile.Models"
              x:Class="VinhKhanhAudioGuide.Mobile.Views.HistoryPage"
              x:DataType="viewmodels:HistoryViewModel"
-             Title="Lịch sử nghe">
+                 Title="Lịch sử nghe"
+                 Padding="12,10,12,20"
+                 BackgroundColor="{StaticResource Surface}">
 
     <RefreshView Command="{Binding RefreshCommand}"
                  IsRefreshing="{Binding IsLoading}">
         <CollectionView ItemsSource="{Binding HistoryGroups}"
-                        Margin="15"
+                        Margin="0"
                         IsGrouped="True">
+
+            <CollectionView.Header>
+                <VerticalStackLayout Spacing="2" Margin="0,0,0,8">
+                    <Label Text="Lịch sử nghe"
+                           FontSize="24"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource OnSurface}" />
+                    <Label Text="Theo dõi tiến độ các audio bạn đã nghe gần đây"
+                           FontSize="14"
+                           TextColor="{StaticResource Gray500}" />
+                </VerticalStackLayout>
+            </CollectionView.Header>
             
             <CollectionView.EmptyView>
-                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10" Padding="30">
-                    <Image Source="history_icon.png" HeightRequest="60" Opacity="0.3"/>
-                    <Label Text="Chưa có lịch sử nghe" HorizontalOptions="Center" TextColor="{StaticResource Gray400}"/>
-                </VerticalStackLayout>
+          <Frame Padding="20"
+              Margin="0,40,0,0"
+              CornerRadius="18"
+              HasShadow="False"
+              BackgroundColor="{StaticResource SurfaceContainerLow}">
+              <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10">
+               <Image Source="history.svg" HeightRequest="36" Opacity="0.45"/>
+               <Label Text="Chưa có lịch sử nghe"
+                   FontSize="14"
+                   HorizontalOptions="Center"
+                   TextColor="{StaticResource OnSurfaceVariant}"/>
+              </VerticalStackLayout>
+          </Frame>
             </CollectionView.EmptyView>
 
             <CollectionView.GroupHeaderTemplate>
                 <DataTemplate x:DataType="viewmodels:HistoryGroup">
                     <Label Text="{Binding DateLabel}"
-                           FontSize="14"
+                            FontSize="20"
                            FontAttributes="Bold"
-                           TextColor="{StaticResource Gray500}"
-                           Margin="0,15,0,5"/>
+                           TextColor="{StaticResource Primary}"
+                  Margin="2,14,2,8"/>
                 </DataTemplate>
             </CollectionView.GroupHeaderTemplate>
 
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:ListeningHistory">
-                    <Frame Padding="15" 
-                           Margin="0,5"
-                           CornerRadius="12">
+                    <Frame Style="{StaticResource CardFrame}" Padding="12" Margin="0,0,0,12">
                         <Frame.GestureRecognizers>
                             <TapGestureRecognizer 
                                 Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:HistoryViewModel}}, Path=HistoryItemTappedCommand}"
                                 CommandParameter="{Binding .}"/>
                         </Frame.GestureRecognizers>
-                        <Grid ColumnDefinitions="60,*,Auto">
-                            <Image Source="{Binding LocationImageUrl}"
-                                   Aspect="AspectFill"
-                                   HeightRequest="60"
-                                   WidthRequest="60"/>
-                            
-                            <VerticalStackLayout Grid.Column="1" 
-                                                 Padding="15,0"
-                                                 VerticalOptions="Center">
+
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                            <!-- Row image -->
+                            <Frame Grid.Column="0"
+                                   Style="{StaticResource SurfaceHighlightFrame}"
+                                   WidthRequest="80"
+                                   HeightRequest="80"
+                                   Padding="0"
+                                   Margin="0"
+                                   BackgroundColor="{StaticResource SurfaceContainerHigh}"
+                                   IsClippedToBounds="True"
+                                   VerticalOptions="Center">
+                                <Image Source="{Binding LocationImageUrl}"
+                                       Aspect="AspectFill" />
+                            </Frame>
+
+                            <!-- Content -->
+                            <VerticalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
                                 <Label Text="{Binding AudioTitle}"
-                                       FontSize="14"
-                                       FontAttributes="Bold"/>
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       LineBreakMode="TailTruncation"
+                                       MaxLines="2"
+                                       Margin="0"
+                                       TextColor="{StaticResource OnSurface}"/>
+
                                 <Label Text="{Binding LocationName}"
-                                       FontSize="12"
-                                       TextColor="{StaticResource Gray500}"/>
-                                <HorizontalStackLayout Spacing="10">
-                                    <Label Text="{Binding AudioDuration, StringFormat='{0} phút'}"
-                                           FontSize="11"
-                                           TextColor="{StaticResource Primary}"/>
-                                    <Label Text="{Binding Progress, StringFormat='• Đã nghe {0:P0}'}"
-                                           FontSize="11"
-                                           TextColor="{StaticResource Gray400}"/>
+                                       FontSize="13"
+                                       LineBreakMode="TailTruncation"
+                                       MaxLines="1"
+                                       TextColor="{StaticResource OnSurfaceVariant}"
+                                       Opacity="0.7"/>
+
+                                <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                    <HorizontalStackLayout Spacing="5" VerticalOptions="Center">
+                                        <Image Source="time.svg"
+                                               HeightRequest="16"
+                                               WidthRequest="16"
+                                               VerticalOptions="Center"/>
+                                        <Label Text="{Binding ListeningTimeDisplay}"
+                                               FontSize="13"
+                                               FontAttributes="Bold"
+                                               TextColor="{StaticResource OnSurfaceVariant}"
+                                               Opacity="0.7"
+                                               VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
+
+                                    <Frame Padding="8,4"
+                                           CornerRadius="10"
+                                           HasShadow="False"
+                                           BackgroundColor="{StaticResource SecondaryContainer}">
+                                        <Label Text="{Binding LanguageDisplay, StringFormat='Ngôn ngữ: {0}'}"
+                                               FontSize="11"
+                                               TextColor="{StaticResource Primary}"/>
+                                    </Frame>
                                 </HorizontalStackLayout>
+
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" VerticalOptions="Center">
+                                    <Label Text="{Binding ProgressPercent, StringFormat='{0}%'}"
+                                           FontSize="12"
+                                           FontFamily="RobotoCondensed-SemiBold"
+                                           TextColor="{StaticResource OnSurface}"
+                                           VerticalOptions="Center" />
+                                    <ProgressBar Grid.Column="1"
+                                                 Progress="{Binding NormalizedProgress}"
+                                                 ProgressColor="{StaticResource Primary}"
+                                                 BackgroundColor="{StaticResource SecondaryContainer}"
+                                                 HeightRequest="6"
+                                                 VerticalOptions="Center" />
+                                </Grid>
                             </VerticalStackLayout>
-                            
-                            <ImageButton Grid.Column="2"
-                                         Source="play_icon.png"
-                                         HeightRequest="40"
-                                         WidthRequest="40"
-                                         VerticalOptions="Center"
-                                         Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:HistoryViewModel}}, Path=HistoryItemTappedCommand}"
-                                         CommandParameter="{Binding .}"/>
                         </Grid>
                     </Frame>
                 </DataTemplate>
