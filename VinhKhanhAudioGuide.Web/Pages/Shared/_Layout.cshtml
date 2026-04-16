@@ -40,6 +40,9 @@
                     <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "ShopAudios" ? "active" : "")" asp-page="/Shop/AudioGuides/Index">
                         <i class="fas fa-headphones-alt"></i> <span>Quản lý audio</span>
                     </a>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "ShopLocations" ? "active" : "")" asp-page="/Shop/Locations/Index">
+                        <i class="fas fa-map-location-dot"></i> <span>Quản lý địa điểm</span>
+                    </a>
                     <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "ShopLocationsCreate" ? "active" : "")" asp-page="/Shop/Locations/Create">
                         <i class="fas fa-location-plus"></i> <span>Tạo POI mới</span>
                     </a>
@@ -81,8 +84,15 @@
                     <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "Tours" ? "active" : "")" asp-page="/Tours/Index">
                         <i class="fas fa-route"></i> <span>Tour ẩm thực</span>
                     </a>
-                    <a class="sidebar-link @((ViewData["ActivePage"]?.ToString() == "AdminAudioTranslations" || ViewData["ActivePage"]?.ToString() == "AudioGuides") ? "active" : "")" asp-page="/Admin/Translations">
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminAudioTranslations" ? "active" : "")" asp-page="/Admin/Translations">
                         <i class="fas fa-headphones-alt"></i> <span>Audio & bản dịch</span>
+                    </a>
+                    <div class="sidebar-heading">Người Dùng & Thanh Toán</div>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminEndUsers" ? "active" : "")" asp-page="/Admin/Users/Index">
+                        <i class="fas fa-user-circle"></i> <span>Người dùng app</span>
+                    </a>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminPaymentPackages" ? "active" : "")" asp-page="/Admin/PaymentPackages/Index">
+                        <i class="fas fa-credit-card"></i> <span>Gói thanh toán</span>
                     </a>
                 }
             </nav>

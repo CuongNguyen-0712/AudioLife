@@ -9,6 +9,9 @@ public class ListeningHistory
     [MaxLength(100)]
     public string Id { get; set; } = string.Empty;
 
+    [ForeignKey(nameof(AppUser))]
+    public Guid? UserId { get; set; }
+
     [Required]
     [MaxLength(50)]
     public string AudioGuideId { get; set; } = string.Empty;
@@ -37,6 +40,10 @@ public class ListeningHistory
     public bool IsCompleted { get; set; }
 
     public DateTime LastListenedAtUtc { get; set; }
+
+    // Navigation properties
+    [ForeignKey(nameof(UserId))]
+    public virtual AppUser? User { get; set; }
 
     [ForeignKey(nameof(AudioGuideId))]
     public AudioGuide? AudioGuide { get; set; }

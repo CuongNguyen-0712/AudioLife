@@ -367,6 +367,7 @@ public static class SampleData
             new()
             {
                 Id = "h1",
+                UserId = "c8e4c5b1-5f3e-4a2b-8c1d-9b7f2e5a3d6c",
                 AudioGuideId = "ag_001_1",
                 LocationId = "loc_001",
                 AudioTitle = "Giới thiệu quán",
@@ -376,12 +377,12 @@ public static class SampleData
                 Progress = 0.8M,
                 ListenedSeconds = 144,
                 IsCompleted = false,
-                LastListenedAtUtc = SeedBaseUtc.AddHours(-2),
-                UserId = LocalUserId
+                LastListenedAtUtc = SeedBaseUtc.AddHours(-2)
             },
             new()
             {
                 Id = "h2",
+                UserId = "c8e4c5b1-5f3e-4a2b-8c1d-9b7f2e5a3d6c",
                 AudioGuideId = "ag_002_1",
                 LocationId = "loc_002",
                 AudioTitle = "Giới thiệu quán",
@@ -391,12 +392,12 @@ public static class SampleData
                 Progress = 1.0M,
                 ListenedSeconds = 180,
                 IsCompleted = true,
-                LastListenedAtUtc = SeedBaseUtc.AddHours(-5),
-                UserId = LocalUserId
+                LastListenedAtUtc = SeedBaseUtc.AddHours(-5)
             },
             new()
             {
                 Id = "h3",
+                UserId = "c8e4c5b1-5f3e-4a2b-8c1d-9b7f2e5a3d6c",
                 AudioGuideId = "ag_007_1",
                 LocationId = "loc_007",
                 AudioTitle = "Giới thiệu quán",
@@ -406,8 +407,7 @@ public static class SampleData
                 Progress = 0.45M,
                 ListenedSeconds = 81,
                 IsCompleted = false,
-                LastListenedAtUtc = SeedBaseUtc.AddDays(-1),
-                UserId = LocalUserId
+                LastListenedAtUtc = SeedBaseUtc.AddDays(-1)
             }
         };
     }
@@ -506,5 +506,180 @@ public static class SampleData
         public bool IsCompleted { get; set; }
         public DateTime LastListenedAtUtc { get; set; }
         public string UserId { get; set; } = string.Empty;
+    }
+
+    // ========== Payment Package & User Onboarding Sample Data ==========
+
+    public static List<PaymentPackage> GetPaymentPackages()
+    {
+        return new List<PaymentPackage>
+        {
+            new()
+            {
+                Id = "daily",
+                Name = "10.000đ/ngày",
+                Description = "Một ngày sử dụng. Phù hợp khi bạn muốn trải nghiệm nhanh trong một ngày, tối ưu cho khách ghé ngắn.",
+                Price = 10000m,
+                Currency = "VND",
+                DurationDays = 1,
+                IsActive = true,
+                CreatedAtUtc = SeedBaseUtc
+            },
+            new()
+            {
+                Id = "full-tour",
+                Name = "29.000đ/full tour",
+                Description = "Một lần thanh toán. Mở khóa toàn bộ tour, phù hợp khi bạn muốn nghe trọn vẹn nội dung đã quét.",
+                Price = 29000m,
+                Currency = "VND",
+                DurationDays = 90,
+                IsActive = true,
+                CreatedAtUtc = SeedBaseUtc.AddMinutes(5)
+            }
+        };
+    }
+
+    public static List<AppUser> GetSampleAppUsers()
+    {
+        var user1Id = Guid.Parse("c8e4c5b1-5f3e-4a2b-8c1d-9b7f2e5a3d6c");
+        var user2Id = Guid.Parse("d9f5d6c2-6a4f-5b3c-9d2e-0c8a3f6b4e7d");
+        var user3Id = Guid.Parse("e0a6e7d3-7b5a-6c4d-0e3f-1d9b4a7c5f8e");
+
+        return new List<AppUser>
+        {
+            new()
+            {
+                Id = user1Id,
+                QrCodeValue = "QR-TEST-001-VINH-KHANH-TOUR",
+                DisplayName = "Nguyễn Văn A",
+                PhoneNumber = "0912345678",
+                Email = "nguyena@example.com",
+                Status = "Active",
+                CreatedAtUtc = SeedBaseUtc.AddDays(-10),
+                LastSeenAtUtc = SeedBaseUtc.AddHours(-2)
+            },
+            new()
+            {
+                Id = user2Id,
+                QrCodeValue = "QR-TEST-002-VINH-KHANH-TOUR",
+                DisplayName = "Trần Thị B",
+                PhoneNumber = "0923456789",
+                Email = "tranb@example.com",
+                Status = "Active",
+                CreatedAtUtc = SeedBaseUtc.AddDays(-5),
+                LastSeenAtUtc = SeedBaseUtc.AddHours(-8)
+            },
+            new()
+            {
+                Id = user3Id,
+                QrCodeValue = "QR-TEST-003-VINH-KHANH-TOUR",
+                DisplayName = "Lê Minh C",
+                PhoneNumber = "0934567890",
+                Email = "lemc@example.com",
+                Status = "Active",
+                CreatedAtUtc = SeedBaseUtc.AddDays(-1),
+                LastSeenAtUtc = SeedBaseUtc
+            }
+        };
+    }
+
+    public static List<UserSubscription> GetSampleUserSubscriptions()
+    {
+        var user1Id = Guid.Parse("c8e4c5b1-5f3e-4a2b-8c1d-9b7f2e5a3d6c");
+        var user2Id = Guid.Parse("d9f5d6c2-6a4f-5b3c-9d2e-0c8a3f6b4e7d");
+        var user3Id = Guid.Parse("e0a6e7d3-7b5a-6c4d-0e3f-1d9b4a7c5f8e");
+
+        return new List<UserSubscription>
+        {
+            // Gói 1 ngày - Active
+            new()
+            {
+                Id = Guid.Parse("f1b7f8e4-8c6b-7d5e-1f4a-2e0c5b8d6a9f"),
+                UserId = user1Id,
+                PackageId = "daily",
+                Status = "Active",
+                PurchasedAtUtc = SeedBaseUtc.AddDays(-10),
+                StartsAtUtc = SeedBaseUtc.AddDays(-10),
+                ExpiresAtUtc = SeedBaseUtc.AddDays(-9),
+                PaymentReference = "STRIPE_PAY_1001",
+                LastVerifiedAtUtc = SeedBaseUtc.AddHours(-2)
+            },
+            // Gói Full Tour - Active
+            new()
+            {
+                Id = Guid.Parse("a2c8a9f5-9d7c-8e6f-2a5b-3f1d6c9e7b0a"),
+                UserId = user2Id,
+                PackageId = "full-tour",
+                Status = "Active",
+                PurchasedAtUtc = SeedBaseUtc.AddDays(-5),
+                StartsAtUtc = SeedBaseUtc.AddDays(-5),
+                ExpiresAtUtc = SeedBaseUtc.AddDays(85),
+                PaymentReference = "STRIPE_PAY_1002",
+                LastVerifiedAtUtc = SeedBaseUtc.AddHours(-4)
+            },
+            // Gói 1 ngày - Pending
+            new()
+            {
+                Id = Guid.Parse("b3d9b0a6-0e8d-9f7a-3b6c-4a2e7d0f8c1b"),
+                UserId = user3Id,
+                PackageId = "daily",
+                Status = "Pending",
+                PurchasedAtUtc = SeedBaseUtc,
+                StartsAtUtc = null,
+                ExpiresAtUtc = null,
+                PaymentReference = "STRIPE_PAY_1003_PENDING",
+                LastVerifiedAtUtc = SeedBaseUtc
+            }
+        };
+    }
+
+    public static List<UserAppSession> GetSampleUserAppSessions()
+    {
+        var user1Id = Guid.Parse("c8e4c5b1-5f3e-4a2b-8c1d-9b7f2e5a3d6c");
+        var user2Id = Guid.Parse("d9f5d6c2-6a4f-5b3c-9d2e-0c8a3f6b4e7d");
+        var user3Id = Guid.Parse("e0a6e7d3-7b5a-6c4d-0e3f-1d9b4a7c5f8e");
+
+        return new List<UserAppSession>
+        {
+            new()
+            {
+                Id = Guid.Parse("c4e0c1b7-1f9e-0a8b-4c7d-5b3f8e1a9d2c"),
+                UserId = user1Id,
+                DeviceId = "DEVICE_ANDROID_001",
+                TokenValue = "token_user1_device1_" + Guid.NewGuid().ToString("N"),
+                RefreshToken = "refresh_token_user1_device1_" + Guid.NewGuid().ToString("N"),
+                IssuedAtUtc = SeedBaseUtc.AddHours(-2),
+                ExpiresAtUtc = SeedBaseUtc.AddDays(30),
+                LastValidatedAtUtc = SeedBaseUtc.AddHours(-2),
+                RevokedAtUtc = null,
+                IsActive = true
+            },
+            new()
+            {
+                Id = Guid.Parse("d5f1d2c8-2a0f-1b9c-5d8e-6c4a9f2b0e3d"),
+                UserId = user2Id,
+                DeviceId = "DEVICE_IOS_001",
+                TokenValue = "token_user2_device1_" + Guid.NewGuid().ToString("N"),
+                RefreshToken = "refresh_token_user2_device1_" + Guid.NewGuid().ToString("N"),
+                IssuedAtUtc = SeedBaseUtc.AddHours(-8),
+                ExpiresAtUtc = SeedBaseUtc.AddDays(30),
+                LastValidatedAtUtc = SeedBaseUtc.AddHours(-8),
+                RevokedAtUtc = null,
+                IsActive = true
+            },
+            new()
+            {
+                Id = Guid.Parse("e6a2e3d9-3b1a-2c0d-6e9f-7d5b0a3c1f4e"),
+                UserId = user3Id,
+                DeviceId = "DEVICE_ANDROID_002",
+                TokenValue = "token_user3_device1_" + Guid.NewGuid().ToString("N"),
+                RefreshToken = "refresh_token_user3_device1_" + Guid.NewGuid().ToString("N"),
+                IssuedAtUtc = SeedBaseUtc,
+                ExpiresAtUtc = SeedBaseUtc.AddDays(30),
+                LastValidatedAtUtc = SeedBaseUtc,
+                RevokedAtUtc = null,
+                IsActive = true
+            }
+        };
     }
 }

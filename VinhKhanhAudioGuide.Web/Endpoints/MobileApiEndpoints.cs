@@ -33,7 +33,7 @@ public static class MobileApiEndpoints
             return Results.Ok(categories);
         });
 
-        group.MapGet("/locations", async (AppDbContext db) =>
+        group.MapGet("/locations", async (string? language, AppDbContext db) =>
         {
             var locations = await db.Locations
                 .AsNoTracking()
@@ -42,10 +42,10 @@ public static class MobileApiEndpoints
                 .OrderBy(l => l.Name)
                 .ToListAsync();
 
-            return Results.Ok(locations.Select(l => ToLocationDto(l, includeAudioGuides: true)));
+            return Results.Ok(locations.Select(l => ToLocationDto(l, includeAudioGuides: true, language)));
         });
 
-        group.MapGet("/locations/{id}", async (string id, AppDbContext db) =>
+        group.MapGet("/locations/{id}", async (string id, string? language, AppDbContext db) =>
         {
             var location = await db.Locations
                 .AsNoTracking()
@@ -55,10 +55,10 @@ public static class MobileApiEndpoints
 
             return location is null
                 ? Results.NotFound()
-                : Results.Ok(ToLocationDto(location, includeAudioGuides: true));
+                : Results.Ok(ToLocationDto(location, includeAudioGuides: true, language));
         });
 
-        group.MapGet("/locations/by-category/{categoryId}", async (string categoryId, AppDbContext db) =>
+        group.MapGet("/locations/by-category/{categoryId}", async (string categoryId, string? language, AppDbContext db) =>
         {
             var locations = await db.Locations
                 .AsNoTracking()
@@ -68,10 +68,10 @@ public static class MobileApiEndpoints
                 .OrderBy(l => l.Name)
                 .ToListAsync();
 
-            return Results.Ok(locations.Select(l => ToLocationDto(l, includeAudioGuides: true)));
+            return Results.Ok(locations.Select(l => ToLocationDto(l, includeAudioGuides: true, language)));
         });
 
-        group.MapGet("/locations/search", async (string query, AppDbContext db) =>
+        group.MapGet("/locations/search", async (string query, string? language, AppDbContext db) =>
         {
             var normalized = query.Trim();
             if (string.IsNullOrWhiteSpace(normalized))
@@ -90,10 +90,10 @@ public static class MobileApiEndpoints
                 .OrderBy(l => l.Name)
                 .ToListAsync();
 
-            return Results.Ok(locations.Select(l => ToLocationDto(l, includeAudioGuides: true)));
+            return Results.Ok(locations.Select(l => ToLocationDto(l, includeAudioGuides: true, language)));
         });
 
-        group.MapGet("/locations/nearby", async (double latitude, double longitude, double? radiusKm, AppDbContext db) =>
+        group.MapGet("/locations/nearby", async (double latitude, double longitude, double? radiusKm, string? language, AppDbContext db) =>
         {
             var radius = radiusKm.GetValueOrDefault(0.1);
             var locations = await db.Locations
@@ -110,7 +110,7 @@ public static class MobileApiEndpoints
                 })
                 .Where(x => x.DistanceKm <= radius)
                 .OrderBy(x => x.DistanceKm)
-                .Select(x => ToLocationDto(x.Location, includeAudioGuides: true))
+                .Select(x => ToLocationDto(x.Location, includeAudioGuides: true, language))
                 .ToList();
 
             return Results.Ok(nearby);
@@ -149,16 +149,19 @@ public static class MobileApiEndpoints
             return Results.Ok(tours.Select(ToTourDto));
         });
 
-        group.MapGet("/audio/by-location/{locationId}", async (string locationId, AppDbContext db) =>
+        group.MapGet("/audio/by-location/{locationId}", async (string locationId, string? language, AppDbContext db) =>
         {
-            var guides = await db.AudioGuides
+            var allGuides = await db.AudioGuides
                 .AsNoTracking()
                 .Include(a => a.ScriptSegments)
                 .Where(a => a.LocationId == locationId)
                 .OrderBy(a => a.Title)
                 .ToListAsync();
 
-            return Results.Ok(guides.Select(a => ToAudioGuideDto(a, includeSegments: true)));
+            var languageResolution = ResolveLanguageSelection(allGuides, language);
+            var guides = languageResolution.Guides;
+
+            return Results.Ok(guides.Select(a => ToAudioGuideDto(a, includeSegments: true, languageResolution.ResolvedLanguage)));
         });
 
         group.MapGet("/audio/{id}", async (string id, AppDbContext db) =>
@@ -274,8 +277,13 @@ public static class MobileApiEndpoints
         return app;
     }
 
-    private static MobileLocationDto ToLocationDto(Location location, bool includeAudioGuides)
+    private static MobileLocationDto ToLocationDto(Location location, bool includeAudioGuides, string? language)
     {
+        var languageResolution = ResolveLanguageSelection(location.AudioGuides, language);
+        var filteredGuides = includeAudioGuides
+            ? languageResolution.Guides
+            : Array.Empty<AudioGuide>();
+
         return new MobileLocationDto
         {
             Id = location.Id,
@@ -289,13 +297,68 @@ public static class MobileApiEndpoints
             CategoryId = location.CategoryId,
             CategoryName = location.Category?.Name ?? string.Empty,
             IsFavorite = false,
-            AudioGuides = includeAudioGuides
-                ? location.AudioGuides.Select(guide => ToAudioGuideDto(guide, includeSegments: false)).ToList()
-                : new List<MobileAudioGuideDto>()
+            ResolvedLanguage = languageResolution.ResolvedLanguage,
+            AudioGuides = filteredGuides
+                .Select(guide => ToAudioGuideDto(guide, includeSegments: false, languageResolution.ResolvedLanguage))
+                .ToList()
         };
     }
 
-    private static MobileAudioGuideDto ToAudioGuideDto(AudioGuide guide, bool includeSegments)
+    private static LanguageResolution ResolveLanguageSelection(IEnumerable<AudioGuide> guides, string? language)
+    {
+        var allGuides = guides
+            .OrderBy(guide => guide.Title)
+            .ThenBy(guide => guide.Id)
+            .ToList();
+
+        if (allGuides.Count == 0)
+        {
+            return new LanguageResolution(Array.Empty<AudioGuide>(), string.Empty);
+        }
+
+        var normalizedLanguage = NormalizeLanguage(language);
+        if (string.IsNullOrWhiteSpace(normalizedLanguage))
+        {
+            return new LanguageResolution(allGuides, string.Empty);
+        }
+
+        var requestedLanguageGuides = allGuides
+            .Where(guide => NormalizeLanguage(guide.Language) == normalizedLanguage)
+            .ToList();
+
+        if (requestedLanguageGuides.Count > 0)
+        {
+            return new LanguageResolution(requestedLanguageGuides, normalizedLanguage);
+        }
+
+        if (!string.Equals(normalizedLanguage, "vi", StringComparison.OrdinalIgnoreCase))
+        {
+            var vietnameseGuides = allGuides
+                .Where(guide => NormalizeLanguage(guide.Language) == "vi")
+                .ToList();
+
+            if (vietnameseGuides.Count > 0)
+            {
+                return new LanguageResolution(vietnameseGuides, "vi");
+            }
+        }
+
+        return new LanguageResolution(allGuides, normalizedLanguage);
+    }
+
+    private static string NormalizeLanguage(string? language)
+    {
+        var normalized = (language ?? string.Empty).Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return string.Empty;
+        }
+
+        var separatorIndex = normalized.IndexOfAny(['-', '_']);
+        return separatorIndex > 0 ? normalized[..separatorIndex] : normalized;
+    }
+
+    private static MobileAudioGuideDto ToAudioGuideDto(AudioGuide guide, bool includeSegments, string? resolvedLanguage = null)
     {
         return new MobileAudioGuideDto
         {
@@ -309,6 +372,9 @@ public static class MobileApiEndpoints
             Duration = guide.Duration,
             LocationId = guide.LocationId,
             Language = guide.Language,
+            ResolvedLanguage = string.IsNullOrWhiteSpace(resolvedLanguage)
+                ? NormalizeLanguage(guide.Language)
+                : resolvedLanguage,
             ScriptSegments = includeSegments
                 ? guide.ScriptSegments
                     .OrderBy(s => s.StartTimeSeconds)
@@ -379,6 +445,7 @@ public static class MobileApiEndpoints
         public string CategoryId { get; set; } = string.Empty;
         public string CategoryName { get; set; } = string.Empty;
         public bool IsFavorite { get; set; }
+        public string ResolvedLanguage { get; set; } = string.Empty;
         public List<MobileAudioGuideDto> AudioGuides { get; set; } = new();
     }
 
@@ -406,8 +473,11 @@ public static class MobileApiEndpoints
         public int Duration { get; set; }
         public string LocationId { get; set; } = string.Empty;
         public string Language { get; set; } = "vi";
+        public string ResolvedLanguage { get; set; } = string.Empty;
         public List<MobileAudioScriptSegmentDto> ScriptSegments { get; set; } = new();
     }
+
+    private sealed record LanguageResolution(IReadOnlyList<AudioGuide> Guides, string ResolvedLanguage);
 
     private sealed class MobileAudioScriptSegmentDto
     {

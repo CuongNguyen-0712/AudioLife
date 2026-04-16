@@ -1,0 +1,283 @@
+@page "/Admin/EndUsers"
+@model VinhKhanhAudioGuide.Web.Pages.Admin.EndUsersModel
+@{
+    ViewData["Title"] = "Quản Lý Người Dùng";
+    ViewData["ActivePage"] = "AdminEndUsers";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Quản Lý Người Dùng</h2>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card stat-card-v2">
+                <div class="stat-icon bg-primary"><i class="fa-solid fa-users"></i></div>
+                <div><div class="stat-value">@Model.TotalUserCount</div><div class="stat-label">Người dùng</div></div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card stat-card-v2">
+                <div class="stat-icon bg-success"><i class="fa-solid fa-circle-check"></i></div>
+                <div><div class="stat-value">@Model.ActiveUserCount</div><div class="stat-label">Đang hoạt động</div></div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card stat-card-v2">
+                <div class="stat-icon bg-danger"><i class="fa-solid fa-ban"></i></div>
+                <div><div class="stat-value">@Model.BlockedUserCount</div><div class="stat-label">Đang chặn</div></div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card stat-card-v2">
+                <div class="stat-icon bg-info"><i class="fa-solid fa-ticket"></i></div>
+                <div><div class="stat-value">@Model.UsersWithActiveSubscriptionCount</div><div class="stat-label">Có gói active</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <input type="text" name="searchTerm" class="form-control" placeholder="Tìm theo email, số điện thoại, tên hoặc mã QR..." value="@Model.SearchTerm" />
+                </div>
+                <div class="col-md-3">
+                    <select name="statusFilter" class="form-select">
+                        <option value="">-- Tất cả trạng thái --</option>
+                        <option value="Active" selected="@(Model.StatusFilter == "Active")">Active</option>
+                        <option value="Blocked" selected="@(Model.StatusFilter == "Blocked")">Blocked</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fa fa-search"></i> Tìm kiếm
+                    </button>
+                </div>
+                <div class="col-md-3 text-end">
+                    <a href="@Url.Page("Index")" class="btn btn-secondary">Xóa lọc</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (Model.Users.Any())
+    {
+        <div class="admin-column-list">
+            @foreach (var user in Model.Users)
+            {
+                var activeSubscription = user.Subscriptions?.FirstOrDefault(s => s.Status == "Active");
+                var packageName = activeSubscription?.Package?.Name ?? "Không có gói";
+                var activeSessions = user.AppSessions.Count(session => session.IsActive && session.RevokedAtUtc == null && session.ExpiresAtUtc > DateTime.UtcNow);
+                var listeningCount = user.ListeningHistories.Count;
+                var templateId = $"user-overlay-{user.Id:N}";
+
+                <article class="admin-column-card">
+                    <header class="admin-column-card-head">
+                        <div>
+                            <h3 class="admin-column-card-title">@(user.DisplayName ?? "Người dùng chưa đặt tên")</h3>
+                            <div class="admin-column-card-subtitle">@user.Email</div>
+                        </div>
+                        @if (user.Status == "Active")
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else if (user.Status == "Blocked")
+                        {
+                            <span class="badge bg-danger">Blocked</span>
+                        }
+                    </header>
+
+                    <div class="admin-column-meta-grid">
+                        <div><span>QR</span><strong>@user.QrCodeValue</strong></div>
+                        <div><span>SĐT</span><strong>@(user.PhoneNumber ?? "---")</strong></div>
+                        <div><span>Gói active</span><strong>@packageName</strong></div>
+                        <div><span>Phiên active</span><strong>@activeSessions</strong></div>
+                        <div><span>Lượt nghe</span><strong>@listeningCount</strong></div>
+                        <div><span>Tạo lúc</span><strong>@user.CreatedAtUtc.ToString("dd/MM/yyyy HH:mm")</strong></div>
+                    </div>
+
+                    <div class="admin-column-actions">
+                        <button type="button"
+                                class="btn btn-sm btn-outline-dark js-open-entity-overlay"
+                                data-template-id="@templateId"
+                                data-overlay-title="Chi tiết người dùng">
+                            <i class="fa fa-eye"></i> Xem
+                        </button>
+
+                        @if (user.Status == "Active")
+                        {
+                            <form method="post" asp-page-handler="Block" class="d-inline">
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Chặn người dùng này?')">
+                                    <i class="fa fa-ban"></i> Chặn
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form method="post" asp-page-handler="Unblock" class="d-inline">
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    <i class="fa fa-check"></i> Bỏ chặn
+                                </button>
+                            </form>
+                        }
+
+                        <form method="post" asp-page-handler="Delete" class="d-inline">
+                            <input type="hidden" name="id" value="@user.Id" />
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Xóa người dùng này? Tất cả dữ liệu liên quan sẽ bị xóa.')">
+                                <i class="fa fa-trash"></i> Xóa
+                            </button>
+                        </form>
+                    </div>
+                </article>
+
+                <template id="@templateId">
+                    <div class="entity-overlay-body-grid">
+                        <section class="entity-overlay-panel">
+                            <h4>Thông tin cơ bản</h4>
+                            <dl>
+                                <dt>Mã người dùng</dt><dd>@user.Id</dd>
+                                <dt>Mã QR</dt><dd>@user.QrCodeValue</dd>
+                                <dt>Họ tên</dt><dd>@(user.DisplayName ?? "---")</dd>
+                                <dt>Email</dt><dd>@(user.Email ?? "---")</dd>
+                                <dt>Số điện thoại</dt><dd>@(user.PhoneNumber ?? "---")</dd>
+                                <dt>Trạng thái</dt><dd>@user.Status</dd>
+                                <dt>Tạo lúc</dt><dd>@user.CreatedAtUtc.ToString("dd/MM/yyyy HH:mm")</dd>
+                                <dt>Lần truy cập cuối</dt><dd>@user.LastSeenAtUtc.ToString("dd/MM/yyyy HH:mm")</dd>
+                            </dl>
+                        </section>
+
+                        <section class="entity-overlay-panel">
+                            <h4>Đăng ký gói</h4>
+                            @if (user.Subscriptions!.Any())
+                            {
+                                <ul class="entity-overlay-list">
+                                    @foreach (var sub in user.Subscriptions!.OrderByDescending(s => s.PurchasedAtUtc).Take(6))
+                                    {
+                                        <li>
+                                            <strong>@(sub.Package?.Name ?? sub.PackageId)</strong>
+                                            <span>@sub.Status • @sub.PurchasedAtUtc.ToString("dd/MM/yyyy HH:mm")</span>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <div class="text-muted small">Chưa có đăng ký gói.</div>
+                            }
+
+                            <h4 class="mt-3">Phiên đăng nhập</h4>
+                            @if (user.AppSessions!.Any())
+                            {
+                                <ul class="entity-overlay-list">
+                                    @foreach (var session in user.AppSessions!.OrderByDescending(s => s.IssuedAtUtc).Take(6))
+                                    {
+                                        <li>
+                                            <strong>@session.DeviceId</strong>
+                                            <span>@(session.IsActive ? "Active" : "Inactive") • Hết hạn @session.ExpiresAtUtc.ToString("dd/MM/yyyy HH:mm")</span>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <div class="text-muted small">Chưa có phiên nào.</div>
+                            }
+                        </section>
+
+                        <section class="entity-overlay-panel entity-overlay-panel-full">
+                            <h4>Lịch sử nghe gần đây</h4>
+                            @if (user.ListeningHistories!.Any())
+                            {
+                                <ul class="entity-overlay-list">
+                                    @foreach (var history in user.ListeningHistories!.OrderByDescending(h => h.LastListenedAtUtc).Take(8))
+                                    {
+                                        <li>
+                                            <strong>@history.AudioTitle</strong>
+                                            <span>@history.LastListenedAtUtc.ToString("dd/MM/yyyy HH:mm") • @history.Progress.ToString("P0")</span>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <div class="text-muted small">Chưa có lịch sử nghe.</div>
+                            }
+                        </section>
+                    </div>
+                </template>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-body text-center text-muted py-4">
+                <i class="fa fa-inbox fa-2x mb-2 d-block"></i>
+                Không tìm thấy người dùng
+            </div>
+        </div>
+    }
+
+    <div class="text-muted mt-3 small">
+        Tổng: <strong>@Model.Users.Count</strong> người dùng
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const overlay = document.getElementById('entityOverlay');
+            const titleNode = document.getElementById('entityOverlayTitle');
+            const contentNode = document.getElementById('entityOverlayContent');
+            const closeButtons = overlay ? overlay.querySelectorAll('[data-close-overlay]') : [];
+
+            if (!overlay || !titleNode || !contentNode) return;
+
+            const closeOverlay = () => {
+                overlay.classList.add('d-none');
+                document.body.classList.remove('translation-preview-open');
+                contentNode.innerHTML = '';
+            };
+
+            closeButtons.forEach(btn => btn.addEventListener('click', closeOverlay));
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && !overlay.classList.contains('d-none')) {
+                    closeOverlay();
+                }
+            });
+
+            document.querySelectorAll('.js-open-entity-overlay').forEach(button => {
+                button.addEventListener('click', () => {
+                    const templateId = button.getAttribute('data-template-id');
+                    const title = button.getAttribute('data-overlay-title') || 'Chi tiết';
+                    const template = templateId ? document.getElementById(templateId) : null;
+                    if (!template) return;
+
+                    titleNode.textContent = title;
+                    contentNode.innerHTML = template.innerHTML;
+                    overlay.classList.remove('d-none');
+                    document.body.classList.add('translation-preview-open');
+                });
+            });
+        })();
+    </script>
+}
+
+<div class="entity-overlay d-none" id="entityOverlay" aria-hidden="true">
+    <div class="entity-overlay-backdrop" data-close-overlay="true"></div>
+    <div class="entity-overlay-dialog" role="dialog" aria-modal="true" aria-labelledby="entityOverlayTitle">
+        <div class="entity-overlay-header">
+            <h3 id="entityOverlayTitle" class="mb-0">Chi tiết</h3>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-close-overlay="true">
+                <i class="fa fa-xmark"></i>
+            </button>
+        </div>
+        <div class="entity-overlay-content" id="entityOverlayContent"></div>
+    </div>
+</div>

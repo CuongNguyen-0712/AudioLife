@@ -32,6 +32,10 @@ public static class DbInitializer
             EnsureAuthUserAccounts(context);
             EnsurePoiAdminAssignments(context);
             EnsureListeningHistory(context);
+            EnsurePaymentPackages(context);
+            EnsureAppUsers(context);
+            EnsureUserSubscriptions(context);
+            EnsureUserAppSessions(context);
             return;
         }
 
@@ -88,6 +92,10 @@ public static class DbInitializer
         EnsureAuthUserAccounts(context);
         EnsurePoiAdminAssignments(context);
         EnsureListeningHistory(context);
+        EnsurePaymentPackages(context);
+        EnsureAppUsers(context);
+        EnsureUserSubscriptions(context);
+        EnsureUserAppSessions(context);
     }
 
     private static void EnsureAuthUserAccounts(AppDbContext context)
@@ -140,9 +148,20 @@ public static class DbInitializer
                 continue;
             }
 
+            Guid? parsedUserId = null;
+            if (!string.IsNullOrWhiteSpace(seed.UserId) && Guid.TryParse(seed.UserId, out var userIdValue))
+            {
+                var userExists = context.AppUsers.Any(item => item.Id == userIdValue);
+                if (userExists)
+                {
+                    parsedUserId = userIdValue;
+                }
+            }
+
             context.ListeningHistories.Add(new ListeningHistory
             {
                 Id = seed.Id,
+                UserId = parsedUserId,
                 AudioGuideId = seed.AudioGuideId,
                 LocationId = seed.LocationId,
                 AudioTitle = seed.AudioTitle,
@@ -159,6 +178,66 @@ public static class DbInitializer
         context.SaveChanges();
     }
 
+    private static void EnsurePaymentPackages(AppDbContext context)
+    {
+        var packages = SampleData.GetPaymentPackages();
+
+        foreach (var seed in packages)
+        {
+            var existing = context.PaymentPackages.FirstOrDefault(item => item.Id == seed.Id);
+            if (existing is null)
+            {
+                context.PaymentPackages.Add(seed);
+                continue;
+            }
+
+            existing.Name = seed.Name;
+            existing.Description = seed.Description;
+            existing.Price = seed.Price;
+            existing.Currency = seed.Currency;
+            existing.DurationDays = seed.DurationDays;
+            existing.IsActive = seed.IsActive;
+        }
+
+        context.SaveChanges();
+    }
+
+    private static void EnsureAppUsers(AppDbContext context)
+    {
+        if (context.AppUsers.Any())
+        {
+            return;
+        }
+
+        var users = SampleData.GetSampleAppUsers();
+        context.AppUsers.AddRange(users);
+        context.SaveChanges();
+    }
+
+    private static void EnsureUserSubscriptions(AppDbContext context)
+    {
+        if (context.UserSubscriptions.Any())
+        {
+            return;
+        }
+
+        var subscriptions = SampleData.GetSampleUserSubscriptions();
+        context.UserSubscriptions.AddRange(subscriptions);
+        context.SaveChanges();
+    }
+
+    private static void EnsureUserAppSessions(AppDbContext context)
+    {
+        if (context.UserAppSessions.Any())
+        {
+            return;
+        }
+
+        var sessions = SampleData.GetSampleUserAppSessions();
+        context.UserAppSessions.AddRange(sessions);
+        context.SaveChanges();
+    }
+
     private static void EnsureLegacyTablesRemoved(AppDbContext context)
     {
         context.Database.ExecuteSqlRaw(@"
@@ -170,11 +249,6 @@ END
 IF OBJECT_ID(N'dbo.Feedbacks', N'U') IS NOT NULL
 BEGIN
     DROP TABLE [dbo].[Feedbacks];
-END
-
-IF OBJECT_ID(N'dbo.AppUsers', N'U') IS NOT NULL
-BEGIN
-    DROP TABLE [dbo].[AppUsers];
 END
 ");
     }
@@ -253,6 +327,7 @@ IF OBJECT_ID(N'dbo.ListeningHistory', N'U') IS NULL
 BEGIN
     CREATE TABLE [dbo].[ListeningHistory](
         [Id] nvarchar(100) NOT NULL,
+        [UserId] uniqueidentifier NULL,
         [AudioGuideId] nvarchar(50) NOT NULL,
         [LocationId] nvarchar(50) NOT NULL,
         [AudioTitle] nvarchar(200) NOT NULL,
@@ -264,15 +339,69 @@ BEGIN
         [IsCompleted] bit NOT NULL,
         [LastListenedAtUtc] datetime2 NOT NULL,
         CONSTRAINT [PK_ListeningHistory] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_ListeningHistory_AppUsers_UserId]
+            FOREIGN KEY ([UserId]) REFERENCES [dbo].[AppUsers]([Id]),
         CONSTRAINT [FK_ListeningHistory_AudioGuides_AudioGuideId]
             FOREIGN KEY ([AudioGuideId]) REFERENCES [dbo].[AudioGuides]([Id]),
         CONSTRAINT [FK_ListeningHistory_Locations_LocationId]
             FOREIGN KEY ([LocationId]) REFERENCES [dbo].[Locations]([Id])
     );
 
+    CREATE INDEX [IX_ListeningHistory_UserId] ON [dbo].[ListeningHistory]([UserId]);
     CREATE INDEX [IX_ListeningHistory_AudioGuideId] ON [dbo].[ListeningHistory]([AudioGuideId]);
     CREATE INDEX [IX_ListeningHistory_LocationId] ON [dbo].[ListeningHistory]([LocationId]);
     CREATE INDEX [IX_ListeningHistory_LastListenedAtUtc] ON [dbo].[ListeningHistory]([LastListenedAtUtc]);
+    CREATE INDEX [IX_ListeningHistory_LocationId_LastListenedAtUtc] ON [dbo].[ListeningHistory]([LocationId], [LastListenedAtUtc]);
+    CREATE INDEX [IX_ListeningHistory_UserId_LastListenedAtUtc] ON [dbo].[ListeningHistory]([UserId], [LastListenedAtUtc]);
+END
+
+IF OBJECT_ID(N'dbo.ListeningHistory', N'U') IS NOT NULL
+BEGIN
+    IF COL_LENGTH('dbo.ListeningHistory', 'UserId') IS NULL
+    BEGIN
+        ALTER TABLE [dbo].[ListeningHistory] ADD [UserId] uniqueidentifier NULL;
+    END
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM sys.foreign_keys
+        WHERE name = N'FK_ListeningHistory_AppUsers_UserId'
+    )
+    BEGIN
+        ALTER TABLE [dbo].[ListeningHistory]
+        ADD CONSTRAINT [FK_ListeningHistory_AppUsers_UserId]
+            FOREIGN KEY ([UserId]) REFERENCES [dbo].[AppUsers]([Id]);
+    END
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM sys.indexes
+        WHERE name = N'IX_ListeningHistory_UserId'
+          AND object_id = OBJECT_ID(N'dbo.ListeningHistory')
+    )
+    BEGIN
+        CREATE INDEX [IX_ListeningHistory_UserId] ON [dbo].[ListeningHistory]([UserId]);
+    END
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM sys.indexes
+        WHERE name = N'IX_ListeningHistory_LocationId_LastListenedAtUtc'
+          AND object_id = OBJECT_ID(N'dbo.ListeningHistory')
+    )
+    BEGIN
+        CREATE INDEX [IX_ListeningHistory_LocationId_LastListenedAtUtc] ON [dbo].[ListeningHistory]([LocationId], [LastListenedAtUtc]);
+    END
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM sys.indexes
+        WHERE name = N'IX_ListeningHistory_UserId_LastListenedAtUtc'
+          AND object_id = OBJECT_ID(N'dbo.ListeningHistory')
+    )
+    BEGIN
+        CREATE INDEX [IX_ListeningHistory_UserId_LastListenedAtUtc] ON [dbo].[ListeningHistory]([UserId], [LastListenedAtUtc]);
+    END
 END
 ");
     }

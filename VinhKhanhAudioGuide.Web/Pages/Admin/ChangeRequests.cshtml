@@ -111,6 +111,10 @@
                             {
                                 <div class="request-item-meta mt-1"><span class="badge text-bg-info">TTS sau duyệt</span></div>
                             }
+                            @if (row.IsDeleteRequest)
+                            {
+                                <div class="request-item-meta mt-1"><span class="badge text-bg-danger">Xóa sau duyệt</span></div>
+                            }
                         </button>
                     }
                 }
@@ -143,6 +147,10 @@
                                         @if (row.IsTtsOnApproval)
                                         {
                                             <div class="small mt-1"><span class="badge text-bg-info">TTS sẽ được tạo khi duyệt Approved</span></div>
+                                        }
+                                        @if (row.IsDeleteRequest)
+                                        {
+                                            <div class="small mt-1"><span class="badge text-bg-danger">Xóa sẽ được áp dụng khi duyệt Approved</span></div>
                                         }
                                     </div>
                                     <span class="badge @row.StatusBadgeClass">@item.Status</span>

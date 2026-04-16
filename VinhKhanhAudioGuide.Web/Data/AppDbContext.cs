@@ -17,6 +17,10 @@ public class AppDbContext : DbContext
     public DbSet<PoiChangeRequest> PoiChangeRequests => Set<PoiChangeRequest>();
     public DbSet<PoiAdminLocationAssignment> PoiAdminLocationAssignments => Set<PoiAdminLocationAssignment>();
     public DbSet<ListeningHistory> ListeningHistories => Set<ListeningHistory>();
+    public DbSet<AppUser> AppUsers => Set<AppUser>();
+    public DbSet<PaymentPackage> PaymentPackages => Set<PaymentPackage>();
+    public DbSet<UserSubscription> UserSubscriptions => Set<UserSubscription>();
+    public DbSet<UserAppSession> UserAppSessions => Set<UserAppSession>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -87,6 +91,11 @@ public class AppDbContext : DbContext
             entity.ToTable("ListeningHistory");
             entity.Property(item => item.Progress).HasPrecision(5, 4);
 
+            entity.HasOne(item => item.User)
+                .WithMany(user => user.ListeningHistories)
+                .HasForeignKey(item => item.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             entity.HasOne(item => item.AudioGuide)
                 .WithMany(guide => guide.ListeningHistories)
                 .HasForeignKey(item => item.AudioGuideId)
@@ -97,10 +106,78 @@ public class AppDbContext : DbContext
                 .HasForeignKey(item => item.LocationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            entity.HasIndex(item => item.UserId);
             entity.HasIndex(item => item.AudioGuideId);
             entity.HasIndex(item => item.LocationId);
             entity.HasIndex(item => item.LastListenedAtUtc);
+            entity.HasIndex(item => new { item.LocationId, item.LastListenedAtUtc });
+            entity.HasIndex(item => new { item.UserId, item.LastListenedAtUtc });
+        });
+
+        // Configuration for AppUser
+        modelBuilder.Entity<AppUser>(entity =>
+        {
+            entity.HasIndex(item => item.QrCodeValue).IsUnique();
+            entity.HasIndex(item => item.PhoneNumber);
+            entity.HasIndex(item => item.Email);
+            entity.HasIndex(item => item.Status);
+
+            entity.Property(item => item.QrCodeValue).IsRequired().HasMaxLength(255);
+            entity.Property(item => item.Status).IsRequired().HasMaxLength(30);
+        });
+
+        // Configuration for PaymentPackage
+        modelBuilder.Entity<PaymentPackage>(entity =>
+        {
+            entity.HasKey(item => item.Id);
+            entity.HasIndex(item => item.IsActive);
+            entity.HasIndex(item => item.Price);
+
+            entity.Property(item => item.Id).HasMaxLength(50);
+            entity.Property(item => item.Name).IsRequired().HasMaxLength(150);
+            entity.Property(item => item.Currency).IsRequired().HasMaxLength(10);
+        });
+
+        // Configuration for UserSubscription
+        modelBuilder.Entity<UserSubscription>(entity =>
+        {
+            entity.HasIndex(item => item.UserId);
+            entity.HasIndex(item => item.PackageId);
+            entity.HasIndex(item => item.Status);
+            entity.HasIndex(item => item.ExpiresAtUtc);
+            entity.HasIndex(item => new { item.UserId, item.Status });
+
+            entity.Property(item => item.PackageId).IsRequired().HasMaxLength(50);
+            entity.Property(item => item.Status).IsRequired().HasMaxLength(30);
+
+            entity.HasOne(item => item.User)
+                .WithMany(u => u.Subscriptions)
+                .HasForeignKey(item => item.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(item => item.Package)
+                .WithMany(p => p.Subscriptions)
+                .HasForeignKey(item => item.PackageId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configuration for UserAppSession
+        modelBuilder.Entity<UserAppSession>(entity =>
+        {
+            entity.HasIndex(item => item.UserId);
+            entity.HasIndex(item => item.DeviceId);
+            entity.HasIndex(item => item.TokenValue).IsUnique();
+            entity.HasIndex(item => item.IsActive);
+            entity.HasIndex(item => item.ExpiresAtUtc);
+            entity.HasIndex(item => new { item.UserId, item.DeviceId });
+
+            entity.Property(item => item.TokenValue).IsRequired().HasMaxLength(2000);
+            entity.Property(item => item.DeviceId).IsRequired().HasMaxLength(255);
+
+            entity.HasOne(item => item.User)
+                .WithMany(u => u.AppSessions)
+                .HasForeignKey(item => item.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
-

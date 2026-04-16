@@ -1,0 +1,76 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Shop.Locations.IndexModel
+@{
+    ViewData["Title"] = "Quản lý địa điểm";
+    ViewData["ActivePage"] = "ShopLocations";
+}
+
+<div class="dashboard-hero mb-4">
+    <div>
+        <p class="hero-kicker"><i class="fa-solid fa-map-location-dot"></i> Không gian POI</p>
+        <h1 class="hero-title">Quản lý địa điểm</h1>
+        <p class="hero-subtitle">Xem, sửa và gửi yêu cầu xóa địa điểm theo quy trình duyệt của Admin Hệ thống.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a asp-page="/Shop/Locations/Create" class="btn btn-shop">
+            <i class="fas fa-location-plus"></i> Tạo POI mới (gửi duyệt)
+        </a>
+        <a asp-page="/Shop/Index" class="btn btn-outline-secondary">Về bảng điều khiển POI</a>
+    </div>
+</div>
+
+<div class="shop-card card-v2">
+    <div class="shop-card-body">
+        @if (TempData["Success"] is string successMessage && !string.IsNullOrWhiteSpace(successMessage))
+        {
+            <div class="alert alert-success alert-admin mb-4">@successMessage</div>
+        }
+
+        @if (!Model.Locations.Any())
+        {
+            <div class="text-muted">Bạn chưa được phân quyền cho địa điểm nào.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped align-middle mb-0 table-v2">
+                    <thead>
+                        <tr>
+                            <th>Địa điểm</th>
+                            <th>Danh mục</th>
+                            <th>Audio</th>
+                            <th class="text-end">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Locations)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@row.Location.Name</strong>
+                                    <div class="small text-muted">@row.Location.Address</div>
+                                </td>
+                                <td>@(row.Location.Category?.Name ?? row.Location.CategoryId)</td>
+                                <td><span class="badge text-bg-light border">@row.AudioCount audio</span></td>
+                                <td class="text-end">
+                                    <div class="shop-table-actions">
+                                        <a asp-page="/Shop/Locations/Edit" asp-route-id="@row.Location.Id" class="btn btn-sm btn-outline-primary">Sửa (gửi duyệt)</a>
+                                        <a asp-page="/Shop/AudioGuides/Index" asp-route-locationId="@row.Location.Id" class="btn btn-sm btn-outline-success">Audio</a>
+                                        <form method="post" asp-page-handler="Delete" class="d-inline">
+                                            <input type="hidden" name="id" value="@row.Location.Id" />
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('Gửi yêu cầu xóa địa điểm này?');">
+                                                Xóa (gửi duyệt)
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

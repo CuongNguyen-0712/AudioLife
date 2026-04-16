@@ -26,6 +26,8 @@ public class DbPoiChangeRequestService : IPoiChangeRequestService
     private const string TtsOnApprovalField = "__tts_on_approval";
     private const string CreateLocationAction = "create-location";
     private const string CreateAudioGuideAction = "create-audio-guide";
+    private const string DeleteLocationAction = "delete-location";
+    private const string DeleteAudioGuideAction = "delete-audio-guide";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -252,6 +254,7 @@ public class DbPoiChangeRequestService : IPoiChangeRequestService
     {
         changeSet.Fields.TryGetValue(ChangeActionField, out var actionValue);
         var isCreateAction = string.Equals(actionValue, CreateLocationAction, StringComparison.OrdinalIgnoreCase);
+        var isDeleteAction = string.Equals(actionValue, DeleteLocationAction, StringComparison.OrdinalIgnoreCase);
 
         var location = await _db.Locations.FirstOrDefaultAsync(item => item.Id == request.TargetEntityId);
 
@@ -287,6 +290,41 @@ public class DbPoiChangeRequestService : IPoiChangeRequestService
                 return false;
             }
 
+            return true;
+        }
+
+        if (isDeleteAction)
+        {
+            if (location is null)
+            {
+                return false;
+            }
+
+            var audioIds = await _db.AudioGuides
+                .AsNoTracking()
+                .Where(item => item.LocationId == location.Id)
+                .Select(item => item.Id)
+                .ToListAsync();
+
+            var hasListeningHistory = await _db.ListeningHistories
+                .AsNoTracking()
+                .AnyAsync(item => item.LocationId == location.Id || audioIds.Contains(item.AudioGuideId));
+
+            if (hasListeningHistory)
+            {
+                return false;
+            }
+
+            var assignments = await _db.PoiAdminLocationAssignments
+                .Where(item => item.LocationId == location.Id)
+                .ToListAsync();
+
+            if (assignments.Count > 0)
+            {
+                _db.PoiAdminLocationAssignments.RemoveRange(assignments);
+            }
+
+            _db.Locations.Remove(location);
             return true;
         }
 
@@ -443,6 +481,7 @@ public class DbPoiChangeRequestService : IPoiChangeRequestService
         changeSet.Fields.TryGetValue(ChangeActionField, out var actionValue);
         changeSet.Fields.TryGetValue(TtsOnApprovalField, out var ttsOnApprovalValue);
         var isCreateAction = string.Equals(actionValue, CreateAudioGuideAction, StringComparison.OrdinalIgnoreCase);
+        var isDeleteAction = string.Equals(actionValue, DeleteAudioGuideAction, StringComparison.OrdinalIgnoreCase);
         var shouldGenerateTtsOnApproval = bool.TryParse(ttsOnApprovalValue, out var parseResult) && parseResult;
 
         var audio = await _db.AudioGuides.FirstOrDefaultAsync(item => item.Id == request.TargetEntityId);
@@ -487,6 +526,26 @@ public class DbPoiChangeRequestService : IPoiChangeRequestService
             }
 
             _db.AudioGuides.Add(audio);
+            return true;
+        }
+
+        if (isDeleteAction)
+        {
+            if (audio is null)
+            {
+                return false;
+            }
+
+            var hasListeningHistory = await _db.ListeningHistories
+                .AsNoTracking()
+                .AnyAsync(item => item.AudioGuideId == audio.Id);
+
+            if (hasListeningHistory)
+            {
+                return false;
+            }
+
+            _db.AudioGuides.Remove(audio);
             return true;
         }
 
