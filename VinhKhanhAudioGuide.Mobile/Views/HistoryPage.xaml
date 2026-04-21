@@ -1,11 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
              xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
              xmlns:models="clr-namespace:VinhKhanhAudioGuide.Mobile.Models"
              x:Class="VinhKhanhAudioGuide.Mobile.Views.HistoryPage"
              x:DataType="viewmodels:HistoryViewModel"
-                 Title="Lịch sử nghe"
+                 Title="{ext:Translate History_PageTitle}"
                  Padding="12,10,12,20"
                  BackgroundColor="{StaticResource Surface}">
 
@@ -17,11 +18,11 @@
 
             <CollectionView.Header>
                 <VerticalStackLayout Spacing="2" Margin="0,0,0,8">
-                    <Label Text="Lịch sử nghe"
+                          <Label Text="{ext:Translate History_HeaderTitle}"
                            FontSize="24"
                            FontAttributes="Bold"
                            TextColor="{StaticResource OnSurface}" />
-                    <Label Text="Theo dõi tiến độ các audio bạn đã nghe gần đây"
+                          <Label Text="{ext:Translate History_HeaderSubtitle}"
                            FontSize="14"
                            TextColor="{StaticResource Gray500}" />
                 </VerticalStackLayout>
@@ -35,7 +36,7 @@
               BackgroundColor="{StaticResource SurfaceContainerLow}">
               <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10">
                <Image Source="history.svg" HeightRequest="36" Opacity="0.45"/>
-               <Label Text="Chưa có lịch sử nghe"
+               <Label Text="{ext:Translate History_Empty}"
                    FontSize="14"
                    HorizontalOptions="Center"
                    TextColor="{StaticResource OnSurfaceVariant}"/>
@@ -112,7 +113,7 @@
                                            CornerRadius="10"
                                            HasShadow="False"
                                            BackgroundColor="{StaticResource SecondaryContainer}">
-                                        <Label Text="{Binding LanguageDisplay, StringFormat='Ngôn ngữ: {0}'}"
+                                             <Label Text="{Binding LanguageDisplay, StringFormat={ext:Translate History_LanguageFormat}}"
                                                FontSize="11"
                                                TextColor="{StaticResource Primary}"/>
                                     </Frame>
@@ -140,3 +141,4 @@
     </RefreshView>
 
 </ContentPage>
+

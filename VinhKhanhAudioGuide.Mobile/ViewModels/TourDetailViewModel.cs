@@ -12,6 +12,7 @@ public partial class TourDetailViewModel : ObservableObject
 {
     private readonly INavigationService _navigationService;
     private readonly IApiService _apiService;
+    private readonly ILocalizationService _localizationService;
     private string _pendingTourId = string.Empty;
     private string _loadedTourId = string.Empty;
 
@@ -41,10 +42,14 @@ public partial class TourDetailViewModel : ObservableObject
 
     public ObservableCollection<TourLocationItem> TourLocations { get; } = new();
 
-    public TourDetailViewModel(INavigationService navigationService, IApiService apiService)
+    public TourDetailViewModel(
+        INavigationService navigationService,
+        IApiService apiService,
+        ILocalizationService localizationService)
     {
         _navigationService = navigationService;
         _apiService = apiService;
+        _localizationService = localizationService;
     }
 
     partial void OnTourIdChanged(string value)
@@ -277,14 +282,23 @@ map.scrollWheelZoom.enable();
         MapHtmlSource = new HtmlWebViewSource { Html = html };
     }
 
-    private static string FormatDuration(int minutes)
+    private string FormatDuration(int minutes)
     {
+        if (minutes <= 0)
+        {
+            return string.Format(_localizationService.GetString("Tour_DurationMinutesFormat"), 0);
+        }
+
         if (minutes < 60)
-            return $"{minutes} phút";
+        {
+            return string.Format(_localizationService.GetString("Tour_DurationMinutesFormat"), minutes);
+        }
 
         var hours = minutes / 60;
         var mins = minutes % 60;
-        return mins > 0 ? $"{hours}h {mins}p" : $"{hours} giờ";
+        return mins > 0
+            ? string.Format(_localizationService.GetString("Tour_DurationHoursMinutesFormat"), hours, mins)
+            : string.Format(_localizationService.GetString("Tour_DurationHoursOnlyFormat"), hours);
     }
 
     [RelayCommand]

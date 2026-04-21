@@ -131,13 +131,13 @@ public partial class QrScannerPage : ContentPage
 
 	private async Task HandleScannedValueAsync(string rawValue)
 	{
-		StatusLabel.Text = $"Đã quét: {rawValue}";
+		StatusLabel.Text = string.Format(_localizationService.GetString("Qr_StatusScannedFormat"), rawValue);
 
 		if (!QrCodePayloadService.TryParseAudioPayload(rawValue, out var payload))
 		{
 			await DisplayAlert(
 				_localizationService.GetString("Common_Notice"),
-				$"QR đã đọc được nhưng không đúng định dạng deep link:\n{rawValue}",
+				string.Format(_localizationService.GetString("Qr_StatusInvalidDeepLinkFormat"), rawValue),
 				_localizationService.GetString("Common_Understood"));
 
 			if (_isPageActive)
@@ -154,7 +154,7 @@ public partial class QrScannerPage : ContentPage
 			return;
 		}
 
-		StatusLabel.Text = "Đang chuyển đến màn hình thanh toán...";
+		StatusLabel.Text = _localizationService.GetString("Qr_StatusGoToPayment");
 		await App.CompleteQrOnboardingAsync(payload);
 	}
 
@@ -272,7 +272,7 @@ public partial class QrScannerPage : ContentPage
 			if (string.IsNullOrWhiteSpace(qrText) || !QrCodePayloadService.TryParseAudioPayload(qrText, out _))
 			{
 				qrText = BuildFallbackSampleDeepLink();
-				StatusLabel.Text = "QR mẫu chưa đúng định dạng, đang dùng payload mẫu nội bộ...";
+				StatusLabel.Text = _localizationService.GetString("Qr_StatusSampleFallback");
 			}
 
 			_isHandlingResult = true;

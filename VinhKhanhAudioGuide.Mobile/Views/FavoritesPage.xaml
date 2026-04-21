@@ -1,11 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
              xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
              xmlns:models="clr-namespace:VinhKhanhAudioGuide.Mobile.Models"
              x:Class="VinhKhanhAudioGuide.Mobile.Views.FavoritesPage"
              x:DataType="viewmodels:FavoritesViewModel"
-             Title="Yêu thích">
+             Title="{ext:Translate Favorites_PageTitle}">
 
     <Grid RowDefinitions="Auto,*">
 
@@ -19,16 +20,16 @@
                    HeightRequest="150"
                    WidthRequest="150"
                    Opacity="0.5"/>
-            <Label Text="Chưa có địa điểm yêu thích"
+                 <Label Text="{ext:Translate Favorites_EmptyTitle}"
                    FontSize="18"
                    FontAttributes="Bold"
                    HorizontalOptions="Center"
                    Margin="0,20,0,10"/>
-            <Label Text="Nhấn vào biểu tượng trái tim để thêm địa điểm vào danh sách yêu thích"
+                 <Label Text="{ext:Translate Favorites_EmptyDescription}"
                    FontSize="14"
                    TextColor="{StaticResource Gray500}"
                    HorizontalTextAlignment="Center"/>
-            <Button Text="Khám phá địa điểm"
+                 <Button Text="{ext:Translate Favorites_ExploreButton}"
                     Command="{Binding ExploreCommand}"
                     Margin="0,20,0,0"/>
         </VerticalStackLayout>
@@ -44,7 +45,7 @@
                     <SwipeView>
                         <SwipeView.RightItems>
                             <SwipeItems>
-                                <SwipeItem Text="Xóa"
+                                <SwipeItem Text="{ext:Translate Common_Delete}"
                                            BackgroundColor="{StaticResource AudioGuideRed}"
                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:FavoritesViewModel}}, Path=RemoveFavoriteCommand}"
                                            CommandParameter="{Binding .}"/>
@@ -75,7 +76,7 @@
                                         <Image Source="time_icon.png"
                                                 HeightRequest="12"
                                                 WidthRequest="12"/>
-                                        <Label Text="{Binding Duration, StringFormat='{0} phút'}"
+                                             <Label Text="{Binding Duration, StringFormat={ext:Translate Common_MinutesFormat}}"
                                                FontSize="11"
                                                TextColor="{StaticResource Primary}"/>
                                     </HorizontalStackLayout>
@@ -97,3 +98,4 @@
     </Grid>
 
 </ContentPage>
+

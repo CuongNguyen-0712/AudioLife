@@ -1,15 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
              x:Class="VinhKhanhAudioGuide.Mobile.Views.PaymentCheckoutPage"
-             Title="Thanh toán"
+             Title="{ext:Translate PaymentCheckout_Title}"
              BackgroundColor="{StaticResource Surface}"
              NavigationPage.HasNavigationBar="True">
 
     <NavigationPage.TitleView>
         <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
             <Image Source="tour.svg" HeightRequest="18" WidthRequest="18" VerticalOptions="Center" />
-            <Label Text="Thanh toán"
+                 <Label Text="{ext:Translate PaymentCheckout_Title}"
                    FontFamily="RobotoCondensed-SemiBold"
                    FontSize="20"
                    TextColor="{StaticResource Primary}"
@@ -23,7 +24,7 @@
               RowSpacing="16">
            
                     <VerticalStackLayout Spacing="2" VerticalOptions="Center">
-                        <Label Text="Kiểm tra lại gói và hoàn tất thanh toán để mở khóa nội dung."
+                           <Label Text="{ext:Translate PaymentCheckout_Subtitle}"
                                FontFamily="RobotoCondensed-SemiBold"
                                FontSize="24"
                                TextColor="{StaticResource OnSurface}" />
@@ -55,12 +56,12 @@
 
                         <VerticalStackLayout Spacing="2" VerticalOptions="Center">
                             <Label x:Name="PlanTitleLabel"
-                                   Text="10.000đ/ngày"
+                                Text="{ext:Translate PaymentPlan_DailyTitle}"
                                    FontFamily="RobotoCondensed-SemiBold"
                                    FontSize="18"
                                    TextColor="{StaticResource OnSurface}" />
                             <Label x:Name="PlanSubtitleLabel"
-                                   Text="Một ngày sử dụng"
+                                Text="{ext:Translate PaymentPlan_DailyPriceLabel}"
                                    FontFamily="RobotoCondensed-Regular"
                                    FontSize="12"
                                    TextColor="{StaticResource OnSurfaceVariant}" />
@@ -75,13 +76,13 @@
                         </Border.StrokeShape>
                         <VerticalStackLayout Spacing="8">
                             <HorizontalStackLayout>
-                                <Label Text="Giá tiền"
+                                    <Label Text="{ext:Translate TourDetail_PriceLabel}"
                                        FontFamily="RobotoCondensed-Regular"
                                        FontSize="13"
                                        Margin="0,0,8,0"
                                        TextColor="{StaticResource OnSurfaceVariant}" />
                                 <Label x:Name="PriceLabel"
-                                       Text="10.000đ"
+                                        Text="{ext:Translate PaymentCheckout_DefaultPrice}"
                                        FontFamily="RobotoCondensed-SemiBold"
                                        FontSize="16"
                                        TextColor="{StaticResource Primary}"
@@ -89,7 +90,7 @@
                             </HorizontalStackLayout>
 
                             <Label x:Name="PlanDescriptionLabel"
-                                   Text="Phù hợp khi bạn muốn trải nghiệm nhanh trong một ngày, tối ưu cho khách ghé ngắn."
+                                   Text="{ext:Translate PaymentPlan_DailyDescription}"
                                    FontFamily="RobotoCondensed-Regular"
                                    FontSize="13"
                                    LineBreakMode="WordWrap"
@@ -112,7 +113,7 @@
                            WidthRequest="16"
                            HeightRequest="16"
                            VerticalOptions="Center" />
-                    <Label Text="Giao dịch được xác nhận ngay sau khi bấm thanh toán."
+                          <Label Text="{ext:Translate PaymentCheckout_Notice}"
                            FontFamily="RobotoCondensed-Medium"
                            FontSize="12"
                            TextColor="{StaticResource OnTertiaryFixed}" />
@@ -122,9 +123,10 @@
             <VerticalStackLayout Grid.Row="3" />
 
             <Button Grid.Row="4"
-                    Text="Thanh toán"
+                    Text="{ext:Translate PaymentCheckout_PayButton}"
                     Style="{StaticResource PrimaryButton}"
                     Clicked="OnPayClicked" />
         </Grid>
     </Grid>
 </ContentPage>
+

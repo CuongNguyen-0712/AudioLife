@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
              xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
              x:Class="VinhKhanhAudioGuide.Mobile.Views.SearchPage"
              x:DataType="viewmodels:SearchViewModel"
              x:Name="SearchRoot"
-             Title="Kết quả"
+             Title="{ext:Translate Search_PageTitle}"
              Shell.NavBarIsVisible="True"
              BackgroundColor="{StaticResource Gray100}">
 
@@ -107,11 +108,11 @@
                                  HorizontalOptions="Center"
                                  Padding="32"
                                  Spacing="6">
-                <Label Text="Không có kết quả phù hợp"
+                  <Label Text="{ext:Translate Search_EmptyTitle}"
                        FontSize="16"
                        FontAttributes="Bold"
                        HorizontalOptions="Center" />
-                <Label Text="Hãy thử từ khóa khác hoặc thay đổi bộ lọc."
+                  <Label Text="{ext:Translate Search_EmptyDescription}"
                        FontSize="13"
                        TextColor="{StaticResource OnSurfaceVariant}"
                        HorizontalTextAlignment="Center" />

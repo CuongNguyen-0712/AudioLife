@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
              x:Class="VinhKhanhAudioGuide.Mobile.Views.LanguageSection"
              BackgroundColor="{StaticResource PrimaryContainer}"
              Shell.NavBarIsVisible="False">
@@ -26,7 +27,7 @@
                                  HorizontalOptions="Center"
                                  WidthRequest="279">
                   <Label x:Name="TitleLabel"
-                      Text="Ngôn ngữ của bạn"
+                      Text="{ext:Translate Language_Page_Title}"
                        FontFamily="RobotoCondensed-SemiBold"
                        FontSize="24"
                        Margin="0,0,0,8"
@@ -43,7 +44,7 @@
                         <TapGestureRecognizer Tapped="OnVietnameseTapped" />
                     </Border.GestureRecognizers>
                           <Label x:Name="VietnameseOptionLabel"
-                              Text="Tiếng Việt"
+                              Text="{ext:Translate Language_Option_Vietnamese}"
                            TextColor="{StaticResource OnSecondaryContainer}"
                            FontFamily="RobotoCondensed-Medium"
                            FontSize="16"
@@ -62,7 +63,7 @@
                         <TapGestureRecognizer Tapped="OnEnglishTapped" />
                     </Border.GestureRecognizers>
                     <Label x:Name="EnglishOptionLabel"
-                           Text="English"
+                              Text="{ext:Translate Language_Option_English}"
                            TextColor="{StaticResource OnSecondaryContainer}"
                            FontFamily="RobotoCondensed-Medium"
                            FontSize="16"
@@ -81,7 +82,7 @@
                         <TapGestureRecognizer Tapped="OnChineseSimplifiedTapped" />
                     </Border.GestureRecognizers>
                     <Label x:Name="ChineseSimplifiedOptionLabel"
-                           Text="简体中文"
+                              Text="{ext:Translate Language_Option_ChineseSimplified}"
                            TextColor="{StaticResource OnSecondaryContainer}"
                            FontFamily="RobotoCondensed-Medium"
                            FontSize="16"
@@ -110,7 +111,7 @@
                                HorizontalOptions="Center" />
             <Label x:Name="LoadingTextLabel"
                    Grid.Row="1"
-                   Text="Loading..."
+                     Text="{ext:Translate Language_Applying}"
                    FontFamily="RobotoCondensed-Medium"
                    FontSize="14"
                    TextColor="White"

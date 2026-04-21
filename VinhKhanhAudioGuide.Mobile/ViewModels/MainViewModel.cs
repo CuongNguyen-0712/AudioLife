@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -184,7 +184,7 @@ public partial class MainViewModel : ObservableObject
         foreach (var loc in locations.Take(6))
             FeaturedLocations.Add(loc);
 
-        // More locations (rest, matching web "Khám phá thêm")
+        // More locations (rest, matching web "KhÃ¡m phÃ¡ thÃªm")
         MoreLocations.Clear();
         foreach (var loc in locations.Skip(6))
             MoreLocations.Add(loc);
@@ -970,17 +970,17 @@ public partial class MainViewModel : ObservableObject
         var title = guide.Title ?? string.Empty;
 
         if (id.EndsWith("_1", StringComparison.OrdinalIgnoreCase)
-            || title.Contains("Giới thiệu", StringComparison.OrdinalIgnoreCase)
+            || title.Contains("价格»›i thiá»‡u", StringComparison.OrdinalIgnoreCase)
             || title.Contains("Introduction", StringComparison.OrdinalIgnoreCase)
-            || title.Contains("介绍", StringComparison.OrdinalIgnoreCase))
+            || title.Contains("ä»‹ç»", StringComparison.OrdinalIgnoreCase))
         {
             return 0;
         }
 
         if (id.EndsWith("_2", StringComparison.OrdinalIgnoreCase)
-            || title.Contains("Khám phá", StringComparison.OrdinalIgnoreCase)
+            || title.Contains("KhÃ¡m phÃ¡", StringComparison.OrdinalIgnoreCase)
             || title.Contains("Discovery", StringComparison.OrdinalIgnoreCase)
-            || title.Contains("探索", StringComparison.OrdinalIgnoreCase))
+            || title.Contains("æŽ¢ç´¢", StringComparison.OrdinalIgnoreCase))
         {
             return 1;
         }
@@ -1041,3 +1041,4 @@ public class FeaturedTourItem
     public int LocationCount { get; set; }
     public string PriceText { get; set; } = string.Empty;
 }
+

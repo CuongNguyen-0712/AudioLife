@@ -11,6 +11,7 @@ public partial class ToursViewModel : ObservableObject
     private readonly INavigationService _navigationService;
     private readonly IApiService _apiService;
     private readonly ITourCheckpointService _tourCheckpointService;
+    private readonly ILocalizationService _localizationService;
     private bool _resumePromptHandled;
     private string _lastPromptedCheckpoint = string.Empty;
 
@@ -20,11 +21,16 @@ public partial class ToursViewModel : ObservableObject
     public ObservableCollection<TourDisplayModel> FeaturedTours { get; } = new();
     public ObservableCollection<TourDisplayModel> AllTours { get; } = new();
 
-    public ToursViewModel(INavigationService navigationService, IApiService apiService, ITourCheckpointService tourCheckpointService)
+    public ToursViewModel(
+        INavigationService navigationService,
+        IApiService apiService,
+        ITourCheckpointService tourCheckpointService,
+        ILocalizationService localizationService)
     {
         _navigationService = navigationService;
         _apiService = apiService;
         _tourCheckpointService = tourCheckpointService;
+        _localizationService = localizationService;
         _ = LoadToursAsync();
     }
 
@@ -107,14 +113,23 @@ public partial class ToursViewModel : ObservableObject
         }
     }
 
-    private static string FormatDuration(int minutes)
+    private string FormatDuration(int minutes)
     {
+        if (minutes <= 0)
+        {
+            return string.Format(_localizationService.GetString("Tour_DurationMinutesFormat"), 0);
+        }
+
         if (minutes < 60)
-            return $"{minutes} phút";
+        {
+            return string.Format(_localizationService.GetString("Tour_DurationMinutesFormat"), minutes);
+        }
 
         var hours = minutes / 60;
         var mins = minutes % 60;
-        return mins > 0 ? $"{hours}h {mins}p" : $"{hours} giờ";
+        return mins > 0
+            ? string.Format(_localizationService.GetString("Tour_DurationHoursMinutesFormat"), hours, mins)
+            : string.Format(_localizationService.GetString("Tour_DurationHoursOnlyFormat"), hours);
     }
 
     [RelayCommand]

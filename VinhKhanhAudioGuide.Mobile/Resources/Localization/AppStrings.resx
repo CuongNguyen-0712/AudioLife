@@ -106,7 +106,7 @@
     <value>⏱ {0} phút</value>
   </data>
   <data name="Main_DurationHoursMinutesFormat" xml:space="preserve">
-    <value>⏱ {0}h {1}p</value>
+    <value>⏱ {0} giờ {1} phút</value>
   </data>
   <data name="Main_DurationHoursOnlyFormat" xml:space="preserve">
     <value>⏱ {0} giờ</value>
@@ -378,4 +378,151 @@
   <data name="Footer_QueueHintFormat" xml:space="preserve">
     <value>{0} • Bài {1}/{2}</value>
   </data>
+  <data name="Common_Close" xml:space="preserve"><value>Đóng</value></data>
+  <data name="Settings_Subtitle" xml:space="preserve"><value>Cá nhân hóa trải nghiệm nghe, ngôn ngữ và cài đặt phát</value></data>
+  <data name="Settings_LocationScanHint" xml:space="preserve"><value>Tần suất quét tự động theo vị trí</value></data>
+  <data name="Settings_Loading" xml:space="preserve"><value>Đang tải cài đặt...</value></data>
+  <data name="Settings_LoadError" xml:space="preserve"><value>Không thể tải cài đặt</value></data>
+  <data name="About_PageTitle" xml:space="preserve"><value>Về ứng dụng</value></data>
+  <data name="About_VersionFormat" xml:space="preserve"><value>Phiên bản {0}</value></data>
+  <data name="About_StatLocations" xml:space="preserve"><value>Địa điểm</value></data>
+  <data name="About_StatAudio" xml:space="preserve"><value>Audio</value></data>
+  <data name="About_StatTours" xml:space="preserve"><value>Tour</value></data>
+  <data name="About_Description" xml:space="preserve"><value>Vinh Khanh Audio Guide là ứng dụng thuyết minh âm thanh giúp bạn khám phá văn hóa và lịch sử Việt Nam theo cách sống động hơn.</value></data>
+  <data name="About_HowToUse" xml:space="preserve"><value>Cách sử dụng</value></data>
+  <data name="About_Step1Title" xml:space="preserve"><value>Chọn địa điểm</value></data>
+  <data name="About_Step1Description" xml:space="preserve"><value>Tìm kiếm hoặc duyệt danh sách các điểm tham quan</value></data>
+  <data name="About_Step2Title" xml:space="preserve"><value>Nghe thuyết minh</value></data>
+  <data name="About_Step2Description" xml:space="preserve"><value>Phát audio guide chất lượng cao tại từng địa điểm</value></data>
+  <data name="About_Step3Title" xml:space="preserve"><value>Tiếp tục khám phá</value></data>
+  <data name="About_Step3Description" xml:space="preserve"><value>Đi theo lộ trình hoặc tự do khám phá các điểm lân cận</value></data>
+  <data name="About_FeaturesTitle" xml:space="preserve"><value>Tính năng nổi bật</value></data>
+  <data name="About_FeatureLocations" xml:space="preserve"><value>100+ địa điểm</value></data>
+  <data name="About_FeatureAudioHd" xml:space="preserve"><value>Audio HD</value></data>
+  <data name="About_FeatureMultilingual" xml:space="preserve"><value>Đa ngôn ngữ</value></data>
+  <data name="About_FeatureOffline" xml:space="preserve"><value>Chế độ ngoại tuyến</value></data>
+  <data name="About_FeatureMap" xml:space="preserve"><value>Bản đồ tương tác</value></data>
+  <data name="About_FeatureRoutes" xml:space="preserve"><value>Lộ trình cá nhân hóa</value></data>
+  <data name="About_RateApp" xml:space="preserve"><value>Đánh giá ứng dụng</value></data>
+  <data name="About_ShareApp" xml:space="preserve"><value>Chia sẻ ứng dụng</value></data>
+  <data name="About_Terms" xml:space="preserve"><value>Điều khoản sử dụng</value></data>
+  <data name="About_Privacy" xml:space="preserve"><value>Chính sách bảo mật</value></data>
+  <data name="About_Copyright" xml:space="preserve"><value>© 2026 Vinh Khanh Audio Guide. Bảo lưu mọi quyền.</value></data>
+  <data name="About_Loading" xml:space="preserve"><value>Đang tải thông tin ứng dụng...</value></data>
+  <data name="About_LoadError" xml:space="preserve"><value>Không thể tải thông tin ứng dụng</value></data>
+  <data name="About_AlertCannotOpenStore" xml:space="preserve"><value>Không thể mở cửa hàng ứng dụng.</value></data>
+  <data name="About_AlertCannotOpenBrowser" xml:space="preserve"><value>Không thể mở trình duyệt.</value></data>
+  <data name="About_ShareText" xml:space="preserve"><value>Khám phá văn hóa và lịch sử Việt Nam cùng Vinh Khanh Audio Guide! Tải ngay:</value></data>
+  <data name="Help_PageTitle" xml:space="preserve"><value>Trợ giúp</value></data>
+  <data name="Help_FaqTitle" xml:space="preserve"><value>Câu hỏi thường gặp</value></data>
+  <data name="Help_ContactTitle" xml:space="preserve"><value>Liên hệ hỗ trợ</value></data>
+  <data name="Help_EmailLabel" xml:space="preserve"><value>Email</value></data>
+  <data name="Help_HotlineLabel" xml:space="preserve"><value>Hotline</value></data>
+  <data name="Help_LiveChatLabel" xml:space="preserve"><value>Trò chuyện trực tuyến</value></data>
+  <data name="Help_LiveChatStatus" xml:space="preserve"><value>Hỗ trợ trực tuyến 24/7</value></data>
+  <data name="Help_UserGuideButton" xml:space="preserve"><value>Xem hướng dẫn sử dụng</value></data>
+  <data name="Help_Loading" xml:space="preserve"><value>Đang tải trợ giúp...</value></data>
+  <data name="Help_LoadError" xml:space="preserve"><value>Không thể tải dữ liệu trợ giúp</value></data>
+  <data name="Help_EmailSubject" xml:space="preserve"><value>Hỗ trợ - Vinh Khanh Audio Guide</value></data>
+  <data name="Help_AlertEmailFailed" xml:space="preserve"><value>Không thể mở ứng dụng email.</value></data>
+  <data name="Help_AlertCallFailed" xml:space="preserve"><value>Không thể thực hiện cuộc gọi.</value></data>
+  <data name="Help_AlertBrowserFailed" xml:space="preserve"><value>Không thể mở trình duyệt.</value></data>
+  <data name="Help_Faq1_Question" xml:space="preserve"><value>Làm sao để tải audio về máy?</value></data>
+  <data name="Help_Faq1_Answer" xml:space="preserve"><value>Vào trang chi tiết địa điểm, nhấn biểu tượng tải xuống cạnh mỗi audio guide. Audio sẽ được lưu vào thiết bị để nghe khi không có mạng.</value></data>
+  <data name="Help_Faq2_Question" xml:space="preserve"><value>Làm sao để sử dụng offline?</value></data>
+  <data name="Help_Faq2_Answer" xml:space="preserve"><value>Sau khi tải audio về máy, bạn có thể nghe mà không cần internet. Vào mục Đã tải để xem danh sách audio đã lưu.</value></data>
+  <data name="Help_Faq3_Question" xml:space="preserve"><value>Làm sao để thay đổi ngôn ngữ?</value></data>
+  <data name="Help_Faq3_Answer" xml:space="preserve"><value>Vào Cài đặt &gt; Ngôn ngữ, rồi chọn ngôn ngữ bạn muốn sử dụng.</value></data>
+  <data name="Help_Faq4_Question" xml:space="preserve"><value>Làm sao để chia sẻ với bạn bè?</value></data>
+  <data name="Help_Faq4_Answer" xml:space="preserve"><value>Tại trang chi tiết địa điểm, nhấn nút Chia sẻ để gửi liên kết qua tin nhắn, email hoặc mạng xã hội.</value></data>
+  <data name="Help_Faq5_Question" xml:space="preserve"><value>Làm sao để báo lỗi?</value></data>
+  <data name="Help_Faq5_Answer" xml:space="preserve"><value>Nếu gặp lỗi, hãy liên hệ qua email support@vinhkhanhaudioguide.com hoặc hotline 1900 1234. Chúng tôi sẽ phản hồi sớm nhất.</value></data>
+  <data name="Help_Faq6_Question" xml:space="preserve"><value>Ứng dụng có miễn phí không?</value></data>
+  <data name="Help_Faq6_Answer" xml:space="preserve"><value>Ứng dụng có nhiều audio guide miễn phí. Một số nội dung nâng cao yêu cầu gói trả phí để truy cập.</value></data>
+  <data name="Help_Faq7_Question" xml:space="preserve"><value>Dữ liệu có chính xác không?</value></data>
+  <data name="Help_Faq7_Answer" xml:space="preserve"><value>Nội dung được biên soạn bởi đội ngũ chuyên môn và được cập nhật thường xuyên để đảm bảo độ chính xác.</value></data>
+  <data name="Favorites_PageTitle" xml:space="preserve"><value>Yêu thích</value></data>
+  <data name="Favorites_EmptyTitle" xml:space="preserve"><value>Chưa có địa điểm yêu thích</value></data>
+  <data name="Favorites_EmptyDescription" xml:space="preserve"><value>Nhấn biểu tượng trái tim để thêm địa điểm vào danh sách yêu thích</value></data>
+  <data name="Favorites_ExploreButton" xml:space="preserve"><value>Khám phá địa điểm</value></data>
+  <data name="Downloads_PageTitle" xml:space="preserve"><value>Audio đã tải</value></data>
+  <data name="Downloads_StorageUsed" xml:space="preserve"><value>Dung lượng đã dùng</value></data>
+  <data name="Downloads_DeleteAll" xml:space="preserve"><value>Xóa tất cả</value></data>
+  <data name="Downloads_Empty" xml:space="preserve"><value>Chưa có audio đã tải</value></data>
+  <data name="History_PageTitle" xml:space="preserve"><value>Lịch sử nghe</value></data>
+  <data name="History_HeaderTitle" xml:space="preserve"><value>Lịch sử nghe</value></data>
+  <data name="History_HeaderSubtitle" xml:space="preserve"><value>Theo dõi tiến độ các audio bạn đã nghe gần đây</value></data>
+  <data name="History_Empty" xml:space="preserve"><value>Chưa có lịch sử nghe</value></data>
+  <data name="History_LanguageFormat" xml:space="preserve"><value>Ngôn ngữ: {0}</value></data>
+  <data name="Map_PageTitle" xml:space="preserve"><value>Bản đồ Vĩnh Khánh</value></data>
+  <data name="Map_Loading" xml:space="preserve"><value>Đang tải bản đồ...</value></data>
+  <data name="Map_LoadError" xml:space="preserve"><value>Không thể tải dữ liệu bản đồ</value></data>
+  <data name="Map_Empty" xml:space="preserve"><value>Không có địa điểm để hiển thị</value></data>
+  <data name="LocationDetail_DurationLabel" xml:space="preserve"><value>Thời lượng</value></data>
+  <data name="LocationDetail_AudioLabel" xml:space="preserve"><value>Audio</value></data>
+  <data name="LocationDetail_CategoryLabel" xml:space="preserve"><value>Danh mục</value></data>
+  <data name="LocationDetail_LanguageLabel" xml:space="preserve"><value>Ngôn ngữ</value></data>
+  <data name="LocationDetail_OverviewTitle" xml:space="preserve"><value>Giới thiệu</value></data>
+  <data name="LocationDetail_AudioGuideTitle" xml:space="preserve"><value>Audio Guide</value></data>
+  <data name="LocationDetail_AudioGuideSubtitle" xml:space="preserve"><value>Nghe thuyết minh tại các điểm tham quan</value></data>
+  <data name="LocationDetail_StartListeningButton" xml:space="preserve"><value>Bắt đầu nghe</value></data>
+  <data name="TourDetail_DurationLabel" xml:space="preserve"><value>Thời lượng</value></data>
+  <data name="TourDetail_LocationsLabel" xml:space="preserve"><value>Điểm đến</value></data>
+  <data name="TourDetail_PriceLabel" xml:space="preserve"><value>Giá</value></data>
+  <data name="TourDetail_OverviewTitle" xml:space="preserve"><value>Giới thiệu lộ trình</value></data>
+  <data name="TourDetail_ItineraryTitle" xml:space="preserve"><value>Lộ trình chi tiết</value></data>
+  <data name="TourDetail_MapTitle" xml:space="preserve"><value>Bản đồ lộ trình</value></data>
+  <data name="TourDetail_StartButton" xml:space="preserve"><value>Bắt đầu lộ trình</value></data>
+  <data name="TourDetail_LocationsFormat" xml:space="preserve"><value>{0} địa điểm</value></data>
+  <data name="Tours_PageTitle" xml:space="preserve"><value>Tours</value></data>
+  <data name="Tours_HeaderTitle" xml:space="preserve"><value>Lộ trình tham quan</value></data>
+  <data name="Tours_HeaderSubtitle" xml:space="preserve"><value>Khám phá Vĩnh Khánh theo lộ trình của bạn</value></data>
+  <data name="Tours_FeaturedTitle" xml:space="preserve"><value>Lộ trình nổi bật</value></data>
+  <data name="Tours_AllTitle" xml:space="preserve"><value>Tất cả lộ trình</value></data>
+  <data name="Search_PageTitle" xml:space="preserve"><value>Kết quả</value></data>
+  <data name="Search_EmptyTitle" xml:space="preserve"><value>Không có kết quả phù hợp</value></data>
+  <data name="Search_EmptyDescription" xml:space="preserve"><value>Hãy thử từ khóa khác hoặc thay đổi bộ lọc.</value></data>
+  <data name="Main_LoadDataErrorPrefix" xml:space="preserve"><value>Không thể tải dữ liệu:</value></data>
+  <data name="PaymentPlan_Title" xml:space="preserve"><value>Chọn gói</value></data>
+  <data name="PaymentPlan_Subtitle" xml:space="preserve"><value>Chọn gói phù hợp với bạn</value></data>
+  <data name="PaymentPlan_FeatureScan" xml:space="preserve"><value>Quét mã để mở khóa nội dung ngay</value></data>
+  <data name="PaymentPlan_FeatureAutoplay" xml:space="preserve"><value>Tự động phát theo vị trí thực tế</value></data>
+  <data name="PaymentPlan_FeaturePersonalization" xml:space="preserve"><value>Cá nhân hóa: ngôn ngữ, tốc độ</value></data>
+  <data name="PaymentPlan_DailyTitle" xml:space="preserve"><value>10,000đ/ngày</value></data>
+  <data name="PaymentPlan_DailyBadge" xml:space="preserve"><value>Linh hoạt</value></data>
+  <data name="PaymentPlan_DailyPriceLabel" xml:space="preserve"><value>Sử dụng một ngày</value></data>
+  <data name="PaymentPlan_DailyDescription" xml:space="preserve"><value>Phù hợp để trải nghiệm nhanh trong một ngày, tối ưu cho khách ghé ngắn.</value></data>
+  <data name="PaymentPlan_FullTitle" xml:space="preserve"><value>29,000đ/toàn tour</value></data>
+  <data name="PaymentPlan_FullBadge" xml:space="preserve"><value>Phổ biến</value></data>
+  <data name="PaymentPlan_FullPriceLabel" xml:space="preserve"><value>Thanh toán một lần</value></data>
+  <data name="PaymentPlan_FullDescription" xml:space="preserve"><value>Mở khóa toàn bộ lộ trình, phù hợp nếu bạn muốn nghe trọn vẹn nội dung đã quét.</value></data>
+  <data name="PaymentPlan_SelectedSummaryDefault" xml:space="preserve"><value>Đang chọn: 10,000đ/ngày</value></data>
+  <data name="PaymentPlan_SelectedSummaryFormat" xml:space="preserve"><value>Đang chọn: {0}</value></data>
+  <data name="PaymentPlan_ContinueButton" xml:space="preserve"><value>Tiếp tục</value></data>
+  <data name="PaymentPlan_StatusFallbackUsed" xml:space="preserve"><value>Không tải được gói từ máy chủ, đang dùng gói mặc định.</value></data>
+  <data name="PaymentPlan_StatusServerUnavailable" xml:space="preserve"><value>Không kết nối được máy chủ gói thanh toán, đang dùng gói mặc định.</value></data>
+  <data name="PaymentPlan_AlertNotSyncedTitle" xml:space="preserve"><value>Chưa đồng bộ gói</value></data>
+  <data name="PaymentPlan_AlertNotSyncedMessage" xml:space="preserve"><value>Cần tải gói thanh toán từ máy chủ trước khi tiếp tục.</value></data>
+  <data name="PaymentCheckout_Title" xml:space="preserve"><value>Thanh toán</value></data>
+  <data name="PaymentCheckout_Subtitle" xml:space="preserve"><value>Xác nhận gói và hoàn tất thanh toán để mở khóa nội dung.</value></data>
+  <data name="PaymentCheckout_DefaultPrice" xml:space="preserve"><value>10,000đ</value></data>
+  <data name="PaymentCheckout_Notice" xml:space="preserve"><value>Sau khi nhấn thanh toán, giao dịch sẽ được xác nhận ngay.</value></data>
+  <data name="PaymentCheckout_PayButton" xml:space="preserve"><value>Thanh toán</value></data>
+  <data name="PaymentCheckout_PriceAmountFormat" xml:space="preserve"><value>{0:N0}đ</value></data>
+  <data name="PaymentCheckout_AlertMissingPackageTitle" xml:space="preserve"><value>Thiếu gói thanh toán</value></data>
+  <data name="PaymentCheckout_AlertMissingPackageMessage" xml:space="preserve"><value>Không xác định được gói thanh toán đã chọn.</value></data>
+  <data name="PaymentCheckout_AlertFailedTitle" xml:space="preserve"><value>Thanh toán thất bại</value></data>
+  <data name="PaymentCheckout_AlertFailedMessage" xml:space="preserve"><value>Không thể xác nhận thanh toán.</value></data>
+  <data name="PaymentCheckout_AlertPendingTitle" xml:space="preserve"><value>Thanh toán chưa hoàn tất</value></data>
+  <data name="PaymentCheckout_AlertPendingMessage" xml:space="preserve"><value>Thanh toán chưa được xác minh từ máy chủ. Dữ liệu chưa được ghi DB.</value></data>
+  <data name="PaymentCheckout_AlertSuccessTitle" xml:space="preserve"><value>Thanh toán thành công</value></data>
+  <data name="PaymentCheckout_AlertSuccessMessageFormat" xml:space="preserve"><value>Gói {0} đã được kích hoạt.</value></data>
+  <data name="Qr_StatusScannedFormat" xml:space="preserve"><value>Đã quét: {0}</value></data>
+  <data name="Qr_StatusInvalidDeepLinkFormat" xml:space="preserve"><value>QR đã đọc được nhưng không đúng định dạng deep link:
+{0}</value></data>
+  <data name="Qr_StatusGoToPayment" xml:space="preserve"><value>Đang chuyển đến màn hình thanh toán...</value></data>
+  <data name="Qr_StatusSampleFallback" xml:space="preserve"><value>QR mẫu chưa đúng định dạng, đang dùng payload mẫu nội bộ...</value></data>
+  <data name="Tour_DurationMinutesFormat" xml:space="preserve"><value>{0} phút</value></data>
+  <data name="Tour_DurationHoursMinutesFormat" xml:space="preserve"><value>{0} giờ {1} phút</value></data>
+  <data name="Tour_DurationHoursOnlyFormat" xml:space="preserve"><value>{0} giờ</value></data>
 </root>
