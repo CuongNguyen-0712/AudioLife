@@ -11,6 +11,7 @@ public partial class DownloadsViewModel : ObservableObject
     private readonly IApiService _apiService;
     private readonly IAudioService _audioService;
     private readonly INavigationService _navigationService;
+    private readonly ILocalizationService _localizationService;
 
     [ObservableProperty]
     private string _totalSizeText = "0 MB";
@@ -20,11 +21,16 @@ public partial class DownloadsViewModel : ObservableObject
 
     public ObservableCollection<DownloadItem> Downloads { get; } = new();
 
-    public DownloadsViewModel(IApiService apiService, IAudioService audioService, INavigationService navigationService)
+    public DownloadsViewModel(
+        IApiService apiService,
+        IAudioService audioService,
+        INavigationService navigationService,
+        ILocalizationService localizationService)
     {
         _apiService = apiService;
         _audioService = audioService;
         _navigationService = navigationService;
+        _localizationService = localizationService;
         _ = LoadDataAsync();
     }
 
@@ -46,7 +52,7 @@ public partial class DownloadsViewModel : ObservableObject
                 {
                     AudioGuideId = dl.AudioGuideId,
                     LocalPath = dl.LocalPath,
-                    Title = audio?.Title ?? "Unknown",
+                    Title = audio?.Title ?? _localizationService.GetString("Common_Unknown"),
                     LocationName = audio?.LocationId != null
                         ? (await _apiService.GetLocationByIdAsync(audio.LocationId))?.Name ?? ""
                         : "",
@@ -76,9 +82,10 @@ public partial class DownloadsViewModel : ObservableObject
         if (item == null) return;
 
         bool confirm = await Application.Current!.MainPage!.DisplayAlert(
-            "Xóa audio",
-            $"Bạn muốn xóa \"{item.Title}\"?",
-            "Xóa", "Hủy");
+            _localizationService.GetString("Downloads_DeleteTitle"),
+            string.Format(_localizationService.GetString("Downloads_DeleteMessageFormat"), item.Title),
+            _localizationService.GetString("Common_Delete"),
+            _localizationService.GetString("Common_Cancel"));
 
         if (confirm)
         {
@@ -93,9 +100,10 @@ public partial class DownloadsViewModel : ObservableObject
     private async Task DeleteAllAsync()
     {
         bool confirm = await Application.Current!.MainPage!.DisplayAlert(
-            "Xóa tất cả",
-            "Bạn muốn xóa toàn bộ audio đã tải?",
-            "Xóa tất cả", "Hủy");
+            _localizationService.GetString("Downloads_DeleteAllTitle"),
+            _localizationService.GetString("Downloads_DeleteAllMessage"),
+            _localizationService.GetString("Downloads_DeleteAll"),
+            _localizationService.GetString("Common_Cancel"));
 
         if (confirm)
         {

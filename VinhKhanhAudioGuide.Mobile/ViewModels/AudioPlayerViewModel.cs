@@ -22,6 +22,7 @@ public partial class AudioPlayerViewModel : ObservableObject
     private readonly IAudioService _audioService;
     private readonly IApiService _apiService;
     private readonly ITourPlaybackSessionService _tourPlaybackSessionService;
+    private readonly ILocalizationService _localizationService;
     private readonly SemaphoreSlim _guideSelectionLock = new(1, 1);
     private readonly SemaphoreSlim _playerActionLock = new(1, 1);
     private readonly Dictionary<string, DateTime> _lastActionAt = new(StringComparer.OrdinalIgnoreCase);
@@ -116,7 +117,7 @@ public partial class AudioPlayerViewModel : ObservableObject
     private bool _isTourPlaybackSource;
 
     [ObservableProperty]
-    private string _playbackSourceText = "THỦ CÔNG";
+    private string _playbackSourceText = string.Empty;
 
     [ObservableProperty]
     private double _resumePositionSeconds;
@@ -129,12 +130,14 @@ public partial class AudioPlayerViewModel : ObservableObject
         INavigationService navigationService,
         IAudioService audioService,
         IApiService apiService,
-        ITourPlaybackSessionService tourPlaybackSessionService)
+        ITourPlaybackSessionService tourPlaybackSessionService,
+        ILocalizationService localizationService)
     {
         _navigationService = navigationService;
         _audioService = audioService;
         _apiService = apiService;
         _tourPlaybackSessionService = tourPlaybackSessionService;
+        _localizationService = localizationService;
         UpdatePlaybackSourceUi();
     }
 
@@ -153,8 +156,8 @@ public partial class AudioPlayerViewModel : ObservableObject
         IsAutoPlaybackSource = string.Equals(PlaybackSource, "AutoNearest", StringComparison.OrdinalIgnoreCase);
         IsTourPlaybackSource = PlaybackSource.StartsWith("Tour", StringComparison.OrdinalIgnoreCase);
         PlaybackSourceText = IsTourPlaybackSource
-            ? "LỘ TRÌNH"
-            : (IsAutoPlaybackSource ? "TỰ ĐỘNG (POI GẦN NHẤT)" : "THỦ CÔNG");
+            ? T("AudioPlayer_PlaybackSourceTour")
+            : (IsAutoPlaybackSource ? T("AudioPlayer_PlaybackSourceAutoNearest") : T("AudioPlayer_PlaybackSourceManual"));
     }
 
     private void MarkManualPlaybackSource()
@@ -421,7 +424,7 @@ public partial class AudioPlayerViewModel : ObservableObject
 
             Title = string.IsNullOrWhiteSpace(guide.Title) ? LocationName : guide.Title;
             AudioTranslationSummary = string.IsNullOrWhiteSpace(guide.Description)
-                ? $"Bản dịch audio của {LocationName}"
+                ? string.Format(T("AudioPlayer_TranslationSummaryFormat"), LocationName)
                 : guide.Description;
             AudioTranslationText = string.IsNullOrWhiteSpace(guide.TranscriptText)
                 ? guide.Description
@@ -659,7 +662,7 @@ public partial class AudioPlayerViewModel : ObservableObject
 
     private void ResetScreen()
     {
-        LocationName = "Địa điểm";
+        LocationName = T("LocationDetail_DefaultLocationName");
         Description = string.Empty;
         ImageUrl = string.Empty;
         Title = LocationName;
@@ -894,9 +897,9 @@ public partial class AudioPlayerViewModel : ObservableObject
         await MainThread.InvokeOnMainThreadAsync(async () =>
         {
             await Application.Current!.MainPage!.DisplayAlert(
-                "Hoàn thành tour",
-                "Bạn đã nghe hết các địa điểm trong tour.",
-                "Về bản đồ");
+                T("Map_TourCompleteTitle"),
+                T("Map_TourCompleteMessage"),
+                T("Map_TourCompleteAction"));
         });
 
         await _navigationService.NavigateToAsync("///MapPage");
@@ -919,6 +922,8 @@ public partial class AudioPlayerViewModel : ObservableObject
             ? $"{time.Hours}:{time.Minutes:D2}:{time.Seconds:D2}"
             : $"{time.Minutes}:{time.Seconds:D2}";
     }
+
+    private string T(string key) => _localizationService.GetString(key);
 }
 
 public partial class AudioGuideItemViewModel : ObservableObject

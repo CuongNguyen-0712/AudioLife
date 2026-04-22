@@ -522,6 +522,62 @@
 {0}</value></data>
   <data name="Qr_StatusGoToPayment" xml:space="preserve"><value>Đang chuyển đến màn hình thanh toán...</value></data>
   <data name="Qr_StatusSampleFallback" xml:space="preserve"><value>QR mẫu chưa đúng định dạng, đang dùng payload mẫu nội bộ...</value></data>
+  <data name="Common_Free" xml:space="preserve"><value>Miễn phí</value></data>
+  <data name="Common_PriceVndFormat" xml:space="preserve"><value>{0:N0} VNĐ</value></data>
+  <data name="Common_Other" xml:space="preserve"><value>Khác</value></data>
+  <data name="Common_FilterAny" xml:space="preserve"><value>Bất kỳ</value></data>
+  <data name="Map_SectionNearbyTitle" xml:space="preserve"><value>ĐỊA ĐIỂM GẦN ĐÂY</value></data>
+  <data name="Map_SectionNearbyHint" xml:space="preserve"><value>Theo khoảng cách</value></data>
+  <data name="Map_SectionTourStopsTitle" xml:space="preserve"><value>ĐIỂM DỪNG LỘ TRÌNH</value></data>
+  <data name="Map_SectionTourStopsHint" xml:space="preserve"><value>Theo thứ tự</value></data>
+  <data name="Map_ActionContinue" xml:space="preserve"><value>Tiếp tục</value></data>
+  <data name="Map_ActionPause" xml:space="preserve"><value>Tạm dừng</value></data>
+  <data name="Map_ActionLater" xml:space="preserve"><value>Để sau</value></data>
+  <data name="Map_ActionSheetTitle" xml:space="preserve"><value>Thoát lộ trình</value></data>
+  <data name="Map_ActionContinueRoute" xml:space="preserve"><value>Tiếp tục lộ trình</value></data>
+  <data name="Map_ActionPauseAndSave" xml:space="preserve"><value>Tạm dừng &amp; Lưu</value></data>
+  <data name="Map_ActionEndTour" xml:space="preserve"><value>Kết thúc tour</value></data>
+  <data name="Map_ResumePromptTitle" xml:space="preserve"><value>Tiếp tục lộ trình?</value></data>
+  <data name="Map_ResumePromptMessageFormat" xml:space="preserve"><value>Bạn đã tạm dừng tại {0} lúc {1:HH:mm, dd/MM}. Tiếp tục từ điểm dừng trước?</value></data>
+  <data name="Map_TourCompleteTitle" xml:space="preserve"><value>Hoàn thành tour</value></data>
+  <data name="Map_TourCompleteMessage" xml:space="preserve"><value>Bạn đã nghe hết các địa điểm trong tour.</value></data>
+  <data name="Map_TourCompleteAction" xml:space="preserve"><value>Về bản đồ</value></data>
+  <data name="Map_ErrorRouteNotFound" xml:space="preserve"><value>Không tìm thấy lộ trình.</value></data>
+  <data name="Map_ErrorRouteNoLocations" xml:space="preserve"><value>Lộ trình chưa có địa điểm.</value></data>
+  <data name="Map_StopOrderFormat" xml:space="preserve"><value>Điểm dừng {0}/{1}</value></data>
+  <data name="Map_BadgeResuming" xml:space="preserve"><value>Đang tiếp tục</value></data>
+  <data name="Map_ResumeFromStopFormat" xml:space="preserve"><value>Tiếp tục từ điểm dừng {0}/{1}</value></data>
+  <data name="Map_CurrentStopFallback" xml:space="preserve"><value>điểm dừng hiện tại</value></data>
+  <data name="Map_DistanceFromUserFormat" xml:space="preserve"><value>Cách bạn {0}</value></data>
+  <data name="Map_BadgeNearest" xml:space="preserve"><value>Gần nhất</value></data>
+  <data name="LocationDetail_RelatedTourInfoFormat" xml:space="preserve"><value>{0} điểm · {1} phút</value></data>
+  <data name="LocationDetail_DefaultLocationName" xml:space="preserve"><value>Địa điểm</value></data>
+  <data name="Search_FilterDurationUnder5" xml:space="preserve"><value>&lt; 5 phút</value></data>
+  <data name="Search_FilterDuration5To10" xml:space="preserve"><value>5 - 10 phút</value></data>
+  <data name="Search_FilterDurationOver10" xml:space="preserve"><value>&gt; 10 phút</value></data>
+  <data name="Search_FilterModeTotalDuration" xml:space="preserve"><value>Tổng thời lượng</value></data>
+  <data name="Search_FilterModeSingleAudio" xml:space="preserve"><value>Bất kỳ audio đơn</value></data>
+  <data name="Search_TotalDurationFormat" xml:space="preserve"><value>Tổng thời lượng: {0} phút</value></data>
+  <data name="Search_AudioCountFormat" xml:space="preserve"><value>Số audio: {0}</value></data>
+  <data name="Search_ResultForQueryFormat" xml:space="preserve"><value>Kết quả cho '{0}'</value></data>
+  <data name="Search_ResultForCategoryFormat" xml:space="preserve"><value>Kết quả cho danh mục {0}</value></data>
+  <data name="Search_ResultForCategoriesFormat" xml:space="preserve"><value>Kết quả cho {0} danh mục</value></data>
+  <data name="Search_ResultByFilters" xml:space="preserve"><value>Kết quả theo bộ lọc</value></data>
+  <data name="Search_TourDurationFormat" xml:space="preserve"><value>Thời lượng tour: {0} phút</value></data>
+  <data name="Search_LocationCountFormat" xml:space="preserve"><value>Số địa điểm: {0}</value></data>
+  <data name="AudioPlayer_PlaybackSourceTour" xml:space="preserve"><value>LỘ TRÌNH</value></data>
+  <data name="AudioPlayer_PlaybackSourceAutoNearest" xml:space="preserve"><value>TỰ ĐỘNG (POI GẦN NHẤT)</value></data>
+  <data name="AudioPlayer_PlaybackSourceManual" xml:space="preserve"><value>THỦ CÔNG</value></data>
+  <data name="AudioPlayer_TranslationSummaryFormat" xml:space="preserve"><value>Bản dịch audio của {0}</value></data>
+  <data name="Favorites_RemoveTitle" xml:space="preserve"><value>Xóa khỏi yêu thích</value></data>
+  <data name="Favorites_RemoveMessageFormat" xml:space="preserve"><value>Bạn có chắc muốn xóa "{0}" khỏi danh sách yêu thích?</value></data>
+  <data name="Common_Unknown" xml:space="preserve"><value>Không rõ</value></data>
+  <data name="Downloads_DeleteTitle" xml:space="preserve"><value>Xóa audio</value></data>
+  <data name="Downloads_DeleteMessageFormat" xml:space="preserve"><value>Bạn muốn xóa "{0}"?</value></data>
+  <data name="Downloads_DeleteAllTitle" xml:space="preserve"><value>Xóa tất cả</value></data>
+  <data name="Downloads_DeleteAllMessage" xml:space="preserve"><value>Bạn muốn xóa toàn bộ audio đã tải?</value></data>
+  <data name="History_Today" xml:space="preserve"><value>Hôm nay</value></data>
+  <data name="History_Yesterday" xml:space="preserve"><value>Hôm qua</value></data>
   <data name="Tour_DurationMinutesFormat" xml:space="preserve"><value>{0} phút</value></data>
   <data name="Tour_DurationHoursMinutesFormat" xml:space="preserve"><value>{0} giờ {1} phút</value></data>
   <data name="Tour_DurationHoursOnlyFormat" xml:space="preserve"><value>{0} giờ</value></data>

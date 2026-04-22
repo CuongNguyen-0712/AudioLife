@@ -90,7 +90,9 @@ public partial class TourDetailViewModel : ObservableObject
         ImageUrl = tour.ImageUrl;
         DurationText = FormatDuration(tour.Duration);
         LocationCount = tour.LocationIds.Count;
-        PriceText = tour.Price <= 0 ? "Miễn phí" : $"{tour.Price:N0} VNĐ";
+        PriceText = tour.Price <= 0
+            ? _localizationService.GetString("Common_Free")
+            : string.Format(_localizationService.GetString("Common_PriceVndFormat"), tour.Price);
 
         var allLocationsTask = _apiService.GetLocationsAsync();
         var categoriesTask = _apiService.GetCategoriesAsync();
@@ -126,7 +128,7 @@ public partial class TourDetailViewModel : ObservableObject
                 Duration = location.Duration,
                 Order = order,
                 AudioCount = location.AudioGuides.Count,
-                CategoryName = cat?.Name ?? "Di tích",
+                CategoryName = cat?.Name ?? _localizationService.GetString("Common_Other"),
                 IsNotLast = order < totalCount,
                 Latitude = location.Latitude,
                 Longitude = location.Longitude

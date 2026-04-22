@@ -304,6 +304,62 @@
 {0}</value></data>
   <data name="Qr_StatusGoToPayment" xml:space="preserve"><value>Navigating to payment screen...</value></data>
   <data name="Qr_StatusSampleFallback" xml:space="preserve"><value>Sample QR is invalid, using fallback sample payload...</value></data>
+  <data name="Common_Free" xml:space="preserve"><value>Free</value></data>
+  <data name="Common_PriceVndFormat" xml:space="preserve"><value>{0:N0} VND</value></data>
+  <data name="Common_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="Common_FilterAny" xml:space="preserve"><value>Any</value></data>
+  <data name="Map_SectionNearbyTitle" xml:space="preserve"><value>NEARBY LOCATIONS</value></data>
+  <data name="Map_SectionNearbyHint" xml:space="preserve"><value>By distance</value></data>
+  <data name="Map_SectionTourStopsTitle" xml:space="preserve"><value>ROUTE STOPS</value></data>
+  <data name="Map_SectionTourStopsHint" xml:space="preserve"><value>In order</value></data>
+  <data name="Map_ActionContinue" xml:space="preserve"><value>Continue</value></data>
+  <data name="Map_ActionPause" xml:space="preserve"><value>Pause</value></data>
+  <data name="Map_ActionLater" xml:space="preserve"><value>Later</value></data>
+  <data name="Map_ActionSheetTitle" xml:space="preserve"><value>Exit route</value></data>
+  <data name="Map_ActionContinueRoute" xml:space="preserve"><value>Continue route</value></data>
+  <data name="Map_ActionPauseAndSave" xml:space="preserve"><value>Pause &amp; Save</value></data>
+  <data name="Map_ActionEndTour" xml:space="preserve"><value>End tour</value></data>
+  <data name="Map_ResumePromptTitle" xml:space="preserve"><value>Resume route?</value></data>
+  <data name="Map_ResumePromptMessageFormat" xml:space="preserve"><value>You paused at {0} at {1:HH:mm, dd/MM}. Continue from the previous stop?</value></data>
+  <data name="Map_TourCompleteTitle" xml:space="preserve"><value>Tour completed</value></data>
+  <data name="Map_TourCompleteMessage" xml:space="preserve"><value>You have listened through all stops in this tour.</value></data>
+  <data name="Map_TourCompleteAction" xml:space="preserve"><value>Back to map</value></data>
+  <data name="Map_ErrorRouteNotFound" xml:space="preserve"><value>Route not found.</value></data>
+  <data name="Map_ErrorRouteNoLocations" xml:space="preserve"><value>This route has no locations yet.</value></data>
+  <data name="Map_StopOrderFormat" xml:space="preserve"><value>Stop {0}/{1}</value></data>
+  <data name="Map_BadgeResuming" xml:space="preserve"><value>Resuming</value></data>
+  <data name="Map_ResumeFromStopFormat" xml:space="preserve"><value>Resume from stop {0}/{1}</value></data>
+  <data name="Map_CurrentStopFallback" xml:space="preserve"><value>current stop</value></data>
+  <data name="Map_DistanceFromUserFormat" xml:space="preserve"><value>{0} away</value></data>
+  <data name="Map_BadgeNearest" xml:space="preserve"><value>Nearest</value></data>
+  <data name="LocationDetail_RelatedTourInfoFormat" xml:space="preserve"><value>{0} locations · {1} minutes</value></data>
+  <data name="LocationDetail_DefaultLocationName" xml:space="preserve"><value>Location</value></data>
+  <data name="Search_FilterDurationUnder5" xml:space="preserve"><value>&lt; 5 minutes</value></data>
+  <data name="Search_FilterDuration5To10" xml:space="preserve"><value>5 - 10 minutes</value></data>
+  <data name="Search_FilterDurationOver10" xml:space="preserve"><value>&gt; 10 minutes</value></data>
+  <data name="Search_FilterModeTotalDuration" xml:space="preserve"><value>Total duration</value></data>
+  <data name="Search_FilterModeSingleAudio" xml:space="preserve"><value>Any single audio</value></data>
+  <data name="Search_TotalDurationFormat" xml:space="preserve"><value>Total duration: {0} minutes</value></data>
+  <data name="Search_AudioCountFormat" xml:space="preserve"><value>Audio count: {0}</value></data>
+  <data name="Search_ResultForQueryFormat" xml:space="preserve"><value>Results for '{0}'</value></data>
+  <data name="Search_ResultForCategoryFormat" xml:space="preserve"><value>Results for category {0}</value></data>
+  <data name="Search_ResultForCategoriesFormat" xml:space="preserve"><value>Results for {0} categories</value></data>
+  <data name="Search_ResultByFilters" xml:space="preserve"><value>Filtered results</value></data>
+  <data name="Search_TourDurationFormat" xml:space="preserve"><value>Tour duration: {0} minutes</value></data>
+  <data name="Search_LocationCountFormat" xml:space="preserve"><value>Location count: {0}</value></data>
+  <data name="AudioPlayer_PlaybackSourceTour" xml:space="preserve"><value>TOUR ROUTE</value></data>
+  <data name="AudioPlayer_PlaybackSourceAutoNearest" xml:space="preserve"><value>AUTO (NEAREST POI)</value></data>
+  <data name="AudioPlayer_PlaybackSourceManual" xml:space="preserve"><value>MANUAL</value></data>
+  <data name="AudioPlayer_TranslationSummaryFormat" xml:space="preserve"><value>Audio translation for {0}</value></data>
+  <data name="Favorites_RemoveTitle" xml:space="preserve"><value>Remove from favorites</value></data>
+  <data name="Favorites_RemoveMessageFormat" xml:space="preserve"><value>Are you sure you want to remove "{0}" from favorites?</value></data>
+  <data name="Common_Unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Downloads_DeleteTitle" xml:space="preserve"><value>Delete audio</value></data>
+  <data name="Downloads_DeleteMessageFormat" xml:space="preserve"><value>Do you want to delete "{0}"?</value></data>
+  <data name="Downloads_DeleteAllTitle" xml:space="preserve"><value>Delete all</value></data>
+  <data name="Downloads_DeleteAllMessage" xml:space="preserve"><value>Do you want to delete all downloaded audio?</value></data>
+  <data name="History_Today" xml:space="preserve"><value>Today</value></data>
+  <data name="History_Yesterday" xml:space="preserve"><value>Yesterday</value></data>
   <data name="Tour_DurationMinutesFormat" xml:space="preserve"><value>{0} minutes</value></data>
   <data name="Tour_DurationHoursMinutesFormat" xml:space="preserve"><value>{0} hours {1} minutes</value></data>
   <data name="Tour_DurationHoursOnlyFormat" xml:space="preserve"><value>{0} hours</value></data>

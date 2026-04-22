@@ -1,5 +1,6 @@
 using VinhKhanhAudioGuide.Mobile.Models;
 using LocationModel = VinhKhanhAudioGuide.Mobile.Models.Location;
+using System.Text.RegularExpressions;
 
 namespace VinhKhanhAudioGuide.Mobile.Services;
 
@@ -169,7 +170,7 @@ internal static class ContentLocalizationMapper
         var exact = guides.Where(guide => NormalizeLanguageCode(guide.Language) == normalized).ToList();
         if (exact.Count > 0)
         {
-            return exact.Select(CloneAudioGuide).ToList();
+            return exact.Select(guide => BuildLocalizedAudioGuide(guide, normalized, locationId)).ToList();
         }
 
         var fallback = guides
@@ -183,20 +184,81 @@ internal static class ContentLocalizationMapper
 
     private static AudioGuide BuildLocalizedAudioGuide(AudioGuide source, string languageCode, string? locationId)
     {
-        var localizedLocationName = locationId is not null
-            ? TranslateById(locationId, string.Empty, languageCode, LocationNameMap)
-            : string.Empty;
-
-        var title = TranslateAudioTitle(source.Title, languageCode);
-        var description = BuildLocalizedAudioDescription(title, localizedLocationName, languageCode);
+        var title = ResolveLocalizedAudioTitle(source, languageCode);
+        var description = ResolveLocalizedAudioDescription(source, title, languageCode);
 
         var guide = CloneAudioGuide(source);
         guide.Language = languageCode;
         guide.Title = title;
         guide.Description = description;
-        guide.ScriptSegments = BuildLocalizedScriptSegments(source, title, description, languageCode);
+        guide.ScriptSegments = ShouldRebuildScriptSegments(source, languageCode)
+            ? BuildLocalizedScriptSegments(source, title, description, languageCode)
+            : source.ScriptSegments.Select(segment => new AudioScriptSegment
+            {
+                Id = segment.Id,
+                AudioGuideId = segment.AudioGuideId,
+                StartTimeSeconds = segment.StartTimeSeconds,
+                EndTimeSeconds = segment.EndTimeSeconds,
+                ScriptText = segment.ScriptText
+            }).ToList();
         guide.TranscriptText = string.Join(" ", guide.ScriptSegments.Select(segment => segment.ScriptText));
         return guide;
+    }
+
+    private static bool ShouldRebuildScriptSegments(AudioGuide source, string languageCode)
+    {
+        if (source.ScriptSegments == null || source.ScriptSegments.Count == 0)
+        {
+            return true;
+        }
+
+        var normalizedLanguage = NormalizeLanguageCode(languageCode);
+        var sourceLanguage = NormalizeLanguageCode(source.Language);
+        if (!string.Equals(sourceLanguage, normalizedLanguage, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return source.ScriptSegments.Any(segment => LooksLikeVietnamese(segment.ScriptText));
+    }
+
+    private static string ResolveLocalizedAudioTitle(AudioGuide source, string languageCode)
+    {
+        if (!LooksLikeVietnamese(source.Title)
+            && string.Equals(NormalizeLanguageCode(source.Language), NormalizeLanguageCode(languageCode), StringComparison.OrdinalIgnoreCase))
+        {
+            return source.Title;
+        }
+
+        return TranslateAudioTitle(source.Title, languageCode);
+    }
+
+    private static string ResolveLocalizedAudioDescription(AudioGuide source, string title, string languageCode)
+    {
+        if (!LooksLikeVietnamese(source.Description)
+            && string.Equals(NormalizeLanguageCode(source.Language), NormalizeLanguageCode(languageCode), StringComparison.OrdinalIgnoreCase))
+        {
+            return source.Description;
+        }
+
+        return BuildLocalizedAudioDescription(title, string.Empty, languageCode);
+    }
+
+    private static bool LooksLikeVietnamese(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return false;
+        }
+
+        const string accentedVietnameseCharsPattern = "[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]";
+        if (Regex.IsMatch(text, accentedVietnameseCharsPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            return true;
+        }
+
+        const string commonVietnamesePhrasesPattern = "\\b(mở đầu|nội dung chính|kết thúc|cảm ơn|khám phá|tiếp tục|bạn đã|địa điểm)\\b";
+        return Regex.IsMatch(text, commonVietnamesePhrasesPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
     }
 
     private static List<AudioScriptSegment> BuildLocalizedScriptSegments(

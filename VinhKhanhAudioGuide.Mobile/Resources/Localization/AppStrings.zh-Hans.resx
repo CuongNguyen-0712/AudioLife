@@ -304,6 +304,62 @@
 {0}</value></data>
   <data name="Qr_StatusGoToPayment" xml:space="preserve"><value>正在跳转到支付页面...</value></data>
   <data name="Qr_StatusSampleFallback" xml:space="preserve"><value>示例二维码格式无效，正在使用内置示例数据...</value></data>
+  <data name="Common_Free" xml:space="preserve"><value>免费</value></data>
+  <data name="Common_PriceVndFormat" xml:space="preserve"><value>{0:N0} 越盾</value></data>
+  <data name="Common_Other" xml:space="preserve"><value>其他</value></data>
+  <data name="Common_FilterAny" xml:space="preserve"><value>不限</value></data>
+  <data name="Map_SectionNearbyTitle" xml:space="preserve"><value>附近地点</value></data>
+  <data name="Map_SectionNearbyHint" xml:space="preserve"><value>按距离</value></data>
+  <data name="Map_SectionTourStopsTitle" xml:space="preserve"><value>路线停靠点</value></data>
+  <data name="Map_SectionTourStopsHint" xml:space="preserve"><value>按顺序</value></data>
+  <data name="Map_ActionContinue" xml:space="preserve"><value>继续</value></data>
+  <data name="Map_ActionPause" xml:space="preserve"><value>暂停</value></data>
+  <data name="Map_ActionLater" xml:space="preserve"><value>稍后</value></data>
+  <data name="Map_ActionSheetTitle" xml:space="preserve"><value>退出路线</value></data>
+  <data name="Map_ActionContinueRoute" xml:space="preserve"><value>继续路线</value></data>
+  <data name="Map_ActionPauseAndSave" xml:space="preserve"><value>暂停并保存</value></data>
+  <data name="Map_ActionEndTour" xml:space="preserve"><value>结束路线</value></data>
+  <data name="Map_ResumePromptTitle" xml:space="preserve"><value>继续路线？</value></data>
+  <data name="Map_ResumePromptMessageFormat" xml:space="preserve"><value>你在 {1:HH:mm, dd/MM} 于 {0} 暂停。是否从上次停靠点继续？</value></data>
+  <data name="Map_TourCompleteTitle" xml:space="preserve"><value>路线完成</value></data>
+  <data name="Map_TourCompleteMessage" xml:space="preserve"><value>你已收听完此路线的全部地点。</value></data>
+  <data name="Map_TourCompleteAction" xml:space="preserve"><value>返回地图</value></data>
+  <data name="Map_ErrorRouteNotFound" xml:space="preserve"><value>未找到路线。</value></data>
+  <data name="Map_ErrorRouteNoLocations" xml:space="preserve"><value>该路线暂无地点。</value></data>
+  <data name="Map_StopOrderFormat" xml:space="preserve"><value>停靠点 {0}/{1}</value></data>
+  <data name="Map_BadgeResuming" xml:space="preserve"><value>继续中</value></data>
+  <data name="Map_ResumeFromStopFormat" xml:space="preserve"><value>从停靠点 {0}/{1} 继续</value></data>
+  <data name="Map_CurrentStopFallback" xml:space="preserve"><value>当前停靠点</value></data>
+  <data name="Map_DistanceFromUserFormat" xml:space="preserve"><value>距你 {0}</value></data>
+  <data name="Map_BadgeNearest" xml:space="preserve"><value>最近</value></data>
+  <data name="LocationDetail_RelatedTourInfoFormat" xml:space="preserve"><value>{0} 个地点 · {1} 分钟</value></data>
+  <data name="LocationDetail_DefaultLocationName" xml:space="preserve"><value>地点</value></data>
+  <data name="Search_FilterDurationUnder5" xml:space="preserve"><value>&lt; 5 分钟</value></data>
+  <data name="Search_FilterDuration5To10" xml:space="preserve"><value>5 - 10 分钟</value></data>
+  <data name="Search_FilterDurationOver10" xml:space="preserve"><value>&gt; 10 分钟</value></data>
+  <data name="Search_FilterModeTotalDuration" xml:space="preserve"><value>总时长</value></data>
+  <data name="Search_FilterModeSingleAudio" xml:space="preserve"><value>任意单条音频</value></data>
+  <data name="Search_TotalDurationFormat" xml:space="preserve"><value>总时长：{0} 分钟</value></data>
+  <data name="Search_AudioCountFormat" xml:space="preserve"><value>音频数量：{0}</value></data>
+  <data name="Search_ResultForQueryFormat" xml:space="preserve"><value>'{0}' 的搜索结果</value></data>
+  <data name="Search_ResultForCategoryFormat" xml:space="preserve"><value>分类 {0} 的结果</value></data>
+  <data name="Search_ResultForCategoriesFormat" xml:space="preserve"><value>{0} 个分类的结果</value></data>
+  <data name="Search_ResultByFilters" xml:space="preserve"><value>筛选结果</value></data>
+  <data name="Search_TourDurationFormat" xml:space="preserve"><value>路线时长：{0} 分钟</value></data>
+  <data name="Search_LocationCountFormat" xml:space="preserve"><value>地点数量：{0}</value></data>
+  <data name="AudioPlayer_PlaybackSourceTour" xml:space="preserve"><value>路线模式</value></data>
+  <data name="AudioPlayer_PlaybackSourceAutoNearest" xml:space="preserve"><value>自动（最近 POI）</value></data>
+  <data name="AudioPlayer_PlaybackSourceManual" xml:space="preserve"><value>手动</value></data>
+  <data name="AudioPlayer_TranslationSummaryFormat" xml:space="preserve"><value>{0} 的音频翻译</value></data>
+  <data name="Favorites_RemoveTitle" xml:space="preserve"><value>移出收藏</value></data>
+  <data name="Favorites_RemoveMessageFormat" xml:space="preserve"><value>确定要将“{0}”从收藏中移除吗？</value></data>
+  <data name="Common_Unknown" xml:space="preserve"><value>未知</value></data>
+  <data name="Downloads_DeleteTitle" xml:space="preserve"><value>删除音频</value></data>
+  <data name="Downloads_DeleteMessageFormat" xml:space="preserve"><value>要删除“{0}”吗？</value></data>
+  <data name="Downloads_DeleteAllTitle" xml:space="preserve"><value>全部删除</value></data>
+  <data name="Downloads_DeleteAllMessage" xml:space="preserve"><value>要删除所有已下载音频吗？</value></data>
+  <data name="History_Today" xml:space="preserve"><value>今天</value></data>
+  <data name="History_Yesterday" xml:space="preserve"><value>昨天</value></data>
   <data name="Tour_DurationMinutesFormat" xml:space="preserve"><value>{0} 分钟</value></data>
   <data name="Tour_DurationHoursMinutesFormat" xml:space="preserve"><value>{0} 小时 {1} 分钟</value></data>
   <data name="Tour_DurationHoursOnlyFormat" xml:space="preserve"><value>{0} 小时</value></data>

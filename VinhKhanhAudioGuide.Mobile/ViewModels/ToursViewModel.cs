@@ -59,10 +59,13 @@ public partial class ToursViewModel : ObservableObject
 
         var resume = await MainThread.InvokeOnMainThreadAsync(async () =>
             await Application.Current!.MainPage!.DisplayAlert(
-                "Tiếp tục lộ trình?",
-                $"Bạn đã tạm dừng tại {checkpoint.LocationName} lúc {savedAt:HH:mm, dd/MM}. Tiếp tục từ điểm dừng trước?",
-                "Tiếp tục",
-                "Để sau"));
+                _localizationService.GetString("Map_ResumePromptTitle"),
+                string.Format(
+                    _localizationService.GetString("Map_ResumePromptMessageFormat"),
+                    checkpoint.LocationName,
+                    savedAt),
+                _localizationService.GetString("Map_ActionContinue"),
+                _localizationService.GetString("Map_ActionLater")));
 
         if (!resume)
         {
@@ -102,7 +105,9 @@ public partial class ToursViewModel : ObservableObject
                 DurationText = FormatDuration(tour.Duration),
                 LocationCount = tour.LocationIds.Count,
                 IsFeatured = tour.IsFeatured,
-                PriceText = tour.Price <= 0 ? "Miễn phí" : $"{tour.Price:N0} VNĐ"
+                PriceText = tour.Price <= 0
+                    ? _localizationService.GetString("Common_Free")
+                    : string.Format(_localizationService.GetString("Common_PriceVndFormat"), tour.Price)
             };
 
             if (tour.IsFeatured)
