@@ -21,6 +21,7 @@ public partial class MapViewModel : LoadStateViewModel
     private readonly IAudioService _audioService;
     private readonly ITourCheckpointService _tourCheckpointService;
     private readonly ITourPlaybackSessionService _tourPlaybackSessionService;
+    private readonly ILocalizationService _localizationService;
     private readonly SemaphoreSlim _loadMapLock = new(1, 1);
     private bool _hasLoadedMapData;
     private bool _isSubscribedToAudioEvents;
@@ -54,10 +55,10 @@ public partial class MapViewModel : LoadStateViewModel
     private string _resumeSessionId = string.Empty;
 
     [ObservableProperty]
-    private string _sectionTitle = "ĐỊA ĐIỂM GẦN ĐÂY";
+    private string _sectionTitle = string.Empty;
 
     [ObservableProperty]
-    private string _sectionHint = "Theo khoảng cách";
+    private string _sectionHint = string.Empty;
 
     [ObservableProperty]
     private string _searchQuery = string.Empty;
@@ -83,7 +84,8 @@ public partial class MapViewModel : LoadStateViewModel
         IApiService apiService,
         IAudioService audioService,
         ITourCheckpointService tourCheckpointService,
-        ITourPlaybackSessionService tourPlaybackSessionService)
+        ITourPlaybackSessionService tourPlaybackSessionService,
+        ILocalizationService localizationService)
     {
         _navigationService = navigationService;
         _geolocationService = geolocationService;
@@ -91,6 +93,9 @@ public partial class MapViewModel : LoadStateViewModel
         _audioService = audioService;
         _tourCheckpointService = tourCheckpointService;
         _tourPlaybackSessionService = tourPlaybackSessionService;
+        _localizationService = localizationService;
+        SectionTitle = T("Map_SectionNearbyTitle");
+        SectionHint = T("Map_SectionNearbyHint");
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -251,7 +256,7 @@ public partial class MapViewModel : LoadStateViewModel
 
     public string TourActionText => !IsTourRouteMode
         ? string.Empty
-        : (IsTourPaused ? "Tiếp tục" : "Tạm dừng");
+        : (IsTourPaused ? T("Map_ActionContinue") : T("Map_ActionPause"));
 
     public bool IsTourActionVisible => IsTourRouteMode;
 
@@ -259,13 +264,13 @@ public partial class MapViewModel : LoadStateViewModel
     {
         var action = await MainThread.InvokeOnMainThreadAsync(async () =>
             await Application.Current!.MainPage!.DisplayActionSheet(
-                "Thoát lộ trình",
-                "Tiếp tục lộ trình",
+                T("Map_ActionSheetTitle"),
+                T("Map_ActionContinueRoute"),
                 null,
-                "Tạm dừng & Lưu",
-                "Kết thúc tour"));
+                T("Map_ActionPauseAndSave"),
+                T("Map_ActionEndTour")));
 
-        if (string.Equals(action, "Tạm dừng & Lưu", StringComparison.Ordinal))
+        if (string.Equals(action, T("Map_ActionPauseAndSave"), StringComparison.Ordinal))
         {
             await SaveCheckpointAsync();
             await _audioService.StopAsync();
@@ -275,7 +280,7 @@ public partial class MapViewModel : LoadStateViewModel
             return;
         }
 
-        if (string.Equals(action, "Kết thúc tour", StringComparison.Ordinal))
+        if (string.Equals(action, T("Map_ActionEndTour"), StringComparison.Ordinal))
         {
             await _tourCheckpointService.ClearAsync();
             await _audioService.StopAsync();
@@ -428,9 +433,9 @@ public partial class MapViewModel : LoadStateViewModel
 
         await MainThread.InvokeOnMainThreadAsync(async () =>
             await Application.Current!.MainPage!.DisplayAlert(
-                "Hoàn thành tour",
-                "Bạn đã nghe hết các địa điểm trong tour.",
-                "Về bản đồ"));
+                T("Map_TourCompleteTitle"),
+                T("Map_TourCompleteMessage"),
+                T("Map_TourCompleteAction")));
 
         await ExitTourToNormalMapAsync();
     }
@@ -537,7 +542,7 @@ public partial class MapViewModel : LoadStateViewModel
 
             if (string.IsNullOrWhiteSpace(TourId))
             {
-                FailLoading("Không tìm thấy lộ trình.");
+                FailLoading(T("Map_ErrorRouteNotFound"));
                 return;
             }
 
@@ -546,7 +551,7 @@ public partial class MapViewModel : LoadStateViewModel
             var tour = await ResolveTourByIdAsync(TourId);
             if (tour == null)
             {
-                FailLoading("Không tìm thấy lộ trình.");
+                FailLoading(T("Map_ErrorRouteNotFound"));
                 return;
             }
 
@@ -569,7 +574,7 @@ public partial class MapViewModel : LoadStateViewModel
 
             if (routeLocations.Count == 0)
             {
-                FailLoading("Lộ trình chưa có địa điểm.");
+                FailLoading(T("Map_ErrorRouteNoLocations"));
                 return;
             }
 
@@ -601,13 +606,13 @@ public partial class MapViewModel : LoadStateViewModel
                     Id = location.Id,
                     Name = location.Name,
                     ImageUrl = location.ImageUrl,
-                    CategoryName = category?.Name ?? "Khác",
+                    CategoryName = category?.Name ?? T("Common_Other"),
                     Address = location.Address,
                     AudioCount = location.AudioGuides?.Count ?? 0,
                     IsNearest = i == 0,
                     IsHot = i == 0,
                     TourOrder = i + 1,
-                    MetaText = $"Điểm dừng {i + 1}/{locationPoints.Count}",
+                    MetaText = string.Format(T("Map_StopOrderFormat"), i + 1, locationPoints.Count),
                     BadgeText = $"POI {i + 1}",
                     IsBadgeVisible = true
                 });
@@ -615,8 +620,8 @@ public partial class MapViewModel : LoadStateViewModel
 
             CurrentPoiLocation = NearbyLocations.FirstOrDefault();
             ApplyResumeCheckpointToCurrentPoi();
-            SectionTitle = "ĐIỂM DỪNG LỘ TRÌNH";
-            SectionHint = "Theo thứ tự";
+            SectionTitle = T("Map_SectionTourStopsTitle");
+            SectionHint = T("Map_SectionTourStopsHint");
 
             GenerateMapHtml(locationPoints, categories, showRoute: true);
 
@@ -664,9 +669,9 @@ public partial class MapViewModel : LoadStateViewModel
         }
 
         resumed.IsNearest = true;
-        resumed.BadgeText = "Đang tiếp tục";
+        resumed.BadgeText = T("Map_BadgeResuming");
         resumed.IsBadgeVisible = true;
-        resumed.MetaText = $"Tiếp tục từ điểm dừng {resumed.TourOrder}/{NearbyLocations.Count}";
+        resumed.MetaText = string.Format(T("Map_ResumeFromStopFormat"), resumed.TourOrder, NearbyLocations.Count);
         CurrentPoiLocation = resumed;
     }
 
@@ -678,7 +683,7 @@ public partial class MapViewModel : LoadStateViewModel
         }
 
         var locationId = CurrentPoiLocation?.Id ?? string.Empty;
-        var locationName = CurrentPoiLocation?.Name ?? "điểm dừng hiện tại";
+        var locationName = CurrentPoiLocation?.Name ?? T("Map_CurrentStopFallback");
         var audioUrl = _audioService.CurrentAudioUrl ?? string.Empty;
         var audioGuideId = string.Empty;
 
@@ -759,12 +764,12 @@ public partial class MapViewModel : LoadStateViewModel
                     Id = location.Id,
                     Name = location.Name,
                     ImageUrl = location.ImageUrl,
-                    CategoryName = category?.Name ?? "Khác",
+                    CategoryName = category?.Name ?? T("Common_Other"),
                     Address = location.Address,
                     Distance = Math.Round(distanceMeters),
                     AudioCount = location.AudioGuides?.Count ?? 0,
                     IsHot = featuredLocationIds.Contains(location.Id),
-                    MetaText = $"Cách bạn {DistanceFormatService.FormatDistance(distanceMeters)}"
+                    MetaText = string.Format(T("Map_DistanceFromUserFormat"), DistanceFormatService.FormatDistance(distanceMeters))
                 });
             }
 
@@ -776,13 +781,13 @@ public partial class MapViewModel : LoadStateViewModel
                 var loc = sorted[i];
                 loc.IsNearest = i == 0;
                 loc.IsBadgeVisible = i == 0;
-                loc.BadgeText = i == 0 ? "Gần nhất" : string.Empty;
+                loc.BadgeText = i == 0 ? T("Map_BadgeNearest") : string.Empty;
                 NearbyLocations.Add(loc);
             }
 
             CurrentPoiLocation = NearbyLocations.FirstOrDefault(x => x.IsNearest) ?? NearbyLocations.FirstOrDefault();
-            SectionTitle = "ĐỊA ĐIỂM GẦN ĐÂY";
-            SectionHint = "Theo khoảng cách";
+            SectionTitle = T("Map_SectionNearbyTitle");
+            SectionHint = T("Map_SectionNearbyHint");
 
             // Generate Leaflet map HTML
             GenerateMapHtml(locationPoints, categories, showRoute: false);
@@ -831,7 +836,7 @@ public partial class MapViewModel : LoadStateViewModel
             var cat = categories.FirstOrDefault(c => c.Id == loc.CategoryId);
             var escapedName = loc.Name.Replace("'", "\\'");
             var escapedAddr = loc.Address.Replace("'", "\\'");
-            var escapedCat = (cat?.Name ?? "Khác").Replace("'", "\\'");
+            var escapedCat = (cat?.Name ?? T("Common_Other")).Replace("'", "\\'");
             var escapedId = Uri.EscapeDataString(loc.Id);
             var escapedImage = Uri.EscapeDataString(loc.ImageUrl);
             var audioCount = loc.AudioGuides?.Count ?? 0;
@@ -842,7 +847,7 @@ public partial class MapViewModel : LoadStateViewModel
                 ? "L.divIcon({className:'tour-route-marker',html:'<div class=\"tour-poi-wrapper\"><img src=\"location_icon.svg\" class=\"tour-poi-pin\"/><div class=\"tour-poi-order\">" + order + "</div></div>',iconSize:[48,56],iconAnchor:[24,52],popupAnchor:[0,-48]})"
                 : (isNearest ? "nearestIcon" : "customIcon");
             var nearestTag = isNearest
-                ? $"<br/><span style=\"display:inline-block;margin-top:4px;padding:2px 8px;border-radius:999px;background:{tertiaryFixed};color:{onTertiaryFixed};font-size:11px;font-weight:700;\">Gần nhất</span>"
+                ? $"<br/><span style=\"display:inline-block;margin-top:4px;padding:2px 8px;border-radius:999px;background:{tertiaryFixed};color:{onTertiaryFixed};font-size:11px;font-weight:700;\">{T("Map_BadgeNearest")}</span>"
                 : string.Empty;
             markersJs.AppendLine(
                 $"L.marker([{point.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}, " +
@@ -1098,6 +1103,8 @@ public partial class MapViewModel : LoadStateViewModel
             BaseUrl = GetWebViewBaseUrl()
         };
     }
+
+    private string T(string key) => _localizationService.GetString(key);
 
     [RelayCommand]
     private async Task MoveToCurrentLocationAsync()

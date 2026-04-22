@@ -1,15 +1,16 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
              x:Class="VinhKhanhAudioGuide.Mobile.Views.PaymentPlanSelectionPage"
-             Title="Chọn gói sử dụng"
+             Title="{ext:Translate PaymentPlan_Title}"
              BackgroundColor="{StaticResource Surface}"
              NavigationPage.HasNavigationBar="True">
 
     <NavigationPage.TitleView>
         <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
             <Image Source="tour.svg" HeightRequest="18" WidthRequest="18" VerticalOptions="Center" />
-            <Label Text="Chọn gói sử dụng"
+            <Label Text="{ext:Translate PaymentPlan_Title}"
                    FontFamily="RobotoCondensed-SemiBold"
                    FontSize="20"
                    TextColor="{StaticResource Primary}"
@@ -41,44 +42,41 @@
         <Grid Padding="20,24,20,20"
               RowDefinitions="Auto,Auto,Auto,Auto"
               RowSpacing="16">
-                 <VerticalStackLayout Grid.Row="0" Spacing="8" Margin="0">
-                    <Label Text="Chọn gói phù hợp với bạn"
-                            FontAttributes="Bold"
-                           FontSize="24"
-                           TextColor="{StaticResource Primary}" />
+            <VerticalStackLayout Grid.Row="0" Spacing="8" Margin="0">
+                <Label Text="{ext:Translate PaymentPlan_Subtitle}"
+                       FontAttributes="Bold"
+                       FontSize="24"
+                       TextColor="{StaticResource Primary}" />
 
-                    <VerticalStackLayout Spacing="15" Margin="0,4,0,0">
-                        <!-- Feature 1 -->
-                        <Grid ColumnDefinitions="28,*" ColumnSpacing="14">
-                            <Image Source="qr.svg" HeightRequest="20" WidthRequest="20" Margin="4,2,0,0" />
-                            <Label Grid.Column="1" Text="Quét QR mở nội dung tức thì"
-                                   FontFamily="RobotoCondensed-Regular"
-                                   FontSize="18"
-                                   FontAttributes="Bold"
-                                   TextColor="{StaticResource OnSurface}" />
-                        </Grid>
+                <VerticalStackLayout Spacing="15" Margin="0,4,0,0">
+                    <Grid ColumnDefinitions="28,*" ColumnSpacing="14">
+                        <Image Source="qr.svg" HeightRequest="20" WidthRequest="20" Margin="4,2,0,0" />
+                        <Label Grid.Column="1" Text="{ext:Translate PaymentPlan_FeatureScan}"
+                               FontFamily="RobotoCondensed-Regular"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource OnSurface}" />
+                    </Grid>
 
-                        <!-- Feature 2 -->
-                        <Grid ColumnDefinitions="28,*" ColumnSpacing="10">
-                            <Image Source="audio.svg" HeightRequest="20" WidthRequest="20" Margin="4,2,0,0" />
-                            <Label Grid.Column="1" Text="Tự động phát theo vị trí thực"
-                                   FontFamily="RobotoCondensed-Regular"
-                                   FontSize="18"
-                                   FontAttributes="Bold"
-                                   TextColor="{StaticResource OnSurface}" />
-                        </Grid>
+                    <Grid ColumnDefinitions="28,*" ColumnSpacing="10">
+                        <Image Source="audio.svg" HeightRequest="20" WidthRequest="20" Margin="4,2,0,0" />
+                        <Label Grid.Column="1" Text="{ext:Translate PaymentPlan_FeatureAutoplay}"
+                               FontFamily="RobotoCondensed-Regular"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource OnSurface}" />
+                    </Grid>
 
-                        <!-- Feature 3 -->
-                        <Grid ColumnDefinitions="28,*" ColumnSpacing="10">
-                            <Image Source="user.svg" HeightRequest="20" WidthRequest="20" Margin="4,2,0,0" />
-                            <Label Grid.Column="1" Text="Cá nhân hóa: ngôn ngữ, tốc độ"
-                                   FontFamily="RobotoCondensed-Regular"
-                                   FontSize="18"
-                                   FontAttributes="Bold"
-                                   TextColor="{StaticResource OnSurface}" />
-                        </Grid>
-                    </VerticalStackLayout>
+                    <Grid ColumnDefinitions="28,*" ColumnSpacing="10">
+                        <Image Source="user.svg" HeightRequest="20" WidthRequest="20" Margin="4,2,0,0" />
+                        <Label Grid.Column="1" Text="{ext:Translate PaymentPlan_FeaturePersonalization}"
+                               FontFamily="RobotoCondensed-Regular"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource OnSurface}" />
+                    </Grid>
                 </VerticalStackLayout>
+            </VerticalStackLayout>
 
             <VerticalStackLayout Grid.Row="1" Spacing="12">
                 <Border x:Name="DailyPlanCard"
@@ -116,7 +114,7 @@
                         <VerticalStackLayout Grid.Column="1" Spacing="6">
                             <HorizontalStackLayout Spacing="8">
                                 <Label x:Name="DailyPlanTitleLabel"
-                                       Text="10.000đ/ngày"
+                                       Text="{ext:Translate PaymentPlan_DailyTitle}"
                                        FontFamily="RobotoCondensed-SemiBold"
                                        FontSize="18"
                                        TextColor="{StaticResource OnSurface}" />
@@ -127,7 +125,7 @@
                                     <Border.StrokeShape>
                                         <RoundRectangle CornerRadius="999" />
                                     </Border.StrokeShape>
-                                    <Label Text="Linh hoạt"
+                                    <Label Text="{ext:Translate PaymentPlan_DailyBadge}"
                                            FontFamily="RobotoCondensed-SemiBold"
                                            FontSize="10"
                                            TextColor="{StaticResource OnSecondaryContainer}"
@@ -136,13 +134,13 @@
                             </HorizontalStackLayout>
 
                             <Label x:Name="DailyPlanPriceLabel"
-                                   Text="Một ngày sử dụng"
+                                   Text="{ext:Translate PaymentPlan_DailyPriceLabel}"
                                    FontFamily="RobotoCondensed-Medium"
                                    FontSize="16"
                                    TextColor="{StaticResource Primary}" />
 
                             <Label x:Name="DailyPlanDescriptionLabel"
-                                   Text="Phù hợp khi bạn muốn trải nghiệm nhanh trong một ngày, tối ưu cho khách ghé ngắn."
+                                   Text="{ext:Translate PaymentPlan_DailyDescription}"
                                    FontFamily="RobotoCondensed-Regular"
                                    FontSize="13"
                                    LineBreakMode="WordWrap"
@@ -186,7 +184,7 @@
                         <VerticalStackLayout Grid.Column="1" Spacing="6">
                             <HorizontalStackLayout Spacing="8">
                                 <Label x:Name="FullTourPlanTitleLabel"
-                                       Text="29.000đ/full tour"
+                                       Text="{ext:Translate PaymentPlan_FullTitle}"
                                        FontFamily="RobotoCondensed-SemiBold"
                                        FontSize="18"
                                        TextColor="{StaticResource OnSurface}" />
@@ -197,7 +195,7 @@
                                     <Border.StrokeShape>
                                         <RoundRectangle CornerRadius="999" />
                                     </Border.StrokeShape>
-                                    <Label Text="Phổ biến"
+                                    <Label Text="{ext:Translate PaymentPlan_FullBadge}"
                                            FontFamily="RobotoCondensed-SemiBold"
                                            FontSize="10"
                                            TextColor="{StaticResource OnTertiaryFixed}" />
@@ -205,13 +203,13 @@
                             </HorizontalStackLayout>
 
                             <Label x:Name="FullTourPlanPriceLabel"
-                                   Text="Một lần thanh toán"
+                                   Text="{ext:Translate PaymentPlan_FullPriceLabel}"
                                    FontFamily="RobotoCondensed-Medium"
                                    FontSize="16"
                                    TextColor="{StaticResource Primary}" />
 
                             <Label x:Name="FullTourPlanDescriptionLabel"
-                                   Text="Mở khóa toàn bộ tour, phù hợp khi bạn muốn nghe trọn vẹn nội dung đã quét."
+                                   Text="{ext:Translate PaymentPlan_FullDescription}"
                                    FontFamily="RobotoCondensed-Regular"
                                    FontSize="13"
                                    LineBreakMode="WordWrap"
@@ -235,16 +233,16 @@
                            HeightRequest="16"
                            VerticalOptions="Center" />
                     <Label x:Name="SelectionSummaryLabel"
-                           Text="Đang chọn: 10.000đ/ngày"
+                           Text="{ext:Translate PaymentPlan_SelectedSummaryDefault}"
                            FontFamily="RobotoCondensed-Medium"
                            FontSize="13"
                            TextColor="{StaticResource OnSurface}" />
                 </HorizontalStackLayout>
             </Border>
 
-                <Button x:Name="ContinueButton"
+            <Button x:Name="ContinueButton"
                     Grid.Row="3"
-                    Text="Tiếp tục"
+                    Text="{ext:Translate PaymentPlan_ContinueButton}"
                     Style="{StaticResource PrimaryButton}"
                     Clicked="OnContinueClicked"
                     Margin="0,2,0,0" />

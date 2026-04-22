@@ -59,8 +59,8 @@
   <data name="Main_Free" xml:space="preserve"><value>免费</value></data>
   <data name="Main_PriceFormat" xml:space="preserve"><value>{0:N0} 越南盾</value></data>
   <data name="Main_DurationMinutesFormat" xml:space="preserve"><value>⏱ {0} 分钟</value></data>
-  <data name="Main_DurationHoursMinutesFormat" xml:space="preserve"><value>⏱ {0}小时 {1}分</value></data>
-  <data name="Main_DurationHoursOnlyFormat" xml:space="preserve"><value>⏱ {0}小时</value></data>
+  <data name="Main_DurationHoursMinutesFormat" xml:space="preserve"><value>⏱ {0} 小时 {1} 分钟</value></data>
+  <data name="Main_DurationHoursOnlyFormat" xml:space="preserve"><value>⏱ {0} 小时</value></data>
   <data name="Settings_PageTitle" xml:space="preserve"><value>设置</value></data>
   <data name="Settings_Favorites" xml:space="preserve"><value>收藏</value></data>
   <data name="Settings_Downloads" xml:space="preserve"><value>下载</value></data>
@@ -160,4 +160,207 @@
   <data name="Footer_NearestHintFormat" xml:space="preserve"><value>最近 POI • {0}</value></data>
   <data name="Footer_NearestShort" xml:space="preserve"><value>最近 POI</value></data>
   <data name="Footer_QueueHintFormat" xml:space="preserve"><value>{0} • 第 {1}/{2} 条</value></data>
+  <data name="Common_Close" xml:space="preserve"><value>关闭</value></data>
+  <data name="Settings_Subtitle" xml:space="preserve"><value>个性化你的收听体验、语言与播放设置</value></data>
+  <data name="Settings_LocationScanHint" xml:space="preserve"><value>按位置自动扫描频率</value></data>
+  <data name="Settings_Loading" xml:space="preserve"><value>正在加载设置...</value></data>
+  <data name="Settings_LoadError" xml:space="preserve"><value>无法加载设置</value></data>
+  <data name="About_PageTitle" xml:space="preserve"><value>关于应用</value></data>
+  <data name="About_VersionFormat" xml:space="preserve"><value>版本 {0}</value></data>
+  <data name="About_StatLocations" xml:space="preserve"><value>地点</value></data>
+  <data name="About_StatAudio" xml:space="preserve"><value>音频</value></data>
+  <data name="About_StatTours" xml:space="preserve"><value>路线</value></data>
+  <data name="About_Description" xml:space="preserve"><value>Vinh Khanh Audio Guide 是一款语音导览应用，帮助你更生动地探索越南文化与历史。</value></data>
+  <data name="About_HowToUse" xml:space="preserve"><value>使用方法</value></data>
+  <data name="About_Step1Title" xml:space="preserve"><value>选择地点</value></data>
+  <data name="About_Step1Description" xml:space="preserve"><value>搜索或浏览旅游地点列表</value></data>
+  <data name="About_Step2Title" xml:space="preserve"><value>收听讲解</value></data>
+  <data name="About_Step2Description" xml:space="preserve"><value>在每个景点播放高质量语音导览</value></data>
+  <data name="About_Step3Title" xml:space="preserve"><value>继续探索</value></data>
+  <data name="About_Step3Description" xml:space="preserve"><value>跟随路线或自由探索附近地点</value></data>
+  <data name="About_FeaturesTitle" xml:space="preserve"><value>亮点功能</value></data>
+  <data name="About_FeatureLocations" xml:space="preserve"><value>100+ 个地点</value></data>
+  <data name="About_FeatureAudioHd" xml:space="preserve"><value>Audio HD</value></data>
+  <data name="About_FeatureMultilingual" xml:space="preserve"><value>多语言</value></data>
+  <data name="About_FeatureOffline" xml:space="preserve"><value>离线模式</value></data>
+  <data name="About_FeatureMap" xml:space="preserve"><value>互动地图</value></data>
+  <data name="About_FeatureRoutes" xml:space="preserve"><value>定制路线</value></data>
+  <data name="About_RateApp" xml:space="preserve"><value>评价应用</value></data>
+  <data name="About_ShareApp" xml:space="preserve"><value>分享应用</value></data>
+  <data name="About_Terms" xml:space="preserve"><value>使用条款</value></data>
+  <data name="About_Privacy" xml:space="preserve"><value>隐私政策</value></data>
+  <data name="About_Copyright" xml:space="preserve"><value>© 2026 Vinh Khanh Audio Guide. All rights reserved.</value></data>
+  <data name="About_Loading" xml:space="preserve"><value>正在加载应用信息...</value></data>
+  <data name="About_LoadError" xml:space="preserve"><value>无法加载应用信息</value></data>
+  <data name="About_AlertCannotOpenStore" xml:space="preserve"><value>无法打开应用商店。</value></data>
+  <data name="About_AlertCannotOpenBrowser" xml:space="preserve"><value>无法打开浏览器。</value></data>
+  <data name="About_ShareText" xml:space="preserve"><value>与 Vinh Khanh Audio Guide 一起探索越南文化与历史！立即下载：</value></data>
+  <data name="Help_PageTitle" xml:space="preserve"><value>帮助</value></data>
+  <data name="Help_FaqTitle" xml:space="preserve"><value>常见问题</value></data>
+  <data name="Help_ContactTitle" xml:space="preserve"><value>联系支持</value></data>
+  <data name="Help_EmailLabel" xml:space="preserve"><value>Email</value></data>
+  <data name="Help_HotlineLabel" xml:space="preserve"><value>Hotline</value></data>
+  <data name="Help_LiveChatLabel" xml:space="preserve"><value>Live Chat</value></data>
+  <data name="Help_LiveChatStatus" xml:space="preserve"><value>24/7 在线支持</value></data>
+  <data name="Help_UserGuideButton" xml:space="preserve"><value>查看使用指南</value></data>
+  <data name="Help_Loading" xml:space="preserve"><value>正在加载帮助...</value></data>
+  <data name="Help_LoadError" xml:space="preserve"><value>无法加载帮助数据</value></data>
+  <data name="Help_EmailSubject" xml:space="preserve"><value>支持 - Vinh Khanh Audio Guide</value></data>
+  <data name="Help_AlertEmailFailed" xml:space="preserve"><value>无法打开邮件应用。</value></data>
+  <data name="Help_AlertCallFailed" xml:space="preserve"><value>无法拨打电话。</value></data>
+  <data name="Help_AlertBrowserFailed" xml:space="preserve"><value>无法打开浏览器。</value></data>
+  <data name="Help_Faq1_Question" xml:space="preserve"><value>如何下载音频到手机？</value></data>
+  <data name="Help_Faq1_Answer" xml:space="preserve"><value>进入地点详情页，点击音频旁的下载图标，即可离线收听。</value></data>
+  <data name="Help_Faq2_Question" xml:space="preserve"><value>如何使用离线模式？</value></data>
+  <data name="Help_Faq2_Answer" xml:space="preserve"><value>下载后可在无网络时收听。前往“下载”查看已保存音频。</value></data>
+  <data name="Help_Faq3_Question" xml:space="preserve"><value>如何切换语言？</value></data>
+  <data name="Help_Faq3_Answer" xml:space="preserve"><value>进入 设置 &gt; 语言，选择你想使用的语言。</value></data>
+  <data name="Help_Faq4_Question" xml:space="preserve"><value>如何分享给朋友？</value></data>
+  <data name="Help_Faq4_Answer" xml:space="preserve"><value>在地点详情页点击“分享”，可通过消息、邮件或社交应用发送链接。</value></data>
+  <data name="Help_Faq5_Question" xml:space="preserve"><value>如何反馈问题？</value></data>
+  <data name="Help_Faq5_Answer" xml:space="preserve"><value>请联系 support@vinhkhanhaudioguide.com 或拨打 1900 1234。</value></data>
+  <data name="Help_Faq6_Question" xml:space="preserve"><value>应用是免费的吗？</value></data>
+  <data name="Help_Faq6_Answer" xml:space="preserve"><value>部分音频免费，部分高级内容需要付费套餐。</value></data>
+  <data name="Help_Faq7_Question" xml:space="preserve"><value>内容准确吗？</value></data>
+  <data name="Help_Faq7_Answer" xml:space="preserve"><value>内容由专业团队整理并持续更新校验。</value></data>
+  <data name="Favorites_PageTitle" xml:space="preserve"><value>收藏</value></data>
+  <data name="Favorites_EmptyTitle" xml:space="preserve"><value>暂无收藏地点</value></data>
+  <data name="Favorites_EmptyDescription" xml:space="preserve"><value>点击心形图标将地点加入收藏列表</value></data>
+  <data name="Favorites_ExploreButton" xml:space="preserve"><value>探索地点</value></data>
+  <data name="Downloads_PageTitle" xml:space="preserve"><value>已下载音频</value></data>
+  <data name="Downloads_StorageUsed" xml:space="preserve"><value>已用存储</value></data>
+  <data name="Downloads_DeleteAll" xml:space="preserve"><value>全部删除</value></data>
+  <data name="Downloads_Empty" xml:space="preserve"><value>暂无已下载音频</value></data>
+  <data name="History_PageTitle" xml:space="preserve"><value>收听历史</value></data>
+  <data name="History_HeaderTitle" xml:space="preserve"><value>收听历史</value></data>
+  <data name="History_HeaderSubtitle" xml:space="preserve"><value>追踪你最近收听音频的进度</value></data>
+  <data name="History_Empty" xml:space="preserve"><value>暂无收听历史</value></data>
+  <data name="History_LanguageFormat" xml:space="preserve"><value>语言：{0}</value></data>
+  <data name="Map_PageTitle" xml:space="preserve"><value>Vĩnh Khánh 地图</value></data>
+  <data name="Map_Loading" xml:space="preserve"><value>正在加载地图...</value></data>
+  <data name="Map_LoadError" xml:space="preserve"><value>无法加载地图数据</value></data>
+  <data name="Map_Empty" xml:space="preserve"><value>暂无可显示地点</value></data>
+  <data name="LocationDetail_DurationLabel" xml:space="preserve"><value>时长</value></data>
+  <data name="LocationDetail_AudioLabel" xml:space="preserve"><value>音频</value></data>
+  <data name="LocationDetail_CategoryLabel" xml:space="preserve"><value>分类</value></data>
+  <data name="LocationDetail_LanguageLabel" xml:space="preserve"><value>语言</value></data>
+  <data name="LocationDetail_OverviewTitle" xml:space="preserve"><value>简介</value></data>
+  <data name="LocationDetail_AudioGuideTitle" xml:space="preserve"><value>Audio Guide</value></data>
+  <data name="LocationDetail_AudioGuideSubtitle" xml:space="preserve"><value>收听景点语音讲解</value></data>
+  <data name="LocationDetail_StartListeningButton" xml:space="preserve"><value>开始收听</value></data>
+  <data name="TourDetail_DurationLabel" xml:space="preserve"><value>时长</value></data>
+  <data name="TourDetail_LocationsLabel" xml:space="preserve"><value>目的地</value></data>
+  <data name="TourDetail_PriceLabel" xml:space="preserve"><value>价格</value></data>
+  <data name="TourDetail_OverviewTitle" xml:space="preserve"><value>路线简介</value></data>
+  <data name="TourDetail_ItineraryTitle" xml:space="preserve"><value>详细路线</value></data>
+  <data name="TourDetail_MapTitle" xml:space="preserve"><value>路线地图</value></data>
+  <data name="TourDetail_StartButton" xml:space="preserve"><value>开始路线</value></data>
+  <data name="TourDetail_LocationsFormat" xml:space="preserve"><value>{0} 个地点</value></data>
+  <data name="Tours_PageTitle" xml:space="preserve"><value>Tours</value></data>
+  <data name="Tours_HeaderTitle" xml:space="preserve"><value>游览路线</value></data>
+  <data name="Tours_HeaderSubtitle" xml:space="preserve"><value>按你的路线探索 Vĩnh Khánh</value></data>
+  <data name="Tours_FeaturedTitle" xml:space="preserve"><value>精选路线</value></data>
+  <data name="Tours_AllTitle" xml:space="preserve"><value>全部路线</value></data>
+  <data name="Search_PageTitle" xml:space="preserve"><value>结果</value></data>
+  <data name="Search_EmptyTitle" xml:space="preserve"><value>没有匹配结果</value></data>
+  <data name="Search_EmptyDescription" xml:space="preserve"><value>请尝试其他关键词或调整筛选条件。</value></data>
+  <data name="Main_LoadDataErrorPrefix" xml:space="preserve"><value>无法加载数据：</value></data>
+  <data name="PaymentPlan_Title" xml:space="preserve"><value>选择套餐</value></data>
+  <data name="PaymentPlan_Subtitle" xml:space="preserve"><value>选择适合你的套餐</value></data>
+  <data name="PaymentPlan_FeatureScan" xml:space="preserve"><value>扫码立即解锁内容</value></data>
+  <data name="PaymentPlan_FeatureAutoplay" xml:space="preserve"><value>按实际位置自动播放</value></data>
+  <data name="PaymentPlan_FeaturePersonalization" xml:space="preserve"><value>个性化：语言、速度</value></data>
+  <data name="PaymentPlan_DailyTitle" xml:space="preserve"><value>10,000越盾/天</value></data>
+  <data name="PaymentPlan_DailyBadge" xml:space="preserve"><value>灵活</value></data>
+  <data name="PaymentPlan_DailyPriceLabel" xml:space="preserve"><value>使用一天</value></data>
+  <data name="PaymentPlan_DailyDescription" xml:space="preserve"><value>适合一天快速体验，适用于短暂停留游客。</value></data>
+  <data name="PaymentPlan_FullTitle" xml:space="preserve"><value>29,000越盾/全程</value></data>
+  <data name="PaymentPlan_FullBadge" xml:space="preserve"><value>热门</value></data>
+  <data name="PaymentPlan_FullPriceLabel" xml:space="preserve"><value>一次性支付</value></data>
+  <data name="PaymentPlan_FullDescription" xml:space="preserve"><value>解锁完整路线，适合想完整收听已扫码内容的用户。</value></data>
+  <data name="PaymentPlan_SelectedSummaryDefault" xml:space="preserve"><value>正在选择：10,000越盾/天</value></data>
+  <data name="PaymentPlan_SelectedSummaryFormat" xml:space="preserve"><value>正在选择：{0}</value></data>
+  <data name="PaymentPlan_ContinueButton" xml:space="preserve"><value>继续</value></data>
+  <data name="PaymentPlan_StatusFallbackUsed" xml:space="preserve"><value>无法从服务器加载套餐，正在使用默认套餐。</value></data>
+  <data name="PaymentPlan_StatusServerUnavailable" xml:space="preserve"><value>无法连接套餐服务器，正在使用默认套餐。</value></data>
+  <data name="PaymentPlan_AlertNotSyncedTitle" xml:space="preserve"><value>套餐未同步</value></data>
+  <data name="PaymentPlan_AlertNotSyncedMessage" xml:space="preserve"><value>继续前请先从服务器加载套餐。</value></data>
+  <data name="PaymentCheckout_Title" xml:space="preserve"><value>支付</value></data>
+  <data name="PaymentCheckout_Subtitle" xml:space="preserve"><value>请确认套餐并完成支付以解锁内容。</value></data>
+  <data name="PaymentCheckout_DefaultPrice" xml:space="preserve"><value>10,000越盾</value></data>
+  <data name="PaymentCheckout_Notice" xml:space="preserve"><value>点击支付后交易将立即确认。</value></data>
+  <data name="PaymentCheckout_PayButton" xml:space="preserve"><value>支付</value></data>
+  <data name="PaymentCheckout_PriceAmountFormat" xml:space="preserve"><value>{0:N0}越盾</value></data>
+  <data name="PaymentCheckout_AlertMissingPackageTitle" xml:space="preserve"><value>缺少支付套餐</value></data>
+  <data name="PaymentCheckout_AlertMissingPackageMessage" xml:space="preserve"><value>无法确定所选支付套餐。</value></data>
+  <data name="PaymentCheckout_AlertFailedTitle" xml:space="preserve"><value>支付失败</value></data>
+  <data name="PaymentCheckout_AlertFailedMessage" xml:space="preserve"><value>无法确认支付。</value></data>
+  <data name="PaymentCheckout_AlertPendingTitle" xml:space="preserve"><value>支付未完成</value></data>
+  <data name="PaymentCheckout_AlertPendingMessage" xml:space="preserve"><value>支付尚未通过服务器验证。</value></data>
+  <data name="PaymentCheckout_AlertSuccessTitle" xml:space="preserve"><value>支付成功</value></data>
+  <data name="PaymentCheckout_AlertSuccessMessageFormat" xml:space="preserve"><value>套餐 {0} 已激活。</value></data>
+  <data name="Qr_StatusScannedFormat" xml:space="preserve"><value>已扫描：{0}</value></data>
+  <data name="Qr_StatusInvalidDeepLinkFormat" xml:space="preserve"><value>二维码已读取但 deep link 格式无效：
+{0}</value></data>
+  <data name="Qr_StatusGoToPayment" xml:space="preserve"><value>正在跳转到支付页面...</value></data>
+  <data name="Qr_StatusSampleFallback" xml:space="preserve"><value>示例二维码格式无效，正在使用内置示例数据...</value></data>
+  <data name="Common_Free" xml:space="preserve"><value>免费</value></data>
+  <data name="Common_PriceVndFormat" xml:space="preserve"><value>{0:N0} 越盾</value></data>
+  <data name="Common_Other" xml:space="preserve"><value>其他</value></data>
+  <data name="Common_FilterAny" xml:space="preserve"><value>不限</value></data>
+  <data name="Map_SectionNearbyTitle" xml:space="preserve"><value>附近地点</value></data>
+  <data name="Map_SectionNearbyHint" xml:space="preserve"><value>按距离</value></data>
+  <data name="Map_SectionTourStopsTitle" xml:space="preserve"><value>路线停靠点</value></data>
+  <data name="Map_SectionTourStopsHint" xml:space="preserve"><value>按顺序</value></data>
+  <data name="Map_ActionContinue" xml:space="preserve"><value>继续</value></data>
+  <data name="Map_ActionPause" xml:space="preserve"><value>暂停</value></data>
+  <data name="Map_ActionLater" xml:space="preserve"><value>稍后</value></data>
+  <data name="Map_ActionSheetTitle" xml:space="preserve"><value>退出路线</value></data>
+  <data name="Map_ActionContinueRoute" xml:space="preserve"><value>继续路线</value></data>
+  <data name="Map_ActionPauseAndSave" xml:space="preserve"><value>暂停并保存</value></data>
+  <data name="Map_ActionEndTour" xml:space="preserve"><value>结束路线</value></data>
+  <data name="Map_ResumePromptTitle" xml:space="preserve"><value>继续路线？</value></data>
+  <data name="Map_ResumePromptMessageFormat" xml:space="preserve"><value>你在 {1:HH:mm, dd/MM} 于 {0} 暂停。是否从上次停靠点继续？</value></data>
+  <data name="Map_TourCompleteTitle" xml:space="preserve"><value>路线完成</value></data>
+  <data name="Map_TourCompleteMessage" xml:space="preserve"><value>你已收听完此路线的全部地点。</value></data>
+  <data name="Map_TourCompleteAction" xml:space="preserve"><value>返回地图</value></data>
+  <data name="Map_ErrorRouteNotFound" xml:space="preserve"><value>未找到路线。</value></data>
+  <data name="Map_ErrorRouteNoLocations" xml:space="preserve"><value>该路线暂无地点。</value></data>
+  <data name="Map_StopOrderFormat" xml:space="preserve"><value>停靠点 {0}/{1}</value></data>
+  <data name="Map_BadgeResuming" xml:space="preserve"><value>继续中</value></data>
+  <data name="Map_ResumeFromStopFormat" xml:space="preserve"><value>从停靠点 {0}/{1} 继续</value></data>
+  <data name="Map_CurrentStopFallback" xml:space="preserve"><value>当前停靠点</value></data>
+  <data name="Map_DistanceFromUserFormat" xml:space="preserve"><value>距你 {0}</value></data>
+  <data name="Map_BadgeNearest" xml:space="preserve"><value>最近</value></data>
+  <data name="LocationDetail_RelatedTourInfoFormat" xml:space="preserve"><value>{0} 个地点 · {1} 分钟</value></data>
+  <data name="LocationDetail_DefaultLocationName" xml:space="preserve"><value>地点</value></data>
+  <data name="Search_FilterDurationUnder5" xml:space="preserve"><value>&lt; 5 分钟</value></data>
+  <data name="Search_FilterDuration5To10" xml:space="preserve"><value>5 - 10 分钟</value></data>
+  <data name="Search_FilterDurationOver10" xml:space="preserve"><value>&gt; 10 分钟</value></data>
+  <data name="Search_FilterModeTotalDuration" xml:space="preserve"><value>总时长</value></data>
+  <data name="Search_FilterModeSingleAudio" xml:space="preserve"><value>任意单条音频</value></data>
+  <data name="Search_TotalDurationFormat" xml:space="preserve"><value>总时长：{0} 分钟</value></data>
+  <data name="Search_AudioCountFormat" xml:space="preserve"><value>音频数量：{0}</value></data>
+  <data name="Search_ResultForQueryFormat" xml:space="preserve"><value>'{0}' 的搜索结果</value></data>
+  <data name="Search_ResultForCategoryFormat" xml:space="preserve"><value>分类 {0} 的结果</value></data>
+  <data name="Search_ResultForCategoriesFormat" xml:space="preserve"><value>{0} 个分类的结果</value></data>
+  <data name="Search_ResultByFilters" xml:space="preserve"><value>筛选结果</value></data>
+  <data name="Search_TourDurationFormat" xml:space="preserve"><value>路线时长：{0} 分钟</value></data>
+  <data name="Search_LocationCountFormat" xml:space="preserve"><value>地点数量：{0}</value></data>
+  <data name="AudioPlayer_PlaybackSourceTour" xml:space="preserve"><value>路线模式</value></data>
+  <data name="AudioPlayer_PlaybackSourceAutoNearest" xml:space="preserve"><value>自动（最近 POI）</value></data>
+  <data name="AudioPlayer_PlaybackSourceManual" xml:space="preserve"><value>手动</value></data>
+  <data name="AudioPlayer_TranslationSummaryFormat" xml:space="preserve"><value>{0} 的音频翻译</value></data>
+  <data name="Favorites_RemoveTitle" xml:space="preserve"><value>移出收藏</value></data>
+  <data name="Favorites_RemoveMessageFormat" xml:space="preserve"><value>确定要将“{0}”从收藏中移除吗？</value></data>
+  <data name="Common_Unknown" xml:space="preserve"><value>未知</value></data>
+  <data name="Downloads_DeleteTitle" xml:space="preserve"><value>删除音频</value></data>
+  <data name="Downloads_DeleteMessageFormat" xml:space="preserve"><value>要删除“{0}”吗？</value></data>
+  <data name="Downloads_DeleteAllTitle" xml:space="preserve"><value>全部删除</value></data>
+  <data name="Downloads_DeleteAllMessage" xml:space="preserve"><value>要删除所有已下载音频吗？</value></data>
+  <data name="History_Today" xml:space="preserve"><value>今天</value></data>
+  <data name="History_Yesterday" xml:space="preserve"><value>昨天</value></data>
+  <data name="Tour_DurationMinutesFormat" xml:space="preserve"><value>{0} 分钟</value></data>
+  <data name="Tour_DurationHoursMinutesFormat" xml:space="preserve"><value>{0} 小时 {1} 分钟</value></data>
+  <data name="Tour_DurationHoursOnlyFormat" xml:space="preserve"><value>{0} 小时</value></data>
 </root>

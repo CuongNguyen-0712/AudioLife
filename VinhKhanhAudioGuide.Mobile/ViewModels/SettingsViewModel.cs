@@ -19,7 +19,7 @@ public partial class SettingsViewModel : ObservableObject
     private string _locationScanInterval = string.Empty;
 
     [ObservableProperty]
-    private string _selectedLanguage = "Tiếng Việt";
+    private string _selectedLanguage = string.Empty;
 
     [ObservableProperty]
     private bool _autoPlayNext = true;

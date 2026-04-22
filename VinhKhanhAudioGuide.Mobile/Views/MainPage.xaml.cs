@@ -1,10 +1,12 @@
 using VinhKhanhAudioGuide.Mobile.ViewModels;
+using VinhKhanhAudioGuide.Mobile.Services;
 
 namespace VinhKhanhAudioGuide.Mobile.Views;
 
 public partial class MainPage : ContentPage
 {
     private readonly MainViewModel _viewModel;
+    private readonly ILocalizationService _localizationService = new LocalizationService();
     private CancellationTokenSource? _pulseCancellationTokenSource;
 
     public MainPage(MainViewModel viewModel)
@@ -28,7 +30,10 @@ public partial class MainPage : ContentPage
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"MainPage.OnAppearing error: {ex}");
-            await DisplayAlert("Lỗi", $"Không thể tải dữ liệu: {ex.Message}", "OK");
+            await DisplayAlert(
+                _localizationService.GetString("Common_Notice"),
+                $"{_localizationService.GetString("Main_LoadDataErrorPrefix")} {ex.Message}",
+                _localizationService.GetString("Common_Understood"));
         }
     }
 

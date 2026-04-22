@@ -1,10 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
              xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
              x:Class="VinhKhanhAudioGuide.Mobile.Views.DownloadsPage"
              x:DataType="viewmodels:DownloadsViewModel"
-             Title="Audio đã tải">
+             Title="{ext:Translate Downloads_PageTitle}">
 
     <Grid RowDefinitions="Auto,*">
         
@@ -16,7 +17,7 @@
                BackgroundColor="{StaticResource Secondary}">
             <Grid ColumnDefinitions="*,Auto">
                 <VerticalStackLayout>
-                    <Label Text="Dung lượng đã sử dụng"
+                          <Label Text="{ext:Translate Downloads_StorageUsed}"
                            FontSize="12"
                            TextColor="{StaticResource Gray600}"/>
                     <Label Text="{Binding TotalSizeText}"
@@ -25,7 +26,7 @@
                            TextColor="{StaticResource Primary}"/>
                 </VerticalStackLayout>
                 <Button Grid.Column="1"
-                        Text="Xóa tất cả"
+                        Text="{ext:Translate Downloads_DeleteAll}"
                         Style="{StaticResource SmallButton}"
                         Command="{Binding DeleteAllCommand}"
                         VerticalOptions="Center"/>
@@ -39,7 +40,7 @@
             <CollectionView.EmptyView>
                 <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10" Padding="30">
                     <Image Source="download_icon.png" HeightRequest="60" Opacity="0.3"/>
-                    <Label Text="Chưa có audio nào được tải" HorizontalOptions="Center" TextColor="{StaticResource Gray400}"/>
+                    <Label Text="{ext:Translate Downloads_Empty}" HorizontalOptions="Center" TextColor="{StaticResource Gray400}"/>
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
@@ -47,7 +48,7 @@
                     <SwipeView>
                         <SwipeView.RightItems>
                             <SwipeItems>
-                                <SwipeItem Text="Xóa"
+                                <SwipeItem Text="{ext:Translate Common_Delete}"
                                            BackgroundColor="{StaticResource AudioGuideRed}"
                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:DownloadsViewModel}}, Path=DeleteDownloadCommand}"
                                            CommandParameter="{Binding .}"/>
@@ -100,3 +101,4 @@
     </Grid>
 
 </ContentPage>
+

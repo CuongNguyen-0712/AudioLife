@@ -7,8 +7,9 @@ namespace VinhKhanhAudioGuide.Mobile.Views;
 public partial class PaymentPlanSelectionPage : ContentPage
 {
     private readonly IApiService _apiService;
-    private readonly PaymentPlanOption _fallbackDailyPlan = new("daily", "10.000đ/ngày", "Một ngày sử dụng", "Phù hợp khi bạn muốn trải nghiệm nhanh trong một ngày, tối ưu cho khách ghé ngắn.", 10000m);
-    private readonly PaymentPlanOption _fallbackFullTourPlan = new("full-tour", "29.000đ/full tour", "Một lần thanh toán", "Mở khóa toàn bộ tour, phù hợp khi bạn muốn nghe trọn vẹn nội dung đã quét.", 29000m);
+    private readonly ILocalizationService _localizationService;
+    private readonly PaymentPlanOption _fallbackDailyPlan;
+    private readonly PaymentPlanOption _fallbackFullTourPlan;
 
     private PaymentPlanOption _dailyPlan;
     private PaymentPlanOption _fullTourPlan;
@@ -20,6 +21,19 @@ public partial class PaymentPlanSelectionPage : ContentPage
     {
         InitializeComponent();
         _apiService = ResolveApiService();
+        _localizationService = ResolveLocalizationService();
+        _fallbackDailyPlan = new PaymentPlanOption(
+            "daily",
+            _localizationService.GetString("PaymentPlan_DailyTitle"),
+            _localizationService.GetString("PaymentPlan_DailyPriceLabel"),
+            _localizationService.GetString("PaymentPlan_DailyDescription"),
+            10000m);
+        _fallbackFullTourPlan = new PaymentPlanOption(
+            "full-tour",
+            _localizationService.GetString("PaymentPlan_FullTitle"),
+            _localizationService.GetString("PaymentPlan_FullPriceLabel"),
+            _localizationService.GetString("PaymentPlan_FullDescription"),
+            29000m);
         _dailyPlan = _fallbackDailyPlan;
         _fullTourPlan = _fallbackFullTourPlan;
         _selectedPlan = _dailyPlan;
@@ -48,9 +62,7 @@ public partial class PaymentPlanSelectionPage : ContentPage
             var packages = await _apiService.GetPaymentPackagesAsync();
             if (packages.Count == 0)
             {
-                _hasSyncedPackagesFromServer = false;
-                SelectionSummaryLabel.Text = "Không tải được gói từ máy chủ. Vui lòng kiểm tra mạng.";
-                ContinueButton.IsEnabled = false;
+                UseFallbackPackages(_localizationService.GetString("PaymentPlan_StatusFallbackUsed"));
                 return;
             }
 
@@ -62,9 +74,7 @@ public partial class PaymentPlanSelectionPage : ContentPage
         }
         catch
         {
-            _hasSyncedPackagesFromServer = false;
-            SelectionSummaryLabel.Text = "Không kết nối được máy chủ gói thanh toán. Vui lòng thử lại.";
-            ContinueButton.IsEnabled = false;
+            UseFallbackPackages(_localizationService.GetString("PaymentPlan_StatusServerUnavailable"));
         }
     }
 
@@ -84,21 +94,26 @@ public partial class PaymentPlanSelectionPage : ContentPage
     {
         if (!_hasSyncedPackagesFromServer)
         {
-            await DisplayAlert("Chưa đồng bộ gói", "Cần tải gói thanh toán từ máy chủ trước khi tiếp tục.", "Đóng");
+            await DisplayAlert(
+                _localizationService.GetString("PaymentPlan_AlertNotSyncedTitle"),
+                _localizationService.GetString("PaymentPlan_AlertNotSyncedMessage"),
+                _localizationService.GetString("Common_Close"));
             return;
         }
 
         await Navigation.PushAsync(new PaymentCheckoutPage(_selectedPlan));
     }
 
-    private static PaymentPlanOption ToPlanOption(PaymentPackage? package, PaymentPlanOption fallback)
+    private PaymentPlanOption ToPlanOption(PaymentPackage? package, PaymentPlanOption fallback)
     {
         if (package is null)
         {
             return fallback;
         }
 
-        var priceLabel = package.DurationDays <= 1 ? "Một ngày sử dụng" : "Một lần thanh toán";
+        var priceLabel = package.DurationDays <= 1
+            ? _localizationService.GetString("PaymentPlan_DailyPriceLabel")
+            : _localizationService.GetString("PaymentPlan_FullPriceLabel");
         return new PaymentPlanOption(package.Id, package.Name, priceLabel, package.Description ?? fallback.Description, package.Price);
     }
 
@@ -106,8 +121,20 @@ public partial class PaymentPlanSelectionPage : ContentPage
     {
         SetSelectedState(DailyPlanCard, DailyPlanIndicator, DailyPlanIndicatorLabel, _selectedPlan.Id == _dailyPlan.Id);
         SetSelectedState(FullTourPlanCard, FullTourPlanIndicator, FullTourPlanIndicatorLabel, _selectedPlan.Id == _fullTourPlan.Id);
-        SelectionSummaryLabel.Text = $"Đang chọn: {_selectedPlan.Title}";
+        SelectionSummaryLabel.Text = string.Format(
+            _localizationService.GetString("PaymentPlan_SelectedSummaryFormat"),
+            _selectedPlan.Title);
         ContinueButton.IsEnabled = _hasSyncedPackagesFromServer;
+    }
+
+    private void UseFallbackPackages(string statusMessage)
+    {
+        _dailyPlan = _fallbackDailyPlan;
+        _fullTourPlan = _fallbackFullTourPlan;
+        _selectedPlan = _dailyPlan;
+        _hasSyncedPackagesFromServer = true;
+        ApplySelectionState();
+        SelectionSummaryLabel.Text = statusMessage;
     }
 
     private static void SetSelectedState(Border card, Border indicator, Label indicatorLabel, bool isSelected)
@@ -125,5 +152,11 @@ public partial class PaymentPlanSelectionPage : ContentPage
     {
         return Application.Current?.Handler?.MauiContext?.Services.GetService<IApiService>()
             ?? new ApiService(new LocalDatabaseService(), new LocalizationService());
+    }
+
+    private static ILocalizationService ResolveLocalizationService()
+    {
+        return Application.Current?.Handler?.MauiContext?.Services.GetService<ILocalizationService>()
+            ?? new LocalizationService();
     }
 }

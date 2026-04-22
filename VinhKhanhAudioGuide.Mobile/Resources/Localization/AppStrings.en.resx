@@ -58,9 +58,9 @@
   <data name="Main_OtherCategory" xml:space="preserve"><value>Other</value></data>
   <data name="Main_Free" xml:space="preserve"><value>Free</value></data>
   <data name="Main_PriceFormat" xml:space="preserve"><value>{0:N0} VND</value></data>
-  <data name="Main_DurationMinutesFormat" xml:space="preserve"><value>⏱ {0} min</value></data>
-  <data name="Main_DurationHoursMinutesFormat" xml:space="preserve"><value>⏱ {0}h {1}m</value></data>
-  <data name="Main_DurationHoursOnlyFormat" xml:space="preserve"><value>⏱ {0}h</value></data>
+  <data name="Main_DurationMinutesFormat" xml:space="preserve"><value>⏱ {0} minutes</value></data>
+  <data name="Main_DurationHoursMinutesFormat" xml:space="preserve"><value>⏱ {0} hours {1} minutes</value></data>
+  <data name="Main_DurationHoursOnlyFormat" xml:space="preserve"><value>⏱ {0} hours</value></data>
   <data name="Settings_PageTitle" xml:space="preserve"><value>Settings</value></data>
   <data name="Settings_Favorites" xml:space="preserve"><value>Favorites</value></data>
   <data name="Settings_Downloads" xml:space="preserve"><value>Downloads</value></data>
@@ -160,4 +160,207 @@
   <data name="Footer_NearestHintFormat" xml:space="preserve"><value>Nearest POI • {0}</value></data>
   <data name="Footer_NearestShort" xml:space="preserve"><value>Nearest POI</value></data>
   <data name="Footer_QueueHintFormat" xml:space="preserve"><value>{0} • Track {1}/{2}</value></data>
+  <data name="Common_Close" xml:space="preserve"><value>Close</value></data>
+  <data name="Settings_Subtitle" xml:space="preserve"><value>Personalize your listening, language, and playback settings</value></data>
+  <data name="Settings_LocationScanHint" xml:space="preserve"><value>Automatic scan frequency by location</value></data>
+  <data name="Settings_Loading" xml:space="preserve"><value>Loading settings...</value></data>
+  <data name="Settings_LoadError" xml:space="preserve"><value>Unable to load settings</value></data>
+  <data name="About_PageTitle" xml:space="preserve"><value>About</value></data>
+  <data name="About_VersionFormat" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="About_StatLocations" xml:space="preserve"><value>Places</value></data>
+  <data name="About_StatAudio" xml:space="preserve"><value>Audio</value></data>
+  <data name="About_StatTours" xml:space="preserve"><value>Tours</value></data>
+  <data name="About_Description" xml:space="preserve"><value>Vinh Khanh Audio Guide helps you explore Vietnamese culture and history through immersive audio storytelling.</value></data>
+  <data name="About_HowToUse" xml:space="preserve"><value>How it works</value></data>
+  <data name="About_Step1Title" xml:space="preserve"><value>Choose a place</value></data>
+  <data name="About_Step1Description" xml:space="preserve"><value>Search or browse the list of attractions</value></data>
+  <data name="About_Step2Title" xml:space="preserve"><value>Listen to guides</value></data>
+  <data name="About_Step2Description" xml:space="preserve"><value>Play high-quality audio guides at each stop</value></data>
+  <data name="About_Step3Title" xml:space="preserve"><value>Keep exploring</value></data>
+  <data name="About_Step3Description" xml:space="preserve"><value>Follow curated tours or freely discover nearby spots</value></data>
+  <data name="About_FeaturesTitle" xml:space="preserve"><value>Highlights</value></data>
+  <data name="About_FeatureLocations" xml:space="preserve"><value>100+ places</value></data>
+  <data name="About_FeatureAudioHd" xml:space="preserve"><value>HD Audio</value></data>
+  <data name="About_FeatureMultilingual" xml:space="preserve"><value>Multilingual</value></data>
+  <data name="About_FeatureOffline" xml:space="preserve"><value>Offline mode</value></data>
+  <data name="About_FeatureMap" xml:space="preserve"><value>Interactive map</value></data>
+  <data name="About_FeatureRoutes" xml:space="preserve"><value>Custom routes</value></data>
+  <data name="About_RateApp" xml:space="preserve"><value>Rate app</value></data>
+  <data name="About_ShareApp" xml:space="preserve"><value>Share app</value></data>
+  <data name="About_Terms" xml:space="preserve"><value>Terms of use</value></data>
+  <data name="About_Privacy" xml:space="preserve"><value>Privacy policy</value></data>
+  <data name="About_Copyright" xml:space="preserve"><value>© 2026 Vinh Khanh Audio Guide. All rights reserved.</value></data>
+  <data name="About_Loading" xml:space="preserve"><value>Loading app info...</value></data>
+  <data name="About_LoadError" xml:space="preserve"><value>Unable to load app info</value></data>
+  <data name="About_AlertCannotOpenStore" xml:space="preserve"><value>Cannot open the app store.</value></data>
+  <data name="About_AlertCannotOpenBrowser" xml:space="preserve"><value>Cannot open browser.</value></data>
+  <data name="About_ShareText" xml:space="preserve"><value>Explore Vietnamese culture and history with Vinh Khanh Audio Guide! Download now:</value></data>
+  <data name="Help_PageTitle" xml:space="preserve"><value>Help</value></data>
+  <data name="Help_FaqTitle" xml:space="preserve"><value>FAQ</value></data>
+  <data name="Help_ContactTitle" xml:space="preserve"><value>Contact support</value></data>
+  <data name="Help_EmailLabel" xml:space="preserve"><value>Email</value></data>
+  <data name="Help_HotlineLabel" xml:space="preserve"><value>Hotline</value></data>
+  <data name="Help_LiveChatLabel" xml:space="preserve"><value>Live Chat</value></data>
+  <data name="Help_LiveChatStatus" xml:space="preserve"><value>24/7 online support</value></data>
+  <data name="Help_UserGuideButton" xml:space="preserve"><value>View user guide</value></data>
+  <data name="Help_Loading" xml:space="preserve"><value>Loading help...</value></data>
+  <data name="Help_LoadError" xml:space="preserve"><value>Unable to load help data</value></data>
+  <data name="Help_EmailSubject" xml:space="preserve"><value>Support - Vinh Khanh Audio Guide</value></data>
+  <data name="Help_AlertEmailFailed" xml:space="preserve"><value>Unable to open email app.</value></data>
+  <data name="Help_AlertCallFailed" xml:space="preserve"><value>Unable to place call.</value></data>
+  <data name="Help_AlertBrowserFailed" xml:space="preserve"><value>Unable to open browser.</value></data>
+  <data name="Help_Faq1_Question" xml:space="preserve"><value>How do I download audio?</value></data>
+  <data name="Help_Faq1_Answer" xml:space="preserve"><value>Open a location details page and tap the download icon next to an audio guide. It will be saved for offline listening.</value></data>
+  <data name="Help_Faq2_Question" xml:space="preserve"><value>How do I use offline mode?</value></data>
+  <data name="Help_Faq2_Answer" xml:space="preserve"><value>After downloading audio, you can listen without internet. Go to Downloads to view saved files.</value></data>
+  <data name="Help_Faq3_Question" xml:space="preserve"><value>How do I change language?</value></data>
+  <data name="Help_Faq3_Answer" xml:space="preserve"><value>Go to Settings &gt; Language and choose your preferred language.</value></data>
+  <data name="Help_Faq4_Question" xml:space="preserve"><value>How do I share with friends?</value></data>
+  <data name="Help_Faq4_Answer" xml:space="preserve"><value>On a location details page, tap Share to send links via message, email, or social apps.</value></data>
+  <data name="Help_Faq5_Question" xml:space="preserve"><value>How do I report an issue?</value></data>
+  <data name="Help_Faq5_Answer" xml:space="preserve"><value>Contact support at support@vinhkhanhaudioguide.com or hotline 1900 1234.</value></data>
+  <data name="Help_Faq6_Question" xml:space="preserve"><value>Is the app free?</value></data>
+  <data name="Help_Faq6_Answer" xml:space="preserve"><value>Many audio guides are free. Some premium content requires a paid package.</value></data>
+  <data name="Help_Faq7_Question" xml:space="preserve"><value>Is the information accurate?</value></data>
+  <data name="Help_Faq7_Answer" xml:space="preserve"><value>Content is curated and reviewed regularly for accuracy.</value></data>
+  <data name="Favorites_PageTitle" xml:space="preserve"><value>Favorites</value></data>
+  <data name="Favorites_EmptyTitle" xml:space="preserve"><value>No favorite places yet</value></data>
+  <data name="Favorites_EmptyDescription" xml:space="preserve"><value>Tap the heart icon to add places to favorites</value></data>
+  <data name="Favorites_ExploreButton" xml:space="preserve"><value>Explore places</value></data>
+  <data name="Downloads_PageTitle" xml:space="preserve"><value>Downloaded audio</value></data>
+  <data name="Downloads_StorageUsed" xml:space="preserve"><value>Storage used</value></data>
+  <data name="Downloads_DeleteAll" xml:space="preserve"><value>Delete all</value></data>
+  <data name="Downloads_Empty" xml:space="preserve"><value>No downloaded audio</value></data>
+  <data name="History_PageTitle" xml:space="preserve"><value>Listening history</value></data>
+  <data name="History_HeaderTitle" xml:space="preserve"><value>Listening history</value></data>
+  <data name="History_HeaderSubtitle" xml:space="preserve"><value>Track progress of your recently played audio</value></data>
+  <data name="History_Empty" xml:space="preserve"><value>No listening history yet</value></data>
+  <data name="History_LanguageFormat" xml:space="preserve"><value>Language: {0}</value></data>
+  <data name="Map_PageTitle" xml:space="preserve"><value>Vinh Khanh Map</value></data>
+  <data name="Map_Loading" xml:space="preserve"><value>Loading map...</value></data>
+  <data name="Map_LoadError" xml:space="preserve"><value>Unable to load map data</value></data>
+  <data name="Map_Empty" xml:space="preserve"><value>No locations available</value></data>
+  <data name="LocationDetail_DurationLabel" xml:space="preserve"><value>Duration</value></data>
+  <data name="LocationDetail_AudioLabel" xml:space="preserve"><value>Audio</value></data>
+  <data name="LocationDetail_CategoryLabel" xml:space="preserve"><value>Category</value></data>
+  <data name="LocationDetail_LanguageLabel" xml:space="preserve"><value>Language</value></data>
+  <data name="LocationDetail_OverviewTitle" xml:space="preserve"><value>Overview</value></data>
+  <data name="LocationDetail_AudioGuideTitle" xml:space="preserve"><value>Audio Guide</value></data>
+  <data name="LocationDetail_AudioGuideSubtitle" xml:space="preserve"><value>Listen to guides for attractions</value></data>
+  <data name="LocationDetail_StartListeningButton" xml:space="preserve"><value>Start listening</value></data>
+  <data name="TourDetail_DurationLabel" xml:space="preserve"><value>Duration</value></data>
+  <data name="TourDetail_LocationsLabel" xml:space="preserve"><value>Locations</value></data>
+  <data name="TourDetail_PriceLabel" xml:space="preserve"><value>Price</value></data>
+  <data name="TourDetail_OverviewTitle" xml:space="preserve"><value>Tour overview</value></data>
+  <data name="TourDetail_ItineraryTitle" xml:space="preserve"><value>Detailed itinerary</value></data>
+  <data name="TourDetail_MapTitle" xml:space="preserve"><value>Route map</value></data>
+  <data name="TourDetail_StartButton" xml:space="preserve"><value>Start tour</value></data>
+  <data name="TourDetail_LocationsFormat" xml:space="preserve"><value>{0} locations</value></data>
+  <data name="Tours_PageTitle" xml:space="preserve"><value>Tours</value></data>
+  <data name="Tours_HeaderTitle" xml:space="preserve"><value>Tour routes</value></data>
+  <data name="Tours_HeaderSubtitle" xml:space="preserve"><value>Explore Vinh Khanh your way</value></data>
+  <data name="Tours_FeaturedTitle" xml:space="preserve"><value>Featured tours</value></data>
+  <data name="Tours_AllTitle" xml:space="preserve"><value>All tours</value></data>
+  <data name="Search_PageTitle" xml:space="preserve"><value>Results</value></data>
+  <data name="Search_EmptyTitle" xml:space="preserve"><value>No matching results</value></data>
+  <data name="Search_EmptyDescription" xml:space="preserve"><value>Try another keyword or adjust filters.</value></data>
+  <data name="Main_LoadDataErrorPrefix" xml:space="preserve"><value>Failed to load data:</value></data>
+  <data name="PaymentPlan_Title" xml:space="preserve"><value>Select plan</value></data>
+  <data name="PaymentPlan_Subtitle" xml:space="preserve"><value>Choose the plan that fits you</value></data>
+  <data name="PaymentPlan_FeatureScan" xml:space="preserve"><value>Scan to unlock content instantly</value></data>
+  <data name="PaymentPlan_FeatureAutoplay" xml:space="preserve"><value>Auto playback by real location</value></data>
+  <data name="PaymentPlan_FeaturePersonalization" xml:space="preserve"><value>Personalization: language, speed</value></data>
+  <data name="PaymentPlan_DailyTitle" xml:space="preserve"><value>10,000 VND/day</value></data>
+  <data name="PaymentPlan_DailyBadge" xml:space="preserve"><value>Flexible</value></data>
+  <data name="PaymentPlan_DailyPriceLabel" xml:space="preserve"><value>One-day access</value></data>
+  <data name="PaymentPlan_DailyDescription" xml:space="preserve"><value>Best for a quick one-day experience.</value></data>
+  <data name="PaymentPlan_FullTitle" xml:space="preserve"><value>29,000 VND/full tour</value></data>
+  <data name="PaymentPlan_FullBadge" xml:space="preserve"><value>Popular</value></data>
+  <data name="PaymentPlan_FullPriceLabel" xml:space="preserve"><value>One-time payment</value></data>
+  <data name="PaymentPlan_FullDescription" xml:space="preserve"><value>Unlock the full route for complete listening.</value></data>
+  <data name="PaymentPlan_SelectedSummaryDefault" xml:space="preserve"><value>Selected: 10,000 VND/day</value></data>
+  <data name="PaymentPlan_SelectedSummaryFormat" xml:space="preserve"><value>Selected: {0}</value></data>
+  <data name="PaymentPlan_ContinueButton" xml:space="preserve"><value>Continue</value></data>
+  <data name="PaymentPlan_StatusFallbackUsed" xml:space="preserve"><value>Failed to load plans from server. Using default plans.</value></data>
+  <data name="PaymentPlan_StatusServerUnavailable" xml:space="preserve"><value>Cannot connect to plan server. Using default plans.</value></data>
+  <data name="PaymentPlan_AlertNotSyncedTitle" xml:space="preserve"><value>Plans not synced</value></data>
+  <data name="PaymentPlan_AlertNotSyncedMessage" xml:space="preserve"><value>You need to load payment plans from server before continuing.</value></data>
+  <data name="PaymentCheckout_Title" xml:space="preserve"><value>Checkout</value></data>
+  <data name="PaymentCheckout_Subtitle" xml:space="preserve"><value>Confirm your plan and complete payment to unlock content.</value></data>
+  <data name="PaymentCheckout_DefaultPrice" xml:space="preserve"><value>10,000 VND</value></data>
+  <data name="PaymentCheckout_Notice" xml:space="preserve"><value>Payment is confirmed immediately after you tap Pay.</value></data>
+  <data name="PaymentCheckout_PayButton" xml:space="preserve"><value>Pay</value></data>
+  <data name="PaymentCheckout_PriceAmountFormat" xml:space="preserve"><value>{0:N0} VND</value></data>
+  <data name="PaymentCheckout_AlertMissingPackageTitle" xml:space="preserve"><value>Missing payment package</value></data>
+  <data name="PaymentCheckout_AlertMissingPackageMessage" xml:space="preserve"><value>The selected payment package is unavailable.</value></data>
+  <data name="PaymentCheckout_AlertFailedTitle" xml:space="preserve"><value>Payment failed</value></data>
+  <data name="PaymentCheckout_AlertFailedMessage" xml:space="preserve"><value>Unable to confirm payment.</value></data>
+  <data name="PaymentCheckout_AlertPendingTitle" xml:space="preserve"><value>Payment not completed</value></data>
+  <data name="PaymentCheckout_AlertPendingMessage" xml:space="preserve"><value>Payment has not been verified by server yet.</value></data>
+  <data name="PaymentCheckout_AlertSuccessTitle" xml:space="preserve"><value>Payment successful</value></data>
+  <data name="PaymentCheckout_AlertSuccessMessageFormat" xml:space="preserve"><value>Plan {0} has been activated.</value></data>
+  <data name="Qr_StatusScannedFormat" xml:space="preserve"><value>Scanned: {0}</value></data>
+  <data name="Qr_StatusInvalidDeepLinkFormat" xml:space="preserve"><value>QR was read but deep link format is invalid:
+{0}</value></data>
+  <data name="Qr_StatusGoToPayment" xml:space="preserve"><value>Navigating to payment screen...</value></data>
+  <data name="Qr_StatusSampleFallback" xml:space="preserve"><value>Sample QR is invalid, using fallback sample payload...</value></data>
+  <data name="Common_Free" xml:space="preserve"><value>Free</value></data>
+  <data name="Common_PriceVndFormat" xml:space="preserve"><value>{0:N0} VND</value></data>
+  <data name="Common_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="Common_FilterAny" xml:space="preserve"><value>Any</value></data>
+  <data name="Map_SectionNearbyTitle" xml:space="preserve"><value>NEARBY LOCATIONS</value></data>
+  <data name="Map_SectionNearbyHint" xml:space="preserve"><value>By distance</value></data>
+  <data name="Map_SectionTourStopsTitle" xml:space="preserve"><value>ROUTE STOPS</value></data>
+  <data name="Map_SectionTourStopsHint" xml:space="preserve"><value>In order</value></data>
+  <data name="Map_ActionContinue" xml:space="preserve"><value>Continue</value></data>
+  <data name="Map_ActionPause" xml:space="preserve"><value>Pause</value></data>
+  <data name="Map_ActionLater" xml:space="preserve"><value>Later</value></data>
+  <data name="Map_ActionSheetTitle" xml:space="preserve"><value>Exit route</value></data>
+  <data name="Map_ActionContinueRoute" xml:space="preserve"><value>Continue route</value></data>
+  <data name="Map_ActionPauseAndSave" xml:space="preserve"><value>Pause &amp; Save</value></data>
+  <data name="Map_ActionEndTour" xml:space="preserve"><value>End tour</value></data>
+  <data name="Map_ResumePromptTitle" xml:space="preserve"><value>Resume route?</value></data>
+  <data name="Map_ResumePromptMessageFormat" xml:space="preserve"><value>You paused at {0} at {1:HH:mm, dd/MM}. Continue from the previous stop?</value></data>
+  <data name="Map_TourCompleteTitle" xml:space="preserve"><value>Tour completed</value></data>
+  <data name="Map_TourCompleteMessage" xml:space="preserve"><value>You have listened through all stops in this tour.</value></data>
+  <data name="Map_TourCompleteAction" xml:space="preserve"><value>Back to map</value></data>
+  <data name="Map_ErrorRouteNotFound" xml:space="preserve"><value>Route not found.</value></data>
+  <data name="Map_ErrorRouteNoLocations" xml:space="preserve"><value>This route has no locations yet.</value></data>
+  <data name="Map_StopOrderFormat" xml:space="preserve"><value>Stop {0}/{1}</value></data>
+  <data name="Map_BadgeResuming" xml:space="preserve"><value>Resuming</value></data>
+  <data name="Map_ResumeFromStopFormat" xml:space="preserve"><value>Resume from stop {0}/{1}</value></data>
+  <data name="Map_CurrentStopFallback" xml:space="preserve"><value>current stop</value></data>
+  <data name="Map_DistanceFromUserFormat" xml:space="preserve"><value>{0} away</value></data>
+  <data name="Map_BadgeNearest" xml:space="preserve"><value>Nearest</value></data>
+  <data name="LocationDetail_RelatedTourInfoFormat" xml:space="preserve"><value>{0} locations · {1} minutes</value></data>
+  <data name="LocationDetail_DefaultLocationName" xml:space="preserve"><value>Location</value></data>
+  <data name="Search_FilterDurationUnder5" xml:space="preserve"><value>&lt; 5 minutes</value></data>
+  <data name="Search_FilterDuration5To10" xml:space="preserve"><value>5 - 10 minutes</value></data>
+  <data name="Search_FilterDurationOver10" xml:space="preserve"><value>&gt; 10 minutes</value></data>
+  <data name="Search_FilterModeTotalDuration" xml:space="preserve"><value>Total duration</value></data>
+  <data name="Search_FilterModeSingleAudio" xml:space="preserve"><value>Any single audio</value></data>
+  <data name="Search_TotalDurationFormat" xml:space="preserve"><value>Total duration: {0} minutes</value></data>
+  <data name="Search_AudioCountFormat" xml:space="preserve"><value>Audio count: {0}</value></data>
+  <data name="Search_ResultForQueryFormat" xml:space="preserve"><value>Results for '{0}'</value></data>
+  <data name="Search_ResultForCategoryFormat" xml:space="preserve"><value>Results for category {0}</value></data>
+  <data name="Search_ResultForCategoriesFormat" xml:space="preserve"><value>Results for {0} categories</value></data>
+  <data name="Search_ResultByFilters" xml:space="preserve"><value>Filtered results</value></data>
+  <data name="Search_TourDurationFormat" xml:space="preserve"><value>Tour duration: {0} minutes</value></data>
+  <data name="Search_LocationCountFormat" xml:space="preserve"><value>Location count: {0}</value></data>
+  <data name="AudioPlayer_PlaybackSourceTour" xml:space="preserve"><value>TOUR ROUTE</value></data>
+  <data name="AudioPlayer_PlaybackSourceAutoNearest" xml:space="preserve"><value>AUTO (NEAREST POI)</value></data>
+  <data name="AudioPlayer_PlaybackSourceManual" xml:space="preserve"><value>MANUAL</value></data>
+  <data name="AudioPlayer_TranslationSummaryFormat" xml:space="preserve"><value>Audio translation for {0}</value></data>
+  <data name="Favorites_RemoveTitle" xml:space="preserve"><value>Remove from favorites</value></data>
+  <data name="Favorites_RemoveMessageFormat" xml:space="preserve"><value>Are you sure you want to remove "{0}" from favorites?</value></data>
+  <data name="Common_Unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Downloads_DeleteTitle" xml:space="preserve"><value>Delete audio</value></data>
+  <data name="Downloads_DeleteMessageFormat" xml:space="preserve"><value>Do you want to delete "{0}"?</value></data>
+  <data name="Downloads_DeleteAllTitle" xml:space="preserve"><value>Delete all</value></data>
+  <data name="Downloads_DeleteAllMessage" xml:space="preserve"><value>Do you want to delete all downloaded audio?</value></data>
+  <data name="History_Today" xml:space="preserve"><value>Today</value></data>
+  <data name="History_Yesterday" xml:space="preserve"><value>Yesterday</value></data>
+  <data name="Tour_DurationMinutesFormat" xml:space="preserve"><value>{0} minutes</value></data>
+  <data name="Tour_DurationHoursMinutesFormat" xml:space="preserve"><value>{0} hours {1} minutes</value></data>
+  <data name="Tour_DurationHoursOnlyFormat" xml:space="preserve"><value>{0} hours</value></data>
 </root>

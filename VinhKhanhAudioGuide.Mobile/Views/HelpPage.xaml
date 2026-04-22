@@ -1,17 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
              xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
              x:Class="VinhKhanhAudioGuide.Mobile.Views.HelpPage"
              x:DataType="viewmodels:HelpViewModel"
-             Title="Trợ giúp">
+             Title="{ext:Translate Help_PageTitle}">
 
     <Grid>
         <ScrollView IsVisible="{Binding HasData}">
             <VerticalStackLayout Padding="20" Spacing="15">
             
             <!-- FAQ Section -->
-            <Label Text="Câu hỏi thường gặp"
+                 <Label Text="{ext:Translate Help_FaqTitle}"
                    Style="{StaticResource SectionHeader}"/>
 
             <CollectionView ItemsSource="{Binding FaqItems}">
@@ -45,7 +46,7 @@
             </CollectionView>
 
             <!-- Contact Section -->
-            <Label Text="Liên hệ hỗ trợ"
+                 <Label Text="{ext:Translate Help_ContactTitle}"
                    Style="{StaticResource SectionHeader}"/>
 
             <Frame CornerRadius="12" Padding="0">
@@ -57,7 +58,7 @@
                         <Grid ColumnDefinitions="40,*">
                             <Image Source="email_icon.png" HeightRequest="24" WidthRequest="24"/>
                             <VerticalStackLayout Grid.Column="1" Margin="15,0,0,0">
-                                <Label Text="Email"
+                                    <Label Text="{ext:Translate Help_EmailLabel}"
                                        FontSize="14"
                                        FontAttributes="Bold"/>
                                 <Label Text="support@vinhkhanhaudioguide.com"
@@ -76,7 +77,7 @@
                         <Grid ColumnDefinitions="40,*">
                             <Image Source="phone_icon.png" HeightRequest="24" WidthRequest="24"/>
                             <VerticalStackLayout Grid.Column="1" Margin="15,0,0,0">
-                                <Label Text="Hotline"
+                                    <Label Text="{ext:Translate Help_HotlineLabel}"
                                        FontSize="14"
                                        FontAttributes="Bold"/>
                                 <Label Text="1900 1234"
@@ -92,10 +93,10 @@
                         <Grid ColumnDefinitions="40,*">
                             <Image Source="chat_icon.png" HeightRequest="24" WidthRequest="24"/>
                             <VerticalStackLayout Grid.Column="1" Margin="15,0,0,0">
-                                <Label Text="Live Chat"
+                                    <Label Text="{ext:Translate Help_LiveChatLabel}"
                                        FontSize="14"
                                        FontAttributes="Bold"/>
-                                <Label Text="Hỗ trợ trực tuyến 24/7"
+                                    <Label Text="{ext:Translate Help_LiveChatStatus}"
                                        FontSize="12"
                                        TextColor="{StaticResource Gray500}"/>
                             </VerticalStackLayout>
@@ -105,7 +106,7 @@
             </Frame>
 
             <!-- User Guide -->
-            <Button Text="Xem hướng dẫn sử dụng"
+                <Button Text="{ext:Translate Help_UserGuideButton}"
                     Command="{Binding OpenUserGuideCommand}"
                     Style="{StaticResource SecondaryButton}"
                     Margin="0,10"/>
@@ -120,7 +121,7 @@
                                  HorizontalOptions="Center"
                                  Spacing="12">
                 <ActivityIndicator IsRunning="True" Color="{StaticResource Primary}" />
-                <Label Text="Đang tải trợ giúp..."
+                  <Label Text="{ext:Translate Help_Loading}"
                        TextColor="{StaticResource Gray500}"
                        HorizontalTextAlignment="Center" />
             </VerticalStackLayout>
@@ -131,7 +132,7 @@
                              HorizontalOptions="Center"
                              Padding="30"
                              Spacing="10">
-            <Label Text="Không tải được dữ liệu trợ giúp"
+                 <Label Text="{ext:Translate Help_LoadError}"
                    FontSize="18"
                    FontAttributes="Bold"
                    HorizontalTextAlignment="Center" />
@@ -143,3 +144,4 @@
     </Grid>
 
 </ContentPage>
+

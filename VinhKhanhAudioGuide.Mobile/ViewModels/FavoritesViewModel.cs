@@ -11,6 +11,7 @@ public partial class FavoritesViewModel : ObservableObject
 {
     private readonly INavigationService _navigationService;
     private readonly IApiService _apiService;
+    private readonly ILocalizationService _localizationService;
 
     [ObservableProperty]
     private bool _isEmpty = true;
@@ -23,10 +24,14 @@ public partial class FavoritesViewModel : ObservableObject
 
     public ObservableCollection<Location> FavoriteLocations { get; } = new();
 
-    public FavoritesViewModel(INavigationService navigationService, IApiService apiService)
+    public FavoritesViewModel(
+        INavigationService navigationService,
+        IApiService apiService,
+        ILocalizationService localizationService)
     {
         _navigationService = navigationService;
         _apiService = apiService;
+        _localizationService = localizationService;
         _ = LoadFavoritesAsync();
     }
 
@@ -67,10 +72,10 @@ public partial class FavoritesViewModel : ObservableObject
         if (location is null) return;
 
         bool confirm = await Application.Current!.MainPage!.DisplayAlert(
-            "Xóa khỏi yêu thích",
-            $"Bạn có chắc muốn xóa \"{location.Name}\" khỏi danh sách yêu thích?",
-            "Xóa",
-            "Hủy");
+            _localizationService.GetString("Favorites_RemoveTitle"),
+            string.Format(_localizationService.GetString("Favorites_RemoveMessageFormat"), location.Name),
+            _localizationService.GetString("Common_Delete"),
+            _localizationService.GetString("Common_Cancel"));
 
         if (confirm)
         {

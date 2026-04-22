@@ -19,6 +19,7 @@ public partial class LocationDetailViewModel : ObservableObject
 {
     private readonly INavigationService _navigationService;
     private readonly IApiService _apiService;
+    private readonly ILocalizationService _localizationService;
 
     [ObservableProperty]
     private string _locationId = string.Empty;
@@ -59,10 +60,14 @@ public partial class LocationDetailViewModel : ObservableObject
     public ObservableCollection<AudioGuide> AudioGuides { get; } = new();
     public ObservableCollection<RelatedTourItem> RelatedTours { get; } = new();
 
-    public LocationDetailViewModel(INavigationService navigationService, IApiService apiService)
+    public LocationDetailViewModel(
+        INavigationService navigationService,
+        IApiService apiService,
+        ILocalizationService localizationService)
     {
         _navigationService = navigationService;
         _apiService = apiService;
+        _localizationService = localizationService;
     }
 
     partial void OnLocationIdChanged(string value)
@@ -98,14 +103,14 @@ public partial class LocationDetailViewModel : ObservableObject
             // Category name
             var categories = await _apiService.GetCategoriesAsync();
             var cat = categories.FirstOrDefault(c => c.Id == location.CategoryId);
-            CategoryName = cat?.Name ?? "Di tích";
+            CategoryName = cat?.Name ?? _localizationService.GetString("Common_Other");
 
             AudioGuides.Clear();
             foreach (var audio in location.AudioGuides)
             {
                 AudioGuides.Add(audio);
             }
-            AudioGuideCountText = $"{AudioGuides.Count} bài";
+            AudioGuideCountText = string.Format(_localizationService.GetString("Common_AudioCountFormat"), AudioGuides.Count);
 
             // Map HTML
             BuildMapHtml(location.Latitude, location.Longitude, location.Name);
@@ -121,7 +126,10 @@ public partial class LocationDetailViewModel : ObservableObject
                     {
                         Id = tour.Id,
                         Name = tour.Name,
-                        Info = $"{tour.LocationIds.Count} điểm · {tour.Duration} phút"
+                        Info = string.Format(
+                            _localizationService.GetString("LocationDetail_RelatedTourInfoFormat"),
+                            tour.LocationIds.Count,
+                            tour.Duration)
                     });
                 }
             }

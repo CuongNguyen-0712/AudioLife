@@ -17,6 +17,7 @@ public partial class SearchViewModel : ObservableObject
     private readonly INavigationService _navigationService;
     private readonly IApiService _apiService;
     private readonly ISearchService _searchService;
+    private readonly ILocalizationService _localizationService;
     private readonly SemaphoreSlim _searchLock = new(1, 1);
 
     private CancellationTokenSource? _searchDebounceCts;
@@ -67,7 +68,7 @@ public partial class SearchViewModel : ObservableObject
     public ObservableCollection<CategoryFilter> Categories { get; } = new();
     public ObservableCollection<string> AudioCountOperatorOptions { get; } =
     [
-        "Any",
+        "",
         ">=",
         "<=",
         "="
@@ -75,27 +76,40 @@ public partial class SearchViewModel : ObservableObject
 
     public ObservableCollection<string> DurationRangeOptions { get; } =
     [
-        "Any",
-        "< 5 minutes",
-        "5 - 10 minutes",
-        "> 10 minutes"
+        "",
+        "",
+        "",
+        ""
     ];
 
     public ObservableCollection<string> DurationModeOptions { get; } =
     [
-        "Total duration",
-        "Any single audio"
+        "",
+        ""
     ];
 
     public ObservableCollection<string> RecentSearches { get; } = new();
     public ObservableCollection<string> Suggestions { get; } = new();
     public ObservableCollection<SearchResultItem> SearchResults { get; } = new();
 
-    public SearchViewModel(INavigationService navigationService, IApiService apiService, ISearchService searchService)
+    public SearchViewModel(
+        INavigationService navigationService,
+        IApiService apiService,
+        ISearchService searchService,
+        ILocalizationService localizationService)
     {
         _navigationService = navigationService;
         _apiService = apiService;
         _searchService = searchService;
+        _localizationService = localizationService;
+
+        AudioCountOperatorOptions[0] = T("Common_FilterAny");
+        DurationRangeOptions[0] = T("Common_FilterAny");
+        DurationRangeOptions[1] = T("Search_FilterDurationUnder5");
+        DurationRangeOptions[2] = T("Search_FilterDuration5To10");
+        DurationRangeOptions[3] = T("Search_FilterDurationOver10");
+        DurationModeOptions[0] = T("Search_FilterModeTotalDuration");
+        DurationModeOptions[1] = T("Search_FilterModeSingleAudio");
 
         _ = LoadCategoriesAsync();
         LoadRecentSearches();
@@ -469,8 +483,8 @@ public partial class SearchViewModel : ObservableObject
                         CategoryName = result.CategoryName,
                         AudioCount = result.AudioCount,
                         TotalDurationMinutes = result.TotalDurationMinutes,
-                        DurationDisplay = $"Tổng thời lượng: {result.TotalDurationMinutes} phút",
-                        CountDisplay = $"Số audio: {result.AudioCount}",
+                        DurationDisplay = string.Format(T("Search_TotalDurationFormat"), result.TotalDurationMinutes),
+                        CountDisplay = string.Format(T("Search_AudioCountFormat"), result.AudioCount),
                         ResultType = SearchResultType.Location
                     });
                 }
@@ -528,7 +542,7 @@ public partial class SearchViewModel : ObservableObject
     {
         if (!string.IsNullOrWhiteSpace(query))
         {
-            return $"Kết quả cho '{query}'";
+            return string.Format(T("Search_ResultForQueryFormat"), query);
         }
 
         if (selectedCategoryIds.Count == 1)
@@ -536,18 +550,18 @@ public partial class SearchViewModel : ObservableObject
             var category = Categories.FirstOrDefault(c => c.IsSelected);
             if (category is not null && !string.IsNullOrWhiteSpace(category.Name))
             {
-                return $"Kết quả cho Danh mục {category.Name}";
+                return string.Format(T("Search_ResultForCategoryFormat"), category.Name);
             }
         }
 
         if (selectedCategoryIds.Count > 1)
         {
-            return $"Kết quả cho {selectedCategoryIds.Count} danh mục";
+            return string.Format(T("Search_ResultForCategoriesFormat"), selectedCategoryIds.Count);
         }
 
         if (hasFilters)
         {
-            return "Kết quả theo bộ lọc";
+            return T("Search_ResultByFilters");
         }
 
         return string.Empty;
@@ -652,11 +666,11 @@ public partial class SearchViewModel : ObservableObject
                 Name = x.Tour.Name,
                 Description = x.Tour.Description,
                 ImageUrl = x.Tour.ImageUrl,
-                CategoryName = "Tour",
+                CategoryName = T("Tours_PageTitle"),
                 AudioCount = x.Tour.LocationIds.Count,
                 TotalDurationMinutes = x.Tour.Duration,
-                DurationDisplay = $"Thời lượng tour: {x.Tour.Duration} phút",
-                CountDisplay = $"Số địa điểm: {x.Tour.LocationIds.Count}",
+                DurationDisplay = string.Format(T("Search_TourDurationFormat"), x.Tour.Duration),
+                CountDisplay = string.Format(T("Search_LocationCountFormat"), x.Tour.LocationIds.Count),
                 ResultType = SearchResultType.Tour
             })
             .ToList();
@@ -669,6 +683,8 @@ public partial class SearchViewModel : ObservableObject
         var normalized = SearchService.NormalizeSearchText(query).Trim();
         return string.Equals(normalized, "tour", StringComparison.Ordinal);
     }
+
+    private string T(string key) => _localizationService.GetString(key);
 
     private static FormattedString BuildHighlightedText(string text, string query)
     {

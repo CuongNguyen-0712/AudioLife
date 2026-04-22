@@ -1,10 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
              xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
              x:Class="VinhKhanhAudioGuide.Mobile.Views.AboutPage"
              x:DataType="viewmodels:AboutViewModel"
-             Title="Về ứng dụng">
+             Title="{ext:Translate About_PageTitle}">
 
         <Grid>
                 <ScrollView IsVisible="{Binding HasData}">
@@ -26,7 +27,7 @@
                            FontAttributes="Bold"
                            TextColor="White"
                            HorizontalOptions="Center"/>
-                    <Label Text="{Binding AppVersion, StringFormat='Phiên bản {0}'}"
+                      <Label Text="{Binding AppVersion, StringFormat={ext:Translate About_VersionFormat}}"
                            FontSize="13"
                            TextColor="White"
                            Opacity="0.85"
@@ -47,7 +48,7 @@
                                 Spacing="2">
                             <Label Text="{Binding LocationCount, StringFormat='{0}'}"
                                     Style="{StaticResource StatNumber}"/>
-                            <Label Text="Địa điểm"
+                            <Label Text="{ext:Translate About_StatLocations}"
                                     Style="{StaticResource StatLabel}"/>
                         </VerticalStackLayout>
                     </Frame>
@@ -58,7 +59,7 @@
                                 Spacing="2">
                             <Label Text="{Binding AudioCount, StringFormat='{0}'}"
                                     Style="{StaticResource StatNumber}"/>
-                            <Label Text="Audio"
+                            <Label Text="{ext:Translate About_StatAudio}"
                                     Style="{StaticResource StatLabel}"/>
                         </VerticalStackLayout>
                     </Frame>
@@ -69,14 +70,14 @@
                                 Spacing="2">
                             <Label Text="{Binding TourCount, StringFormat='{0}'}"
                                     Style="{StaticResource StatNumber}"/>
-                            <Label Text="Tours"
+                            <Label Text="{ext:Translate About_StatTours}"
                                     Style="{StaticResource StatLabel}"/>
                         </VerticalStackLayout>
                     </Frame>
                 </Grid>
 
                 <!-- Description -->
-                <Label Text="Vinh Khanh Audio Guide là ứng dụng hướng dẫn du lịch bằng âm thanh, giúp bạn khám phá văn hóa và lịch sử Việt Nam một cách sinh động và hấp dẫn."
+                  <Label Text="{ext:Translate About_Description}"
                        FontSize="14"
                        TextColor="{StaticResource Gray600}"
                        HorizontalTextAlignment="Center"/>
@@ -84,7 +85,7 @@
                 <Grid Style="{StaticResource LayerDivider}"/>
 
                 <!-- How It Works Steps -->
-                <Label Text="Cách sử dụng"
+                  <Label Text="{ext:Translate About_HowToUse}"
                        FontSize="18"
                        FontAttributes="Bold"/>
 
@@ -107,10 +108,10 @@
                         <VerticalStackLayout Grid.Column="1"
                                 Padding="10,0,0,15"
                                 Spacing="2">
-                            <Label Text="Chọn địa điểm"
+                            <Label Text="{ext:Translate About_Step1Title}"
                                     FontSize="14"
                                     FontAttributes="Bold"/>
-                            <Label Text="Tìm kiếm hoặc duyệt danh sách các địa điểm du lịch"
+                            <Label Text="{ext:Translate About_Step1Description}"
                                     FontSize="12"
                                     TextColor="{StaticResource Gray500}"/>
                         </VerticalStackLayout>
@@ -133,10 +134,10 @@
                         <VerticalStackLayout Grid.Column="1"
                                 Padding="10,0,0,15"
                                 Spacing="2">
-                            <Label Text="Nghe thuyết minh"
+                            <Label Text="{ext:Translate About_Step2Title}"
                                     FontSize="14"
                                     FontAttributes="Bold"/>
-                            <Label Text="Phát audio hướng dẫn chất lượng cao tại mỗi điểm tham quan"
+                            <Label Text="{ext:Translate About_Step2Description}"
                                     FontSize="12"
                                     TextColor="{StaticResource Gray500}"/>
                         </VerticalStackLayout>
@@ -158,10 +159,10 @@
                         <VerticalStackLayout Grid.Column="1"
                                 Padding="10,0,0,15"
                                 Spacing="2">
-                            <Label Text="Khám phá thêm"
+                            <Label Text="{ext:Translate About_Step3Title}"
                                     FontSize="14"
                                     FontAttributes="Bold"/>
-                            <Label Text="Theo dõi lộ trình tour hoặc tự do khám phá các điểm lân cận"
+                            <Label Text="{ext:Translate About_Step3Description}"
                                     FontSize="12"
                                     TextColor="{StaticResource Gray500}"/>
                         </VerticalStackLayout>
@@ -171,7 +172,7 @@
                 <Grid Style="{StaticResource LayerDivider}"/>
 
                 <!-- Feature Grid -->
-                <Label Text="Tính năng nổi bật"
+                  <Label Text="{ext:Translate About_FeaturesTitle}"
                        FontSize="18"
                        FontAttributes="Bold"/>
 
@@ -190,7 +191,7 @@
                             <Label Text="📍"
                                     FontSize="24"
                                     HorizontalOptions="Center"/>
-                            <Label Text="100+ địa điểm"
+                            <Label Text="{ext:Translate About_FeatureLocations}"
                                     FontSize="12"
                                     FontAttributes="Bold"
                                     HorizontalOptions="Center"/>
@@ -207,7 +208,7 @@
                             <Label Text="🎧"
                                     FontSize="24"
                                     HorizontalOptions="Center"/>
-                            <Label Text="Audio HD"
+                            <Label Text="{ext:Translate About_FeatureAudioHd}"
                                     FontSize="12"
                                     FontAttributes="Bold"
                                     HorizontalOptions="Center"/>
@@ -224,7 +225,7 @@
                             <Label Text="🌐"
                                     FontSize="24"
                                     HorizontalOptions="Center"/>
-                            <Label Text="Đa ngôn ngữ"
+                            <Label Text="{ext:Translate About_FeatureMultilingual}"
                                     FontSize="12"
                                     FontAttributes="Bold"
                                     HorizontalOptions="Center"/>
@@ -241,7 +242,7 @@
                             <Label Text="📥"
                                     FontSize="24"
                                     HorizontalOptions="Center"/>
-                            <Label Text="Offline mode"
+                            <Label Text="{ext:Translate About_FeatureOffline}"
                                     FontSize="12"
                                     FontAttributes="Bold"
                                     HorizontalOptions="Center"/>
@@ -258,7 +259,7 @@
                             <Label Text="🗺"
                                     FontSize="24"
                                     HorizontalOptions="Center"/>
-                            <Label Text="Bản đồ tương tác"
+                            <Label Text="{ext:Translate About_FeatureMap}"
                                     FontSize="12"
                                     FontAttributes="Bold"
                                     HorizontalOptions="Center"/>
@@ -275,7 +276,7 @@
                             <Label Text="🛤"
                                     FontSize="24"
                                     HorizontalOptions="Center"/>
-                            <Label Text="Tour tùy chỉnh"
+                            <Label Text="{ext:Translate About_FeatureRoutes}"
                                     FontSize="12"
                                     FontAttributes="Bold"
                                     HorizontalOptions="Center"/>
@@ -286,11 +287,11 @@
                 <!-- Links -->
                 <VerticalStackLayout Spacing="10"
                         Margin="0,10,0,0">
-                    <Button Text="Đánh giá ứng dụng"
+                    <Button Text="{ext:Translate About_RateApp}"
                             Command="{Binding RateAppCommand}"
                             Style="{StaticResource PrimaryButton}"/>
 
-                    <Button Text="Chia sẻ ứng dụng"
+                    <Button Text="{ext:Translate About_ShareApp}"
                             Command="{Binding ShareAppCommand}"
                             Style="{StaticResource SecondaryButton}"/>
                 </VerticalStackLayout>
@@ -298,14 +299,14 @@
                 <!-- Legal -->
                 <VerticalStackLayout Spacing="10"
                         HorizontalOptions="Center">
-                    <Label Text="Điều khoản sử dụng"
+                      <Label Text="{ext:Translate About_Terms}"
                            Style="{StaticResource LinkText}"
                            HorizontalOptions="Center">
                         <Label.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding OpenTermsCommand}"/>
                         </Label.GestureRecognizers>
                     </Label>
-                    <Label Text="Chính sách bảo mật"
+                      <Label Text="{ext:Translate About_Privacy}"
                            Style="{StaticResource LinkText}"
                            HorizontalOptions="Center">
                         <Label.GestureRecognizers>
@@ -314,7 +315,7 @@
                     </Label>
                 </VerticalStackLayout>
 
-                <Label Text="© 2026 Vinh Khanh Audio Guide. All rights reserved."
+                  <Label Text="{ext:Translate About_Copyright}"
                        FontSize="11"
                        TextColor="{StaticResource Gray400}"
                        HorizontalOptions="Center"
@@ -331,7 +332,7 @@
                                                                  HorizontalOptions="Center"
                                                                  Spacing="12">
                                 <ActivityIndicator IsRunning="True" Color="{StaticResource Primary}" />
-                                <Label Text="Đang tải thông tin ứng dụng..."
+                                <Label Text="{ext:Translate About_Loading}"
                                            TextColor="{StaticResource Gray500}"
                                            HorizontalTextAlignment="Center" />
                         </VerticalStackLayout>
@@ -342,7 +343,7 @@
                                                          HorizontalOptions="Center"
                                                          Padding="30"
                                                          Spacing="10">
-                        <Label Text="Không tải được thông tin ứng dụng"
+                        <Label Text="{ext:Translate About_LoadError}"
                                    FontSize="18"
                                    FontAttributes="Bold"
                                    HorizontalTextAlignment="Center" />
@@ -354,3 +355,4 @@
         </Grid>
 
 </ContentPage>
+

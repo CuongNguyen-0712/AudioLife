@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
              xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
              xmlns:models="clr-namespace:VinhKhanhAudioGuide.Mobile.Models"
              x:Class="VinhKhanhAudioGuide.Mobile.Views.LocationDetailPage"
@@ -45,11 +46,11 @@
                                                         HeightRequest="18"
                                                         WidthRequest="18"
                                                         HorizontalOptions="Center"/>
-                                                 <Label Text="Thời gian"
+                                                 <Label Text="{ext:Translate LocationDetail_DurationLabel}"
                                                                FontSize="10"
                                                                TextColor="{StaticResource OnSecondaryContainer}"
                                                                HorizontalOptions="Center"/>
-                                                 <Label Text="{Binding Duration, StringFormat='{0} phút'}"
+                                                 <Label Text="{Binding Duration, StringFormat={ext:Translate Common_MinutesFormat}}"
                                                                FontSize="12"
                                                                FontAttributes="Bold"
                                                                HorizontalOptions="Center"/>
@@ -63,7 +64,7 @@
                                                         HeightRequest="18"
                                                         WidthRequest="18"
                                                         HorizontalOptions="Center"/>
-                                                 <Label Text="Audio"
+                                                 <Label Text="{ext:Translate LocationDetail_AudioLabel}"
                                                                FontSize="10"
                                                                TextColor="{StaticResource OnSecondaryContainer}"
                                                                HorizontalOptions="Center"/>
@@ -81,7 +82,7 @@
                                                         HeightRequest="18"
                                                         WidthRequest="18"
                                                         HorizontalOptions="Center"/>
-                                                 <Label Text="Danh mục"
+                                                 <Label Text="{ext:Translate LocationDetail_CategoryLabel}"
                                                                FontSize="10"
                                                                TextColor="{StaticResource OnSecondaryContainer}"
                                                                HorizontalOptions="Center"/>
@@ -100,11 +101,11 @@
                                                         HeightRequest="18"
                                                         WidthRequest="18"
                                                         HorizontalOptions="Center"/>  
-                                                 <Label Text="Ngôn ngữ"
+                                                 <Label Text="{ext:Translate LocationDetail_LanguageLabel}"
                                                                FontSize="10"
                                                                TextColor="{StaticResource OnSecondaryContainer}"
                                                                HorizontalOptions="Center"/>
-                                                 <Label Text="Tiếng Việt"
+                                                 <Label Text="{ext:Translate Language_Option_Vietnamese}"
                                                                FontSize="11"
                                                                FontAttributes="Bold"
                                                                HorizontalOptions="Center"/>
@@ -115,7 +116,7 @@
                             <Grid Style="{StaticResource LayerDivider}"/>
 
                             <!-- Description -->
-                            <Label Text="Giới thiệu"
+                            <Label Text="{ext:Translate LocationDetail_OverviewTitle}"
                                    FontSize="22"
                                    TextColor="{StaticResource OnPrimaryContainer}"
                                    FontAttributes="Bold"/>
@@ -125,12 +126,12 @@
                                    TextColor="{StaticResource OnSurfaceVariant}"/>
 
                             <!-- Audio Guides -->
-                            <Label Text="Audio Guide"
+                            <Label Text="{ext:Translate LocationDetail_AudioGuideTitle}"
                                    FontSize="22"
                                    TextColor="{StaticResource OnPrimaryContainer}"
                                    FontAttributes="Bold"
                                    Margin="0,10,0,0"/>
-                            <Label Text="Nghe thuyết minh về các điểm tham quan"
+                            <Label Text="{ext:Translate LocationDetail_AudioGuideSubtitle}"
                                    FontSize="14"
                                    TextColor="{StaticResource OnSurfaceVariant}"
                                    Margin="0,0,0,5"/>
@@ -179,7 +180,7 @@
                                                                              HeightRequest="14"
                                                                              WidthRequest="14"
                                                                              VerticalOptions="Center"/>
-                                                                      <Label Text="{Binding Duration, StringFormat='{0} phút'}"
+                                                                      <Label Text="{Binding Duration, StringFormat={ext:Translate Common_MinutesFormat}}"
                                                                              FontSize="14"
                                                                              TextColor="{StaticResource OnSecondaryContainer}"
                                                                              VerticalOptions="Center"/>
@@ -200,7 +201,7 @@
                                    HeightRequest="200"
                                    Margin="0,10,0,0"
                                    IsVisible="{Binding IsMapLoading}"/>
-                            <Label Text="Vị trí"
+                            <Label Text="位置"
                                    FontSize="22"
                                    TextColor="{StaticResource OnPrimaryContainer}"
                                    FontAttributes="Bold"
@@ -273,7 +274,7 @@
                             </CollectionView> -->
 
                             <!-- Start Button -->
-                            <Button Text="Bắt đầu nghe"
+                            <Button Text="{ext:Translate LocationDetail_StartListeningButton}"
                                    TextColor="{StaticResource Primary}"
                                    BackgroundColor="{StaticResource PrimaryContainer}"
                                     Command="{Binding StartListeningCommand}"
@@ -285,3 +286,4 @@
        </ScrollView>
 
 </ContentPage>
+

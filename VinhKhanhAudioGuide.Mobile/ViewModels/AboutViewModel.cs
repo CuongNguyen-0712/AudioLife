@@ -7,6 +7,7 @@ namespace VinhKhanhAudioGuide.Mobile.ViewModels;
 public partial class AboutViewModel : LoadStateViewModel
 {
     private readonly IApiService _apiService;
+    private readonly ILocalizationService _localizationService;
 
     [ObservableProperty]
     private string _appVersion = "1.0.0";
@@ -22,9 +23,10 @@ public partial class AboutViewModel : LoadStateViewModel
 
     private bool _hasLoaded;
 
-    public AboutViewModel(IApiService apiService)
+    public AboutViewModel(IApiService apiService, ILocalizationService localizationService)
     {
         _apiService = apiService;
+        _localizationService = localizationService;
     }
 
     public async Task OnAppearingAsync()
@@ -74,7 +76,9 @@ public partial class AboutViewModel : LoadStateViewModel
         catch
         {
             await Application.Current!.MainPage!.DisplayAlert(
-                "Thông báo", "Không thể mở cửa hàng ứng dụng.", "OK");
+                _localizationService.GetString("Common_Notice"),
+                _localizationService.GetString("About_AlertCannotOpenStore"),
+                _localizationService.GetString("Common_Understood"));
         }
     }
 
@@ -83,8 +87,8 @@ public partial class AboutViewModel : LoadStateViewModel
     {
         await Share.Default.RequestAsync(new ShareTextRequest
         {
-            Title = "Vinh Khanh Audio Guide",
-            Text = "Khám phá văn hóa và lịch sử Việt Nam cùng Vinh Khanh Audio Guide! Tải ngay:",
+            Title = _localizationService.GetString("App_Name"),
+            Text = _localizationService.GetString("About_ShareText"),
             Uri = "https://vinhkhanhaudioguide.com"
         });
     }
@@ -99,7 +103,9 @@ public partial class AboutViewModel : LoadStateViewModel
         catch
         {
             await Application.Current!.MainPage!.DisplayAlert(
-                "Lỗi", "Không thể mở trình duyệt.", "OK");
+                _localizationService.GetString("Common_Notice"),
+                _localizationService.GetString("About_AlertCannotOpenBrowser"),
+                _localizationService.GetString("Common_Understood"));
         }
     }
 
@@ -113,7 +119,9 @@ public partial class AboutViewModel : LoadStateViewModel
         catch
         {
             await Application.Current!.MainPage!.DisplayAlert(
-                "Lỗi", "Không thể mở trình duyệt.", "OK");
+                _localizationService.GetString("Common_Notice"),
+                _localizationService.GetString("About_AlertCannotOpenBrowser"),
+                _localizationService.GetString("Common_Understood"));
         }
     }
 }
@@ -123,3 +131,4 @@ public class FeatureItem
     public string Title { get; set; } = string.Empty;
     public string Icon { get; set; } = string.Empty;
 }
+

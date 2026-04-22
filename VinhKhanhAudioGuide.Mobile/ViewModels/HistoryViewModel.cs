@@ -10,6 +10,7 @@ public partial class HistoryViewModel : ObservableObject
 {
     private readonly IApiService _apiService;
     private readonly INavigationService _navigationService;
+    private readonly ILocalizationService _localizationService;
 
     [ObservableProperty]
     private bool _isLoading;
@@ -19,10 +20,14 @@ public partial class HistoryViewModel : ObservableObject
 
     public ObservableCollection<HistoryGroup> HistoryGroups { get; } = new();
 
-    public HistoryViewModel(IApiService apiService, INavigationService navigationService)
+    public HistoryViewModel(
+        IApiService apiService,
+        INavigationService navigationService,
+        ILocalizationService localizationService)
     {
         _apiService = apiService;
         _navigationService = navigationService;
+        _localizationService = localizationService;
         _ = LoadHistoryAsync();
     }
 
@@ -43,8 +48,8 @@ public partial class HistoryViewModel : ObservableObject
 
             foreach (var group in grouped)
             {
-                var label = group.Key == DateTime.Today ? "Hôm nay"
-                    : group.Key == DateTime.Today.AddDays(-1) ? "Hôm qua"
+                var label = group.Key == DateTime.Today ? _localizationService.GetString("History_Today")
+                    : group.Key == DateTime.Today.AddDays(-1) ? _localizationService.GetString("History_Yesterday")
                     : group.Key.ToString("dd/MM/yyyy");
 
                 HistoryGroups.Add(new HistoryGroup(label, group.ToList()));

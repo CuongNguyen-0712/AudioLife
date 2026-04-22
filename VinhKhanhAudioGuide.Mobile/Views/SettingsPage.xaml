@@ -41,7 +41,7 @@
                                        FontFamily="RobotoCondensed-SemiBold"
                                        FontSize="24"
                                        TextColor="{StaticResource Primary}" />
-                                <Label Text="Cá nhân hoá trải nghiệm nghe, ngôn ngữ và phát lại"
+                                    <Label Text="{ext:Translate Settings_Subtitle}"
                                        FontSize="13"
                                        TextColor="{StaticResource Gray500}" />
                             </VerticalStackLayout>
@@ -107,7 +107,7 @@
                             <Image Source="audio.svg" HeightRequest="20" WidthRequest="20" VerticalOptions="Center" />
                             <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
                                 <Label Text="{ext:Translate Settings_LocationScanCycle}" FontSize="15" FontFamily="RobotoCondensed-SemiBold" />
-                                <Label Text="Tần suất quét tự động theo vị trí" FontSize="12" TextColor="{StaticResource Outline}" />
+                                <Label Text="{ext:Translate Settings_LocationScanHint}" FontSize="12" TextColor="{StaticResource Outline}" />
                             </VerticalStackLayout>
                             <Label Grid.Column="2"
                                    Text="{Binding LocationScanInterval}"
@@ -158,7 +158,7 @@
                             <Image Source="back.svg" HeightRequest="20" WidthRequest="20" VerticalOptions="Center" />
                             <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
                                 <Label Text="{ext:Translate Settings_SkipInterval}" FontSize="15" FontFamily="RobotoCondensed-SemiBold" />
-                                <Label Text="{Binding SkipInterval, StringFormat='{0} giây'}" FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
+                                <Label Text="{Binding SkipInterval, StringFormat={ext:Translate Settings_SkipOption_Seconds}}" FontSize="12" TextColor="{StaticResource OnSurfaceVariant}" />
                             </VerticalStackLayout>
                             <Image Grid.Column="2" Source="chevron_right.svg" HeightRequest="14" WidthRequest="14" VerticalOptions="Center" />
                             <Grid.GestureRecognizers>
@@ -300,7 +300,7 @@
                                  HorizontalOptions="Center"
                                  Spacing="12">
                 <ActivityIndicator IsRunning="True" Color="{StaticResource Primary}" />
-                <Label Text="Đang tải cài đặt..."
+                  <Label Text="{ext:Translate Settings_Loading}"
                        TextColor="{StaticResource Gray500}"
                        HorizontalTextAlignment="Center" />
             </VerticalStackLayout>
@@ -311,7 +311,7 @@
                              HorizontalOptions="Center"
                              Padding="30"
                              Spacing="10">
-            <Label Text="Không tải được cài đặt"
+                 <Label Text="{ext:Translate Settings_LoadError}"
                    FontSize="18"
                    FontAttributes="Bold"
                    HorizontalTextAlignment="Center" />
@@ -323,3 +323,4 @@
     </Grid>
 
 </ContentPage>
+

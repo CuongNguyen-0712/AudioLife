@@ -1,10 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
              xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
              x:Class="VinhKhanhAudioGuide.Mobile.Views.MapPage"
              x:DataType="viewmodels:MapViewModel"
-             Title="Vĩnh Khánh Bản đồ"
+             Title="{ext:Translate Map_PageTitle}"
              BackgroundColor="Transparent">
 
     <Grid Padding="0">
@@ -112,7 +113,7 @@
                         WidthRequest="18"
                         HeightRequest="18"
                         VerticalOptions="Center" />
-                    <Label Text="{Binding CurrentPoiLocation.AudioCount, StringFormat='{0} audio'}"
+                    <Label Text="{Binding CurrentPoiLocation.AudioCount, StringFormat={ext:Translate Common_AudioCountFormat}}"
                         FontSize="12"
                         TextColor="{StaticResource OnSurfaceVariant}" />
                     </HorizontalStackLayout>
@@ -255,7 +256,7 @@
                          HorizontalOptions="Center"
                          Spacing="12">
               <ActivityIndicator IsRunning="True" Color="{StaticResource Primary}" />
-              <Label Text="Đang tải bản đồ..."
+              <Label Text="{ext:Translate Map_Loading}"
                   TextColor="{StaticResource OnSurfaceVariant}"
                   HorizontalTextAlignment="Center" />
              </VerticalStackLayout>
@@ -267,7 +268,7 @@
                      Padding="28"
                      Spacing="10"
                      ZIndex="51">
-             <Label Text="Không tải được dữ liệu bản đồ"
+             <Label Text="{ext:Translate Map_LoadError}"
                  FontSize="18"
                  FontAttributes="Bold"
                  HorizontalTextAlignment="Center" />
@@ -282,7 +283,7 @@
                      HorizontalOptions="Center"
                      Padding="28"
                      ZIndex="51">
-             <Label Text="Không có địa điểm để hiển thị"
+             <Label Text="{ext:Translate Map_Empty}"
                  FontSize="16"
                  FontAttributes="Bold"
                  HorizontalTextAlignment="Center" />
@@ -290,3 +291,4 @@
     </Grid>
 
 </ContentPage>
+

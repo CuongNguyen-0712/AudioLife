@@ -11,6 +11,7 @@ public partial class ToursViewModel : ObservableObject
     private readonly INavigationService _navigationService;
     private readonly IApiService _apiService;
     private readonly ITourCheckpointService _tourCheckpointService;
+    private readonly ILocalizationService _localizationService;
     private bool _resumePromptHandled;
     private string _lastPromptedCheckpoint = string.Empty;
 
@@ -20,11 +21,16 @@ public partial class ToursViewModel : ObservableObject
     public ObservableCollection<TourDisplayModel> FeaturedTours { get; } = new();
     public ObservableCollection<TourDisplayModel> AllTours { get; } = new();
 
-    public ToursViewModel(INavigationService navigationService, IApiService apiService, ITourCheckpointService tourCheckpointService)
+    public ToursViewModel(
+        INavigationService navigationService,
+        IApiService apiService,
+        ITourCheckpointService tourCheckpointService,
+        ILocalizationService localizationService)
     {
         _navigationService = navigationService;
         _apiService = apiService;
         _tourCheckpointService = tourCheckpointService;
+        _localizationService = localizationService;
         _ = LoadToursAsync();
     }
 
@@ -53,10 +59,13 @@ public partial class ToursViewModel : ObservableObject
 
         var resume = await MainThread.InvokeOnMainThreadAsync(async () =>
             await Application.Current!.MainPage!.DisplayAlert(
-                "Tiếp tục lộ trình?",
-                $"Bạn đã tạm dừng tại {checkpoint.LocationName} lúc {savedAt:HH:mm, dd/MM}. Tiếp tục từ điểm dừng trước?",
-                "Tiếp tục",
-                "Để sau"));
+                _localizationService.GetString("Map_ResumePromptTitle"),
+                string.Format(
+                    _localizationService.GetString("Map_ResumePromptMessageFormat"),
+                    checkpoint.LocationName,
+                    savedAt),
+                _localizationService.GetString("Map_ActionContinue"),
+                _localizationService.GetString("Map_ActionLater")));
 
         if (!resume)
         {
@@ -96,7 +105,9 @@ public partial class ToursViewModel : ObservableObject
                 DurationText = FormatDuration(tour.Duration),
                 LocationCount = tour.LocationIds.Count,
                 IsFeatured = tour.IsFeatured,
-                PriceText = tour.Price <= 0 ? "Miễn phí" : $"{tour.Price:N0} VNĐ"
+                PriceText = tour.Price <= 0
+                    ? _localizationService.GetString("Common_Free")
+                    : string.Format(_localizationService.GetString("Common_PriceVndFormat"), tour.Price)
             };
 
             if (tour.IsFeatured)
@@ -107,14 +118,23 @@ public partial class ToursViewModel : ObservableObject
         }
     }
 
-    private static string FormatDuration(int minutes)
+    private string FormatDuration(int minutes)
     {
+        if (minutes <= 0)
+        {
+            return string.Format(_localizationService.GetString("Tour_DurationMinutesFormat"), 0);
+        }
+
         if (minutes < 60)
-            return $"{minutes} phút";
+        {
+            return string.Format(_localizationService.GetString("Tour_DurationMinutesFormat"), minutes);
+        }
 
         var hours = minutes / 60;
         var mins = minutes % 60;
-        return mins > 0 ? $"{hours}h {mins}p" : $"{hours} giờ";
+        return mins > 0
+            ? string.Format(_localizationService.GetString("Tour_DurationHoursMinutesFormat"), hours, mins)
+            : string.Format(_localizationService.GetString("Tour_DurationHoursOnlyFormat"), hours);
     }
 
     [RelayCommand]

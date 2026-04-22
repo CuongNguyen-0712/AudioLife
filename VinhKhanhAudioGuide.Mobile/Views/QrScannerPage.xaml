@@ -135,7 +135,7 @@
 
 	     <Button Grid.Row="5"
 		      Margin="0,4,0,0"
-		      Text="Sử dụng QR mẫu"
+		      Text="{ext:Translate Qr_UseSeedButton}"
 		      Style="{StaticResource PrimaryButton}"
 		      Clicked="OnUseSampleQrCodeClicked" />
 	 </Grid>

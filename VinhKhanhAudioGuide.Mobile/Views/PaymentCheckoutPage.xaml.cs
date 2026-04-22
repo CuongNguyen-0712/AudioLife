@@ -9,6 +9,7 @@ public partial class PaymentCheckoutPage : ContentPage
     private readonly PaymentPlanOption _plan;
     private readonly IApiService _apiService;
     private readonly IAppSessionStore _sessionStore;
+    private readonly ILocalizationService _localizationService;
     private bool _isProcessingPayment;
 
     public PaymentCheckoutPage(PaymentPlanOption plan)
@@ -17,6 +18,7 @@ public partial class PaymentCheckoutPage : ContentPage
         _plan = plan;
         _apiService = ResolveApiService();
         _sessionStore = ResolveSessionStore();
+        _localizationService = ResolveLocalizationService();
         ApplyPlan();
     }
 
@@ -24,7 +26,7 @@ public partial class PaymentCheckoutPage : ContentPage
     {
         PlanTitleLabel.Text = _plan.Title;
         PlanSubtitleLabel.Text = _plan.PriceLabel;
-        PriceLabel.Text = $"{_plan.Amount:N0}đ";
+        PriceLabel.Text = string.Format(_localizationService.GetString("PaymentCheckout_PriceAmountFormat"), _plan.Amount);
         PlanDescriptionLabel.Text = _plan.Description;
     }
 
@@ -52,7 +54,10 @@ public partial class PaymentCheckoutPage : ContentPage
 
             if (string.IsNullOrWhiteSpace(packageId))
             {
-                await DisplayAlert("Thiếu gói thanh toán", "Không xác định được gói thanh toán đã chọn.", "Đóng");
+                await DisplayAlert(
+                    _localizationService.GetString("PaymentCheckout_AlertMissingPackageTitle"),
+                    _localizationService.GetString("PaymentCheckout_AlertMissingPackageMessage"),
+                    _localizationService.GetString("Common_Close"));
                 return;
             }
 
@@ -72,7 +77,10 @@ public partial class PaymentCheckoutPage : ContentPage
             var result = await _apiService.CompletePaymentAsync(request);
             if (result is null || !result.Success)
             {
-                await DisplayAlert("Thanh toán thất bại", result?.Message ?? "Không thể xác nhận thanh toán.", "Đóng");
+                await DisplayAlert(
+                    _localizationService.GetString("PaymentCheckout_AlertFailedTitle"),
+                    result?.Message ?? _localizationService.GetString("PaymentCheckout_AlertFailedMessage"),
+                    _localizationService.GetString("Common_Close"));
                 return;
             }
 
@@ -80,9 +88,9 @@ public partial class PaymentCheckoutPage : ContentPage
             if (validation is null || !validation.IsValid)
             {
                 await DisplayAlert(
-                    "Thanh toán chưa hoàn tất",
-                    validation?.Message ?? "Thanh toán chưa được xác minh từ máy chủ. Dữ liệu chưa được ghi DB.",
-                    "Đóng");
+                    _localizationService.GetString("PaymentCheckout_AlertPendingTitle"),
+                    validation?.Message ?? _localizationService.GetString("PaymentCheckout_AlertPendingMessage"),
+                    _localizationService.GetString("Common_Close"));
                 return;
             }
 
@@ -106,7 +114,10 @@ public partial class PaymentCheckoutPage : ContentPage
 
             App.ClearPendingQrPayload();
 
-            await DisplayAlert("Thanh toán thành công", $"Gói {_plan.Title} đã được kích hoạt.", "Đóng");
+            await DisplayAlert(
+                _localizationService.GetString("PaymentCheckout_AlertSuccessTitle"),
+                string.Format(_localizationService.GetString("PaymentCheckout_AlertSuccessMessageFormat"), _plan.Title),
+                _localizationService.GetString("Common_Close"));
             App.NavigateToLanguageSelection();
         }
         finally
@@ -125,5 +136,11 @@ public partial class PaymentCheckoutPage : ContentPage
     {
         return Application.Current?.Handler?.MauiContext?.Services.GetService<IAppSessionStore>()
             ?? new AppSessionStore();
+    }
+
+    private static ILocalizationService ResolveLocalizationService()
+    {
+        return Application.Current?.Handler?.MauiContext?.Services.GetService<ILocalizationService>()
+            ?? new LocalizationService();
     }
 }

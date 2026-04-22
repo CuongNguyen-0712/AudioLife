@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
              xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
              x:Class="VinhKhanhAudioGuide.Mobile.Views.TourDetailPage"
              x:DataType="viewmodels:TourDetailViewModel"
@@ -58,7 +59,7 @@
                                    Padding="10,6">
                                 <HorizontalStackLayout Spacing="6">
                                     <Image Source="near_me.svg" WidthRequest="14" HeightRequest="14" />
-                                    <Label Text="{Binding LocationCount, StringFormat='{0} điểm'}"
+                                     <Label Text="{Binding LocationCount, StringFormat={ext:Translate TourDetail_LocationsFormat}}"
                                            FontSize="12"
                                            FontFamily="RobotoCondensed-Medium"
                                            TextColor="{StaticResource PrimaryDark}" />
@@ -72,21 +73,21 @@
             <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
                 <Frame Grid.Column="0" Style="{StaticResource InfoBarFrame}">
                     <VerticalStackLayout HorizontalOptions="Center" Spacing="3">
-                        <Label Text="Thời gian" Style="{StaticResource SmallText}" HorizontalOptions="Center" />
+                        <Label Text="{ext:Translate TourDetail_DurationLabel}" Style="{StaticResource SmallText}" HorizontalOptions="Center" />
                         <Label Text="{Binding DurationText}" FontSize="13" FontFamily="RobotoCondensed-SemiBold" HorizontalOptions="Center" />
                     </VerticalStackLayout>
                 </Frame>
 
                 <Frame Grid.Column="1" Style="{StaticResource InfoBarFrame}">
                     <VerticalStackLayout HorizontalOptions="Center" Spacing="3">
-                        <Label Text="Điểm đến" Style="{StaticResource SmallText}" HorizontalOptions="Center" />
-                        <Label Text="{Binding LocationCount, StringFormat='{0} điểm'}" FontSize="13" FontFamily="RobotoCondensed-SemiBold" HorizontalOptions="Center" />
+                        <Label Text="{ext:Translate TourDetail_LocationsLabel}" Style="{StaticResource SmallText}" HorizontalOptions="Center" />
+                        <Label Text="{Binding LocationCount, StringFormat={ext:Translate TourDetail_LocationsFormat}}" FontSize="13" FontFamily="RobotoCondensed-SemiBold" HorizontalOptions="Center" />
                     </VerticalStackLayout>
                 </Frame>
 
                 <Frame Grid.Column="2" Style="{StaticResource InfoBarFrame}">
                     <VerticalStackLayout HorizontalOptions="Center" Spacing="3">
-                        <Label Text="Giá" Style="{StaticResource SmallText}" HorizontalOptions="Center" />
+                        <Label Text="{ext:Translate TourDetail_PriceLabel}" Style="{StaticResource SmallText}" HorizontalOptions="Center" />
                         <Label Text="{Binding PriceText}" FontSize="13" FontFamily="RobotoCondensed-SemiBold" HorizontalOptions="Center" />
                     </VerticalStackLayout>
                 </Frame>
@@ -94,12 +95,12 @@
 
             <Frame Style="{StaticResource SurfaceSectionFrame}" Padding="16">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Giới thiệu lộ trình" Style="{StaticResource SubSectionHeader}" Margin="0" />
+                    <Label Text="{ext:Translate TourDetail_OverviewTitle}" Style="{StaticResource SubSectionHeader}" Margin="0" />
                     <Label Text="{Binding Description}" Style="{StaticResource BodyText}" />
                 </VerticalStackLayout>
             </Frame>
 
-            <Label Text="Lộ trình chi tiết" Style="{StaticResource SectionHeader}" Margin="0,2,0,0" />
+            <Label Text="{ext:Translate TourDetail_ItineraryTitle}" Style="{StaticResource SectionHeader}" Margin="0,2,0,0" />
 
             <CollectionView ItemsSource="{Binding TourLocations}" SelectionMode="None">
                 <CollectionView.ItemTemplate>
@@ -142,14 +143,14 @@
                                     <HorizontalStackLayout Spacing="12">
                                         <HorizontalStackLayout Spacing="6">
                                             <Image Source="time.svg" WidthRequest="14" HeightRequest="14" />
-                                            <Label Text="{Binding Duration, StringFormat='{0} phút'}"
+                                              <Label Text="{Binding Duration, StringFormat={ext:Translate Common_MinutesFormat}}"
                                                    FontSize="12"
                                                    TextColor="{StaticResource OnSurfaceVariant}" />
                                         </HorizontalStackLayout>
 
                                         <HorizontalStackLayout Spacing="6">
                                             <Image Source="audio.svg" WidthRequest="14" HeightRequest="14" />
-                                            <Label Text="{Binding AudioCount, StringFormat='{0} audio'}"
+                                              <Label Text="{Binding AudioCount, StringFormat={ext:Translate Common_AudioCountFormat}}"
                                                    FontSize="12"
                                                    TextColor="{StaticResource OnSurfaceVariant}" />
                                         </HorizontalStackLayout>
@@ -172,7 +173,7 @@
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
-            <Label Text="Bản đồ lộ trình" Style="{StaticResource SectionHeader}" Margin="0,2,0,0" />
+            <Label Text="{ext:Translate TourDetail_MapTitle}" Style="{StaticResource SectionHeader}" Margin="0,2,0,0" />
 
             <Frame Style="{StaticResource CardFrameLarge}"
                    Padding="0"
@@ -182,7 +183,7 @@
                 <WebView Source="{Binding MapHtmlSource}" />
             </Frame>
 
-            <Button Text="Bắt đầu lộ trình"
+                <Button Text="{ext:Translate TourDetail_StartButton}"
                     Style="{StaticResource AccentButton}"
                     Command="{Binding StartTourCommand}"
                     Margin="0,8,0,20" />
@@ -190,3 +191,4 @@
     </ScrollView>
 
 </ContentPage>
+

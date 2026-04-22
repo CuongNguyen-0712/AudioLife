@@ -1,10 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
              xmlns:viewmodels="clr-namespace:VinhKhanhAudioGuide.Mobile.ViewModels"
              x:Class="VinhKhanhAudioGuide.Mobile.Views.ToursPage"
              x:DataType="viewmodels:ToursViewModel"
-             Title="Tours">
+             Title="{ext:Translate Tours_PageTitle}">
 
     <RefreshView IsRefreshing="{Binding IsRefreshing}"
                  Command="{Binding RefreshCommand}">
@@ -13,18 +14,18 @@
                                  Spacing="15">
 
                 <!-- Header -->
-                <Label Text="Lộ trình tham quan"
+                <Label Text="{ext:Translate Tours_HeaderTitle}"
                         TextColor="{StaticResource OnPrimaryContainer}"
                         FontSize="24"
                         FontAttributes="Bold"
                         LineHeight="1.2"/>
-                <Label Text="Khám phá Vĩnh Khánh theo lộ trình của bạn"
+                <Label Text="{ext:Translate Tours_HeaderSubtitle}"
                         FontSize="16"
                         TextColor="{StaticResource OnSurfaceVariant}"
                         Opacity="0.7"/>
 
                 <!-- Featured Tours -->
-                <Label Text="Lộ trình nổi bật"
+                <Label Text="{ext:Translate Tours_FeaturedTitle}"
                         TextColor="{StaticResource OnPrimaryContainer}"
                         FontSize="22"
                         FontAttributes="Bold"
@@ -88,7 +89,7 @@
                                                 <Frame BackgroundColor="#7EFFFFFF" CornerRadius="20" Padding="10,6" HasShadow="False" BorderColor="Transparent">
                                                     <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
                                                         <Image Source="near_me.svg" WidthRequest="12" HeightRequest="12" VerticalOptions="Center" />
-                                                        <Label Text="{Binding LocationCount, StringFormat='{0} điểm'}" FontSize="14" TextColor="{StaticResource PrimaryDark}" VerticalOptions="Center" />
+                                                        <Label Text="{Binding LocationCount, StringFormat={ext:Translate TourDetail_LocationsFormat}}" FontSize="14" TextColor="{StaticResource PrimaryDark}" VerticalOptions="Center" />
                                                     </HorizontalStackLayout>
                                                 </Frame>
                                             </HorizontalStackLayout>
@@ -100,7 +101,7 @@
                 </CollectionView>
 
                 <!-- All Tours -->
-                <Label Text="Tất cả lộ trình"
+                <Label Text="{ext:Translate Tours_AllTitle}"
                         TextColor="{StaticResource OnPrimaryContainer}"
                         FontSize="22"
                         FontAttributes="Bold"
@@ -157,7 +158,7 @@
                                               WidthRequest="18"
                                               HeightRequest="18"
                                               VerticalOptions="Center" />
-                                          <Label Text="{Binding LocationCount, StringFormat='{0} điểm'}"
+                                          <Label Text="{Binding LocationCount, StringFormat={ext:Translate TourDetail_LocationsFormat}}"
                                               FontSize="14"
                                               TextColor="{StaticResource OnSurfaceVariant}"
                                               Opacity="0.7"
@@ -192,3 +193,4 @@
     </RefreshView>
 
 </ContentPage>
+
