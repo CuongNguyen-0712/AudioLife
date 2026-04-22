@@ -821,6 +821,7 @@ public partial class MapViewModel : LoadStateViewModel
             .Where(item => item.TourOrder > 0 && !string.IsNullOrWhiteSpace(item.Id))
             .ToDictionary(item => item.Id, item => item.TourOrder, StringComparer.OrdinalIgnoreCase);
         var markersJs = new StringBuilder();
+        var activationZonesJs = new StringBuilder();
         const string audioMetaIcon = "audio.svg";
         const string timeMetaIcon = "time.svg";
         const string showMoreIcon = "show_more.svg";
@@ -836,6 +837,7 @@ public partial class MapViewModel : LoadStateViewModel
             var audioCount = loc.AudioGuides?.Count ?? 0;
             var isNearest = string.Equals(nearestLocationId, loc.Id, StringComparison.Ordinal);
             var order = orderByLocationId.TryGetValue(loc.Id, out var tourOrder) ? tourOrder : 0;
+            var activationRadius = Math.Max(1, point.ActivationRadiusMeters);
             var markerIcon = showRoute && order > 0
                 ? "L.divIcon({className:'tour-route-marker',html:'<div class=\"tour-poi-wrapper\"><img src=\"location_icon.svg\" class=\"tour-poi-pin\"/><div class=\"tour-poi-order\">" + order + "</div></div>',iconSize:[48,56],iconAnchor:[24,52],popupAnchor:[0,-48]})"
                 : (isNearest ? "nearestIcon" : "customIcon");
@@ -851,8 +853,13 @@ public partial class MapViewModel : LoadStateViewModel
                 $"<div style=\"font-family:RobotoCondensed-SemiBold,-apple-system,Segoe UI,sans-serif;font-size:13px;line-height:1.15;color:{onSurface};white-space:normal;\">{escapedName}</div>{nearestTag}<div style=\"margin-top:2px;font-size:10px;color:{onSurfaceVariant};\">{escapedCat}</div>" +
                 $"<div style=\"display:flex;align-items:center;gap:4px;margin-top:4px;font-size:10px;color:{onSurfaceVariant};\"><img src=\"{audioMetaIcon}\" style=\"width:12px;height:12px;flex:0 0 12px;opacity:0.95;\"/> <span>{audioCount} audio</span></div>" +
                 $"<div style=\"display:flex;align-items:center;gap:4px;margin-top:2px;font-size:10px;color:{onSurfaceVariant};\"><img src=\"{timeMetaIcon}\" style=\"width:12px;height:12px;flex:0 0 12px;opacity:0.95;\"/> <span>{loc.Duration} phút</span></div></div>" +
+                $"<div style=\"display:flex;align-items:center;gap:4px;margin-top:2px;font-size:10px;color:{onSurfaceVariant};\"><span style=\"display:inline-flex;width:12px;height:12px;border-radius:999px;border:2px dashed {primary};box-sizing:border-box;\"></span> <span>Vùng kích hoạt {activationRadius} m</span></div></div>" +
                 $"<div style=\"flex:0 0 30px;display:flex;align-items:center;justify-content:center;align-self:center;\"><a href=\"app://poi/{escapedId}\" style=\"width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:{secondaryContainer};color:{onSecondaryContainer};text-decoration:none;flex:0 0 30px;\"><img src=\"{showMoreIcon}\" style=\"width:16px;height:16px;display:block;\" /></a></div>" +
                 $"</div></div>');");
+
+            activationZonesJs.AppendLine(
+                $"L.circle([{point.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}, {point.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}], {{radius:{activationRadius.ToString(System.Globalization.CultureInfo.InvariantCulture)}, color:'{(isNearest ? tertiary : primary)}', weight:2, opacity:0.7, fillColor:'{(isNearest ? tertiary : primary)}', fillOpacity:{(isNearest ? 0.14 : 0.08).ToString(System.Globalization.CultureInfo.InvariantCulture)}, dashArray:'8 8'}}).addTo(map);"
+            );
         }
 
         var routeJs = string.Empty;
@@ -966,6 +973,44 @@ public partial class MapViewModel : LoadStateViewModel
             line-height:1;
             box-shadow:0 2px 6px rgba(0,0,0,0.26);
         }}
+        .activation-legend {{
+            position: absolute;
+            right: 16px;
+            top: 16px;
+            z-index: 1000;
+            background: rgba(255,255,255,0.84);
+            color: {onSurface};
+            border-radius: 16px;
+            padding: 10px 12px;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.14);
+            border: 1px solid rgba(63,73,73,0.14);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            font-family: RobotoCondensed-Regular,-apple-system,Segoe UI,sans-serif;
+            font-size: 11px;
+            line-height: 1.2;
+            min-width: 150px;
+        }}
+        .activation-legend strong {{
+            display:block;
+            margin-bottom:4px;
+            font-family: RobotoCondensed-SemiBold,-apple-system,Segoe UI,sans-serif;
+            font-size:12px;
+        }}
+        .activation-legend-row {{
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }}
+        .activation-legend-sample {{
+            width: 16px;
+            height: 16px;
+            border-radius: 999px;
+            border: 2px dashed {primary};
+            background: rgba(19,105,109,0.08);
+            box-sizing: border-box;
+            flex: 0 0 16px;
+        }}
         @keyframes radarSweep {{
             from {{ transform: rotate(0deg); }}
             to {{ transform: rotate(360deg); }}
@@ -974,6 +1019,13 @@ public partial class MapViewModel : LoadStateViewModel
 </head>
 <body>
 <div id='map'></div>
+<div class='activation-legend'>
+    <strong>Vùng kích hoạt POI</strong>
+    <div class='activation-legend-row'>
+        <span class='activation-legend-sample'></span>
+        <span>Đường nét đứt thể hiện bán kính kích hoạt</span>
+    </div>
+</div>
 <div class='custom-zoom'>
     <button id='zoomInBtn' type='button'>+</button>
     <button id='zoomOutBtn' type='button'>-</button>
@@ -1033,6 +1085,8 @@ public partial class MapViewModel : LoadStateViewModel
 
     // Location markers
     {markersJs}
+    // Activation zones
+    {activationZonesJs}
     {routeJs}
 </script>
 </body>
@@ -1162,11 +1216,11 @@ public partial class MapViewModel : LoadStateViewModel
     {
         if (HasValidCoordinate(location.Latitude, location.Longitude))
         {
-            return new LocationPoint(location, location.Latitude, location.Longitude);
+            return new LocationPoint(location, location.Latitude, location.Longitude, Math.Max(1, location.DetectionRadiusMeters));
         }
 
         var (lat, lng) = GetFallbackCoordinate(index, UserLatitude, UserLongitude);
-        return new LocationPoint(location, lat, lng);
+        return new LocationPoint(location, lat, lng, Math.Max(1, location.DetectionRadiusMeters));
     }
 
     private static bool HasValidCoordinate(double latitude, double longitude)
@@ -1196,16 +1250,18 @@ public partial class MapViewModel : LoadStateViewModel
 
 public sealed class LocationPoint
 {
-    public LocationPoint(Models.Location location, double latitude, double longitude)
+    public LocationPoint(Models.Location location, double latitude, double longitude, double activationRadiusMeters)
     {
         Location = location;
         Latitude = latitude;
         Longitude = longitude;
+        ActivationRadiusMeters = activationRadiusMeters;
     }
 
     public Models.Location Location { get; }
     public double Latitude { get; }
     public double Longitude { get; }
+    public double ActivationRadiusMeters { get; }
 }
 
 public class MapMarker

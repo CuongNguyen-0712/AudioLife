@@ -86,6 +86,24 @@ public partial class PaymentCheckoutPage : ContentPage
                 return;
             }
 
+            if (Application.Current?.Handler?.MauiContext?.Services.GetService<IAppSessionStore>() is IAppSessionStore sessionStore)
+            {
+                await sessionStore.SaveSnapshotAsync(new AppSessionSnapshot(
+                    deviceId,
+                    result.SessionToken,
+                    result.RefreshToken,
+                    payload?.IdentityToken,
+                    result.UserAppId,
+                    result.PackageId,
+                    result.PaymentStatus,
+                    request.PaymentReference,
+                    payload?.LocationId,
+                    payload?.AudioGuideId,
+                    payload?.AudioUrl,
+                    result.ExpiresAtUtc,
+                    result.LastValidatedAtUtc));
+            }
+
             App.ClearPendingQrPayload();
 
             await DisplayAlert("Thanh toán thành công", $"Gói {_plan.Title} đã được kích hoạt.", "Đóng");

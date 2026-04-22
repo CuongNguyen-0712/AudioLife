@@ -151,21 +151,6 @@ public class ApiService : IApiService
                 DateTime.UtcNow));
         }
 
-        public Task<QrScanSyncResult?> SyncQrScanAsync(QrAudioPayload payload, string deviceId, string? sessionToken = null)
-        {
-            return Task.FromResult<QrScanSyncResult?>(new QrScanSyncResult(
-                false,
-                "Không thể đồng bộ quét QR vì đang ở chế độ offline/local. Vui lòng kết nối máy chủ.",
-                string.Empty,
-                sessionToken ?? string.Empty,
-                null,
-                payload.IdentityToken,
-                payload.PaymentPackageId,
-                "Pending",
-                DateTime.UtcNow,
-                DateTime.UtcNow));
-        }
-
         public async Task<PaymentCompletionResult?> CompletePaymentAsync(PaymentCompletionRequest request)
         {
             await Task.Yield();
@@ -196,6 +181,26 @@ public class ApiService : IApiService
                 DateTime.UtcNow,
                 DateTime.UtcNow));
         }
+
+            public Task<HeartbeatResponse?> SendHeartbeatAsync(HeartbeatRequest request)
+            {
+                return Task.FromResult<HeartbeatResponse?>(new HeartbeatResponse(
+                false,
+                false,
+                "Không thể gửi heartbeat vì đang ở chế độ offline/local.",
+                string.Empty,
+                request.SessionToken,
+                request.ActivityName,
+                DateTime.UtcNow,
+                DateTime.UtcNow,
+                DateTime.UtcNow,
+                DateTime.UtcNow));
+            }
+
+    public Task<bool> TestServerConnectionAsync()
+    {
+        return Task.FromResult(false);
+    }
 
     // ──────── Audio ────────
 

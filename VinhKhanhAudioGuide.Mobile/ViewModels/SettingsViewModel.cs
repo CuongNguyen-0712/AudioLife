@@ -6,8 +6,11 @@ namespace VinhKhanhAudioGuide.Mobile.ViewModels;
 
 public partial class SettingsViewModel : ObservableObject
 {
+    private const string PreferredApiBaseUrlKey = "RemoteApiBaseUrl";
+
     private readonly INavigationService _navigationService;
     private readonly ILocalizationService _localizationService;
+    private readonly IApiService _apiService;
 
     [ObservableProperty]
     private bool _autoNearestPoiPlayback = true;
@@ -46,6 +49,15 @@ public partial class SettingsViewModel : ObservableObject
     private string _themeMode = string.Empty;
 
     [ObservableProperty]
+    private string _lanApiBaseUrl = string.Empty;
+
+    [ObservableProperty]
+    private bool _hasLanApiBaseUrl;
+
+    [ObservableProperty]
+    private string _lanApiStatusMessage = string.Empty;
+
+    [ObservableProperty]
     private bool _isLoading;
 
     [ObservableProperty]
@@ -62,10 +74,11 @@ public partial class SettingsViewModel : ObservableObject
 
     private bool _hasLoaded;
 
-    public SettingsViewModel(INavigationService navigationService, ILocalizationService localizationService)
+    public SettingsViewModel(INavigationService navigationService, ILocalizationService localizationService, IApiService apiService)
     {
         _navigationService = navigationService;
         _localizationService = localizationService;
+        _apiService = apiService;
 
         _localizationService.CultureChanged += OnCultureChanged;
     }
@@ -135,6 +148,17 @@ public partial class SettingsViewModel : ObservableObject
 
         var themeValue = Preferences.Get("ThemeMode", "system");
         ThemeMode = ToThemeLabel(themeValue);
+
+        LanApiBaseUrl = Preferences.Get(PreferredApiBaseUrlKey, string.Empty);
+        HasLanApiBaseUrl = !string.IsNullOrWhiteSpace(LanApiBaseUrl);
+        LanApiStatusMessage = HasLanApiBaseUrl
+            ? $"Server hiện tại: {LanApiBaseUrl}"
+            : "Đang dùng server mặc định (ngrok public endpoint).";
+    }
+
+    partial void OnLanApiBaseUrlChanged(string value)
+    {
+        HasLanApiBaseUrl = !string.IsNullOrWhiteSpace(value);
     }
 
     private void OnCultureChanged(object? sender, EventArgs e)
@@ -365,6 +389,76 @@ public partial class SettingsViewModel : ObservableObject
     private async Task GoToAboutAsync()
     {
         await _navigationService.NavigateToAsync(nameof(Views.AboutPage));
+    }
+
+    [RelayCommand]
+    private async Task SaveLanApiBaseUrlAsync()
+    {
+        var normalized = NormalizeLanApiBaseUrl(LanApiBaseUrl);
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            await Application.Current!.MainPage!.DisplayAlert(
+                "URL không hợp lệ",
+                "Nhập dạng ví dụ: https://aorta-sank-surviving.ngrok-free.dev hoặc http://192.168.1.50:5275",
+                "Đã hiểu");
+            return;
+        }
+
+        RemoteApiService.SetPreferredApiBaseUrl(normalized);
+        LanApiBaseUrl = normalized;
+        LanApiStatusMessage = $"Đã lưu server LAN: {normalized}. Đang kiểm tra kết nối...";
+
+        var connected = await _apiService.TestServerConnectionAsync();
+        LanApiStatusMessage = connected
+            ? $"Server LAN sẵn sàng: {normalized}"
+            : $"Đã lưu server LAN: {normalized} nhưng chưa kết nối được";
+
+        await Application.Current!.MainPage!.DisplayAlert(
+            connected ? "Kết nối thành công" : "Chưa kết nối được",
+            connected
+                ? "Mobile đã chạm được web server trong LAN."
+                : "Kiểm tra lại IP, port, firewall hoặc profile chạy web server.",
+            "OK");
+    }
+
+    [RelayCommand]
+    private async Task ClearLanApiBaseUrlAsync()
+    {
+        RemoteApiService.SetPreferredApiBaseUrl(null);
+        LanApiBaseUrl = string.Empty;
+        LanApiStatusMessage = "Đã xoá server tuỳ chỉnh. Ứng dụng quay lại server mặc định (ngrok).";
+
+        await Application.Current!.MainPage!.DisplayAlert(
+            "Đã xoá",
+            "Đã bỏ cấu hình LAN server tùy chỉnh.",
+            "OK");
+    }
+
+    private static string? NormalizeLanApiBaseUrl(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var trimmed = value.Trim();
+        if (!trimmed.Contains("://", StringComparison.Ordinal))
+        {
+            trimmed = $"http://{trimmed}";
+        }
+
+        if (!Uri.TryCreate(trimmed, UriKind.Absolute, out var uri))
+        {
+            return null;
+        }
+
+        if (!string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return uri.GetLeftPart(UriPartial.Authority);
     }
 
 }

@@ -12,7 +12,8 @@
             <h1 class="admin-page-hero-title">Quản Lý Người Dùng</h1>
             <p class="admin-page-hero-subtitle">Theo dõi trạng thái, gói active, phiên đăng nhập và lịch sử nghe trong một giao diện gọn hơn, rõ hơn.</p>
             <div class="admin-page-hero-badges">
-                <span class="hero-badge"><i class="fa-solid fa-circle-check"></i> @Model.ActiveUserCount active</span>
+                <span class="hero-badge"><i class="fa-solid fa-circle-check"></i> <span id="hero-online-kpi">@Model.ActiveUserCount</span> online</span>
+                <span class="hero-badge"><i class="fa-solid fa-power-off"></i> <span id="hero-offline-kpi">@(Math.Max(Model.TotalUserCount - Model.ActiveUserCount, 0))</span> offline</span>
                 <span class="hero-badge"><i class="fa-solid fa-ban"></i> @Model.BlockedUserCount blocked</span>
                 <span class="hero-badge"><i class="fa-solid fa-ticket"></i> @Model.UsersWithActiveSubscriptionCount có gói active</span>
             </div>
@@ -22,7 +23,7 @@
             <div class="admin-page-hero-kpis">
                 <div class="admin-page-hero-kpi">
                     <span>Tổng</span>
-                    <strong>@Model.TotalUserCount</strong>
+                    <strong id="hero-total-kpi">@Model.TotalUserCount</strong>
                 </div>
                 <div class="admin-page-hero-kpi">
                     <span>Phiên active</span>
@@ -40,13 +41,13 @@
         <div class="col-sm-6 col-xl-3">
             <div class="stat-card stat-card-v2">
                 <div class="stat-icon bg-primary"><i class="fa-solid fa-users"></i></div>
-                <div><div class="stat-value">@Model.TotalUserCount</div><div class="stat-label">Người dùng</div></div>
+                <div><div class="stat-value" id="card-total-kpi">@Model.TotalUserCount</div><div class="stat-label">Người dùng</div></div>
             </div>
         </div>
         <div class="col-sm-6 col-xl-3">
             <div class="stat-card stat-card-v2">
-                <div class="stat-icon bg-success"><i class="fa-solid fa-circle-check"></i></div>
-                <div><div class="stat-value">@Model.ActiveUserCount</div><div class="stat-label">Đang hoạt động</div></div>
+                <div class="stat-icon bg-success"><i class="fa-solid fa-signal"></i></div>
+                <div><div class="stat-value" id="card-online-kpi">@Model.ActiveUserCount</div><div class="stat-label">Đang hoạt động</div></div>
             </div>
         </div>
         <div class="col-sm-6 col-xl-3">
@@ -68,7 +69,7 @@
         <div class="card-body">
             <form method="get" class="row g-3 align-items-end">
                 <div class="col-md-4">
-                    <input type="text" name="searchTerm" class="form-control" placeholder="Tìm theo email, số điện thoại, tên hoặc mã QR..." value="@Model.SearchTerm" />
+                    <input type="text" name="searchTerm" class="form-control" placeholder="Tìm theo Device ID hoặc mã QR..." value="@Model.SearchTerm" />
                 </div>
                 <div class="col-md-3">
                     <select name="statusFilter" class="form-select">
@@ -100,28 +101,46 @@
                 var listeningCount = user.ListeningHistories.Count;
                 var templateId = $"user-overlay-{user.Id:N}";
 
+                var isOnline = user.LastSeenAtUtc >= DateTime.UtcNow.AddSeconds(-15);
+                var deviceIdDisplay = user.AppSessions.FirstOrDefault()?.DeviceId ?? user.QrCodeValue;
+
                 <article class="admin-column-card">
                     <header class="admin-column-card-head">
                         <div>
-                            <h3 class="admin-column-card-title">@(user.DisplayName ?? "Người dùng chưa đặt tên")</h3>
-                            <div class="admin-column-card-subtitle">@user.Email</div>
+                            <h3 class="admin-column-card-title text-truncate" style="max-width: 200px;" title="@deviceIdDisplay">@deviceIdDisplay</h3>
+                            <div class="admin-column-card-subtitle">Device ID / QR Token</div>
                         </div>
-                        @if (user.Status == "Active")
+                        @if (isOnline)
                         {
-                            <span class="badge bg-success">Active</span>
+                            <span id="status-badge-@user.Id" class="badge bg-success"><i class="fa-solid fa-wifi"></i> Online</span>
                         }
                         else if (user.Status == "Blocked")
                         {
-                            <span class="badge bg-danger">Blocked</span>
+                            <span id="status-badge-@user.Id" class="badge bg-danger">Blocked</span>
+                        }
+                        else
+                        {
+                            <span id="status-badge-@user.Id" class="badge bg-secondary">Offline</span>
                         }
                     </header>
 
                     <div class="admin-column-meta-grid">
-                        <div><span>QR</span><strong>@user.QrCodeValue</strong></div>
-                        <div><span>SĐT</span><strong>@(user.PhoneNumber ?? "---")</strong></div>
+                        <div><span>Trạng thái</span><strong>@user.Status</strong></div>
                         <div><span>Gói active</span><strong>@packageName</strong></div>
                         <div><span>Phiên active</span><strong>@activeSessions</strong></div>
                         <div><span>Lượt nghe</span><strong>@listeningCount</strong></div>
+                        <div>
+                            <span>Hoạt động hiện tại</span>
+                            <strong id="current-activity-@user.Id">@(string.IsNullOrWhiteSpace(user.CurrentActivity) ? "---" : user.CurrentActivity)</strong>
+                        </div>
+                        <div>
+                            <span>Cập nhật lúc</span>
+                            <strong id="current-activity-at-@user.Id">@(user.CurrentActivityAtUtc?.ToString("dd/MM/yyyy HH:mm:ss") ?? "---")</strong>
+                        </div>
+                        <div>
+                            <span>Lần cập nhật cuối</span>
+                            <strong id="last-seen-@user.Id">@user.LastSeenAtUtc.ToString("dd/MM/yyyy HH:mm:ss")</strong>
+                        </div>
                         <div><span>Tạo lúc</span><strong>@user.CreatedAtUtc.ToString("dd/MM/yyyy HH:mm")</strong></div>
                     </div>
 
@@ -165,15 +184,22 @@
                     <div class="entity-overlay-body-grid">
                         <section class="entity-overlay-panel">
                             <h4>Thông tin cơ bản</h4>
-                            <dl>
-                                <dt>Mã người dùng</dt><dd>@user.Id</dd>
-                                <dt>Mã QR</dt><dd>@user.QrCodeValue</dd>
-                                <dt>Họ tên</dt><dd>@(user.DisplayName ?? "---")</dd>
-                                <dt>Email</dt><dd>@(user.Email ?? "---")</dd>
-                                <dt>Số điện thoại</dt><dd>@(user.PhoneNumber ?? "---")</dd>
-                                <dt>Trạng thái</dt><dd>@user.Status</dd>
-                                <dt>Tạo lúc</dt><dd>@user.CreatedAtUtc.ToString("dd/MM/yyyy HH:mm")</dd>
+                            <div class="d-flex align-items-start gap-4">
+                                <dl class="mb-0 flex-grow-1">
+                                    <dt>Mã người dùng</dt><dd>@user.Id</dd>
+                                    <dt>Mã thiết bị / QR</dt><dd>@user.QrCodeValue</dd>
+                                    <dt>Trạng thái</dt><dd>@user.Status</dd>
+                                    <dt>Tạo lúc</dt><dd>@user.CreatedAtUtc.ToString("dd/MM/yyyy HH:mm")</dd>
+                                </dl>
+                                <div class="text-center">
+                                    <div id="qr-container-@user.Id" data-qr-value="@user.QrCodeValue" class="bg-white p-2 border rounded shadow-sm"></div>
+                                    <div class="small text-muted mt-1">Identity QR</div>
+                                </div>
+                            </div>
+                            <dl class="mt-2">
                                 <dt>Lần truy cập cuối</dt><dd>@user.LastSeenAtUtc.ToString("dd/MM/yyyy HH:mm")</dd>
+                                <dt>Hoạt động hiện tại</dt><dd>@(string.IsNullOrWhiteSpace(user.CurrentActivity) ? "---" : user.CurrentActivity)</dd>
+                                <dt>Hoạt động lúc</dt><dd>@(user.CurrentActivityAtUtc?.ToString("dd/MM/yyyy HH:mm") ?? "---")</dd>
                             </dl>
                         </section>
 
@@ -255,6 +281,7 @@
 </div>
 
 @section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
         (() => {
             const overlay = document.getElementById('entityOverlay');
@@ -287,10 +314,114 @@
 
                     titleNode.textContent = title;
                     contentNode.innerHTML = template.innerHTML;
+                    
+                    const qrContainer = contentNode.querySelector('[id^="qr-container-"]');
+                    if (qrContainer) {
+                        const qrValue = qrContainer.getAttribute('data-qr-value');
+                        qrContainer.innerHTML = '';
+                        new QRCode(qrContainer, {
+                            text: qrValue,
+                            width: 128,
+                            height: 128,
+                            colorDark : "#000000",
+                            colorLight : "#ffffff",
+                            correctLevel : QRCode.CorrectLevel.M
+                        });
+                    }
+
                     overlay.classList.remove('d-none');
                     document.body.classList.add('translation-preview-open');
                 });
             });
+
+            const formatUtcToLocal = (utcValue) => {
+                if (!utcValue) return '---';
+                const date = new Date(utcValue);
+                if (Number.isNaN(date.getTime())) return '---';
+                return date.toLocaleString('vi-VN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            };
+
+            // Live Status Polling
+            setInterval(async () => {
+                try {
+                    const params = new URLSearchParams(window.location.search);
+                    params.set('handler', 'Statuses');
+                    const res = await fetch('?' + params.toString(), { cache: "no-store" });
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    
+                    const heroOnlineKpi = document.getElementById('hero-online-kpi');
+                    if (heroOnlineKpi) heroOnlineKpi.textContent = data.onlineCount;
+
+                    const heroOfflineKpi = document.getElementById('hero-offline-kpi');
+                    if (heroOfflineKpi) heroOfflineKpi.textContent = data.offlineCount;
+
+                    const heroTotalKpi = document.getElementById('hero-total-kpi');
+                    if (heroTotalKpi) heroTotalKpi.textContent = data.totalCount;
+                    
+                    const cardOnlineKpi = document.getElementById('card-online-kpi');
+                    if (cardOnlineKpi) cardOnlineKpi.textContent = data.onlineCount;
+
+                    const cardTotalKpi = document.getElementById('card-total-kpi');
+                    if (cardTotalKpi) cardTotalKpi.textContent = data.totalCount;
+
+                    const currentIds = new Set(
+                        Array.from(document.querySelectorAll('[id^="status-badge-"]'))
+                            .map(node => node.id.replace('status-badge-', ''))
+                    );
+                    const incomingIds = new Set((data.users || []).map(u => String(u.id)));
+
+                    const hasMembershipChanged = incomingIds.size !== currentIds.size
+                        || Array.from(incomingIds).some(id => !currentIds.has(id));
+
+                    if (hasMembershipChanged) {
+                        window.location.reload();
+                        return;
+                    }
+                    
+                    data.users.forEach(u => {
+                        const badge = document.getElementById('status-badge-' + u.id);
+                        const activityNode = document.getElementById('current-activity-' + u.id);
+                        const activityAtNode = document.getElementById('current-activity-at-' + u.id);
+                        const lastSeenNode = document.getElementById('last-seen-' + u.id);
+                        if (!badge) return;
+                        
+                        if (u.isOnline) {
+                            badge.className = 'badge bg-success';
+                            badge.innerHTML = '<i class="fa-solid fa-wifi"></i> Online';
+                        } else if (u.status === 'Blocked') {
+                            badge.className = 'badge bg-danger';
+                            badge.innerHTML = 'Blocked';
+                        } else {
+                            badge.className = 'badge bg-secondary';
+                            badge.innerHTML = 'Offline';
+                        }
+
+                        if (activityNode) {
+                            activityNode.textContent = u.currentActivity && u.currentActivity.trim().length > 0
+                                ? u.currentActivity
+                                : '---';
+                        }
+
+                        if (activityAtNode) {
+                            activityAtNode.textContent = formatUtcToLocal(u.currentActivityAtUtc);
+                        }
+
+                        if (lastSeenNode) {
+                            lastSeenNode.textContent = formatUtcToLocal(u.lastSeenAtUtc);
+                        }
+                    });
+                } catch (e) {
+                    // Ignore transient network errors
+                }
+            }, 5000);
         })();
     </script>
 }

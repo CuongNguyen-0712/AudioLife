@@ -18,6 +18,7 @@ public class AppDbContext : DbContext
     public DbSet<PoiAdminLocationAssignment> PoiAdminLocationAssignments => Set<PoiAdminLocationAssignment>();
     public DbSet<ListeningHistory> ListeningHistories => Set<ListeningHistory>();
     public DbSet<AppUser> AppUsers => Set<AppUser>();
+    public DbSet<AppUserActivityLog> AppUserActivityLogs => Set<AppUserActivityLog>();
     public DbSet<PaymentPackage> PaymentPackages => Set<PaymentPackage>();
     public DbSet<UserSubscription> UserSubscriptions => Set<UserSubscription>();
     public DbSet<UserAppSession> UserAppSessions => Set<UserAppSession>();
@@ -51,7 +52,7 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<AudioGuide>(entity =>
         {
-            entity.HasOne(ag => ag.Location)
+            entity.HasOne(ag => ag.Location)    
                 .WithMany(l => l.AudioGuides)
                 .HasForeignKey(ag => ag.LocationId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -118,12 +119,33 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<AppUser>(entity =>
         {
             entity.HasIndex(item => item.QrCodeValue).IsUnique();
-            entity.HasIndex(item => item.PhoneNumber);
-            entity.HasIndex(item => item.Email);
             entity.HasIndex(item => item.Status);
+            entity.HasIndex(item => item.CurrentActivityAtUtc);
 
             entity.Property(item => item.QrCodeValue).IsRequired().HasMaxLength(255);
             entity.Property(item => item.Status).IsRequired().HasMaxLength(30);
+            entity.Property(item => item.CurrentActivity).HasMaxLength(200);
+        });
+
+        modelBuilder.Entity<AppUserActivityLog>(entity =>
+        {
+            entity.ToTable("AppUserActivityLog");
+            entity.HasIndex(item => item.UserId);
+            entity.HasIndex(item => item.DeviceId);
+            entity.HasIndex(item => item.SessionToken);
+            entity.HasIndex(item => item.LoggedAtUtc);
+            entity.HasIndex(item => new { item.UserId, item.LoggedAtUtc });
+
+            entity.Property(item => item.DeviceId).IsRequired().HasMaxLength(255);
+            entity.Property(item => item.SessionToken).IsRequired().HasMaxLength(2000);
+            entity.Property(item => item.ActivityName).IsRequired().HasMaxLength(200);
+            entity.Property(item => item.ActivityContext).HasMaxLength(200);
+            entity.Property(item => item.Route).HasMaxLength(200);
+
+            entity.HasOne(item => item.User)
+                .WithMany(user => user.ActivityLogs)
+                .HasForeignKey(item => item.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Configuration for PaymentPackage

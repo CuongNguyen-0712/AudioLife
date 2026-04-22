@@ -36,6 +36,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<Services.INavigationService, Services.NavigationService>();
         builder.Services.AddSingleton<Services.ILocalizationService, Services.LocalizationService>();
         builder.Services.AddSingleton<Services.IAppSessionStore, Services.AppSessionStore>();
+        builder.Services.AddSingleton<Services.IAppHeartbeatService, Services.AppHeartbeatService>();
         builder.Services.AddSingleton<Services.ISearchService, Services.SearchService>();
         builder.Services.AddSingleton<Services.ApiService>();
         builder.Services.AddSingleton<Services.IApiService, Services.RemoteApiService>();

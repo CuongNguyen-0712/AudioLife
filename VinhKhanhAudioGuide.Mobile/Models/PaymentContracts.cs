@@ -47,14 +47,3 @@ public sealed record DeviceSessionCheckResult(
     DateTime ExpiresAtUtc,
     DateTime LastValidatedAtUtc);
 
-public sealed record QrScanSyncResult(
-    bool Success,
-    string Message,
-    string UserAppId,
-    string SessionToken,
-    string? RefreshToken,
-    string? QrToken,
-    string? PackageId,
-    string? PaymentStatus,
-    DateTime ExpiresAtUtc,
-    DateTime LastValidatedAtUtc);

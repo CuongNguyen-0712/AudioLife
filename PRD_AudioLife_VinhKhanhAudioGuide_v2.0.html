@@ -22,7 +22,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--sn);color:var(--sl
 .nt{position:fixed;top:.8rem;left:.8rem;z-index:300;width:38px;height:38px;border-radius:10px;background:var(--mid);border:none;color:white;font-size:1.1rem;cursor:pointer;display:none;align-items:center;justify-content:center}
 .mn{margin-left:260px;min-height:100vh}
 .hero{background:linear-gradient(135deg,var(--blue-d) 0%,#1a237e 50%,var(--pu) 100%);color:white;padding:4rem 2.5rem 3rem;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;3inset:0;background:url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1.5' fill='rgba(255,255,255,0.04)'/%3E%3C/svg%3E")}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1.5' fill='rgba(255,255,255,0.04)'/%3E%3C/svg%3E")}
 .hi{position:relative;max-width:880px}
 .hb{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);padding:.3rem .8rem;border-radius:20px;font-size:.72rem;font-weight:600;margin-bottom:.8rem}
 .hero h1{font-size:2.4rem;font-weight:900;letter-spacing:-1.5px;line-height:1.15;margin-bottom:.5rem}
@@ -67,7 +67,7 @@ code{background:var(--sn);padding:.1rem .3rem;border-radius:4px;font-family:'Jet
 <body>
 <button class="nt" onclick="document.querySelector('.sb').classList.toggle('open')">&#9776;</button>
 <aside class="sb">
-<div class="sb-logo"><h2>VinhKhanhAudioGuide</h2><span>PRD v1.0 — Full System Documentation</span></div>
+<div class="sb-logo"><h2>VinhKhanhAudioGuide</h2><span>PRD v2.0 — Full System Documentation</span></div>
 <nav>
 <div class="ng"><div class="ngt">Tổng Quan</div>
 <a href="#overview" class="nl">Giới Thiệu</a>
@@ -99,11 +99,11 @@ code{background:var(--sn);padding:.1rem .3rem;border-radius:4px;font-family:'Jet
 
 <main class="mn">
 <header class="hero"><div class="hi">
-<div class="hb">PRD v1.0 — April 2026</div>
+<div class="hb">PRD v2.0 — April 2026</div>
 <h1>VinhKhanhAudioGuide<br>Hệ Thống Hướng Dẫn Âm Thanh</h1>
-<p class="sub">Full-stack enterprise: .NET MAUI (MVVM + DI) — ASP.NET Core 8 Razor Pages + Minimal API — SQL Server + EF Core — Cloudinary CDN — Edge TTS + Google TTS fallback — POI Change Request Workflow — Role-based RBAC (SystemAdmin / PoiAdmin).</p>
+<p class="sub">Full-stack enterprise: .NET MAUI (MVVM + DI) — ASP.NET Core 8 Razor Pages + Minimal API — SQL Server + EF Core — Cloudinary CDN — Edge TTS + Google TTS fallback — DB-first Session/Payment Flow — Role-based RBAC (SystemAdmin / PoiAdmin).</p>
 <div class="ht">
-<span>.NET MAUI 8 (MVVM)</span><span>ASP.NET Core 8 Razor Pages</span><span>EF Core + SQL Server</span><span>Cloudinary CDN</span><span>Edge TTS Neural</span><span>Cookie Auth + RBAC</span><span>POI Change Requests</span><span>Plugin.Maui.Audio</span>
+<span>.NET MAUI 8 (MVVM)</span><span>ASP.NET Core 8 Razor Pages</span><span>EF Core + SQL Server</span><span>Cloudinary CDN</span><span>Edge TTS Neural</span><span>DB-first Session/Payment</span><span>POI Change Requests</span><span>Plugin.Maui.Audio</span>
 </div>
 <div class="hs">
 <div><div class="v">17</div><div class="l">Mobile Pages</div></div>
@@ -119,6 +119,7 @@ code{background:var(--sn);padding:.1rem .3rem;border-radius:4px;font-family:'Jet
 
 <section class="sec" id="overview"><div class="sh"><div class="si b"></div><div><span class="ch">Chapter 00</span><h2>Giới Thiệu Sản Phẩm</h2></div></div>
 <p class="pr"><strong>VinhKhanhAudioGuide</strong> (AudioLife) là hệ thống hướng dẫn âm thanh du lịch ẩm thực đường phố Vĩnh Khánh, Q4, TP.HCM. Kiến trúc enterprise với <strong>MVVM pattern</strong> trên mobile, <strong>Razor Pages</strong> trên web, <strong>EF Core + SQL Server</strong>, lưu trữ audio trên <strong>Cloudinary CDN</strong>, và TTS tự động bằng <strong>Edge Neural Voices</strong> với Google TTS fallback. Hệ thống có <strong>2 portal riêng biệt</strong>: SystemAdmin (quản lý toàn bộ) và PoiAdmin/Shop (chủ quán quản lý địa điểm của mình).</p>
+<div class="hl ok"><strong>Trạng thái triển khai hiện tại (04/2026):</strong> QR → Payment → Session đã chuyển sang xác thực DB theo deviceId/sessionToken; mobile không dựa vào local session snapshot để vào app; payment package bắt buộc đồng bộ từ server; audio guide ưu tiên lấy online theo ngôn ngữ đã lưu; geofencing dùng Haversine + debounce/cooldown; splash dùng <code>Resources/Splash/splash.svg</code>; Settings page đã xử lý lỗi runtime do resource key sai.</div>
 <div class="cg">
 <div class="cd"><h3>Mục Tiêu</h3><ul>
 <li>Audio guide tự động cho du khách khi đến gần địa điểm (geolocation 100m)</li>
@@ -126,7 +127,7 @@ code{background:var(--sn);padding:.1rem .3rem;border-radius:4px;font-family:'Jet
 <li>Cloudinary CDN lưu trữ audio MP3 chuyên nghiệp</li>
 <li>MVVM + Dependency Injection trên mobile</li>
 <li>POI Change Request: PoiAdmin gửi yêu cầu -> SystemAdmin duyệt</li>
-<li>Offline support: SQLite local database + audio download</li></ul></div>
+<li>Session/Payment nhất quán theo DB, không fake-success local</li></ul></div>
 <div class="cd"><h3>2 Roles Quản Trị</h3><ul>
 <li><strong>SystemAdmin:</strong> Full access — CRUD Locations, Categories, Tours, AudioGuides, Users, Reports, Settings, Change Requests</li>
 <li><strong>PoiAdmin (Shop):</strong> Quản lý địa điểm được gán — sửa Location, tạo/sửa AudioGuide, gửi Change Request, xem Analytics, Reviews</li></ul></div>
@@ -419,6 +420,7 @@ erDiagram
 
 <section class="sec" id="mobile"><div class="sh"><div class="si b"></div><div><span class="ch">Chapter 02</span><h2>Mobile App — 17 Pages, MVVM Pattern</h2></div></div>
 <p class="pr">Kiến trúc <strong>MVVM + Dependency Injection</strong> với CommunityToolkit.Mvvm. Tất cả ViewModels dùng <code>[ObservableProperty]</code>, <code>[RelayCommand]</code>. Services được inject qua constructor. Navigation qua Shell routing.</p>
+<div class="hl"><strong>Runtime hiện tại:</strong> luồng pre-auth (Intro, QR, Payment, chọn ngôn ngữ) luôn chạy tiếng Việt; ngôn ngữ đã chọn chỉ áp dụng khi vào shell sau khi session DB hợp lệ; khi session hết hạn thì xóa language preference và reset về tiếng Việt ở pre-auth.</div>
 <div class="cg">
 <div class="cd"><h3>IntroPage</h3><p>Onboarding giới thiệu app. Chuyển đến MainPage sau khi hoàn thành.</p></div>
 <div class="cd"><h3>MainPage</h3><p>Trang chủ — danh sách locations, categories, featured tours. Search bar.</p></div>
@@ -444,11 +446,11 @@ erDiagram
 <span class="fs o">Transcript Sync</span><span class="fa">&rarr;</span>
 <span class="fs p">PlaybackEnded</span>
 </div>
-<div class="hl or"><strong>Audio States:</strong> None &rarr; Loading &rarr; Playing &rarr; Paused &rarr; Stopped &rarr; Completed &rarr; Error. Event-driven: StateChanged + PositionChanged callbacks.</div>
+<div class="hl or"><strong>Audio States:</strong> None &rarr; Loading &rarr; Playing &rarr; Paused &rarr; Stopped &rarr; Completed &rarr; Error. Event-driven: StateChanged + PositionChanged callbacks. Đã bổ sung cooldown/debounce để tránh phát lặp khi trigger geolocation đến liên tục.</div>
 </section>
 
 <section class="sec" id="geo"><div class="sh"><div class="si t"></div><div><span class="ch">Chapter 04</span><h2>Geolocation — Nearby Detection</h2></div></div>
-<p class="pr">GeolocationService theo dõi vị trí mỗi 60 giây. Khi phát hiện location trong bán kính 100m (Haversine), phát sự kiện <code>NearbyLocationDetected</code>. Chỉ trigger 1 lần cho mỗi location (theo dõi <code>_lastNearestLocationId</code>).</p>
+<p class="pr">GeolocationService theo dõi vị trí mỗi 60 giây. Khi phát hiện location trong bán kính 100m (Haversine), phát sự kiện <code>NearbyLocationDetected</code>. Công thức khoảng cách đã được chuẩn hóa qua utility chung và trigger được bảo vệ bằng debounce/cooldown.</p>
 <div class="cg">
 <div class="cd"><h3>Tracking Config</h3><ul>
 <li>Radius: 100m (0.1 km)</li>
@@ -474,7 +476,13 @@ erDiagram
 <tr><td><code>/api/mobile/tours/featured</code></td><td>GET</td><td>Tours nổi bật (IsFeatured=true)</td></tr>
 <tr><td><code>/api/mobile/audio/by-location/{locationId}</code></td><td>GET</td><td>Audio guides + script segments theo location</td></tr>
 <tr><td><code>/api/mobile/audio/{id}</code></td><td>GET</td><td>Chi tiết audio guide + segments</td></tr>
+<tr><td><code>/api/mobile/payment/packages</code></td><td>GET</td><td>Lấy danh sách gói thanh toán từ DB</td></tr>
+<tr><td><code>/api/mobile/session/by-device?deviceId=</code></td><td>GET</td><td>Kiểm tra session theo deviceId</td></tr>
+<tr><td><code>/api/mobile/session/scan</code></td><td>POST</td><td>Đồng bộ QR onboarding session lên DB</td></tr>
+<tr><td><code>/api/mobile/payment/complete</code></td><td>POST</td><td>Hoàn tất thanh toán và cập nhật session/subscription</td></tr>
+<tr><td><code>/api/mobile/session/validate</code></td><td>GET</td><td>Xác thực session token + deviceId</td></tr>
 </tbody></table></div>
+<div class="hl"><strong>Lưu ý runtime:</strong> các API liên quan session/payment không được fallback thành success local; nếu không xác nhận được từ server thì không cho tiếp tục vào app như trạng thái đã thanh toán.</div>
 </section>
 
 <section class="sec" id="tts"><div class="sh"><div class="si t"></div><div><span class="ch">Chapter 06</span><h2>TTS Service — Edge Neural + Google Fallback</h2></div></div>
@@ -660,9 +668,9 @@ sequenceDiagram
     SVC->>PLG: CreatePlayer(stream)
     PLG-->>SVC: IAudioPlayer
     SVC->>PLG: player.Play()
-    SVC->>SVC: StartPositionTimer (500ms)
+    SVC->>SVC: StartPositionTimer (150ms)
 
-    loop Every 500ms
+    loop Every 150ms
         SVC->>SVC: Update CurrentPosition
         SVC-->>VM: PositionChanged event
         VM->>VM: Sync transcript segment
@@ -670,8 +678,8 @@ sequenceDiagram
     end
 
     PLG-->>SVC: PlaybackEnded
-    SVC-->>VM: StateChanged(Completed)
-    VM->>VM: Save ListeningHistory
+    SVC-->>VM: StateChanged(Stopped)
+    VM->>VM: Update UI / auto-advance if needed
 </div></div>
 
 <div class="dc"><div class="dt">Geolocation Nearby Detection</div>
@@ -688,10 +696,10 @@ sequenceDiagram
     API-->>GEO: Nearby locations list
 
     alt Location found within 100m
-        GEO->>GEO: Check _lastNearestLocationId
-        alt New location (not same as last)
+        GEO->>GEO: Rank nearby candidates by distance + priority
+        GEO->>GEO: ResolveByQueue(tieCandidates)
+        alt Selected location changed
             GEO-->>APP: NearbyLocationDetected event
-            GEO->>GEO: _lastNearestLocationId = newId
             APP->>APP: Show notification / auto-play
         end
     end
@@ -705,21 +713,21 @@ sequenceDiagram
 sequenceDiagram
     participant A as Admin
     participant WEB as Razor Page
-    participant TTS as EdgeTTSService
+    participant TTS as EdgeTextToSpeechService
     participant EDGE as Edge Neural API
     participant GTTS as Google TTS
     participant CLD as Cloudinary
     participant DB as SQL Server
 
     A->>WEB: Enter TTS text + select language
-    WEB->>TTS: SynthesizeAsync(text, "vi")
+    WEB->>TTS: SynthesizeAsync(text, language)
     TTS->>TTS: GetVoiceForLanguage("vi") = HoaiMyNeural
     TTS->>EDGE: Communicate(text, voice)
 
     alt Edge Success
         EDGE-->>TTS: MP3 bytes (stream)
     else Edge 403 Error
-        TTS->>GTTS: SynthesizeWithGoogleFallbackAsync()
+        TTS->>GTTS: SynthesizeWithGoogleFallbackAsync(text, language)
         GTTS->>GTTS: SplitTextForGoogleTts(180 chars)
         loop Each chunk
             GTTS->>GTTS: GET translate.google.com/translate_tts
@@ -781,26 +789,19 @@ sequenceDiagram
     participant U as User
     participant LP as Login Page
     participant AUTH as AuthUserStore
-    participant CFG as appsettings.json
     participant DB as SQL Server
     participant CK as Cookie
 
     U->>LP: Enter username + password
     LP->>AUTH: FindByCredentialsAsync(user, pass)
-    AUTH->>CFG: Check configured users list
-
-    alt Found in config
-        CFG-->>AUTH: AuthUserOption (role, locationIds)
-    else Not in config
-        AUTH->>DB: SELECT FROM AuthUserAccounts WHERE Username AND Password
-        alt Found in DB
-            DB-->>AUTH: AuthUserAccount
-            AUTH->>DB: SELECT LocationIds FROM PoiAdminLocationAssignments
-            DB-->>AUTH: Assigned locationIds
-        else Not found
-            AUTH-->>LP: null (login failed)
-            LP-->>U: "Sai tài khoản"
-        end
+    AUTH->>DB: SELECT FROM AuthUserAccounts WHERE Username AND Password
+    alt Found in DB
+        DB-->>AUTH: AuthUserAccount
+        AUTH->>DB: SELECT LocationIds FROM PoiAdminLocationAssignments
+        DB-->>AUTH: Assigned locationIds
+    else Not found
+        AUTH-->>LP: null (login failed)
+        LP-->>U: "Sai tài khoản hoặc mật khẩu"
     end
 
     AUTH-->>LP: AuthUserOption
@@ -815,7 +816,7 @@ sequenceDiagram
     participant WEB as Razor Pages
     participant EF as EF Core
     participant DB as SQL Server
-    participant TTS as EdgeTTSService
+    participant TTS as EdgeTextToSpeechService
     participant CLD as Cloudinary
 
     A->>WEB: Create new Location
@@ -850,7 +851,7 @@ flowchart TD
     C --> D[CloudinaryAudioStorageService.Upload]
     D --> E[Transform URL: f_mp3]
     B -->|Generate TTS| F[Enter text + select language]
-    F --> G[EdgeTTSService.SynthesizeAsync]
+    F --> G[EdgeTextToSpeechService.SynthesizeAsync]
     G --> H{Edge success?}
     H -->|Yes| I[MP3 bytes ready]
     H -->|No 403| J[Google TTS Fallback]
@@ -914,14 +915,13 @@ flowchart TD
     G --> H[GetNearbyLocationsAsync lat,lng,0.1km]
     H --> I{Found nearby?}
     I -->|No| F
-    I -->|Yes| J{Same as lastNearestId?}
-    J -->|Yes| F
-    J -->|No| K[Fire NearbyLocationDetected]
-    K --> L[Update _lastNearestLocationId]
+    I -->|Yes| J[Rank by distance + priority]
+    J --> K[Resolve tie candidates via queue]
+    K --> L[Fire NearbyLocationDetected]
     L --> F
 
     style A fill:#00838f,color:#fff
-    style K fill:#1565C0,color:#fff
+    style L fill:#1565C0,color:#fff
     style Z fill:#64748b,color:#fff
 </div></div>
 </section>
@@ -957,7 +957,7 @@ flowchart TD
 <tr><td>Cookie Expiry</td><td>8 hours (sliding)</td><td>Program.cs</td></tr>
 <tr><td>Database</td><td>AudioDB (SQL Server)</td><td>appsettings.json</td></tr>
 <tr><td>Cloudinary Folder</td><td>audio/</td><td>appsettings.json</td></tr>
-<tr><td>Google TTS chunk</td><td>180 chars max</td><td>EdgeTTSService.cs</td></tr>
+<tr><td>Google TTS chunk</td><td>180 chars max</td><td>EdgeTextToSpeechService.cs</td></tr>
 <tr><td>Audio Transform</td><td>f_mp3 (on-the-fly)</td><td>CloudinaryService.cs</td></tr>
 <tr><td>SystemAdmin role</td><td>SystemAdmin</td><td>RoleNames.cs</td></tr>
 <tr><td>PoiAdmin role</td><td>PoiAdmin</td><td>RoleNames.cs</td></tr>
@@ -983,14 +983,14 @@ flowchart TD
 <li>Azure deployment</li>
 <li>CDN caching optimization</li></ul></div>
 </div>
-<div class="hl ok"><strong>Đã hoàn thành:</strong> Full-stack enterprise với MVVM mobile (17 pages, 15 VMs), Razor Pages admin (2 portals), EF Core + SQL Server (12 tables), Cloudinary CDN, Edge TTS 6 languages + Google fallback, POI Change Request workflow, Role-based RBAC, AudioScriptSegment transcript sync, offline downloads, feedback/rating system.</div>
+<div class="hl ok"><strong>Đã hoàn thành:</strong> Full-stack enterprise với MVVM mobile (17 pages, 15 VMs), Razor Pages admin (2 portals), EF Core + SQL Server (12 tables), Cloudinary CDN, Edge TTS 6 languages + Google fallback, POI Change Request workflow, Role-based RBAC, AudioScriptSegment transcript sync, DB-first QR/Payment/Session validation, geofencing Haversine chuẩn hóa và anti-spam playback.</div>
 </section>
 
 </div>
 <footer class="ft">
-<p><strong>VinhKhanhAudioGuide (AudioLife)</strong> — PRD v1.0</p>
+<p><strong>VinhKhanhAudioGuide (AudioLife)</strong> — PRD v2.0</p>
 <p>.NET MAUI (MVVM) + ASP.NET Core 8 Razor Pages + SQL Server + Cloudinary + Edge TTS</p>
-<p>Generated April 2026 — Verified against source code</p>
+<p>Updated April 2026 — Synced with current source code</p>
 </footer>
 </main>
 

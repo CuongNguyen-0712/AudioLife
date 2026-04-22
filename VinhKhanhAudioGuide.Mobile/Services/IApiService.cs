@@ -27,9 +27,10 @@ public interface IApiService
     // Payments / Session
     Task<List<PaymentPackage>> GetPaymentPackagesAsync();
     Task<DeviceSessionCheckResult?> CheckDeviceSessionAsync(string deviceId);
-    Task<QrScanSyncResult?> SyncQrScanAsync(QrAudioPayload payload, string deviceId, string? sessionToken = null);
     Task<PaymentCompletionResult?> CompletePaymentAsync(PaymentCompletionRequest request);
     Task<SessionValidationResult?> ValidateSessionAsync(string sessionToken, string deviceId);
+    Task<HeartbeatResponse?> SendHeartbeatAsync(HeartbeatRequest request);
+    Task<bool> TestServerConnectionAsync();
 
     // Audio
     Task<List<AudioGuide>> GetAudioGuidesForLocationAsync(string locationId);

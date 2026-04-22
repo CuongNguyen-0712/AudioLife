@@ -146,12 +146,35 @@ Table AppUser {
   Status String // Active | Blocked
   CreatedAtUtc DateTime
   LastSeenAtUtc DateTime
+  CurrentActivity String
+  CurrentActivityAtUtc DateTime
 
   indexes {
     (QrCodeValue) [unique]
     (PhoneNumber)
     (Email)
     (Status)
+    (CurrentActivityAtUtc)
+  }
+}
+
+Table AppUserActivityLog {
+  Id Guid [pk]
+  UserId Guid
+  DeviceId String
+  SessionToken String
+  ActivityName String
+  ActivityContext String
+  Route String
+  IsForeground Boolean
+  LoggedAtUtc DateTime
+
+  indexes {
+    (UserId)
+    (DeviceId)
+    (SessionToken)
+    (LoggedAtUtc)
+    (UserId, LoggedAtUtc)
   }
 }
 
@@ -228,3 +251,4 @@ Ref: ListeningHistory.LocationId > Location.Id
 Ref: UserSubscription.UserId > AppUser.Id
 Ref: UserSubscription.PackageId > PaymentPackage.Id
 Ref: UserAppSession.UserId > AppUser.Id
+Ref: AppUserActivityLog.UserId > AppUser.Id

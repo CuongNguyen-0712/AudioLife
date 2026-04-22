@@ -32,6 +32,7 @@ public partial class App : Application
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            _ = StopHeartbeatAsync();
             ApplyPreAuthVietnameseCulture();
             SetRootPage(CreateStyledNavigationPage(new Views.QrScannerPage()));
         });
@@ -41,6 +42,7 @@ public partial class App : Application
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            _ = StopHeartbeatAsync();
             ApplyPreAuthVietnameseCulture();
             SetRootPage(new Views.IntroPage());
         });
@@ -63,6 +65,7 @@ public partial class App : Application
         {
             ApplyPersistedCultureForAuthenticatedShell();
             SetRootPage(new AppShell());
+            _ = StartHeartbeatAsync();
         });
     }
 
@@ -80,6 +83,7 @@ public partial class App : Application
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            _ = StopHeartbeatAsync();
             ApplyPreAuthVietnameseCulture();
             SetRootPage(new Views.LanguageSection());
         });
@@ -88,23 +92,6 @@ public partial class App : Application
     public static async Task CompleteQrOnboardingAsync(QrAudioPayload payload)
     {
         StorePendingQrPayload(payload);
-
-        var services = Current?.Handler?.MauiContext?.Services;
-        var sessionStore = services?.GetService<IAppSessionStore>();
-        var apiService = services?.GetService<IApiService>();
-
-        if (sessionStore is not null && apiService is not null)
-        {
-            try
-            {
-                var deviceId = await sessionStore.GetOrCreateDeviceIdAsync();
-                _ = await apiService.SyncQrScanAsync(payload, deviceId);
-            }
-            catch
-            {
-                // QR onboarding should continue even when backend sync is temporarily unavailable.
-            }
-        }
 
         await OpenPaymentSelectionAfterQrAsync();
     }
@@ -130,6 +117,8 @@ public partial class App : Application
         var check = await apiService.CheckDeviceSessionAsync(deviceId);
         if (check is null || !check.HasSession)
         {
+            await sessionStore.ClearSnapshotAsync();
+            _ = StopHeartbeatAsync();
             NavigateToIntro();
             return;
         }
@@ -137,7 +126,12 @@ public partial class App : Application
         var validation = await apiService.ValidateSessionAsync(check.SessionToken, deviceId);
         if (validation is null || !validation.IsValid)
         {
+            _ = StopHeartbeatAsync();
             LocalizationService.ClearPersistedCulture();
+            if (services?.GetService<IAppSessionStore>() is IAppSessionStore invalidSessionStore)
+            {
+                await invalidSessionStore.ClearSnapshotAsync();
+            }
             if (services?.GetService<ILocalizationService>() is ILocalizationService localizationService)
             {
                 localizationService.ResetToDefaultCulture();
@@ -148,6 +142,24 @@ public partial class App : Application
             }
             NavigateToIntro();
             return;
+        }
+
+        if (sessionStore is not null)
+        {
+            await sessionStore.SaveSnapshotAsync(new AppSessionSnapshot(
+                deviceId,
+                validation.SessionToken,
+                validation.RefreshToken,
+                check.UserAppId,
+                validation.UserAppId,
+                validation.PackageId,
+                validation.PaymentStatus,
+                null,
+                null,
+                null,
+                null,
+                validation.ExpiresAtUtc,
+                validation.LastValidatedAtUtc));
         }
 
         NavigateToShellRoot();
@@ -260,6 +272,35 @@ public partial class App : Application
         }
 
         LocalizationService.ApplyPersistedCulture();
+    }
+
+    private static async Task StartHeartbeatAsync()
+    {
+        var services = Current?.Handler?.MauiContext?.Services;
+        var heartbeatService = services?.GetService<IAppHeartbeatService>();
+        if (heartbeatService is null)
+        {
+            return;
+        }
+
+        await heartbeatService.StartAsync(async () =>
+        {
+            await StopHeartbeatAsync();
+            LocalizationService.ClearPersistedCulture();
+            NavigateToIntro();
+        });
+    }
+
+    private static async Task StopHeartbeatAsync()
+    {
+        var services = Current?.Handler?.MauiContext?.Services;
+        var heartbeatService = services?.GetService<IAppHeartbeatService>();
+        if (heartbeatService is null)
+        {
+            return;
+        }
+
+        await heartbeatService.StopAsync();
     }
 
     private static NavigationPage CreateStyledNavigationPage(Page rootPage)

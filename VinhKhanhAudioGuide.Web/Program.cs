@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using VinhKhanhAudioGuide.Web.Configuration;
 using VinhKhanhAudioGuide.Web.Data;
@@ -7,6 +8,12 @@ using VinhKhanhAudioGuide.Web.Endpoints;
 using VinhKhanhAudioGuide.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var forceLanHttp = builder.Configuration.GetValue<bool>("LanHosting:ForceHttp")
+                   || string.Equals(
+                       Environment.GetEnvironmentVariable("LAN_HTTP_ONLY"),
+                       "true",
+                       StringComparison.OrdinalIgnoreCase);
 
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth"));
 builder.Services.Configure<CloudinaryOptions>(builder.Configuration.GetSection("Cloudinary"));
@@ -49,6 +56,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IPoiChangeRequestService, DbPoiChangeRequestService>();
 builder.Services.AddScoped<IPoiAdminAssignmentService, PoiAdminAssignmentService>();
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor
+                               | ForwardedHeaders.XForwardedProto
+                               | ForwardedHeaders.XForwardedHost;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 var app = builder.Build();
 
@@ -62,10 +77,18 @@ using (var scope = app.Services.CreateScope())
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    app.UseHsts();
+    if (!forceLanHttp)
+    {
+        app.UseHsts();
+    }
 }
 
-app.UseHttpsRedirection();
+app.UseForwardedHeaders();
+
+if (!forceLanHttp && !app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseStaticFiles();
 
 app.UseRouting();

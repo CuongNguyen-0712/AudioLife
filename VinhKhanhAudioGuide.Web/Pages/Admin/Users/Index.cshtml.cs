@@ -37,14 +37,11 @@ public class EndUsersModel : PageModel
             .AsSplitQuery()
             .AsQueryable();
 
-        // Search by email, phone, display name, or QR code
+        // Search by QR code / Device ID
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
             query = query.Where(u =>
-                EF.Functions.Like(u.QrCodeValue, $"%{searchTerm.Trim()}%") ||
-                EF.Functions.Like(u.DisplayName ?? string.Empty, $"%{searchTerm.Trim()}%") ||
-                EF.Functions.Like(u.PhoneNumber ?? string.Empty, $"%{searchTerm.Trim()}%") ||
-                EF.Functions.Like(u.Email ?? string.Empty, $"%{searchTerm.Trim()}%"));
+                EF.Functions.Like(u.QrCodeValue, $"%{searchTerm.Trim()}%"));
         }
 
         // Filter by status
@@ -58,7 +55,9 @@ public class EndUsersModel : PageModel
             .ToListAsync();
 
         TotalUserCount = await _context.AppUsers.CountAsync();
-        ActiveUserCount = await _context.AppUsers.CountAsync(u => u.Status == "Active");
+        
+        var onlineThreshold = DateTime.UtcNow.AddSeconds(-15);
+        ActiveUserCount = await _context.AppUsers.CountAsync(u => u.LastSeenAtUtc >= onlineThreshold);
         BlockedUserCount = await _context.AppUsers.CountAsync(u => u.Status == "Blocked");
         UsersWithActiveSubscriptionCount = await _context.UserSubscriptions
             .AsNoTracking()
@@ -126,4 +125,51 @@ public class EndUsersModel : PageModel
         return RedirectToPage();
     }
 
+    public async Task<IActionResult> OnGetStatusesAsync(string searchTerm = "", string statusFilter = "")
+    {
+        var onlineThreshold = DateTime.UtcNow.AddSeconds(-15);
+        var totalUserCount = await _context.AppUsers.AsNoTracking().CountAsync();
+        var onlineUserCount = await _context.AppUsers.AsNoTracking()
+            .CountAsync(u => u.LastSeenAtUtc >= onlineThreshold);
+
+        var query = _context.AppUsers.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            query = query.Where(u => EF.Functions.Like(u.QrCodeValue, $"%{searchTerm.Trim()}%"));
+        }
+
+        if (!string.IsNullOrWhiteSpace(statusFilter))
+        {
+            query = query.Where(u => u.Status == statusFilter);
+        }
+
+        var usersInfo = await query.Select(u => new
+        {
+            u.Id,
+            u.LastSeenAtUtc,
+            u.Status,
+            u.CurrentActivity,
+            u.CurrentActivityAtUtc
+        }).ToListAsync();
+
+        var results = usersInfo.Select(u => new
+        {
+            id = u.Id,
+            isOnline = u.LastSeenAtUtc >= onlineThreshold,
+            status = u.Status,
+            currentActivity = u.CurrentActivity,
+            currentActivityAtUtc = u.CurrentActivityAtUtc,
+            lastSeenAtUtc = u.LastSeenAtUtc
+        });
+
+        return new JsonResult(new
+        {
+            activeCount = onlineUserCount,
+            totalCount = totalUserCount,
+            onlineCount = onlineUserCount,
+            offlineCount = Math.Max(totalUserCount - onlineUserCount, 0),
+            users = results
+        });
+    }
 }

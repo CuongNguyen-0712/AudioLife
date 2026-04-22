@@ -293,8 +293,8 @@
             </VerticalStackLayout>
         </ScrollView>
 
-        <Grid IsVisible="{Binding IsLoading}"
-              BackgroundColor="{StaticResource Background}"
+          <Grid IsVisible="{Binding IsLoading}"
+              BackgroundColor="{StaticResource Surface}"
               Opacity="0.96">
             <VerticalStackLayout VerticalOptions="Center"
                                  HorizontalOptions="Center"

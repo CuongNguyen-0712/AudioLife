@@ -19,7 +19,8 @@ public class RemoteApiService : IApiService
     private const string CategoriesCacheKey = "catalog.categories";
     private const string LocationsCacheKey = "catalog.locations";
     private const string ToursCacheKey = "catalog.tours";
-    private const string PaymentPackagesCacheKey = "catalog.payment-packages";
+    private const string PreferredApiBaseUrlKey = "RemoteApiBaseUrl";
+    private const string DefaultPublicApiBaseUrl = "https://aorta-sank-surviving.ngrok-free.dev";
 
     private readonly ApiService _fallback;
     private readonly ILocalizationService _localizationService;
@@ -42,6 +43,18 @@ public class RemoteApiService : IApiService
         {
             Timeout = TimeSpan.FromSeconds(8)
         };
+    }
+
+    public static void SetPreferredApiBaseUrl(string? baseUrl)
+    {
+        var normalized = NormalizeBaseUrl(baseUrl);
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            Preferences.Remove(PreferredApiBaseUrlKey);
+            return;
+        }
+
+        Preferences.Set(PreferredApiBaseUrlKey, normalized);
     }
 
     public async Task<List<Location>> GetLocationsAsync()
@@ -251,12 +264,15 @@ public class RemoteApiService : IApiService
     public async Task<List<PaymentPackage>> GetPaymentPackagesAsync()
     {
         var remote = await TryGetAsync<List<PaymentPackage>>("api/mobile/payment/packages");
-        if (remote is not null && remote.Count > 0)
+        if (remote is not null)
         {
-            return remote.Where(item => item.IsActive).OrderBy(item => item.Price).ToList();
+            return remote
+                .Where(item => item.IsActive)
+                .OrderBy(item => item.Price)
+                .ToList();
         }
 
-        return new List<PaymentPackage>();
+        return await _fallback.GetPaymentPackagesAsync();
     }
 
     public async Task<DeviceSessionCheckResult?> CheckDeviceSessionAsync(string deviceId)
@@ -268,69 +284,33 @@ public class RemoteApiService : IApiService
             return remote;
         }
 
-        return new DeviceSessionCheckResult(
-            false,
-            "Không thể kiểm tra phiên từ máy chủ. Vui lòng kết nối mạng.",
-            string.Empty,
-            string.Empty,
-            null,
-            null,
-            null,
-            DateTime.UtcNow,
-            DateTime.UtcNow);
-    }
-
-    public async Task<QrScanSyncResult?> SyncQrScanAsync(QrAudioPayload payload, string deviceId, string? sessionToken = null)
-    {
-        var request = new QrScanSyncRequest
-        {
-            DeviceId = deviceId,
-            SessionToken = sessionToken ?? string.Empty,
-            LocationId = payload.LocationId,
-            AudioGuideId = payload.AudioGuideId,
-            AudioUrl = payload.AudioUrl,
-            QrToken = payload.IdentityToken,
-            PackageId = payload.PaymentPackageId
-        };
-
-        var remote = await TryPostAndReadAsync<QrScanSyncRequest, QrScanSyncResult>("api/mobile/session/scan", request);
-        if (remote is not null)
-        {
-            return remote;
-        }
-
-        return new QrScanSyncResult(
-            false,
-            "Không thể đồng bộ quét QR lên máy chủ. Vui lòng kiểm tra kết nối mạng.",
-            string.Empty,
-            sessionToken ?? string.Empty,
-            null,
-            payload.IdentityToken,
-            payload.PaymentPackageId,
-            "Pending",
-            DateTime.UtcNow,
-            DateTime.UtcNow);
+        return await _fallback.CheckDeviceSessionAsync(deviceId);
     }
 
     public async Task<PaymentCompletionResult?> CompletePaymentAsync(PaymentCompletionRequest request)
     {
-        var remote = await TryPostAndReadAsync<PaymentCompletionRequest, PaymentCompletionResult>("api/mobile/payment/complete", request);
+        var payload = new
+        {
+            request.DeviceId,
+            request.SessionToken,
+            request.RefreshToken,
+            request.QrToken,
+            request.UserAppId,
+            request.LocationId,
+            request.AudioGuideId,
+            request.AudioUrl,
+            request.PackageId,
+            request.PaymentStatus,
+            request.PaymentReference
+        };
+
+        var remote = await TryPostAsync<object, PaymentCompletionResult>("api/mobile/payment/complete", payload);
         if (remote is not null)
         {
             return remote;
         }
 
-        return new PaymentCompletionResult(
-            false,
-            "Không thể xác nhận thanh toán với máy chủ. Giao dịch chưa được ghi xuống DB.",
-            string.Empty,
-            request.SessionToken,
-            request.RefreshToken,
-            request.PackageId,
-            request.PaymentStatus,
-            request.PaymentReference,
-            DateTime.UtcNow,
-            DateTime.UtcNow);
+        return await _fallback.CompletePaymentAsync(request);
     }
 
     public async Task<SessionValidationResult?> ValidateSessionAsync(string sessionToken, string deviceId)
@@ -342,16 +322,35 @@ public class RemoteApiService : IApiService
             return remote;
         }
 
-        return new SessionValidationResult(
-            false,
-            "Không thể xác thực phiên từ máy chủ. Vui lòng kết nối mạng.",
-            string.Empty,
-            sessionToken,
-            null,
-            null,
-            null,
-            DateTime.UtcNow,
-            DateTime.UtcNow);
+        return await _fallback.ValidateSessionAsync(sessionToken, deviceId);
+    }
+
+    public async Task<HeartbeatResponse?> SendHeartbeatAsync(HeartbeatRequest request)
+    {
+        var payload = new
+        {
+            request.DeviceId,
+            request.SessionToken,
+            request.ActivityName,
+            request.ActivityContext,
+            request.ScreenName,
+            request.Route,
+            request.IsForeground
+        };
+
+        var remote = await TryPostAsync<object, HeartbeatResponse>("api/mobile/heartbeat", payload);
+        if (remote is not null)
+        {
+            return remote;
+        }
+
+        return await _fallback.SendHeartbeatAsync(request);
+    }
+
+    public async Task<bool> TestServerConnectionAsync()
+    {
+        var remote = await TryGetAsync<List<Category>>("api/mobile/categories");
+        return remote is not null;
     }
 
     public async Task<List<AudioGuide>> GetAudioGuidesForLocationAsync(string locationId)
@@ -362,7 +361,15 @@ public class RemoteApiService : IApiService
             return ContentLocalizationMapper.LocalizeAudioGuides(remote, GetCurrentLanguageCode(), locationId);
         }
 
-        return new List<AudioGuide>();
+        var cachedLocations = await GetCachedAsync<List<Location>>(LocationsCacheKey);
+        var cachedLocation = cachedLocations?
+            .FirstOrDefault(location => string.Equals(location.Id, locationId, StringComparison.OrdinalIgnoreCase));
+        if (cachedLocation is not null)
+        {
+            return ContentLocalizationMapper.LocalizeAudioGuides(cachedLocation.AudioGuides, GetCurrentLanguageCode(), locationId);
+        }
+
+        return await _fallback.GetAudioGuidesForLocationAsync(locationId);
     }
 
     public async Task<AudioGuide?> GetAudioGuideByIdAsync(string audioGuideId)
@@ -374,7 +381,20 @@ public class RemoteApiService : IApiService
                 .FirstOrDefault();
         }
 
-        return null;
+        var cachedLocations = await GetCachedAsync<List<Location>>(LocationsCacheKey);
+        var cachedGuide = cachedLocations?
+            .SelectMany(location => location.AudioGuides)
+            .FirstOrDefault(guide => string.Equals(guide.Id, audioGuideId, StringComparison.OrdinalIgnoreCase));
+        if (cachedGuide is not null)
+        {
+            return ContentLocalizationMapper.LocalizeAudioGuides(
+                    new[] { cachedGuide },
+                    GetCurrentLanguageCode(),
+                    cachedGuide.LocationId)
+                .FirstOrDefault();
+        }
+
+        return await _fallback.GetAudioGuideByIdAsync(audioGuideId);
     }
 
     // Keep favorites/downloads local for now.
@@ -457,8 +477,7 @@ public class RemoteApiService : IApiService
 
     private string GetCurrentLanguageCode()
     {
-        var persistedCulture = LocalizationService.GetPersistedOrDefaultCulture();
-        return ContentLocalizationMapper.ToLanguageCode(persistedCulture);
+        return ContentLocalizationMapper.ToLanguageCode(_localizationService.CurrentCulture.Name);
     }
 
     private string WithLanguage(string path)
@@ -512,24 +531,24 @@ public class RemoteApiService : IApiService
         return false;
     }
 
-    private async Task<TResponse?> TryPostAndReadAsync<TBody, TResponse>(string relativePath, TBody body)
+    private async Task<TResponse?> TryPostAsync<TBody, TResponse>(string relativePath, TBody body)
     {
         if (!string.IsNullOrWhiteSpace(_activeBaseUrl))
         {
-            var active = await TryPostAndReadFromBaseAsync<TBody, TResponse>(_activeBaseUrl!, relativePath, body);
-            if (active is not null)
+            var responseFromActive = await TryPostToBaseAsync<TBody, TResponse>(_activeBaseUrl!, relativePath, body);
+            if (responseFromActive is not null)
             {
-                return active;
+                return responseFromActive;
             }
         }
 
         foreach (var baseUrl in GetCandidateBaseUrls())
         {
-            var posted = await TryPostAndReadFromBaseAsync<TBody, TResponse>(baseUrl, relativePath, body);
-            if (posted is not null)
+            var response = await TryPostToBaseAsync<TBody, TResponse>(baseUrl, relativePath, body);
+            if (response is not null)
             {
                 _activeBaseUrl = baseUrl;
-                return posted;
+                return response;
             }
         }
 
@@ -553,7 +572,7 @@ public class RemoteApiService : IApiService
         }
     }
 
-    private async Task<TResponse?> TryPostAndReadFromBaseAsync<TBody, TResponse>(string baseUrl, string relativePath, TBody body)
+    private async Task<TResponse?> TryPostToBaseAsync<TBody, TResponse>(string baseUrl, string relativePath, TBody body)
     {
         var requestUri = $"{baseUrl.TrimEnd('/')}/{relativePath.TrimStart('/')}";
 
@@ -623,31 +642,78 @@ public class RemoteApiService : IApiService
         return location;
     }
 
-    /// <summary>
-    /// Calculate distance in km between two GPS coordinates using Haversine formula.
-    /// </summary>
     private static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
-        => DistanceCalculator.CalculateDistanceKm(lat1, lon1, lat2, lon2);
+    {
+        const double R = 6371;
+        var dLat = ToRad(lat2 - lat1);
+        var dLon = ToRad(lon2 - lon1);
+        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                Math.Cos(ToRad(lat1)) * Math.Cos(ToRad(lat2)) *
+                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        return R * c;
+    }
+
+    private static double ToRad(double deg) => deg * Math.PI / 180.0;
 
     private static IReadOnlyList<string> GetCandidateBaseUrls()
     {
+        var candidates = new List<string>
+        {
+            DefaultPublicApiBaseUrl
+        };
+
+        var preferredBaseUrl = NormalizeBaseUrl(Preferences.Get(PreferredApiBaseUrlKey, string.Empty));
+        if (!string.IsNullOrWhiteSpace(preferredBaseUrl))
+        {
+            candidates.Insert(0, preferredBaseUrl);
+        }
+
 #if ANDROID
-        return new[]
+        candidates.AddRange(new[]
         {
             "https://10.0.2.2:7275",
             "http://10.0.2.2:5275",
             "https://localhost:7275",
             "http://localhost:5275"
-        };
+        });
 #else
-        return new[]
+        candidates.AddRange(new[]
         {
             "https://localhost:7275",
             "http://localhost:5275",
             "https://10.0.2.2:7275",
             "http://10.0.2.2:5275"
-        };
+        });
 #endif
+
+        return candidates
+            .Select(NormalizeBaseUrl)
+            .Where(url => !string.IsNullOrWhiteSpace(url))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray()!;
+    }
+
+    private static string? NormalizeBaseUrl(string? baseUrl)
+    {
+        if (string.IsNullOrWhiteSpace(baseUrl))
+        {
+            return null;
+        }
+
+        var trimmed = baseUrl.Trim();
+        if (!Uri.TryCreate(trimmed, UriKind.Absolute, out var uri))
+        {
+            return null;
+        }
+
+        if (!string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return uri.GetLeftPart(UriPartial.Authority);
     }
 
     private sealed class AddListeningHistoryRequest
@@ -656,16 +722,5 @@ public class RemoteApiService : IApiService
         public string LocationId { get; set; } = string.Empty;
         public double Progress { get; set; }
         public bool IsCompleted { get; set; }
-    }
-
-    private sealed class QrScanSyncRequest
-    {
-        public string DeviceId { get; set; } = string.Empty;
-        public string SessionToken { get; set; } = string.Empty;
-        public string LocationId { get; set; } = string.Empty;
-        public string AudioGuideId { get; set; } = string.Empty;
-        public string AudioUrl { get; set; } = string.Empty;
-        public string QrToken { get; set; } = string.Empty;
-        public string PackageId { get; set; } = string.Empty;
     }
 }

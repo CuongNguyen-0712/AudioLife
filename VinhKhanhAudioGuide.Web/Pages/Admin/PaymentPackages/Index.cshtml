@@ -202,7 +202,7 @@
                                     @foreach (var sub in package.Subscriptions.OrderByDescending(s => s.PurchasedAtUtc).Take(6))
                                     {
                                         <li>
-                                            <strong>@(sub.User?.DisplayName ?? sub.User?.Email ?? sub.UserId.ToString())</strong>
+                                            <strong>@(sub.User?.QrCodeValue ?? sub.UserId.ToString())</strong>
                                             <span>@sub.Status • @sub.PurchasedAtUtc.ToString("dd/MM/yyyy HH:mm")</span>
                                         </li>
                                     }
