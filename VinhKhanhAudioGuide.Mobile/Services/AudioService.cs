@@ -24,6 +24,8 @@ public class AudioService : IAudioService, IDisposable
     private double _volume = 1.0;
     private AudioPlaybackState _state = AudioPlaybackState.None;
     private string? _currentAudioUrl;
+    private string? _currentLocationId;
+    private string? _currentAudioGuideId;
     private IDispatcherTimer? _timer;
     private long _playRequestVersion;
     private DateTime _lastPlayAttemptUtc = DateTime.MinValue;
@@ -34,6 +36,8 @@ public class AudioService : IAudioService, IDisposable
     public bool IsPlaying => _isPlaying;
     public double Volume => _volume;
     public string? CurrentAudioUrl => _currentAudioUrl;
+    public string? CurrentLocationId => _currentLocationId;
+    public string? CurrentAudioGuideId => _currentAudioGuideId;
     public DateTime LastPlayAttemptUtc => _lastPlayAttemptUtc;
     public TimeSpan PlayCooldown => _playCooldown;
 
@@ -46,6 +50,11 @@ public class AudioService : IAudioService, IDisposable
     }
 
     public async Task PlayAsync(string audioUrl)
+    {
+        await PlayAsync(audioUrl, string.Empty, string.Empty);
+    }
+
+    public async Task PlayAsync(string audioUrl, string locationId, string audioGuideId)
     {
         if (string.IsNullOrWhiteSpace(audioUrl))
         {
@@ -77,7 +86,14 @@ public class AudioService : IAudioService, IDisposable
             _duration = TimeSpan.Zero;
 
             _currentAudioUrl = audioUrl;
+<<<<<<< HEAD
             await LoadPlayerAsync(audioUrl, loadCts.Token);
+=======
+            _currentLocationId = locationId;
+            _currentAudioGuideId = audioGuideId;
+            
+            await LoadPlayerAsync(audioUrl);
+>>>>>>> 880f61e47a7e0cf0f607073dc3f596ff94affa11
             if (_player == null)
             {
                 throw new InvalidOperationException("Không thể khởi tạo audio player.");
@@ -112,6 +128,8 @@ public class AudioService : IAudioService, IDisposable
             _isPlaying = false;
             _currentPosition = TimeSpan.Zero;
             _duration = TimeSpan.Zero;
+            _currentLocationId = null;
+            _currentAudioGuideId = null;
             SetState(AudioPlaybackState.Error, _currentAudioUrl);
         }
         finally
@@ -183,6 +201,8 @@ public class AudioService : IAudioService, IDisposable
 
             var stoppedUrl = _currentAudioUrl;
             _currentAudioUrl = null;
+            _currentLocationId = null;
+            _currentAudioGuideId = null;
             SetState(AudioPlaybackState.Stopped, stoppedUrl);
             RaisePositionChanged();
         }

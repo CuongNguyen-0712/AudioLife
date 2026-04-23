@@ -1,0 +1,60 @@
+sequenceDiagram
+    actor User
+    participant App as App.xaml.cs
+    participant Loading as StartupLoadingPage
+    participant Store as AppSessionStore
+    participant Net as Connectivity
+    participant API as RemoteApiService
+    participant Server as Web API
+    participant DB as SQL Server
+
+    User->>App: Mở app
+    App->>Loading: Hiển thị StartupLoadingPage
+    Loading->>App: InitializeStartupAsync()
+    App->>Store: GetOrCreateDeviceIdAsync()
+    Store-->>App: deviceId
+    App->>Store: GetSnapshotAsync()
+    Store-->>App: localSnapshot (or null)
+    App->>Net: Check NetworkAccess
+
+    alt Offline + có snapshot
+        App->>App: NavigateToShellRoot()
+        App->>App: StartAutoPlaybackAsync()
+        App->>User: Vào AppShell (offline mode)
+    else Offline + không có snapshot
+        App->>App: NavigateToShellRoot() (fallback local data)
+        App->>User: Vào AppShell (guest/offline)
+    else Online
+        alt Có valid local session -> vào app trước
+            App->>App: NavigateToShellRoot()
+            App->>App: StartAutoPlaybackAsync()
+        end
+
+        App->>API: CheckDeviceSessionAsync(deviceId)
+        API->>Server: GET /api/mobile/session/by-device?deviceId=
+        Server->>DB: Query UserAppSessions + UserSubscriptions
+        DB-->>Server: session data
+        Server-->>API: DeviceSessionCheckResult
+        API-->>App: check
+
+        alt Không có session trên server
+            App->>Store: ClearSnapshotAsync()
+            App->>App: StopHeartbeatAsync()
+            App->>User: NavigateToIntro()
+        else Có session -> validate
+            App->>API: ValidateSessionAsync(token, deviceId)
+            API->>Server: GET /api/mobile/session/validate
+            Server->>DB: Check session + active subscription
+            Server-->>API: SessionValidationResult
+
+            alt Invalid
+                App->>Store: ClearSnapshotAsync()
+                App->>User: NavigateToIntro()
+            else Valid
+                App->>Store: SaveSnapshotAsync(newSnapshot)
+                Note over App: Nếu chưa vào shell -> NavigateToShellRoot()
+                App->>App: StartHeartbeatAsync()
+                App->>User: AppShell (verified)
+            end
+        end
+    end

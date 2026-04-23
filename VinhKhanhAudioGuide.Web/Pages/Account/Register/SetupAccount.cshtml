@@ -1,0 +1,179 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Account.Register.SetupAccountModel
+@{
+    ViewData["Title"] = "Tạo tài khoản";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng ký POI – Tạo tài khoản</title>
+    <meta name="description" content="Đặt tên đăng nhập và mật khẩu cho tài khoản POI Admin của bạn." />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/register.css" asp-append-version="true" />
+</head>
+<body class="register-body">
+    <div class="register-wrapper">
+        <!-- Header -->
+        <div class="reg-header">
+            <div class="reg-paid-badge">
+                <i class="fas fa-circle-check"></i> Thanh toán thành công
+            </div>
+            <div class="reg-steps">
+                <div class="reg-step done" id="step-1">
+                    <span class="step-num"><i class="fas fa-check"></i></span>
+                    <span class="step-label">Chọn gói</span>
+                </div>
+                <div class="reg-step-line active"></div>
+                <div class="reg-step done" id="step-2">
+                    <span class="step-num"><i class="fas fa-check"></i></span>
+                    <span class="step-label">Thanh toán</span>
+                </div>
+                <div class="reg-step-line active"></div>
+                <div class="reg-step active" id="step-3">
+                    <span class="step-num">3</span>
+                    <span class="step-label">Tạo tài khoản</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="reg-content reg-content-narrow">
+            <div class="reg-title-block">
+                <span class="reg-logo reg-logo-success"><i class="fas fa-user-plus"></i></span>
+                <h1>Tạo tài khoản POI Admin</h1>
+                <p>Đặt tên đăng nhập và mật khẩu để hoàn tất đăng ký gói <strong>@Model.PackageName</strong>.</p>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+            {
+                <div class="reg-alert reg-alert-error">
+                    <i class="fas fa-exclamation-triangle"></i> @Model.ErrorMessage
+                </div>
+            }
+
+            <form method="post" id="setup-form">
+                <input type="hidden" asp-for="Input.RegId" />
+
+                <div class="setup-form-card">
+                    <!-- Payment ref notice -->
+                    <div class="setup-payment-ref">
+                        <i class="fas fa-receipt"></i>
+                        Mã giao dịch: <strong>@Model.PaymentReference</strong>
+                    </div>
+
+                    <div class="setup-field">
+                        <label class="setup-label" for="Input_DisplayName">
+                            <i class="fas fa-id-card"></i> Tên hiển thị
+                        </label>
+                        <input asp-for="Input.DisplayName" id="Input_DisplayName" 
+                               class="setup-input" placeholder="Ví dụ: Nhà hàng Vĩnh Khánh" autocomplete="name" />
+                        <span asp-validation-for="Input.DisplayName" class="setup-error"></span>
+                    </div>
+
+                    <div class="setup-field">
+                        <label class="setup-label" for="Input_Username">
+                            <i class="fas fa-at"></i> Tên đăng nhập
+                        </label>
+                        <input asp-for="Input.Username" id="Input_Username"
+                               class="setup-input" placeholder="Ví dụ: poi.vinhhkhanh" autocomplete="username"
+                               pattern="[a-zA-Z0-9._-]+" title="Chỉ dùng chữ cái, số, dấu chấm, gạch ngang" />
+                        <span asp-validation-for="Input.Username" class="setup-error"></span>
+                        <div class="setup-hint">Chỉ dùng chữ cái (không dấu), số, dấu chấm (.), gạch ngang (-), gạch dưới (_)</div>
+                    </div>
+
+                    <div class="setup-field">
+                        <label class="setup-label" for="Input_Password">
+                            <i class="fas fa-lock"></i> Mật khẩu
+                        </label>
+                        <div class="setup-input-wrap">
+                            <input asp-for="Input.Password" id="Input_Password" type="password"
+                                   class="setup-input" placeholder="Tối thiểu 6 ký tự" autocomplete="new-password" />
+                            <button type="button" class="setup-eye-btn" onclick="togglePwd('Input_Password', this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Input.Password" class="setup-error"></span>
+                    </div>
+
+                    <div class="setup-field">
+                        <label class="setup-label" for="Input_ConfirmPassword">
+                            <i class="fas fa-lock-open"></i> Xác nhận mật khẩu
+                        </label>
+                        <div class="setup-input-wrap">
+                            <input asp-for="Input.ConfirmPassword" id="Input_ConfirmPassword" type="password"
+                                   class="setup-input" placeholder="Nhập lại mật khẩu" autocomplete="new-password" />
+                            <button type="button" class="setup-eye-btn" onclick="togglePwd('Input_ConfirmPassword', this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Input.ConfirmPassword" class="setup-error"></span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-reg-primary btn-setup" id="btn-setup" disabled>
+                    <i class="fas fa-rocket"></i> Hoàn tất – Vào trang quản lý
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        function togglePwd(inputId, btn) {
+            var input = document.getElementById(inputId);
+            var icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        (function() {
+            const form = document.getElementById('setup-form');
+            const submitBtn = document.getElementById('btn-setup');
+            const inputs = form.querySelectorAll('input:not([type="hidden"])');
+
+            function checkForm() {
+                let allFilled = true;
+                inputs.forEach(input => {
+                    if (!input.value.trim()) allFilled = false;
+                });
+                
+                // Also check if password matches
+                const pwd = document.getElementById('Input_Password').value;
+                const confirmPwd = document.getElementById('Input_ConfirmPassword').value;
+                if (pwd !== confirmPwd) allFilled = false;
+                if (pwd.length < 6) allFilled = false;
+
+                submitBtn.disabled = !allFilled;
+            }
+
+            inputs.forEach(input => {
+                input.addEventListener('input', checkForm);
+            });
+
+            form.addEventListener('submit', function(e) {
+                if (form.checkValidity()) {
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tạo tài khoản...';
+                    submitBtn.disabled = true;
+                }
+            });
+        })();
+    </script>
+
+</body>
+</html>

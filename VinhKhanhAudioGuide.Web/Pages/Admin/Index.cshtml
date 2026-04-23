@@ -73,16 +73,22 @@
                         <div class="summary-item"><span>POI có audio</span><strong>@Model.LocationsWithAudioCount / @Model.LocationCount</strong></div>
                         <div class="summary-item"><span>Yêu cầu chờ duyệt</span><strong>@Model.PendingRequestCount</strong></div>
                         <div class="summary-item"><span>Yêu cầu đang review</span><strong>@Model.InReviewRequestCount</strong></div>
-                        <div class="summary-item"><span>Audio TB / POI</span><strong>@Model.AverageAudioPerLocation</strong></div>
-                        <div class="summary-item"><span>POI chưa gán</span><strong>@Model.UnassignedLocationCount</strong></div>
+                        <div class="summary-item"><span>Gói Đang Active</span><strong>@Model.PackageStats.ActivePackages</strong></div>
+                        <div class="summary-item"><span>Doanh thu POI</span><strong>@Model.PackageStats.TotalRevenue.ToString("N0")</strong></div>
                     </div>
 
-                    <div class="metric-tile">
+                    <div class="metric-tile mb-3">
                         <div class="k">Tỷ lệ phân công POI</div>
                         <div class="v">@assignmentRate%</div>
                         <div class="progress mt-2" role="progressbar" aria-label="assignment">
                             <div class="progress-bar bg-success" style="width:@assignmentRate%"></div>
                         </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <a asp-page="/Admin/PaymentPackages/Index" class="btn btn-outline-primary btn-sm">
+                            <i class="fa-solid fa-credit-card me-1"></i> Quản lý gói & doanh thu
+                        </a>
                     </div>
                 </div>
             </div>

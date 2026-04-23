@@ -1,0 +1,38 @@
+sequenceDiagram
+    actor SysAdmin
+    participant Page as Admin/PaymentPackages
+    participant Svc as PaymentPackageService
+    participant DB as SQL Server
+
+    SysAdmin->>Page: Mo trang quan ly goi
+    Page->>Svc: GetDashboardStatsAsync()
+    Svc->>DB: Query PaymentPackages + UserSubscriptions (GroupBy)
+    DB-->>Svc: packages + subscription stats
+    Svc-->>Page: PackageDashboardStatsDto
+    Note over Page: TotalPackages, ActiveSubs, Revenue, MostPopular
+
+    SysAdmin->>Page: Tao goi moi
+    Page->>Svc: CreateAsync(PackageUpsertDto)
+    Svc->>DB: Add PaymentPackage
+    DB-->>Svc: entity
+    Svc-->>Page: created
+
+    SysAdmin->>Page: Cap nhat goi
+    Page->>Svc: UpdateAsync(dto)
+    Svc->>DB: Update Name, Price, Duration, TargetType
+    Svc-->>Page: updated
+
+    SysAdmin->>Page: Toggle active/inactive
+    Page->>Svc: ToggleActiveAsync(id)
+    Svc->>DB: entity.IsActive = !IsActive
+    Svc-->>Page: true
+
+    SysAdmin->>Page: Xoa goi
+    Page->>Svc: DeleteAsync(id)
+    Svc->>DB: Check Subscriptions (Active/Pending)
+    alt Co subscription dang active
+        Svc-->>Page: false, khong the xoa
+    else Khong co
+        Svc->>DB: Remove PaymentPackage
+        Svc-->>Page: true
+    end

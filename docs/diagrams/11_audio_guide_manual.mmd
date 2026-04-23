@@ -1,0 +1,37 @@
+sequenceDiagram
+    actor User
+    participant Detail as LocationDetailPage
+    participant PlayerVM as AudioPlayerViewModel
+    participant AudioSvc as AudioService
+    participant Plugin as Plugin.Maui.Audio
+    participant CDN as Cloudinary CDN
+
+    User->>Detail: Chon location va xem chi tiet
+    User->>Detail: Nhan Play audio guide
+    Detail->>PlayerVM: Navigate to AudioPlayerPage
+
+    PlayerVM->>AudioSvc: PlayAsync(cloudinaryUrl, locationId, guideId)
+    Note over AudioSvc: Cooldown check (2.5s)
+
+    AudioSvc->>AudioSvc: SetState(Loading)
+    AudioSvc->>AudioSvc: CleanupPlayer() (dispose cu)
+    AudioSvc->>CDN: HTTP GET audio (f_mp3 URL)
+    CDN-->>AudioSvc: MP3 byte stream
+    AudioSvc->>AudioSvc: CopyTo MemoryStream
+    AudioSvc->>Plugin: CreatePlayer(stream)
+    AudioSvc->>Plugin: player.Play()
+    AudioSvc->>AudioSvc: StartPositionTimer(150ms)
+    AudioSvc-->>PlayerVM: StateChanged(Playing)
+
+    loop Timer 150ms
+        AudioSvc->>Plugin: player.CurrentPosition
+        AudioSvc-->>PlayerVM: PositionChanged(pos, duration)
+        PlayerVM->>PlayerVM: Sync transcript segment
+    end
+
+    User->>PlayerVM: Pause / Resume / Seek
+    PlayerVM->>AudioSvc: PauseAsync() / ResumeAsync() / SeekAsync()
+
+    Plugin-->>AudioSvc: PlaybackEnded
+    AudioSvc-->>PlayerVM: StateChanged(Stopped)
+    PlayerVM->>PlayerVM: AddListeningHistoryAsync()

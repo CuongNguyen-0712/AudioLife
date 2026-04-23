@@ -1645,28 +1645,145 @@ stateDiagram-v2
           </div>
 
           <div class="dc">
-            <div class="dt">Nghe audio</div>
-            <img src="/image.png" alt="" />
+            <div class="dt">
+              1. Khởi động App & Kiểm tra Session (Offline-first)
+            </div>
+            <picture>
+              <source
+                srcset="./charts/sequence/seq-01-startup-session.svg"
+                type="image/svg+xml"
+              />
+              <img
+                src="./charts/sequence/seq-01-startup-session.png"
+                alt="Sequence diagram: Khởi động App và kiểm tra session"
+              />
+            </picture>
           </div>
 
           <div class="dc">
-            <div class="dt">Định vị vị trí người dùng + quét vùng nhận POI</div>
-            <img src="/chart.png" alt="" />
+            <div class="dt">
+              2. QR Code Scan -> Payment -> Session Start (Mobile)
+            </div>
+            <picture>
+              <source
+                srcset="./charts/sequence/seq-02-qr-payment-session.svg"
+                type="image/svg+xml"
+              />
+              <img
+                src="./charts/sequence/seq-02-qr-payment-session.png"
+                alt="Sequence diagram: QR code scan to payment and session start"
+              />
+            </picture>
           </div>
 
           <div class="dc">
-            <div class="dt">Chức năng xuất audio với TTS + upload</div>
-            <img src="/chart (1).png" alt="" />
+            <div class="dt">3. Heartbeat Loop (Mobile)</div>
+            <picture>
+              <source
+                srcset="./charts/sequence/seq-03-heartbeat-loop.svg"
+                type="image/svg+xml"
+              />
+              <img
+                src="./charts/sequence/seq-03-heartbeat-loop.png"
+                alt="Sequence diagram: Heartbeat loop"
+              />
+            </picture>
           </div>
 
           <div class="dc">
-            <div class="dt">Chức năng chỉnh sửa + duyệt POI</div>
-            <img src="/chart (2).png" alt="" />
+            <div class="dt">
+              4. Định vị vị trí người dùng + quét vùng nhận POI
+            </div>
+            <img
+              src="./charts/sequence/seq-04-geolocation-scan-poi.png"
+              alt="Sequence diagram: Định vị và quét POI"
+            />
           </div>
 
           <div class="dc">
-            <div class="dt">Chức năng đăng nhập + phân quyền</div>
-            <img src="/chart (3).png" alt="" />
+            <div class="dt">5. GPS Proximity -> Auto-Play (Mobile)</div>
+            <picture>
+              <source
+                srcset="./charts/sequence/seq-05-gps-autoplay.svg"
+                type="image/svg+xml"
+              />
+              <img
+                src="./charts/sequence/seq-05-gps-autoplay.png"
+                alt="Sequence diagram: GPS proximity auto-play"
+              />
+            </picture>
+          </div>
+
+          <div class="dc">
+            <div class="dt">6. Phát Audio Guide (Manual)</div>
+            <picture>
+              <source
+                srcset="./charts/sequence/seq-06-manual-audio-guide.svg"
+                type="image/svg+xml"
+              />
+              <img
+                src="./charts/sequence/seq-06-manual-audio-guide.png"
+                alt="Sequence diagram: Phat Audio Guide manual"
+              />
+            </picture>
+          </div>
+
+          <div class="dc">
+            <div class="dt">7. Chức năng đăng nhập + phân quyền</div>
+            <img
+              src="./charts/sequence/seq-07-web-login-rbac.png"
+              alt="Sequence diagram: Đăng nhập và phân quyền"
+            />
+          </div>
+
+          <div class="dc">
+            <div class="dt">8. POI Admin Registration (Web)</div>
+            <picture>
+              <source
+                srcset="./charts/sequence/seq-08-poi-admin-registration.svg"
+                type="image/svg+xml"
+              />
+              <img
+                src="./charts/sequence/seq-08-poi-admin-registration.png"
+                alt="Sequence diagram: POI Admin Registration"
+              />
+            </picture>
+          </div>
+
+          <div class="dc">
+            <div class="dt">9. Payment Package Management (Admin CRUD)</div>
+            <picture>
+              <source
+                srcset="./charts/sequence/seq-09-payment-package-management.svg"
+                type="image/svg+xml"
+              />
+              <img
+                src="./charts/sequence/seq-09-payment-package-management.png"
+                alt="Sequence diagram: Payment package management"
+              />
+            </picture>
+          </div>
+
+          <div class="dc">
+            <div class="dt">10. Chức năng chỉnh sửa + duyệt POI</div>
+            <img
+              src="./charts/sequence/seq-10-poi-edit-approve.png"
+              alt="Sequence diagram: Chỉnh sửa và duyệt POI"
+            />
+          </div>
+
+          <div class="dc">
+            <div class="dt">11. TTS Generation (Edge + Google Fallback)</div>
+            <picture>
+              <source
+                srcset="./charts/sequence/seq-11-tts-fallback.svg"
+                type="image/svg+xml"
+              />
+              <img
+                src="./charts/sequence/seq-11-tts-fallback.png"
+                alt="Sequence diagram: TTS generation with fallback"
+              />
+            </picture>
           </div>
         </section>
 

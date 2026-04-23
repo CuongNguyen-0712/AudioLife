@@ -41,10 +41,6 @@ public static class SampleData
                 {
                     new() { Id = "ag_001_1", Title = "Giới thiệu quán", Description = "Thông tin và câu chuyện bún mắm", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934751/gioithieu_bunmam_l8un47.wav", Duration = 3, LocationId = "loc_001", Language = "vi" },
                     new() { Id = "ag_001_2", Title = "Khám phá ẩm thực", Description = "Hương vị bún mắm", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934753/amthuc_bunmam_wen2s0.wav", Duration = 4, LocationId = "loc_001", Language = "vi" },
-                    new() { Id = "ag_001_3", Title = "Introduction", Description = "About Bun Mam Vinh Khanh", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329636/audio/audio/ag_001_3_en.mp3", Duration = 4, LocationId = "loc_001", Language = "en", GeneratedFromTts = true, TtsSourceText = "Welcome to Bun Mam Vinh Khanh, a beloved noodle shop in District 4, Ho Chi Minh City. Bun Mam is a rich and flavorful fermented fish noodle soup originating from the Mekong Delta. The broth is deeply aromatic, topped with succulent shrimp, roast pork, and duck meatballs. This is a must-try dish for anyone exploring Vietnamese street food culture." },
-                    new() { Id = "ag_001_4", Title = "Food Discovery", Description = "Taste of Bun Mam", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329640/audio/audio/ag_001_4_en.mp3", Duration = 4, LocationId = "loc_001", Language = "en", GeneratedFromTts = true, TtsSourceText = "The secret to great Bun Mam lies in its broth — a perfectly balanced blend of fermented fish sauce, lemongrass, and fresh herbs. Each bowl comes with a generous variety of toppings including grilled pork, shrimp, eggplant, and fresh vegetables. The combination creates a symphony of sweet, savory, and umami flavors that defines southern Vietnamese cuisine." },
-                    new() { Id = "ag_001_5", Title = "介紹", Description = "關於 Vĩnh Khánh 的 Bún Mắm", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329679/audio/audio/ag_001_5_zh.mp3", Duration = 4, LocationId = "loc_001", Language = "zh", GeneratedFromTts = true, TtsSourceText = "歡迎來到 Vĩnh Khánh 的 Bún Mắm 名店。這道來自湄公河三角洲的湯麵以發酵魚露熬成濃郁湯頭，香氣豐富，搭配鮮蝦、燒肉與鴨肉丸，是探索越南街頭美食時一定要品嚐的一碗。" },
-                    new() { Id = "ag_001_6", Title = "美食探索", Description = "Bún Mắm 的風味", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329682/audio/audio/ag_001_6_zh.mp3", Duration = 4, LocationId = "loc_001", Language = "zh", GeneratedFromTts = true, TtsSourceText = "Bún Mắm 的靈魂在於湯底，魚露、香茅與香草交織出層次鮮明的味 道。每一碗都能吃到豐富配料，包括燒肉、鮮蝦、茄子與新鮮蔬菜，甜、鹹、鮮與旨味在口中完美融合。" }
                 }
             },
             new()
@@ -64,10 +60,6 @@ public static class SampleData
                 {
                     new() { Id = "ag_002_1", Title = "Giới thiệu quán", Description = "Thông tin bánh xèo", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934750/gioithieu_banhxeo_l94n9t.wav", Duration = 3, LocationId = "loc_002", Language = "vi" },
                     new() { Id = "ag_002_2", Title = "Khám phá ẩm thực", Description = "Hương vị bánh xèo", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934750/amthuc_banhxeo_vld0dx.wav", Duration = 4, LocationId = "loc_002", Language = "vi" },
-                    new() { Id = "ag_002_3", Title = "Introduction", Description = "About Banh Xeo", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329644/audio/audio/ag_002_3_en.mp3", Duration = 4, LocationId = "loc_002", Language = "en", GeneratedFromTts = true, TtsSourceText = "Discover the crispy delight of Banh Xeo, a traditional Vietnamese crepe from the Mekong Delta. Cooked in a cast iron pan, this golden crepe is filled with shrimp, pork, bean sprouts, and served with an abundance of fresh herbs and lettuce for wrapping." },
-                    new() { Id = "ag_002_4", Title = "Food Discovery", Description = "Taste of Banh Xeo", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329648/audio/audio/ag_002_4_en.mp3", Duration = 4, LocationId = "loc_002", Language = "en", GeneratedFromTts = true, TtsSourceText = "The name Banh Xeo comes from the sizzling sound the batter makes when it hits the hot pan. The perfect Banh Xeo is ultra-crispy on the outside with a savory filling inside. Dip it in the sweet and tangy fish sauce, wrap it with fresh herbs, and enjoy an explosion of textures and flavors." },
-                    new() { Id = "ag_002_5", Title = "介紹", Description = "關於 Bánh Xèo", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329685/audio/audio/ag_002_5_zh.mp3", Duration = 4, LocationId = "loc_002", Language = "zh", GeneratedFromTts = true, TtsSourceText = "來認識酥脆可口的 Bánh Xèo，這是來自湄公河三角洲的越南經典煎餅。金黃的餅皮在鐵鍋中煎得滋滋作響，內餡有蝦、豬肉與豆芽，再搭配大量新鮮香草和生菜一起包著吃。" },
-                    new() { Id = "ag_002_6", Title = "美食探索", Description = "Bánh Xèo 的滋味", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329688/audio/audio/ag_002_6_zh.mp3", Duration = 4, LocationId = "loc_002", Language = "zh", GeneratedFromTts = true, TtsSourceText = "Bánh Xèo 這個名字來自麵糊落入熱鍋時發出的吱吱聲。完美的 Bánh Xèo 外皮極致酥脆，內餡鹹香飽滿，沾上酸甜魚露，再用香草包裹，就是層次豐富又令人上癮的一口。" }
                 }
             },
             // ===== ĂN VẶT (2) =====
@@ -88,8 +80,6 @@ public static class SampleData
                 {
                     new() { Id = "ag_003_1", Title = "Giới thiệu quán", Description = "Thông tin bánh tráng", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934750/gioithieu_banhtrang_ujedfy.wav", Duration = 3, LocationId = "loc_003", Language = "vi" },
                     new() { Id = "ag_003_2", Title = "Khám phá ẩm thực", Description = "Thưởng thức bánh tráng", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934748/amthuc_banhtrang_qglacj.wav", Duration = 4, LocationId = "loc_003", Language = "vi" },
-                    new() { Id = "ag_003_3", Title = "Introduction", Description = "About Banh Trang Tron", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329651/audio/audio/ag_003_3_en.mp3", Duration = 3, LocationId = "loc_003", Language = "en", GeneratedFromTts = true, TtsSourceText = "Banh Trang Tron is one of Vietnam's most popular street snacks. It's a mix of shredded rice paper tossed with dried beef, quail eggs, green mango, herbs, and a spicy-sweet-sour dressing. Simple yet incredibly addictive, this snack captures the essence of Vietnamese street food." },
-                    new() { Id = "ag_003_4", Title = "介紹", Description = "關於 Bánh Tráng Trộn", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329691/audio/audio/ag_003_4_zh.mp3", Duration = 3, LocationId = "loc_003", Language = "zh", GeneratedFromTts = true, TtsSourceText = "Bánh Tráng Trộn 是越南最受歡迎的街頭零食之一。它把切絲米紙 與牛肉乾、鵪鶉蛋、青芒果、香草和酸甜微辣的醬汁拌在一起，簡單卻極度令人上癮，充分展現越南街頭小吃的魅力。" }
                 }
             },
             new()
@@ -109,8 +99,6 @@ public static class SampleData
                 {
                     new() { Id = "ag_004_1", Title = "Giới thiệu quán", Description = "Câu chuyện xiên que", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934748/gioithieu_xienque_miulom.wav", Duration = 3, LocationId = "loc_004", Language = "vi" },
                     new() { Id = "ag_004_2", Title = "Khám phá ẩm thực", Description = "Hương vị xiên nướng", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934746/amthuc_xienque_z8vgny.wav", Duration = 4, LocationId = "loc_004", Language = "vi" },
-                    new() { Id = "ag_004_3", Title = "Introduction", Description = "About Grilled Skewers", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329655/audio/audio/ag_004_3_en.mp3", Duration = 3, LocationId = "loc_004", Language = "en", GeneratedFromTts = true, TtsSourceText = "Grilled skewers are a beloved street food in Vinh Khanh. From marinated meats and sausages to okra and mushrooms, everything is charcoal-grilled to perfection. The smoky aroma and vibrant flavors make this a favorite among locals and visitors alike." },
-                    new() { Id = "ag_004_4", Title = "介紹", Description = "關於烤串", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329694/audio/audio/ag_004_4_zh.mp3", Duration = 3, LocationId = "loc_004", Language = "zh", GeneratedFromTts = true, TtsSourceText = "Vĩnh Khánh 的烤串是當地非常受歡迎的街頭美食。從醃製肉串、香腸到秋葵與蘑菇，所有食材都在炭火上烤得恰到好處，煙燻香氣與鮮明風味讓人一試難忘。" }
                 }
             },
             // ===== ĂN ĐÊM (3) =====
@@ -131,8 +119,6 @@ public static class SampleData
                 {
                     new() { Id = "ag_005_1", Title = "Giới thiệu quán", Description = "Thông tin cháo sườn", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934744/gioithieu_chaosuon_hxsvpg.wav", Duration = 3, LocationId = "loc_005", Language = "vi" },
                     new() { Id = "ag_005_2", Title = "Khám phá ẩm thực", Description = "Hương vị cháo sườn", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934747/amthuc_chaosuon_ijo2ja.wav", Duration = 4, LocationId = "loc_005", Language = "vi" },
-                    new() { Id = "ag_005_3", Title = "Introduction", Description = "About Pork Rib Porridge", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329659/audio/audio/ag_005_3_en.mp3", Duration = 3, LocationId = "loc_005", Language = "en", GeneratedFromTts = true, TtsSourceText = "Late-night pork rib porridge is the ultimate comfort food on Vinh Khanh street. The rice porridge is slow-cooked to silky perfection, topped with tender pork ribs, crispy fried dough sticks, and a generous sprinkle of pepper. It's the perfect warm bowl for a cool Saigon evening." },
-                    new() { Id = "ag_005_4", Title = "介紹", Description = "關於豬肋粥", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329697/audio/audio/ag_005_4_zh.mp3", Duration = 3, LocationId = "loc_005", Language = "zh", GeneratedFromTts = true, TtsSourceText = "深夜的豬肋粥是 Vĩnh Khánh 最療癒的一碗。米粥慢火熬煮至細滑 綿密，再鋪上軟嫩豬肋骨、酥脆油條與胡椒，溫熱又舒服，很適合涼爽的西貢夜晚。" }
                 }
             },
             new()
@@ -152,8 +138,6 @@ public static class SampleData
                 {
                     new() { Id = "ag_006_1", Title = "Giới thiệu quán", Description = "Câu chuyện quán phở", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934748/gioithieu_quanpho_qvkgit.wav", Duration = 3, LocationId = "loc_006", Language = "vi" },
                     new() { Id = "ag_006_2", Title = "Khám phá ẩm thực", Description = "Hương vị phở đêm", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934745/amthuc_pho_f8ou5l.wav", Duration = 4, LocationId = "loc_006", Language = "vi" },
-                    new() { Id = "ag_006_3", Title = "Introduction", Description = "About Late-Night Pho", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329663/audio/audio/ag_006_3_en.mp3", Duration = 3, LocationId = "loc_006", Language = "en", GeneratedFromTts = true, TtsSourceText = "Pho is Vietnam's most iconic dish, and enjoying it late at night in Vinh Khanh is a special experience. The clear beef bone broth is simmered for hours, creating a deeply flavorful and aromatic soup. Topped with sliced beef, fresh herbs, and a squeeze of lime — this is Saigon street food at its finest." },
-                    new() { Id = "ag_006_4", Title = "介紹", Description = "關於深夜河粉", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329700/audio/audio/ag_006_4_zh.mp3", Duration = 3, LocationId = "loc_006", Language = "zh", GeneratedFromTts = true, TtsSourceText = "河粉是越南最具代表性的料理之一，而在 Vĩnh Khánh 的夜晚品嚐 更是一種特別體驗。清澈的牛骨湯熬煮數小時，味道濃厚又帶香氣，再加上牛肉片、新鮮香草與一點檸檬，就是最道地的西貢街頭滋味。" }
                 }
             },
             // ===== HẢI SẢN (4) =====
@@ -174,8 +158,6 @@ public static class SampleData
                 {
                     new() { Id = "ag_007_1", Title = "Giới thiệu quán", Description = "Khám phá quán ốc", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934745/amthuc_oc_vqm14u.wav", Duration = 3, LocationId = "loc_007", Language = "vi" },
                     new() { Id = "ag_007_2", Title = "Khám phá ẩm thực", Description = "Hương vị ốc xào", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934745/amthuc_oc_vqm14u.wav", Duration = 4, LocationId = "loc_007", Language = "vi" },
-                    new() { Id = "ag_007_3", Title = "Introduction", Description = "About Garlic Butter Snails", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329666/audio/audio/ag_007_3_en.mp3", Duration = 3, LocationId = "loc_007", Language = "en", GeneratedFromTts = true, TtsSourceText = "Vinh Khanh street is famous for its seafood, and garlic butter snails are a crowd favorite. Sea snails are stir-fried with fragrant garlic and rich butter, creating an irresistible dish. Pair it with a crusty baguette to soak up the flavorful sauce — pure indulgence on a Saigon night." },
-                    new() { Id = "ag_007_4", Title = "介紹", Description = "關於蒜香奶油螺", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329703/audio/audio/ag_007_4_zh.mp3", Duration = 3, LocationId = "loc_007", Language = "zh", GeneratedFromTts = true, TtsSourceText = "Vĩnh Khánh 的海鮮很有名，而蒜香奶油螺更是人氣招牌。海螺與蒜末、奶油一起快炒，香氣十足，配上一塊法棍沾醬更是一絕，讓人感受到滿滿的西貢夜生活魅力。" }
                 }
             },
             new()
@@ -195,8 +177,6 @@ public static class SampleData
                 {
                     new() { Id = "ag_008_1", Title = "Giới thiệu quán", Description = "Hải sản tôm nướng", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934744/gioithieu_tom_bvmu5a.wav", Duration = 3, LocationId = "loc_008", Language = "vi" },
                     new() { Id = "ag_008_2", Title = "Khám phá ẩm thực", Description = "Món tôm cay nồng", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934744/amthuc_tom_vwvgix.wav", Duration = 4, LocationId = "loc_008", Language = "vi" },
-                    new() { Id = "ag_008_3", Title = "Introduction", Description = "About Salt & Chili Grilled Prawns", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329669/audio/audio/ag_008_3_en.mp3", Duration = 3, LocationId = "loc_008", Language = "en", GeneratedFromTts = true, TtsSourceText = "Fresh tiger prawns marinated with salt and chili, grilled over charcoal until the shells are beautifully charred and the meat is perfectly juicy. This street seafood dish is a highlight of Vinh Khanh, combining simple seasoning with top-quality ingredients for an unforgettable taste." },
-                    new() { Id = "ag_008_4", Title = "介紹", Description = "關於鹽辣烤蝦", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329706/audio/audio/ag_008_4_zh.mp3", Duration = 3, LocationId = "loc_008", Language = "zh", GeneratedFromTts = true, TtsSourceText = "新鮮虎蝦以鹽和辣椒醃製後，用炭火烤到蝦殼微焦、蝦肉鮮嫩多汁 。這道街頭海鮮料理是 Vĩnh Khánh 的亮點之一，調味簡單卻能把食材鮮味發揮到極致。" }
                 }
             },
             // ===== ĐỒ UỐNG (5) =====
@@ -217,8 +197,6 @@ public static class SampleData
                 {
                     new() { Id = "ag_009_1", Title = "Giới thiệu quán", Description = "Tiệm trà sữa", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934747/gioithieu_trasua_aj0syw.wav", Duration = 3, LocationId = "loc_009", Language = "vi" },
                     new() { Id = "ag_009_2", Title = "Khám phá ẩm thực", Description = "Đồ uống trà sữa", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934745/douong_trasua_jasd5g.wav", Duration = 4, LocationId = "loc_009", Language = "vi" },
-                    new() { Id = "ag_009_3", Title = "Introduction", Description = "About Bubble Tea", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329673/audio/audio/ag_009_3_en.mp3", Duration = 3, LocationId = "loc_009", Language = "en", GeneratedFromTts = true, TtsSourceText = "Bubble tea has become a cultural phenomenon in Vietnam, and this shop in Vinh Khanh offers a wide variety of flavors and toppings. From classic brown sugar boba to cheese foam tea, there's something for every palate. A refreshing treat after exploring the vibrant street food scene." },
-                    new() { Id = "ag_009_4", Title = "介紹", Description = "關於珍珠奶茶", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329798/audio/audio/ag_009_4_zh.mp3", Duration = 3, LocationId = "loc_009", Language = "zh", GeneratedFromTts = true, TtsSourceText = "珍珠奶茶在越南已成為很受歡迎的飲品文化，而 Vĩnh Khánh 的這 家店提供多種口味與配料。從經典黑糖珍珠到奶蓋茶，無論喜歡哪一種風格，都能在這裡找到適合自己的那一杯。" }
                 }
             },
             new()
@@ -238,12 +216,11 @@ public static class SampleData
                 {
                     new() { Id = "ag_010_1", Title = "Giới thiệu quán", Description = "Góc cà phê", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934743/gioithieu_caphep_cyhjy6.wav", Duration = 3, LocationId = "loc_010", Language = "vi" },
                     new() { Id = "ag_010_2", Title = "Khám phá ẩm thực", Description = "Thưởng thức cà phê", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1773934743/douong_caphe_edzvvl.wav", Duration = 4, LocationId = "loc_010", Language = "vi" },
-                    new() { Id = "ag_010_3", Title = "Introduction", Description = "About Vietnamese Iced Coffee", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329676/audio/audio/ag_010_3_en.mp3", Duration = 3, LocationId = "loc_010", Language = "en", GeneratedFromTts = true, TtsSourceText = "Vietnamese iced coffee, or Ca Phe Sua Da, is an essential part of Saigon's daily life. Strong dark roast coffee is brewed through a traditional phin filter, dripping slowly over a layer of sweet condensed milk. Poured over ice, it's the perfect balance of bold, bitter, and sweet — a true taste of Vietnam." },
-                    new() { Id = "ag_010_4", Title = "介紹", Description = "關於越南冰咖啡", AudioUrl = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776329801/audio/audio/ag_010_4_zh.mp3", Duration = 3, LocationId = "loc_010", Language = "zh", GeneratedFromTts = true, TtsSourceText = "越南冰咖啡，也就是 Cà Phê Sữa Đá，是西貢日常生活中不可或缺 的一部分。深焙咖啡透過傳統濾壺慢慢滴落在煉乳上，再加入冰塊，形成濃郁、微苦又帶甜味的完美平衡。" }
                 }
             }
         };
 
+        AddMultilingualAudioGuides(locations);
         NormalizeAudioGuideSeedData(locations);
         AlignLocationsWithMobileSample(locations);
         return locations;
@@ -591,6 +568,116 @@ public static class SampleData
         return string.IsNullOrWhiteSpace(baseName) ? null : $"audio/{baseName}";
     }
 
+    private static void AddMultilingualAudioGuides(IEnumerable<Location> locations)
+    {
+        var urlByGuideAndLanguage = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["ag_001_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939858/audio/seed_ag_001_1_en_293310f4a816486bb50b0f411d404d0e.mp3",
+            ["ag_001_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939860/audio/seed_ag_001_1_zh_de51bed61a884344a278563601b71fcb.mp3",
+            ["ag_001_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939863/audio/seed_ag_001_2_en_4de6f22d2df7472aa9b9a06dc6fb429d.mp3",
+            ["ag_001_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939865/audio/seed_ag_001_2_zh_3bd5f726732a44ac988b39ff1a398e43.mp3",
+            ["ag_002_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939868/audio/seed_ag_002_1_en_f7993908b82f4103906dd54f5b58ca4d.mp3",
+            ["ag_002_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939871/audio/seed_ag_002_1_zh_d4d103171ed547b894fc21fc65e76026.mp3",
+            ["ag_002_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939873/audio/seed_ag_002_2_en_288706f117ab4d8a931bc2dd19871200.mp3",
+            ["ag_002_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939876/audio/seed_ag_002_2_zh_674e6cad8aa1445bb93ebef857e23708.mp3",
+            ["ag_003_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939879/audio/seed_ag_003_1_en_6a411c26f5ec453f8c326c3382347350.mp3",
+            ["ag_003_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939881/audio/seed_ag_003_1_zh_650e159a7de14b38b13ce9f9978247a4.mp3",
+            ["ag_003_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939883/audio/seed_ag_003_2_en_0e0b988be835495dbd94d8dca94e6418.mp3",
+            ["ag_003_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939885/audio/seed_ag_003_2_zh_8fa4cacf95a64b20939b67a58158016f.mp3",
+            ["ag_004_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939887/audio/seed_ag_004_1_en_2e55168b80374ba49e6c770047f64f99.mp3",
+            ["ag_004_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939889/audio/seed_ag_004_1_zh_93b21a86c01e46989ce2ea22d6ce2cfe.mp3",
+            ["ag_004_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939891/audio/seed_ag_004_2_en_a812530bfdd04e09832b05d24013cdd1.mp3",
+            ["ag_004_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939893/audio/seed_ag_004_2_zh_3a2666309121466ba284c9f04d65fb4a.mp3",
+            ["ag_005_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939896/audio/seed_ag_005_1_en_634b6c9f2ce342e69ade959b1a6ff797.mp3",
+            ["ag_005_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939898/audio/seed_ag_005_1_zh_0412003617a846efbec0c882b1025c08.mp3",
+            ["ag_005_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939901/audio/seed_ag_005_2_en_4b34771321c54c3ab7a3ffa302e422ae.mp3",
+            ["ag_005_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939904/audio/seed_ag_005_2_zh_63f6b5ffedd14a87bd712aab51dfd666.mp3",
+            ["ag_006_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939906/audio/seed_ag_006_1_en_e05930d5ddf1484ab92506d8414630d7.mp3",
+            ["ag_006_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939909/audio/seed_ag_006_1_zh_c40b3252e54747d88ff27abceff34012.mp3",
+            ["ag_006_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939911/audio/seed_ag_006_2_en_b23ad2821a77459694a4f4988ea3f062.mp3",
+            ["ag_006_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939914/audio/seed_ag_006_2_zh_6f69344ddc9948469bfc51f22e3ec2f3.mp3",
+            ["ag_007_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939916/audio/seed_ag_007_1_en_7871d27def8f41a29f7995164137a321.mp3",
+            ["ag_007_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939918/audio/seed_ag_007_1_zh_c350154adfb849a9ac7785ba0d764a40.mp3",
+            ["ag_007_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939920/audio/seed_ag_007_2_en_e5280cacde824c209d41603340df5c5e.mp3",
+            ["ag_007_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939922/audio/seed_ag_007_2_zh_392ac72e10d94a48b20a2091c22205bb.mp3",
+            ["ag_008_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939924/audio/seed_ag_008_1_en_99b62b8bde984e1c99132812d22a9ddb.mp3",
+            ["ag_008_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939926/audio/seed_ag_008_1_zh_1d018daeec654ad19ce768b25a402690.mp3",
+            ["ag_008_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939928/audio/seed_ag_008_2_en_2ac9e11c65f046dbab19df2ef3ced616.mp3",
+            ["ag_008_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939930/audio/seed_ag_008_2_zh_f910f7288ae344b2be54d25b59eaf7a1.mp3",
+            ["ag_009_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939932/audio/seed_ag_009_1_en_8959accf9ac84caea8be55d477a8e66f.mp3",
+            ["ag_009_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939934/audio/seed_ag_009_1_zh_3c5d28c81bf5411a845c92cc5e4b9819.mp3",
+            ["ag_009_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939937/audio/seed_ag_009_2_en_cc54a7acd9f84f50998faf98929c4fa6.mp3",
+            ["ag_009_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939939/audio/seed_ag_009_2_zh_b8ba5c4cfda9466b88ca2e7ccb3252d4.mp3",
+            ["ag_010_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939941/audio/seed_ag_010_1_en_10f9d40ceb13472d9843c058646fc4b3.mp3",
+            ["ag_010_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939944/audio/seed_ag_010_1_zh_881b401a72b1438a9abeca0c1caff93c.mp3",
+            ["ag_010_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939946/audio/seed_ag_010_2_en_e3bce913740d4a8b86c3a588ea7b37ca.mp3",
+            ["ag_010_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939948/audio/seed_ag_010_2_zh_55a9aabfb0af434fb116d739b8693de5.mp3"
+        };
+
+        foreach (var location in locations)
+        {
+            var vietnameseGuides = location.AudioGuides
+                .Where(guide => string.Equals(guide.Language, "vi", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(guide => guide.Id)
+                .ToList();
+
+            foreach (var baseGuide in vietnameseGuides)
+            {
+                foreach (var language in new[] { "en", "zh" })
+                {
+                    var localizedId = $"{baseGuide.Id}_{language}";
+                    if (location.AudioGuides.Any(guide => string.Equals(guide.Id, localizedId, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        continue;
+                    }
+
+                    if (!urlByGuideAndLanguage.TryGetValue(localizedId, out var audioUrl))
+                    {
+                        continue;
+                    }
+
+                    var isIntro = baseGuide.Title.Contains("Giới thiệu", StringComparison.OrdinalIgnoreCase);
+                    var transcript = language == "en"
+                        ? BuildEnglishTranscript(location.Name, baseGuide.Title, baseGuide.Description, isIntro)
+                        : BuildChineseTranscript(location.Name, baseGuide.Title, baseGuide.Description, isIntro);
+
+                    location.AudioGuides.Add(new AudioGuide
+                    {
+                        Id = localizedId,
+                        Title = language == "en"
+                            ? (isIntro ? "Restaurant Introduction" : "Food Exploration")
+                            : (isIntro ? "店铺介绍" : "美食探索"),
+                        Description = language == "en"
+                            ? (isIntro ? "Overview and story of this POI" : "Flavor highlights and tasting guidance")
+                            : (isIntro ? "该兴趣点的店铺与背景介绍" : "风味亮点与品尝建议"),
+                        AudioUrl = audioUrl,
+                        CloudinaryAudioUrl = audioUrl,
+                        CloudinaryPublicId = ToCloudinaryPublicId(audioUrl),
+                        Duration = Math.Max(baseGuide.Duration, 2),
+                        LocationId = location.Id,
+                        Language = language,
+                        GeneratedFromTts = true,
+                        TtsSourceText = transcript,
+                        TranscriptText = transcript,
+                        ScriptSegments = new List<AudioScriptSegment>()
+                    });
+                }
+            }
+        }
+    }
+
+    private static string BuildEnglishTranscript(string locationName, string title, string description, bool isIntro)
+    {
+        var topic = isIntro ? "restaurant introduction" : "food exploration";
+        return $"Welcome to {locationName}. This section is about {topic}. {description} At this stop, we focus on ingredients, cooking rhythm, and serving style that shape the final flavor. Start by noticing the aroma, then texture, then aftertaste. If this is your first visit, choose a medium portion and pair it with herbs or a light drink to balance richness. Take your time between bites and compare how each topping changes sweetness, saltiness, and depth. Local street food is best enjoyed slowly, with attention to small details from broth to garnish. Thank you for listening, and continue to the next point of interest for another culinary story.";
+    }
+
+    private static string BuildChineseTranscript(string locationName, string title, string description, bool isIntro)
+    {
+        var topic = isIntro ? "店铺介绍" : "美食探索";
+        return $"欢迎来到{locationName}。本段主题是{topic}。{description} 在这个站点，我们会从食材选择、烹饪火候与上桌方式三个角度，理解这道街头美食的魅力。建议你先闻香气，再感受口感，最后体会回味层次。若是第一次来，可以先点中等分量，并搭配清爽饮品或新鲜香草，让味道更平衡。慢慢品尝时，留意每种配料如何改变甜、咸、鲜与香的比例。真正的在地美食体验，不只在一口满足，也在细节观察。感谢收听，下一站我们继续探索更多本地风味故事。";
+    }
+
     public sealed class ListeningHistorySeed
     {
         public string Id { get; set; } = string.Empty;
@@ -613,6 +700,7 @@ public static class SampleData
     {
         return new List<PaymentPackage>
         {
+            // --- User Packages ---
             new()
             {
                 Id = "daily",
@@ -621,6 +709,7 @@ public static class SampleData
                 Price = 10000m,
                 Currency = "VND",
                 DurationDays = 1,
+                TargetType = "User",
                 IsActive = true,
                 CreatedAtUtc = SeedBaseUtc
             },
@@ -632,10 +721,62 @@ public static class SampleData
                 Price = 29000m,
                 Currency = "VND",
                 DurationDays = 90,
+                TargetType = "User",
                 IsActive = true,
                 CreatedAtUtc = SeedBaseUtc.AddMinutes(5)
+            },
+
+            // --- Admin POI Packages ---
+            new()
+            {
+                Id = "starter",
+                Name = "Gói Khởi Động",
+                Description = "Phù hợp cho quán/cửa hàng mới muốn trải nghiệm hệ thống. Quản lý tối đa 2 điểm POI, upload nội dung âm thanh cơ bản và xem thống kê lượt nghe hàng tuần.",
+                Price = 99_000m,
+                Currency = "VND",
+                DurationDays = 30,
+                TargetType = "Admin",
+                IsActive = true,
+                CreatedAtUtc = SeedBaseUtc.AddMinutes(10)
+            },
+            new()
+            {
+                Id = "standard",
+                Name = "Gói Tiêu Chuẩn",
+                Description = "Dành cho đơn vị kinh doanh ổn định. Quản lý tối đa 5 điểm POI, hỗ trợ đa ngôn ngữ (Việt-Anh-Trung), dashboard thống kê thời gian thực và ưu tiên hỗ trợ kỹ thuật.",
+                Price = 249_000m,
+                Currency = "VND",
+                DurationDays = 30,
+                TargetType = "Admin",
+                IsActive = true,
+                CreatedAtUtc = SeedBaseUtc.AddMinutes(15)
+            },
+            new()
+            {
+                Id = "pro",
+                Name = "Gói Chuyên Nghiệp",
+                Description = "Giải pháp toàn diện cho chuỗi nhà hàng / khu ẩm thực. Không giới hạn POI, TTS tự động (text-to-speech), báo cáo doanh thu nâng cao và API tích hợp hệ thống POS.",
+                Price = 599_000m,
+                Currency = "VND",
+                DurationDays = 90,
+                TargetType = "Admin",
+                IsActive = true,
+                CreatedAtUtc = SeedBaseUtc.AddMinutes(20)
+            },
+            new()
+            {
+                Id = "enterprise",
+                Name = "Gói Doanh Nghiệp",
+                Description = "Dành cho ban quản lý khu phố, trung tâm thương mại hoặc địa điểm du lịch quy mô lớn. Bao gồm toàn bộ tính năng Pro, SLA 99.9%, onboarding tận nơi và tùy chỉnh branding riêng.",
+                Price = 1_299_000m,
+                Currency = "VND",
+                DurationDays = 365,
+                TargetType = "Admin",
+                IsActive = true,
+                CreatedAtUtc = SeedBaseUtc.AddMinutes(25)
             }
         };
     }
+
 
 }

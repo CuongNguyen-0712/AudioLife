@@ -23,6 +23,7 @@ public partial class AudioPlayerViewModel : ObservableObject
     private readonly IApiService _apiService;
     private readonly ITourPlaybackSessionService _tourPlaybackSessionService;
     private readonly ILocalizationService _localizationService;
+    private readonly IAutoPlaybackService _autoPlaybackService;
     private readonly SemaphoreSlim _guideSelectionLock = new(1, 1);
     private readonly SemaphoreSlim _playerActionLock = new(1, 1);
     private readonly Dictionary<string, DateTime> _lastActionAt = new(StringComparer.OrdinalIgnoreCase);
@@ -136,13 +137,15 @@ public partial class AudioPlayerViewModel : ObservableObject
         IAudioService audioService,
         IApiService apiService,
         ITourPlaybackSessionService tourPlaybackSessionService,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IAutoPlaybackService autoPlaybackService)
     {
         _navigationService = navigationService;
         _audioService = audioService;
         _apiService = apiService;
         _tourPlaybackSessionService = tourPlaybackSessionService;
         _localizationService = localizationService;
+        _autoPlaybackService = autoPlaybackService;
         UpdatePlaybackSourceUi();
     }
 
@@ -513,8 +516,7 @@ public partial class AudioPlayerViewModel : ObservableObject
         var isCurrent = string.Equals(_audioService.CurrentAudioUrl, AudioUrl, StringComparison.OrdinalIgnoreCase);
         if (!isCurrent)
         {
-            await _audioService.StopAsync();
-            await _audioService.PlayAsync(AudioUrl);
+            await _autoPlaybackService.HandleManualPlaybackAsync(LocationId, AudioGuideId);
             return;
         }
 
@@ -536,7 +538,7 @@ public partial class AudioPlayerViewModel : ObservableObject
             return;
         }
 
-        await _audioService.PlayAsync(AudioUrl);
+        await _autoPlaybackService.HandleManualPlaybackAsync(LocationId, AudioGuideId);
     }
 
     private void LoadScriptSegments(AudioGuide guide)

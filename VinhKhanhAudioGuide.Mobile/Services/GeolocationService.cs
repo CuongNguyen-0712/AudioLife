@@ -4,15 +4,15 @@ namespace VinhKhanhAudioGuide.Mobile.Services;
 
 public class GeolocationService : IGeolocationService, IDisposable
 {
-    private const int TrackingIntervalSeconds = 60; // 1 minute like web
+    private const int TrackingIntervalSeconds = 5; // Reduced from 60 to support precise proximity detection
     private const double MinimumScanRadiusMeters = 50;
     private const double MaximumScanRadiusMeters = 150;
     private const double AccuracyRadiusMultiplier = 1.5;
     private const double DistanceTieThresholdMeters = 5;
     private readonly IApiService _apiService;
-    private readonly List<string> _nearbyQueue = new();
     private CancellationTokenSource? _cts;
     private bool _isTracking;
+    private Location? _latestLocation;
 
     public GeolocationService(IApiService apiService)
     {
@@ -20,8 +20,9 @@ public class GeolocationService : IGeolocationService, IDisposable
     }
 
     public event EventHandler<NearbyLocationEventArgs>? NearbyLocationDetected;
-    public double? CurrentLatitude { get; private set; }
-    public double? CurrentLongitude { get; private set; }
+    public double? CurrentLatitude => _latestLocation?.Latitude;
+    public double? CurrentLongitude => _latestLocation?.Longitude;
+    public Location? LatestLocation => _latestLocation;
 
     public async Task<bool> RequestPermissionAsync()
     {
@@ -62,8 +63,7 @@ public class GeolocationService : IGeolocationService, IDisposable
 
                     if (location != null)
                     {
-                        CurrentLatitude = location.Latitude;
-                        CurrentLongitude = location.Longitude;
+                        _latestLocation = location;
                         await CheckNearbyLocationsAsync(location.Latitude, location.Longitude, location.Accuracy);
                     }
                 }
@@ -114,8 +114,7 @@ public class GeolocationService : IGeolocationService, IDisposable
 
             if (location != null)
             {
-                CurrentLatitude = location.Latitude;
-                CurrentLongitude = location.Longitude;
+                _latestLocation = location;
                 return (location.Latitude, location.Longitude);
             }
         }
@@ -132,45 +131,26 @@ public class GeolocationService : IGeolocationService, IDisposable
         var nearbyLocations = await _apiService.GetNearbyLocationsAsync(userLat, userLng, scanRadiusMeters / 1000d);
         if (nearbyLocations.Count == 0)
         {
-            _nearbyQueue.Clear();
-            NearbyLocationDetected?.Invoke(this, new NearbyLocationEventArgs
-            {
-                LocationId = string.Empty,
-                LocationName = string.Empty,
-                DistanceMeters = double.MaxValue
-            });
+            NearbyLocationDetected?.Invoke(this, new NearbyLocationEventArgs { Candidates = new List<NearbyLocationCandidate>() });
             return;
         }
 
-        var ranked = nearbyLocations
-            .Select(loc => new
+        var candidates = nearbyLocations
+            .Select(loc => new NearbyLocationCandidate
             {
-                Location = loc,
-                DistanceMeters = CalculateDistanceKm(userLat, userLng, loc.Latitude, loc.Longitude) * 1000d
+                LocationId = loc.Id,
+                LocationName = loc.Name,
+                DistanceMeters = CalculateDistanceKm(userLat, userLng, loc.Latitude, loc.Longitude) * 1000d,
+                Latitude = loc.Latitude,
+                Longitude = loc.Longitude,
+                Priority = loc.Priority
             })
             .OrderBy(item => item.DistanceMeters)
-            .ThenByDescending(item => item.Location.Priority)
-            .ThenBy(item => item.Location.Id, StringComparer.OrdinalIgnoreCase)
-            .Select(item => new NearbyCandidate(item.Location, item.DistanceMeters))
             .ToList();
-
-        var first = ranked[0];
-        var tieCandidates = ranked
-            .Where(item => Math.Abs(item.DistanceMeters - first.DistanceMeters) <= DistanceTieThresholdMeters
-                           && item.Location.Priority == first.Location.Priority)
-            .ToList();
-
-        var selected = ResolveByQueue(tieCandidates);
-        if (selected is null)
-        {
-            return;
-        }
 
         NearbyLocationDetected?.Invoke(this, new NearbyLocationEventArgs
         {
-            LocationId = selected.Location.Id,
-            LocationName = selected.Location.Name,
-            DistanceMeters = selected.DistanceMeters
+            Candidates = candidates
         });
     }
 
@@ -181,42 +161,11 @@ public class GeolocationService : IGeolocationService, IDisposable
         return Math.Min(MaximumScanRadiusMeters, adjusted);
     }
 
-    private NearbyCandidate? ResolveByQueue(IReadOnlyList<NearbyCandidate> tieCandidates)
-    {
-        if (tieCandidates.Count == 0)
-        {
-            return null;
-        }
-
-        foreach (var queuedLocationId in _nearbyQueue)
-        {
-            var queued = tieCandidates.FirstOrDefault(item =>
-                string.Equals(item.Location.Id, queuedLocationId, StringComparison.OrdinalIgnoreCase));
-            if (queued is not null)
-            {
-                return queued;
-            }
-        }
-
-        var chosen = tieCandidates[0];
-        var chosenId = chosen.Location.Id;
-        _nearbyQueue.RemoveAll(id => string.Equals(id, chosenId, StringComparison.OrdinalIgnoreCase));
-        _nearbyQueue.Add(chosenId);
-        if (_nearbyQueue.Count > 30)
-        {
-            _nearbyQueue.RemoveRange(0, _nearbyQueue.Count - 30);
-        }
-
-        return chosen;
-    }
-
     /// <summary>
     /// Calculate distance in km between two GPS coordinates using Haversine formula.
     /// </summary>
     private static double CalculateDistanceKm(double lat1, double lon1, double lat2, double lon2)
         => DistanceCalculator.CalculateDistanceKm(lat1, lon1, lat2, lon2);
-
-    private sealed record NearbyCandidate(Models.Location Location, double DistanceMeters);
 
     public void Dispose()
     {

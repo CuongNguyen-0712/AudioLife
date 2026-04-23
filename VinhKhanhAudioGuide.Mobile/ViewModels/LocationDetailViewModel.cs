@@ -20,6 +20,7 @@ public partial class LocationDetailViewModel : ObservableObject
     private readonly INavigationService _navigationService;
     private readonly IApiService _apiService;
     private readonly ILocalizationService _localizationService;
+    private readonly IAutoPlaybackService _autoPlaybackService;
 
     [ObservableProperty]
     private string _locationId = string.Empty;
@@ -63,11 +64,13 @@ public partial class LocationDetailViewModel : ObservableObject
     public LocationDetailViewModel(
         INavigationService navigationService,
         IApiService apiService,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IAutoPlaybackService autoPlaybackService)
     {
         _navigationService = navigationService;
         _apiService = apiService;
         _localizationService = localizationService;
+        _autoPlaybackService = autoPlaybackService;
     }
 
     partial void OnLocationIdChanged(string value)

@@ -1,0 +1,37 @@
+sequenceDiagram
+    participant Shell as AppShell
+    participant Hb as AppHeartbeatService
+    participant Store as AppSessionStore
+    participant Api as RemoteApiService
+    participant Server as Web API Server
+
+    Shell->>Hb: StartAsync(onSessionInvalidated callback)
+    Hb->>Store: GetSnapshotAsync()
+    Store-->>Hb: SessionSnapshot {SessionToken, DeviceId}
+    Hb->>Hb: Start background Task (PeriodicTimer 5s)
+
+    loop Every 5 seconds
+        Hb->>Store: GetSnapshotAsync()
+        Store-->>Hb: snapshot
+
+        alt snapshot null / expired
+            Hb->>Hb: HandleInvalidSessionAsync()
+            Hb->>Store: ClearSnapshotAsync()
+            Hb->>Shell: invoke onSessionInvalidated()
+            note over Shell: Redirect to login/QR scan
+        end
+
+        Hb->>Api: SendHeartbeatAsync(HeartbeatRequest)
+        note over Hb: Request includes DeviceId, SessionToken, ActivityName, Route, IsForeground=true
+
+        Api->>Server: POST api/mobile/heartbeat {payload}
+        Server-->>Api: HeartbeatResponse {Success, SessionValid, SessionToken, ExpiresAtUtc}
+
+        alt response.Success && SessionValid
+            Hb->>Store: SaveSnapshotAsync(refreshed snapshot)
+        else Session invalid
+            Hb->>Hb: HandleInvalidSessionAsync()
+            Hb->>Store: ClearSnapshotAsync()
+            Hb->>Shell: invoke onSessionInvalidated()
+        end
+    end

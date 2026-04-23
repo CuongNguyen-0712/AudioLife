@@ -1,0 +1,143 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Account.Register.CheckoutModel
+@{
+    ViewData["Title"] = "Thanh toán";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng ký POI – Thanh toán</title>
+    <meta name="description" content="Xác nhận thanh toán gói dịch vụ POI Admin." />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/register.css" asp-append-version="true" />
+</head>
+<body class="register-body">
+    <div class="register-wrapper">
+        <!-- Header -->
+        <div class="reg-header">
+            <a href="/Account/Register/SelectPlan" class="reg-back-btn">
+                <i class="fas fa-arrow-left"></i> Quay lại chọn gói
+            </a>
+            <div class="reg-steps">
+                <div class="reg-step done" id="step-1">
+                    <span class="step-num"><i class="fas fa-check"></i></span>
+                    <span class="step-label">Chọn gói</span>
+                </div>
+                <div class="reg-step-line active"></div>
+                <div class="reg-step active" id="step-2">
+                    <span class="step-num">2</span>
+                    <span class="step-label">Thanh toán</span>
+                </div>
+                <div class="reg-step-line"></div>
+                <div class="reg-step" id="step-3">
+                    <span class="step-num">3</span>
+                    <span class="step-label">Tạo tài khoản</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="reg-content reg-content-narrow">
+            <div class="reg-title-block">
+                <span class="reg-logo"><i class="fas fa-credit-card"></i></span>
+                <h1>Xác nhận thanh toán</h1>
+                <p>Kiểm tra thông tin gói dịch vụ và hoàn tất thanh toán.</p>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+            {
+                <div class="reg-alert reg-alert-error">
+                    <i class="fas fa-exclamation-triangle"></i> @Model.ErrorMessage
+                </div>
+            }
+
+            <!-- Order Summary -->
+            <div class="checkout-card">
+                <div class="checkout-card-header">
+                    <i class="fas fa-receipt"></i> Tóm tắt đơn hàng
+                </div>
+                <div class="checkout-summary">
+                    <div class="checkout-row">
+                        <span class="checkout-label">Gói dịch vụ</span>
+                        <span class="checkout-value checkout-pkg-name">@Model.Package?.Name</span>
+                    </div>
+                    <div class="checkout-row">
+                        <span class="checkout-label">Thời hạn</span>
+                        <span class="checkout-value">@Model.Package?.DurationDays ngày</span>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.Package?.Description))
+                    {
+                        <div class="checkout-row checkout-desc-row">
+                            <span class="checkout-label">Mô tả</span>
+                            <span class="checkout-value checkout-desc">@Model.Package.Description</span>
+                        </div>
+                    }
+                    <div class="checkout-divider"></div>
+                    <div class="checkout-row checkout-total-row">
+                        <span class="checkout-label">Tổng thanh toán</span>
+                        <span class="checkout-total">
+                            @Model.Package?.Price.ToString("N0") <span class="checkout-currency">@Model.Package?.Currency</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Method (demo) -->
+            <div class="checkout-card">
+                <div class="checkout-card-header">
+                    <i class="fas fa-wallet"></i> Phương thức thanh toán
+                </div>
+                <div class="payment-methods">
+                    <label class="payment-method selected" id="pm-demo">
+                        <input type="radio" name="paymentMethod" value="demo" checked />
+                        <span class="pm-icon"><i class="fas fa-bolt"></i></span>
+                        <div class="pm-info">
+                            <strong>Thanh toán thử nghiệm</strong>
+                            <small>Dành cho môi trường demo – không mất phí thực</small>
+                        </div>
+                        <span class="pm-check"><i class="fas fa-circle-check"></i></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Expiry notice -->
+            <div class="checkout-notice">
+                <i class="fas fa-clock"></i>
+                Phiên đăng ký của bạn sẽ hết hạn lúc
+                <strong>@Model.Registration?.ExpiresAtUtc.AddHours(7).ToString("HH:mm dd/MM/yyyy")</strong>
+            </div>
+
+            <!-- Action -->
+            <form method="post">
+                <input type="hidden" name="RegId" value="@Model.Registration?.Id" />
+                <button type="submit" class="btn-reg-primary btn-pay" id="btn-pay">
+                    <i class="fas fa-lock"></i> Xác nhận thanh toán
+                </button>
+                <p class="reg-action-note pay-note">
+                    <i class="fas fa-shield-alt"></i> Giao dịch được bảo mật. Môi trường demo không xử lý tiền thật.
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Simulate loading state on submit
+        document.getElementById('btn-pay').addEventListener('click', function(e) {
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+            this.disabled = true;
+            // Form submit continues normally
+            setTimeout(() => this.closest('form').submit(), 300);
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>

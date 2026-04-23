@@ -63,6 +63,14 @@ public partial class App : Application
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            // Ensure we have a persisted culture, default to Vietnamese if not.
+            // This handles the case where user exits the app at LanguageSelection screen.
+            if (string.IsNullOrWhiteSpace(LocalizationService.GetPersistedOrDefaultCulture()) || 
+                Preferences.Default.Get<string?>("AppLanguage", null) == null)
+            {
+                LocalizationService.ApplyDefaultVietnamese(persist: true);
+            }
+
             ApplyPersistedCultureForAuthenticatedShell();
             SetRootPage(new AppShell());
             _ = StartHeartbeatAsync();
@@ -103,66 +111,131 @@ public partial class App : Application
             return;
         }
 
-        var services = Current?.Handler?.MauiContext?.Services;
+        // 1. Resolve services with a small retry to handle early startup race conditions
+        IServiceProvider? services = null;
+        for (int i = 0; i < 5; i++)
+        {
+            services = Current?.Handler?.MauiContext?.Services;
+            if (services != null) break;
+            await Task.Delay(100);
+        }
+
         var sessionStore = services?.GetService<IAppSessionStore>();
         var apiService = services?.GetService<IApiService>();
 
         if (sessionStore is null || apiService is null)
         {
+            // Critical failure: services not ready
             NavigateToIntro();
             return;
         }
 
         var deviceId = await sessionStore.GetOrCreateDeviceIdAsync();
-        var check = await apiService.CheckDeviceSessionAsync(deviceId);
-        if (check is null || !check.HasSession)
+        var localSnapshot = await sessionStore.GetSnapshotAsync();
+        var now = DateTime.UtcNow;
+
+        // 2. Initial decision based on local session
+        bool hasSnapshot = localSnapshot is not null;
+        bool isSessionValid = hasSnapshot && localSnapshot!.ExpiresAtUtc > now;
+        bool isOnline = Connectivity.Current.NetworkAccess == NetworkAccess.Internet;
+
+        // If we have a valid session (or we are offline and have any session), enter the app.
+        // If we are offline and have NO session, we still allow entering as a guest to use "db local fallback".
+        if (isSessionValid || (!isOnline && hasSnapshot) || (!isOnline && !hasSnapshot))
         {
-            await sessionStore.ClearSnapshotAsync();
-            _ = StopHeartbeatAsync();
-            NavigateToIntro();
-            return;
+            NavigateToShellRoot();
+            _ = StartAutoPlaybackAsync();
+            
+            // If we are offline and entered, we are done with startup.
+            if (!isOnline) return;
         }
 
-        var validation = await apiService.ValidateSessionAsync(check.SessionToken, deviceId);
-        if (validation is null || !validation.IsValid)
+        // 3. Perform online verification/update if internet is available
+        if (isOnline)
         {
-            _ = StopHeartbeatAsync();
-            LocalizationService.ClearPersistedCulture();
-            if (services?.GetService<IAppSessionStore>() is IAppSessionStore invalidSessionStore)
+            try
             {
-                await invalidSessionStore.ClearSnapshotAsync();
-            }
-            if (services?.GetService<ILocalizationService>() is ILocalizationService localizationService)
-            {
-                localizationService.ResetToDefaultCulture();
-            }
-            else
-            {
-                LocalizationService.ApplyDefaultVietnamese(persist: false);
-            }
-            NavigateToIntro();
-            return;
-        }
+                var check = await apiService.CheckDeviceSessionAsync(deviceId);
+                
+                if (check is null)
+                {
+                    // API check failed (timeout or error) - if we already entered, just stay there.
+                    if (!isSessionValid && !hasSnapshot)
+                    {
+                        NavigateToIntro();
+                    }
+                    return;
+                }
 
-        if (sessionStore is not null)
+                if (!check.HasSession)
+                {
+                    // Server says no session exists for this device
+                    await sessionStore.ClearSnapshotAsync();
+                    _ = StopHeartbeatAsync();
+                    
+                    // If we were already in, force logout
+                    await MainThread.InvokeOnMainThreadAsync(NavigateToIntro);
+                    return;
+                }
+
+                // Session exists on server, validate it
+                var validation = await apiService.ValidateSessionAsync(check.SessionToken, deviceId);
+                if (validation is null || !validation.IsValid)
+                {
+                    await sessionStore.ClearSnapshotAsync();
+                    _ = StopHeartbeatAsync();
+                    
+                    await MainThread.InvokeOnMainThreadAsync(NavigateToIntro);
+                    return;
+                }
+
+                // Session is valid and confirmed by server, update local storage
+                var newSnapshot = new AppSessionSnapshot(
+                    deviceId,
+                    validation.SessionToken,
+                    validation.RefreshToken ?? check.RefreshToken,
+                    null, // QrToken
+                    validation.UserAppId ?? check.UserAppId,
+                    validation.PackageId ?? check.PackageId,
+                    validation.PaymentStatus ?? check.PaymentStatus,
+                    null, // PaymentReference
+                    null, // LocationId
+                    null, // AudioGuideId
+                    null, // AudioUrl
+                    validation.ExpiresAtUtc,
+                    validation.LastValidatedAtUtc
+                );
+                await sessionStore.SaveSnapshotAsync(newSnapshot);
+
+                // If we haven't entered the app yet (due to invalid local session), do it now
+                if (!isSessionValid && !hasSnapshot)
+                {
+                    NavigateToShellRoot();
+                    _ = StartAutoPlaybackAsync();
+                }
+            }
+            catch
+            {
+                // Network error - if we haven't entered yet and have no session, go to intro
+                if (!isSessionValid && !hasSnapshot)
+                {
+                    NavigateToIntro();
+                }
+            }
+        }
+    }
+
+    private static async Task StartAutoPlaybackAsync()
+    {
+        var services = Current?.Handler?.MauiContext?.Services;
+        var autoPlayback = services?.GetService<IAutoPlaybackService>();
+        var geoService = services?.GetService<IGeolocationService>();
+
+        if (autoPlayback != null && geoService != null)
         {
-            await sessionStore.SaveSnapshotAsync(new AppSessionSnapshot(
-                deviceId,
-                validation.SessionToken,
-                validation.RefreshToken,
-                check.UserAppId,
-                validation.UserAppId,
-                validation.PackageId,
-                validation.PaymentStatus,
-                null,
-                null,
-                null,
-                null,
-                validation.ExpiresAtUtc,
-                validation.LastValidatedAtUtc));
+            await geoService.StartTrackingAsync();
+            autoPlayback.Start();
         }
-
-        NavigateToShellRoot();
     }
 
     private static async Task ProcessPendingDeepLinkAsync()

@@ -74,13 +74,17 @@ public static class MobileApiEndpoints
             }
 
             var nowUtc = DateTime.UtcNow;
-            var qrToken = ResolveQrToken(request);
-            var user = await db.AppUsers.FirstOrDefaultAsync(item => item.QrCodeValue == qrToken);
+            
+            // Identify machine by DeviceId
+            var user = await db.AppUsers.IgnoreQueryFilters().FirstOrDefaultAsync(item => item.DeviceId == request.DeviceId);
             if (user is null)
             {
+                // Generate a random token as the machine's primary identity token (stored in QrCodeValue)
+                var randomToken = Guid.NewGuid().ToString("N");
                 user = new AppUser
                 {
-                    QrCodeValue = qrToken,
+                    DeviceId = request.DeviceId,
+                    QrCodeValue = randomToken,
                     Status = "Active",
                     CreatedAtUtc = nowUtc,
                     LastSeenAtUtc = nowUtc
@@ -88,6 +92,11 @@ public static class MobileApiEndpoints
 
                 db.AppUsers.Add(user);
                 await db.SaveChangesAsync();
+            }
+            else if (user.IsDeleted)
+            {
+                user.IsDeleted = false;
+                user.Status = "Active";
             }
 
             user.LastSeenAtUtc = nowUtc;
@@ -120,7 +129,23 @@ public static class MobileApiEndpoints
                 ? Guid.NewGuid().ToString("N")
                 : request.SessionToken;
 
-            var session = await db.UserAppSessions.FirstOrDefaultAsync(item => item.TokenValue == sessionToken || (item.UserId == user.Id && item.DeviceId == request.DeviceId));
+            // Handle session (Ensure only one active session per device)
+            // 1. Deactivate any existing active sessions for this device that aren't the one we are about to use
+            var existingSessions = await db.UserAppSessions
+                .Where(item => item.DeviceId == request.DeviceId && item.IsActive)
+                .ToListAsync();
+
+            UserAppSession? session = existingSessions.FirstOrDefault(s => s.TokenValue == sessionToken || s.UserId == user.Id);
+
+            foreach (var s in existingSessions)
+            {
+                if (session == null || s.Id != session.Id)
+                {
+                    s.IsActive = false;
+                    s.RevokedAtUtc = nowUtc;
+                }
+            }
+
             if (session is null)
             {
                 session = new UserAppSession
@@ -139,7 +164,8 @@ public static class MobileApiEndpoints
             }
             else
             {
-                session.DeviceId = request.DeviceId;
+                // Reuse and update existing session for this device/user
+                session.UserId = user.Id;
                 session.TokenValue = sessionToken;
                 session.RefreshToken = request.RefreshToken;
                 session.LastValidatedAtUtc = nowUtc;
@@ -154,7 +180,6 @@ public static class MobileApiEndpoints
             {
                 Success = isPaid,
                 Message = isPaid ? "Thanh toán đã được xác nhận." : "Thanh toán đang chờ xử lý.",
-                UserAppId = qrToken,
                 SessionToken = sessionToken,
                 RefreshToken = request.RefreshToken,
                 PackageId = package.Id,
@@ -242,6 +267,10 @@ public static class MobileApiEndpoints
             }
 
             var nowUtc = DateTime.UtcNow;
+
+            // Optional: Periodic cleanup of expired items
+            await CleanupExpiredSessionsAndUsersAsync(db, nowUtc);
+
             var session = await db.UserAppSessions
                 .AsNoTracking()
                 .Where(item => item.DeviceId == deviceId && item.IsActive && item.RevokedAtUtc == null)
@@ -374,7 +403,11 @@ public static class MobileApiEndpoints
             user.CurrentActivityAtUtc = nowUtc;
 
             session.LastValidatedAtUtc = nowUtc;
-            session.ExpiresAtUtc = nowUtc.AddMinutes(30);
+            // session.ExpiresAtUtc = nowUtc.AddMinutes(30); // BUG: Don't shorten session if it's a long-lived paid session
+            if (session.ExpiresAtUtc < nowUtc.AddMinutes(30))
+            {
+                session.ExpiresAtUtc = nowUtc.AddMinutes(30);
+            }
             session.IsActive = true;
             session.RevokedAtUtc = null;
 
@@ -1043,5 +1076,64 @@ public static class MobileApiEndpoints
         public double Progress { get; set; }
         public int ListenedSeconds { get; set; }
         public bool IsCompleted { get; set; }
+    }
+    private static async Task CleanupExpiredSessionsAndUsersAsync(AppDbContext db, DateTime nowUtc)
+    {
+        try
+        {
+            // 1. Deactivate expired sessions
+            var expiredSessions = await db.UserAppSessions
+                .Where(s => s.IsActive && s.ExpiresAtUtc <= nowUtc)
+                .ToListAsync();
+
+            if (expiredSessions.Any())
+            {
+                foreach (var s in expiredSessions)
+                {
+                    s.IsActive = false;
+                    s.RevokedAtUtc = nowUtc;
+                }
+            }
+
+            // 2. Mark subscriptions as Expired
+            var expiredSubs = await db.UserSubscriptions
+                .Where(s => s.Status == "Active" && s.ExpiresAtUtc <= nowUtc)
+                .ToListAsync();
+
+            if (expiredSubs.Any())
+            {
+                foreach (var s in expiredSubs)
+                {
+                    s.Status = "Expired";
+                }
+            }
+
+            // 3. Soft-delete users whose all subscriptions have been expired for more than 30 days
+            // and have no active sessions.
+            var threshold = nowUtc.AddDays(-30);
+            var usersToCleanup = await db.AppUsers
+                .Include(u => u.Subscriptions)
+                .Include(u => u.AppSessions)
+                .Where(u => !u.IsDeleted && u.LastSeenAtUtc < threshold)
+                .ToListAsync();
+
+            foreach (var user in usersToCleanup)
+            {
+                bool hasActiveSub = user.Subscriptions.Any(s => s.Status == "Active" || s.ExpiresAtUtc > nowUtc);
+                bool hasActiveSession = user.AppSessions.Any(s => s.IsActive && s.ExpiresAtUtc > nowUtc);
+
+                if (!hasActiveSub && !hasActiveSession)
+                {
+                    user.IsDeleted = true;
+                    user.Status = "Expired_Deleted";
+                }
+            }
+
+            await db.SaveChangesAsync();
+        }
+        catch
+        {
+            // Best effort - failures in cleanup shouldn't block the main API response
+        }
     }
 }

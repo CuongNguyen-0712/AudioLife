@@ -11,6 +11,8 @@ public interface IAudioService
     bool IsPlaying { get; }
     double Volume { get; }
     string? CurrentAudioUrl { get; }
+    string? CurrentLocationId { get; }
+    string? CurrentAudioGuideId { get; }
     DateTime LastPlayAttemptUtc { get; }
     TimeSpan PlayCooldown { get; }
 
@@ -18,6 +20,7 @@ public interface IAudioService
     event EventHandler<AudioPositionChangedEventArgs>? PositionChanged;
 
     Task PlayAsync(string audioUrl);
+    Task PlayAsync(string audioUrl, string locationId, string audioGuideId);
     Task PauseAsync();
     Task ResumeAsync();
     Task StopAsync();

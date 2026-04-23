@@ -24,6 +24,8 @@ Table AudioGuide {
   Title String
   Description String
   AudioUrl String
+  CloudinaryAudioUrl String
+  CloudinaryPublicId String
   TranscriptText String
   Duration Int
   LocationId String
@@ -140,19 +142,17 @@ Table ListeningHistory {
 Table AppUser {
   Id Guid [pk]
   QrCodeValue String [unique] // token định danh lấy từ QR khi onboarding
-  DisplayName String
-  PhoneNumber String
-  Email String
+  DeviceId String [unique]
   Status String // Active | Blocked
   CreatedAtUtc DateTime
   LastSeenAtUtc DateTime
   CurrentActivity String
   CurrentActivityAtUtc DateTime
+  IsDeleted Boolean
 
   indexes {
     (QrCodeValue) [unique]
-    (PhoneNumber)
-    (Email)
+    (DeviceId) [unique]
     (Status)
     (CurrentActivityAtUtc)
   }
@@ -197,12 +197,14 @@ Table PaymentPackage {
 Table UserSubscription {
   Id Guid [pk]
   UserId Guid
+  AuthUserId Int
   PackageId String
   Status String // Pending | Active | Expired | Cancelled
   PurchasedAtUtc DateTime
   StartsAtUtc DateTime
   ExpiresAtUtc DateTime
   PaymentReference String
+  PaidAmount Decimal // snapshot giá thực tế tại thời điểm mua
   LastVerifiedAtUtc DateTime
 
   indexes {
@@ -236,7 +238,6 @@ Table UserAppSession {
   }
 }
 
-// Relationships
 Ref: Location.CategoryId > Category.Id
 Ref: AudioGuide.LocationId > Location.Id
 Ref: AudioScriptSegment.AudioGuideId > AudioGuide.Id
@@ -252,3 +253,20 @@ Ref: UserSubscription.UserId > AppUser.Id
 Ref: UserSubscription.PackageId > PaymentPackage.Id
 Ref: UserAppSession.UserId > AppUser.Id
 Ref: AppUserActivityLog.UserId > AppUser.Id
+Ref: PoiRegistrationRequest.PackageId > PaymentPackage.Id
+
+Table PoiRegistrationRequest {
+  Id Guid [pk]
+  PackageId String // FK -> PaymentPackage
+  Status String // AwaitingPayment | PendingSetup | Completed | Cancelled
+  PaymentReference String
+  PaidAtUtc DateTime
+  CreatedUsername String // Username sau khi setup account hoàn tất
+  CreatedAtUtc DateTime
+  ExpiresAtUtc DateTime // TTL 30 phút
+
+  indexes {
+    (Status)
+    (ExpiresAtUtc)
+  }
+}

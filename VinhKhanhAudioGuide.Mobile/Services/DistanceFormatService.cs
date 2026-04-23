@@ -2,7 +2,7 @@ namespace VinhKhanhAudioGuide.Mobile.Services;
 
 /// <summary>
 /// Service để format khoảng cách theo quy tắc:
-/// - < 1000m: hiển thị meter (m)
+/// - &lt; 1000m: hiển thị meter (m)
 /// - >= 1000m: chuyển sang km, làm tròn 1 chữ số thập phân
 /// - Loại bỏ .0 không cần thiết (10.0 km -> 10 km)
 /// </summary>

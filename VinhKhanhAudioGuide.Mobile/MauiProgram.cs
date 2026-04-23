@@ -43,6 +43,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<Services.IGeolocationService, Services.GeolocationService>();
         builder.Services.AddSingleton<Services.ITourCheckpointService, Services.TourCheckpointService>();
         builder.Services.AddSingleton<Services.ITourPlaybackSessionService, Services.TourPlaybackSessionService>();
+        builder.Services.AddSingleton<Services.IAutoPlaybackService, Services.AutoPlaybackService>();
 
         // Register ViewModels
         builder.Services.AddTransient<ViewModels.MainViewModel>();

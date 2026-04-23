@@ -1,0 +1,52 @@
+sequenceDiagram
+    participant User as POI Admin (Browser)
+    participant SP as SelectPlan page
+    participant CO as Checkout page
+    participant SA as SetupAccount page
+    participant DB as AppDbContext (SQL Server)
+
+    User->>SP: GET /Account/Register/SelectPlan
+
+    SP->>DB: SELECT PaymentPackages WHERE IsActive=true AND TargetType='Admin' ORDER BY Price
+    DB-->>SP: List<PaymentPackage>
+    SP-->>User: Show plan cards (with DefaultPoiPriority per plan)
+
+    User->>SP: POST (SelectedPackageId = "pro")
+    SP->>DB: SELECT PaymentPackage WHERE Id='pro' AND IsActive=true
+    DB-->>SP: package
+
+    SP->>DB: INSERT PoiRegistrationRequest {PackageId='pro', Status='AwaitingPayment', ExpiresAtUtc=now+30min}
+    DB-->>SP: OK
+
+    SP-->>User: Redirect -> /Account/Register/Checkout?regId={guid}
+
+    User->>CO: GET /Account/Register/Checkout?regId={guid}
+    CO->>DB: SELECT PoiRegistrationRequest WHERE Id=guid AND Status='AwaitingPayment' AND ExpiresAtUtc>now
+    DB-->>CO: registration
+
+    User->>CO: POST (mock payment confirmed)
+    CO->>DB: UPDATE PoiRegistrationRequest SET Status='PendingSetup', PaidAtUtc=now, PaymentReference='REF-xxx'
+    DB-->>CO: OK
+
+    CO-->>User: Redirect -> /Account/Register/SetupAccount?regId={guid}
+
+    User->>SA: GET /Account/Register/SetupAccount?regId={guid}
+    SA->>DB: SELECT PoiRegistrationRequest + Package WHERE Status='PendingSetup' AND ExpiresAtUtc>now
+    DB-->>SA: registration with Package
+
+    User->>SA: POST (Username, DisplayName, Password, ConfirmPassword)
+    SA->>SA: Validate model, check Password == ConfirmPassword
+
+    SA->>DB: SELECT AuthUserAccounts WHERE Username=normalizedUsername
+    DB-->>SA: exists? false
+
+    SA->>DB: INSERT AuthUserAccount {Username, Password, DisplayName, Role='PoiAdmin', IsActive=true}
+
+    note over SA: DefaultPoiPriority from Package for new POI
+    SA->>DB: INSERT UserSubscription {AuthUserId=newAccount.Id, PackageId, Status='Active', StartsAtUtc=now, ExpiresAtUtc=now+package.DurationDays, PaidAmount=package.Price}
+
+    SA->>DB: UPDATE PoiRegistrationRequest SET Status='Completed', CreatedUsername=username
+    DB-->>SA: SaveChanges OK
+
+    SA->>SA: SignInAsync (Cookie auth) with claims
+    SA-->>User: Redirect -> /Shop/Index

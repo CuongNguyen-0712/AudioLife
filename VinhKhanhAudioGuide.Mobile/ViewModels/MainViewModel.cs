@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -632,7 +632,7 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    private async void OnNearbyLocationDetected(object? sender, NearbyLocationEventArgs e)
+       private async void OnNearbyLocationDetected(object? sender, NearbyLocationEventArgs e)
     {
         await MainThread.InvokeOnMainThreadAsync(async () =>
         {
@@ -641,7 +641,9 @@ public partial class MainViewModel : ObservableObject
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(e.LocationId))
+            var best = e.Candidates.FirstOrDefault();
+
+            if (best == null)
             {
                 FooterStatusText = T("Footer_NoNearbyPoiAutoPlay");
                 FooterHintText = T("Footer_NoPoiData");
@@ -651,10 +653,10 @@ public partial class MainViewModel : ObservableObject
                 return;
             }
 
-            if (string.Equals(AutoLocationId, e.LocationId, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(AutoLocationId, best.LocationId, StringComparison.OrdinalIgnoreCase))
             {
-                FooterHintText = BuildQueueProgressHint(e.DistanceMeters);
-                _currentPoiDistanceMeters = e.DistanceMeters;
+                FooterHintText = BuildQueueProgressHint(best.DistanceMeters);
+                _currentPoiDistanceMeters = best.DistanceMeters;
                 return;
             }
 
@@ -666,7 +668,7 @@ public partial class MainViewModel : ObservableObject
             }
 
             _lastGeoEventProcessedUtc = DateTime.UtcNow;
-            await PlayAutoAudioForLocationAsync(e.LocationId, e.DistanceMeters);
+            await PlayAutoAudioForLocationAsync(best.LocationId, best.DistanceMeters);
         });
     }
 
