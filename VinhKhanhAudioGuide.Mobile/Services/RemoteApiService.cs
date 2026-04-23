@@ -124,7 +124,7 @@ public class RemoteApiService : IApiService
             }
         }
 
-        return await _fallback.SearchLocationsAsync(query);
+        return await _fallback.SearchLocationsAsync(query ?? string.Empty);
     }
 
     public async Task<List<Location>> GetLocationsByCategoryAsync(string categoryId)

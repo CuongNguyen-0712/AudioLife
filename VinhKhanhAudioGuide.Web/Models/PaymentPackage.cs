@@ -25,6 +25,10 @@ public class PaymentPackage
     [Required]
     public int DurationDays { get; set; }
 
+    [Required]
+    [MaxLength(20)]
+    public string TargetType { get; set; } = "User"; // User | Admin
+
     public bool IsActive { get; set; } = true;
 
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;

@@ -1,23 +1,34 @@
 @page
 @model VinhKhanhAudioGuide.Web.Pages.Admin.PaymentPackagesModel
+@using VinhKhanhAudioGuide.Web.Services
 @{
-    ViewData["Title"] = "Quản Lý Gói Thanh Toán";
+    ViewData["Title"] = "Quản Lý Gói POI Admin";
     ViewData["ActivePage"] = "AdminPaymentPackages";
 }
 
 <div class="container-fluid py-4">
+    <!-- ── Hero ── -->
     <div class="admin-page-hero mb-4">
         <div class="admin-page-hero-copy">
-            <p class="hero-kicker"><i class="fa-solid fa-credit-card"></i> Admin hệ thống</p>
-            <h1 class="admin-page-hero-title">Quản Lý Gói Thanh Toán</h1>
-            <p class="admin-page-hero-subtitle">Tinh gọn phần quản trị gói thanh toán với header rõ hơn, thống kê nhanh hơn và thao tác tạo gói nổi bật hơn.</p>
+            <p class="hero-kicker"><i class="fa-solid fa-box-open"></i> Admin hệ thống</p>
+            <h1 class="admin-page-hero-title">Quản Lý Gói POI Admin</h1>
+            <p class="admin-page-hero-subtitle">
+                Thiết lập và theo dõi các gói đăng ký dành cho tài khoản POI Admin.
+                Gói đang active sẽ hiển thị trong luồng đăng ký của người dùng mới.
+            </p>
             <div class="admin-page-hero-badges">
                 <span class="hero-badge"><i class="fa-solid fa-circle-check"></i> @Model.ActivePackageCount active</span>
                 <span class="hero-badge"><i class="fa-solid fa-circle-minus"></i> @Model.InactivePackageCount ẩn</span>
                 <span class="hero-badge"><i class="fa-solid fa-user-clock"></i> @Model.ActiveSubscriptionCount đang dùng</span>
+                @if (Model.Stats.TotalRevenue > 0)
+                {
+                    <span class="hero-badge hero-badge-revenue">
+                        <i class="fa-solid fa-coins"></i>
+                        @Model.Stats.TotalRevenue.ToString("N0") VND doanh thu
+                    </span>
+                }
             </div>
         </div>
-
         <div class="admin-page-hero-actions">
             <div class="admin-page-hero-kpis">
                 <div class="admin-page-hero-kpi">
@@ -25,11 +36,16 @@
                     <strong>@Model.Packages.Count</strong>
                 </div>
                 <div class="admin-page-hero-kpi">
-                    <span>Đang dùng</span>
+                    <span>Active subs</span>
                     <strong>@Model.ActiveSubscriptionCount</strong>
                 </div>
                 <div class="admin-page-hero-kpi">
-                    <span>Thao tác</span>
+                    <span>Phổ biến nhất</span>
+                    <strong class="text-truncate" style="max-width:120px" title="@Model.Stats.MostPopularPackage?.Name">
+                        @(Model.Stats.MostPopularPackage?.Name ?? "–")
+                    </strong>
+                </div>
+                <div>
                     <a href="@Url.Page("Edit")" class="btn btn-primary btn-sm w-100 mt-1">
                         <i class="fa fa-plus"></i> Thêm gói mới
                     </a>
@@ -38,6 +54,7 @@
         </div>
     </div>
 
+    <!-- ── Stat Cards ── -->
     <div class="row g-3 mb-4">
         <div class="col-sm-6 col-xl-3">
             <div class="stat-card stat-card-v2">
@@ -53,29 +70,41 @@
         </div>
         <div class="col-sm-6 col-xl-3">
             <div class="stat-card stat-card-v2">
-                <div class="stat-icon bg-secondary"><i class="fa-solid fa-circle-minus"></i></div>
-                <div><div class="stat-value">@Model.InactivePackageCount</div><div class="stat-label">Đã ẩn</div></div>
+                <div class="stat-icon bg-info"><i class="fa-solid fa-users"></i></div>
+                <div><div class="stat-value">@Model.ActiveSubscriptionCount</div><div class="stat-label">Đăng ký active</div></div>
             </div>
         </div>
         <div class="col-sm-6 col-xl-3">
             <div class="stat-card stat-card-v2">
-                <div class="stat-icon bg-info"><i class="fa-solid fa-user-clock"></i></div>
-                <div><div class="stat-value">@Model.ActiveSubscriptionCount</div><div class="stat-label">Đang dùng</div></div>
+                <div class="stat-icon bg-warning"><i class="fa-solid fa-coins"></i></div>
+                <div>
+                    <div class="stat-value" style="font-size:1.1rem">@Model.Stats.TotalRevenue.ToString("N0")</div>
+                    <div class="stat-label">Doanh thu (VND)</div>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- ── Filter ── -->
     <div class="card mb-4">
         <div class="card-body">
             <form method="get" class="row g-3 align-items-end">
-                <div class="col-md-5">
-                    <input type="text" name="searchTerm" class="form-control" placeholder="Tìm theo mã gói, tên, mô tả, tiền tệ..." value="@Model.SearchTerm" />
-                </div>
                 <div class="col-md-3">
+                    <input type="text" name="searchTerm" class="form-control"
+                           placeholder="Tìm tên, mô tả..." value="@Model.SearchTerm" />
+                </div>
+                <div class="col-md-2">
                     <select name="statusFilter" class="form-select">
-                        <option value="">-- Tất cả trạng thái --</option>
+                        <option value="">-- Trạng thái --</option>
                         <option value="Active" selected="@(Model.StatusFilter == "Active")">Active</option>
                         <option value="Inactive" selected="@(Model.StatusFilter == "Inactive")">Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="typeFilter" class="form-select">
+                        <option value="">-- Loại đối tượng --</option>
+                        <option value="User" selected="@(Model.TypeFilter == "User")">Người dùng App</option>
+                        <option value="Admin" selected="@(Model.TypeFilter == "Admin")">POI Admin</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -88,6 +117,7 @@
         </div>
     </div>
 
+    <!-- ── Alerts ── -->
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -95,7 +125,6 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
-
     @if (TempData["ErrorMessage"] != null)
     {
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -104,114 +133,139 @@
         </div>
     }
 
+    <!-- ── Package Cards ── -->
     @if (Model.Packages.Any())
     {
-        <div class="admin-column-list admin-column-list-compact">
-            @foreach (var package in Model.Packages)
+        <div class="pkg-grid">
+            @foreach (var pkg in Model.Packages)
             {
-                var subscriptionCount = package.Subscriptions.Count;
-                var activeCount = package.Subscriptions.Count(s => s.Status == "Active");
-                var pendingCount = package.Subscriptions.Count(s => s.Status == "Pending");
-                var templateId = $"package-overlay-{package.Id}";
+                var templateId = $"pkg-overlay-{pkg.Id}";
+                var tierIcon = pkg.DurationDays <= 30 && pkg.Price < 200_000
+                    ? "fa-seedling" : pkg.DurationDays <= 30
+                    ? "fa-star" : pkg.DurationDays <= 180
+                    ? "fa-rocket" : "fa-crown";
+                var tierClass = pkg.DurationDays >= 365 ? "pkg-card-enterprise"
+                    : pkg.DurationDays >= 90 ? "pkg-card-pro"
+                    : pkg.Price >= 200_000 ? "pkg-card-standard"
+                    : "pkg-card-starter";
 
-                <article class="admin-column-card">
-                    <header class="admin-column-card-head">
+                <article class="pkg-card @tierClass @(!pkg.IsActive ? "pkg-card-inactive" : "")">
+                    <!-- Tier badge -->
+                    <div class="pkg-tier-icon">
+                        <i class="fas @tierIcon"></i>
+                    </div>
+
+                    <div class="pkg-card-top">
                         <div>
-                            <h3 class="admin-column-card-title">@package.Name</h3>
-                            <div class="admin-column-card-subtitle">Mã: @package.Id</div>
+                            <h3 class="pkg-name">@pkg.Name</h3>
+                            <div class="pkg-id-chip">@pkg.Id</div>
                         </div>
-                        @if (package.IsActive)
+                        @if (pkg.IsActive)
                         {
-                            <span class="badge bg-success">Kích hoạt</span>
+                            <span class="badge bg-success">Active</span>
                         }
                         else
                         {
-                            <span class="badge bg-secondary">Vô hiệu</span>
+                            <span class="badge bg-secondary">Ẩn</span>
                         }
-                    </header>
-
-                    <div class="admin-column-meta-grid">
-                        <div><span>Giá</span><strong>@package.Price.ToString("N0") @package.Currency</strong></div>
-                        <div><span>Thời hạn</span><strong>@package.DurationDays ngày</strong></div>
-                        <div><span>Đăng ký</span><strong>@subscriptionCount tổng</strong></div>
-                        <div><span>Active/Pending</span><strong>@activeCount/@pendingCount</strong></div>
-                        <div><span>Ngày tạo</span><strong>@package.CreatedAtUtc.ToString("dd/MM/yyyy")</strong></div>
+                        <span class="badge @(pkg.TargetType == "Admin" ? "bg-info" : "bg-dark")">
+                            @(pkg.TargetType == "Admin" ? "POI Admin" : "App User")
+                        </span>
                     </div>
 
-                    <p class="admin-column-desc">@package.Description</p>
+                    <div class="pkg-price-row">
+                        <span class="pkg-price">@pkg.Price.ToString("N0")</span>
+                        <span class="pkg-currency">@pkg.Currency</span>
+                        <span class="pkg-duration">/ @pkg.DurationDays ngày</span>
+                    </div>
 
-                    <div class="admin-column-actions">
+                    @if (!string.IsNullOrWhiteSpace(pkg.Description))
+                    {
+                        <p class="pkg-desc">@pkg.Description</p>
+                    }
+
+                    <!-- Stats row -->
+                    <div class="pkg-stats-row">
+                        <div class="pkg-stat">
+                            <span class="pkg-stat-val">@pkg.TotalSubscriptions</span>
+                            <span class="pkg-stat-label">Tổng ĐK</span>
+                        </div>
+                        <div class="pkg-stat">
+                            <span class="pkg-stat-val text-success">@pkg.ActiveSubscriptions</span>
+                            <span class="pkg-stat-label">Active</span>
+                        </div>
+                        <div class="pkg-stat">
+                            <span class="pkg-stat-val text-warning">@pkg.PendingSubscriptions</span>
+                            <span class="pkg-stat-label">Pending</span>
+                        </div>
+                        <div class="pkg-stat">
+                            <span class="pkg-stat-val">@pkg.Revenue.ToString("N0")</span>
+                            <span class="pkg-stat-label">DT (đ)</span>
+                        </div>
+                    </div>
+
+                    <div class="pkg-meta">
+                        <i class="fas fa-calendar-alt"></i> Tạo: @pkg.CreatedAtUtc.ToString("dd/MM/yyyy")
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="pkg-actions">
                         <button type="button"
                                 class="btn btn-sm btn-outline-dark js-open-entity-overlay"
                                 data-template-id="@templateId"
-                                data-overlay-title="Chi tiết gói thanh toán">
+                                data-overlay-title="Chi tiết gói: @pkg.Name">
                             <i class="fa fa-eye"></i> Xem
                         </button>
-
-                        <a href="@Url.Page("Edit", new { id = package.Id })" class="btn btn-sm btn-primary">
+                        <a href="@Url.Page("Edit", new { id = pkg.Id })" class="btn btn-sm btn-primary">
                             <i class="fa fa-edit"></i> Sửa
                         </a>
-
                         <form method="post" asp-page-handler="Toggle" class="d-inline">
-                            <input type="hidden" name="id" value="@package.Id" />
-                            <button type="submit" class="btn btn-sm @(package.IsActive ? "btn-warning" : "btn-success")">
-                                <i class="fa @(package.IsActive ? "fa-times" : "fa-check")"></i> @(package.IsActive ? "Ẩn" : "Kích hoạt")
+                            <input type="hidden" name="id" value="@pkg.Id" />
+                            <button type="submit" class="btn btn-sm @(pkg.IsActive ? "btn-warning" : "btn-success")">
+                                <i class="fa @(pkg.IsActive ? "fa-eye-slash" : "fa-eye")"></i>
+                                @(pkg.IsActive ? "Ẩn" : "Kích hoạt")
                             </button>
                         </form>
-
                         <form method="post" asp-page-handler="Delete" class="d-inline">
-                            <input type="hidden" name="id" value="@package.Id" />
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Xóa gói này?')">
+                            <input type="hidden" name="id" value="@pkg.Id" />
+                            <button type="submit" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Xóa gói \"@pkg.Name\"? Hành động này không thể hoàn tác.')">
                                 <i class="fa fa-trash"></i> Xóa
                             </button>
                         </form>
                     </div>
                 </article>
 
+                <!-- Detail overlay template -->
                 <template id="@templateId">
                     <div class="entity-overlay-body-grid">
                         <section class="entity-overlay-panel">
                             <h4>Thông tin gói</h4>
                             <dl>
-                                <dt>Mã gói</dt><dd>@package.Id</dd>
-                                <dt>Tên gói</dt><dd>@package.Name</dd>
-                                <dt>Giá</dt><dd>@package.Price.ToString("N0") @package.Currency</dd>
-                                <dt>Thời hạn</dt><dd>@package.DurationDays ngày</dd>
-                                <dt>Trạng thái</dt><dd>@(package.IsActive ? "Kích hoạt" : "Vô hiệu")</dd>
-                                <dt>Ngày tạo</dt><dd>@package.CreatedAtUtc.ToString("dd/MM/yyyy HH:mm")</dd>
+                                <dt>Mã gói</dt><dd><code>@pkg.Id</code></dd>
+                                <dt>Tên gói</dt><dd>@pkg.Name</dd>
+                                <dt>Giá</dt><dd><strong>@pkg.Price.ToString("N0") @pkg.Currency</strong></dd>
+                                <dt>Thời hạn</dt><dd>@pkg.DurationDays ngày</dd>
+                                <dt>Trạng thái</dt>
+                                <dd>
+                                    @if (pkg.IsActive)
+                                    {<span class="badge bg-success">Active</span>}
+                                    else
+                                    {<span class="badge bg-secondary">Ẩn</span>}
+                                </dd>
+                                <dt>Ngày tạo</dt><dd>@pkg.CreatedAtUtc.ToString("dd/MM/yyyy HH:mm")</dd>
                             </dl>
                         </section>
-
                         <section class="entity-overlay-panel">
                             <h4>Mô tả</h4>
-                            <p class="mb-3">@(string.IsNullOrWhiteSpace(package.Description) ? "(Không có mô tả)" : package.Description)</p>
-
+                            <p class="mb-3">@(string.IsNullOrWhiteSpace(pkg.Description) ? "(Không có mô tả)" : pkg.Description)</p>
                             <h4>Thống kê đăng ký</h4>
                             <dl>
-                                <dt>Tổng đăng ký</dt><dd>@subscriptionCount</dd>
-                                <dt>Đang active</dt><dd>@activeCount</dd>
-                                <dt>Pending</dt><dd>@pendingCount</dd>
+                                <dt>Tổng đăng ký</dt><dd>@pkg.TotalSubscriptions</dd>
+                                <dt>Đang active</dt><dd class="text-success fw-bold">@pkg.ActiveSubscriptions</dd>
+                                <dt>Pending</dt><dd class="text-warning fw-bold">@pkg.PendingSubscriptions</dd>
+                                <dt>Doanh thu</dt><dd class="fw-bold">@pkg.Revenue.ToString("N0") @pkg.Currency</dd>
                             </dl>
-                        </section>
-
-                        <section class="entity-overlay-panel entity-overlay-panel-full">
-                            <h4>6 đăng ký gần nhất</h4>
-                            @if (package.Subscriptions.Any())
-                            {
-                                <ul class="entity-overlay-list">
-                                    @foreach (var sub in package.Subscriptions.OrderByDescending(s => s.PurchasedAtUtc).Take(6))
-                                    {
-                                        <li>
-                                            <strong>@(sub.User?.QrCodeValue ?? sub.UserId.ToString())</strong>
-                                            <span>@sub.Status • @sub.PurchasedAtUtc.ToString("dd/MM/yyyy HH:mm")</span>
-                                        </li>
-                                    }
-                                </ul>
-                            }
-                            else
-                            {
-                                <div class="text-muted small">Chưa có người đăng ký gói này.</div>
-                            }
                         </section>
                     </div>
                 </template>
@@ -221,13 +275,15 @@
     else
     {
         <div class="card">
-            <div class="card-body text-center text-muted py-4">
-                <i class="fa fa-inbox fa-2x mb-2 d-block"></i>
-                Không có gói thanh toán
+            <div class="card-body text-center text-muted py-5">
+                <i class="fa fa-box-open fa-2x mb-3 d-block opacity-25"></i>
+                <p class="mb-3">Chưa có gói thanh toán nào.</p>
+                <a href="@Url.Page("Edit")" class="btn btn-primary">
+                    <i class="fa fa-plus"></i> Tạo gói đầu tiên
+                </a>
             </div>
         </div>
     }
-
 </div>
 
 @section Scripts {

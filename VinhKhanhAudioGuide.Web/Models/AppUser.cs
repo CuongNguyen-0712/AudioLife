@@ -11,6 +11,10 @@ public class AppUser
     [MaxLength(255)]
     public string QrCodeValue { get; set; } = string.Empty;
 
+    [Required]
+    [MaxLength(255)]
+    public string DeviceId { get; set; } = string.Empty;
+
 
     [Required]
     [MaxLength(30)]
@@ -24,6 +28,8 @@ public class AppUser
     public string? CurrentActivity { get; set; }
 
     public DateTime? CurrentActivityAtUtc { get; set; }
+
+    public bool IsDeleted { get; set; } = false;
 
     // Navigation properties
     public ICollection<UserSubscription> Subscriptions { get; set; } = new List<UserSubscription>();

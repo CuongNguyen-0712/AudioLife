@@ -74,13 +74,17 @@ public static class MobileApiEndpoints
             }
 
             var nowUtc = DateTime.UtcNow;
-            var qrToken = ResolveQrToken(request);
-            var user = await db.AppUsers.FirstOrDefaultAsync(item => item.QrCodeValue == qrToken);
+            
+            // Identify machine by DeviceId
+            var user = await db.AppUsers.IgnoreQueryFilters().FirstOrDefaultAsync(item => item.DeviceId == request.DeviceId);
             if (user is null)
             {
+                // Generate a random token as the machine's primary identity token (stored in QrCodeValue)
+                var randomToken = Guid.NewGuid().ToString("N");
                 user = new AppUser
                 {
-                    QrCodeValue = qrToken,
+                    DeviceId = request.DeviceId,
+                    QrCodeValue = randomToken,
                     Status = "Active",
                     CreatedAtUtc = nowUtc,
                     LastSeenAtUtc = nowUtc
@@ -88,6 +92,11 @@ public static class MobileApiEndpoints
 
                 db.AppUsers.Add(user);
                 await db.SaveChangesAsync();
+            }
+            else if (user.IsDeleted)
+            {
+                user.IsDeleted = false;
+                user.Status = "Active";
             }
 
             user.LastSeenAtUtc = nowUtc;
@@ -120,7 +129,23 @@ public static class MobileApiEndpoints
                 ? Guid.NewGuid().ToString("N")
                 : request.SessionToken;
 
-            var session = await db.UserAppSessions.FirstOrDefaultAsync(item => item.TokenValue == sessionToken || (item.UserId == user.Id && item.DeviceId == request.DeviceId));
+            // Handle session (Ensure only one active session per device)
+            // 1. Deactivate any existing active sessions for this device that aren't the one we are about to use
+            var existingSessions = await db.UserAppSessions
+                .Where(item => item.DeviceId == request.DeviceId && item.IsActive)
+                .ToListAsync();
+
+            UserAppSession? session = existingSessions.FirstOrDefault(s => s.TokenValue == sessionToken || s.UserId == user.Id);
+
+            foreach (var s in existingSessions)
+            {
+                if (session == null || s.Id != session.Id)
+                {
+                    s.IsActive = false;
+                    s.RevokedAtUtc = nowUtc;
+                }
+            }
+
             if (session is null)
             {
                 session = new UserAppSession
@@ -139,7 +164,8 @@ public static class MobileApiEndpoints
             }
             else
             {
-                session.DeviceId = request.DeviceId;
+                // Reuse and update existing session for this device/user
+                session.UserId = user.Id;
                 session.TokenValue = sessionToken;
                 session.RefreshToken = request.RefreshToken;
                 session.LastValidatedAtUtc = nowUtc;
@@ -154,7 +180,6 @@ public static class MobileApiEndpoints
             {
                 Success = isPaid,
                 Message = isPaid ? "Thanh toán đã được xác nhận." : "Thanh toán đang chờ xử lý.",
-                UserAppId = qrToken,
                 SessionToken = sessionToken,
                 RefreshToken = request.RefreshToken,
                 PackageId = package.Id,
@@ -374,7 +399,11 @@ public static class MobileApiEndpoints
             user.CurrentActivityAtUtc = nowUtc;
 
             session.LastValidatedAtUtc = nowUtc;
-            session.ExpiresAtUtc = nowUtc.AddMinutes(30);
+            // session.ExpiresAtUtc = nowUtc.AddMinutes(30); // BUG: Don't shorten session if it's a long-lived paid session
+            if (session.ExpiresAtUtc < nowUtc.AddMinutes(30))
+            {
+                session.ExpiresAtUtc = nowUtc.AddMinutes(30);
+            }
             session.IsActive = true;
             session.RevokedAtUtc = null;
 

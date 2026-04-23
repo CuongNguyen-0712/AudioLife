@@ -120,6 +120,48 @@ body {
     background: var(--auth-accent-hover);
 }
 
+/* ── Divider "hoặc" ── */
+.login-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 14px 0;
+    color: var(--auth-muted);
+    font-size: 0.82rem;
+}
+.login-divider::before,
+.login-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e2e8f0;
+}
+
+/* ── Register POI Button ── */
+.btn-register-poi {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 11px;
+    border-radius: 12px;
+    border: 2px solid var(--auth-accent);
+    background: transparent;
+    color: var(--auth-accent);
+    font-weight: 700;
+    font-family: "Manrope", sans-serif;
+    font-size: 0.95rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s;
+}
+.btn-register-poi:hover {
+    background: var(--auth-accent);
+    color: #fff;
+    text-decoration: none;
+}
+
 .validation-text {
     font-size: 0.85rem;
 }

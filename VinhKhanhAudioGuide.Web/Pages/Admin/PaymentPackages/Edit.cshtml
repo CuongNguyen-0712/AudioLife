@@ -1,66 +1,124 @@
 @page
-@model PaymentPackageEditModel
+@model VinhKhanhAudioGuide.Web.Pages.Admin.PaymentPackageEditModel
 @{
-    ViewData["Title"] = Model.IsCreate ? "Tạo Gói Thanh Toán" : $"Sửa Gói: {Model.Package.Name}";
+    ViewData["Title"] = Model.IsCreate ? "Tạo Gói POI Mới" : $"Sửa Gói: {Model.Input.Name}";
     ViewData["ActivePage"] = "AdminPaymentPackages";
 }
 
-<div class="container py-4" style="max-width: 600px;">
-    <div class="card">
-        <div class="card-header bg-primary text-white">
+<div class="container py-4" style="max-width: 640px;">
+    <div class="mb-3">
+        <a asp-page="Index" class="btn btn-outline-secondary btn-sm">
+            <i class="fa fa-arrow-left"></i> Quay lại danh sách
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header d-flex align-items-center gap-2 bg-primary text-white">
+            <i class="fa-solid fa-box @(Model.IsCreate ? "fa-plus" : "fa-edit")"></i>
             <h5 class="mb-0">
-                @(Model.IsCreate ? "Tạo Gói Thanh Toán Mới" : $"Sửa Gói: {Model.Package.Name}")
+                @(Model.IsCreate ? "Tạo Gói POI Admin Mới" : $"Sửa gói: {Model.Input.Name}")
             </h5>
         </div>
         <div class="card-body">
             <form method="post">
+                <!-- ID (readonly on edit) -->
                 <div class="mb-3">
-                    <label class="form-label">Mã Gói *</label>
-                    <input type="text" asp-for="Package.Id" class="form-control" placeholder="daily, weekly, monthly, etc." readonly="@(!Model.IsCreate)" />
-                    <span asp-validation-for="Package.Id" class="text-danger small"></span>
+                    <label class="form-label fw-semibold">Mã Gói <span class="text-danger">*</span></label>
+                    @if (Model.IsCreate)
+                    {
+                        <input asp-for="Input.Id" class="form-control"
+                               placeholder="Ví dụ: starter, standard, pro, enterprise" />
+                        <div class="form-text">Chỉ dùng chữ thường, số, dấu gạch ngang. Để trống để tự sinh mã.</div>
+                    }
+                    else
+                    {
+                        <input asp-for="Input.Id" class="form-control" readonly />
+                        <div class="form-text text-muted">Mã gói không thể thay đổi sau khi tạo.</div>
+                    }
+                    <span asp-validation-for="Input.Id" class="text-danger small"></span>
                 </div>
 
+                <!-- Name -->
                 <div class="mb-3">
-                    <label class="form-label">Tên Gói *</label>
-                    <input type="text" asp-for="Package.Name" class="form-control" placeholder="1 Ngày, Toàn Bộ Tour, etc." />
-                    <span asp-validation-for="Package.Name" class="text-danger small"></span>
+                    <label class="form-label fw-semibold">Tên Gói <span class="text-danger">*</span></label>
+                    <input asp-for="Input.Name" class="form-control"
+                           placeholder="Gói Khởi Động, Gói Tiêu Chuẩn, Gói Chuyên Nghiệp..." />
+                    <span asp-validation-for="Input.Name" class="text-danger small"></span>
                 </div>
 
+                <!-- Description -->
                 <div class="mb-3">
-                    <label class="form-label">Mô Tả</label>
-                    <textarea asp-for="Package.Description" class="form-control" rows="3" placeholder="Mô tả chi tiết về gói..."></textarea>
-                    <span asp-validation-for="Package.Description" class="text-danger small"></span>
+                    <label class="form-label fw-semibold">Mô Tả</label>
+                    <textarea asp-for="Input.Description" class="form-control" rows="4"
+                              placeholder="Mô tả chi tiết tính năng và đối tượng phù hợp của gói..."></textarea>
+                    <span asp-validation-for="Input.Description" class="text-danger small"></span>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Giá (VND) *</label>
-                        <input type="number" asp-for="Package.Price" class="form-control" placeholder="10000" />
-                        <span asp-validation-for="Package.Price" class="text-danger small"></span>
+                <!-- Price + Duration -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Giá <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="number" asp-for="Input.Price" class="form-control"
+                                   placeholder="99000" min="0" step="1000" />
+                            <span class="input-group-text">@(Model.Input.Currency ?? "VND")</span>
+                        </div>
+                        <span asp-validation-for="Input.Price" class="text-danger small"></span>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Thời Hạn (Ngày) *</label>
-                        <input type="number" asp-for="Package.DurationDays" class="form-control" placeholder="1, 30, 90" />
-                        <span asp-validation-for="Package.DurationDays" class="text-danger small"></span>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Thời Hạn <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="number" asp-for="Input.DurationDays" class="form-control"
+                                   placeholder="30" min="1" max="3650" />
+                            <span class="input-group-text">ngày</span>
+                        </div>
+                        <span asp-validation-for="Input.DurationDays" class="text-danger small"></span>
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Đơn Vị Tiền Tệ *</label>
-                    <input type="text" asp-for="Package.Currency" class="form-control" value="VND" />
-                    <span asp-validation-for="Package.Currency" class="text-danger small"></span>
+                <!-- Currency -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Loại Đối Tượng <span class="text-danger">*</span></label>
+                        <select asp-for="Input.TargetType" class="form-select">
+                            <option value="User">Người dùng App (Mobile)</option>
+                            <option value="Admin">POI Admin (Web)</option>
+                        </select>
+                        <span asp-validation-for="Input.TargetType" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Đơn Vị Tiền Tệ</label>
+                        <select asp-for="Input.Currency" class="form-select">
+                            <option value="VND">VND – Đồng Việt Nam</option>
+                            <option value="USD">USD – Đô la Mỹ</option>
+                        </select>
+                        <span asp-validation-for="Input.Currency" class="text-danger small"></span>
+                    </div>
                 </div>
 
-                <div class="mb-3 form-check">
-                    <input type="checkbox" asp-for="Package.IsActive" class="form-check-input" id="isActive" />
-                    <label class="form-check-label" for="isActive">
-                        Kích Hoạt Gói Này
-                    </label>
+                <!-- Active toggle -->
+                <div class="mb-4 p-3 bg-light rounded border">
+                    <div class="form-check form-switch">
+                        <input type="checkbox" asp-for="Input.IsActive" class="form-check-input"
+                               id="isActiveSwitch" role="switch" />
+                        <label class="form-check-label fw-semibold" for="isActiveSwitch">
+                            Kích hoạt gói này
+                        </label>
+                    </div>
+                    <div class="form-text mt-1">
+                        Khi kích hoạt, gói sẽ hiển thị trong trang chọn gói khi đăng ký tài khoản POI mới.
+                    </div>
                 </div>
 
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <a href="@Url.Page("Index")" class="btn btn-secondary">Hủy</a>
-                    <button type="submit" class="btn btn-primary">Lưu</button>
+                <!-- Actions -->
+                <div class="d-flex justify-content-between">
+                    <a asp-page="Index" class="btn btn-secondary">
+                        <i class="fa fa-times"></i> Hủy
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fa fa-save"></i>
+                        @(Model.IsCreate ? "Tạo gói" : "Lưu thay đổi")
+                    </button>
                 </div>
             </form>
         </div>

@@ -1,0 +1,150 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Account.Register.SelectPlanModel
+@{
+    ViewData["Title"] = "Chọn gói POI";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng ký tài khoản POI – Chọn gói</title>
+    <meta name="description" content="Chọn gói dịch vụ POI phù hợp để bắt đầu quản lý điểm tham quan của bạn." />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/register.css" asp-append-version="true" />
+</head>
+<body class="register-body">
+    <div class="register-wrapper">
+        <!-- Header -->
+        <div class="reg-header">
+            <a href="/Account/Login" class="reg-back-btn">
+                <i class="fas fa-arrow-left"></i> Quay lại đăng nhập
+            </a>
+            <div class="reg-steps">
+                <div class="reg-step active" id="step-1">
+                    <span class="step-num">1</span>
+                    <span class="step-label">Chọn gói</span>
+                </div>
+                <div class="reg-step-line"></div>
+                <div class="reg-step" id="step-2">
+                    <span class="step-num">2</span>
+                    <span class="step-label">Thanh toán</span>
+                </div>
+                <div class="reg-step-line"></div>
+                <div class="reg-step" id="step-3">
+                    <span class="step-num">3</span>
+                    <span class="step-label">Tạo tài khoản</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="reg-content">
+            <div class="reg-title-block">
+                <span class="reg-logo"><i class="fas fa-store"></i></span>
+                <h1>Đăng ký tài khoản POI Admin</h1>
+                <p>Chọn gói dịch vụ phù hợp với nhu cầu quản lý điểm tham quan của bạn.</p>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+            {
+                <div class="reg-alert reg-alert-error">
+                    <i class="fas fa-exclamation-triangle"></i> @Model.ErrorMessage
+                </div>
+            }
+
+            <form method="post" id="select-plan-form">
+                <div class="plan-grid" id="plan-grid">
+                    @for (int i = 0; i < Model.Packages.Count; i++)
+                    {
+                        var pkg = Model.Packages[i];
+                        var isFeatured = Model.Packages.Count > 1 && i == 1;
+                        <div class="plan-card @(isFeatured ? "plan-featured" : "")" 
+                             data-package-id="@pkg.Id"
+                             onclick="selectPlan('@pkg.Id', this)">
+                            @if (isFeatured)
+                            {
+                                <div class="plan-badge">Phổ biến nhất</div>
+                            }
+                            <div class="plan-icon">
+                                @if (pkg.DurationDays <= 30)
+                                {
+                                    <i class="fas fa-seedling"></i>
+                                }
+                                else if (pkg.DurationDays <= 180)
+                                {
+                                    <i class="fas fa-rocket"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-crown"></i>
+                                }
+                            </div>
+                            <div class="plan-name">@pkg.Name</div>
+                            <div class="plan-price">
+                                <span class="plan-amount">@pkg.Price.ToString("N0")</span>
+                                <span class="plan-currency">@pkg.Currency</span>
+                            </div>
+                            <div class="plan-duration">
+                                <i class="fas fa-calendar-alt"></i>
+                                @pkg.DurationDays ngày sử dụng
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(pkg.Description))
+                            {
+                                <div class="plan-desc">@pkg.Description</div>
+                            }
+                            <div class="plan-features">
+                                <div class="plan-feature-item"><i class="fas fa-check"></i> Quản lý điểm tham quan</div>
+                                <div class="plan-feature-item"><i class="fas fa-check"></i> Upload nội dung âm thanh</div>
+                                <div class="plan-feature-item"><i class="fas fa-check"></i> Xem thống kê lượt nghe</div>
+                                @if (pkg.DurationDays >= 90)
+                                {
+                                    <div class="plan-feature-item"><i class="fas fa-check"></i> Hỗ trợ ưu tiên</div>
+                                }
+                                @if (pkg.DurationDays >= 180)
+                                {
+                                    <div class="plan-feature-item"><i class="fas fa-check"></i> API tích hợp</div>
+                                }
+                            </div>
+                            <div class="plan-select-indicator">
+                                <i class="fas fa-circle-check"></i> Đã chọn
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <input type="hidden" name="SelectedPackageId" id="selected-package-id" value="" />
+
+                <div class="reg-action-bar">
+                    <button type="submit" class="btn-reg-primary" id="btn-continue" disabled>
+                        <i class="fas fa-arrow-right"></i> Tiếp tục – Thanh toán
+                    </button>
+                    <p class="reg-action-note">Bạn chưa chọn gói. Hãy nhấn vào một gói ở trên.</p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function selectPlan(packageId, card) {
+            // Deselect all
+            document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+            // Select clicked
+            card.classList.add('selected');
+            document.getElementById('selected-package-id').value = packageId;
+
+            var btn = document.getElementById('btn-continue');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-arrow-right"></i> Tiếp tục – Thanh toán';
+            document.querySelector('.reg-action-note').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

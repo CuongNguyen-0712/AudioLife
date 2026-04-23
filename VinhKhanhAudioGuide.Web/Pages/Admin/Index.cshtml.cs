@@ -13,12 +13,14 @@ public class IndexModel : PageModel
     private readonly AppDbContext _db;
     private readonly AuthOptions _authOptions;
     private readonly IPoiChangeRequestService _changeRequestService;
+    private readonly IPaymentPackageService _packageService;
 
-    public IndexModel(AppDbContext db, IOptions<AuthOptions> authOptions, IPoiChangeRequestService changeRequestService)
+    public IndexModel(AppDbContext db, IOptions<AuthOptions> authOptions, IPoiChangeRequestService changeRequestService, IPaymentPackageService packageService)
     {
         _db = db;
         _authOptions = authOptions.Value;
         _changeRequestService = changeRequestService;
+        _packageService = packageService;
     }
 
     public int LocationCount { get; set; }
@@ -35,6 +37,7 @@ public class IndexModel : PageModel
     public List<CategoryAudioSummary> CategorySummaries { get; set; } = new();
     public List<PoiAdminSummary> PoiAdminSummaries { get; set; } = new();
     public List<RecentRequestSummary> RecentRequests { get; set; } = new();
+    public PackageDashboardStatsDto PackageStats { get; set; } = new();
 
     public async Task OnGetAsync()
     {
@@ -105,6 +108,8 @@ public class IndexModel : PageModel
         AverageAudioPerLocation = LocationCount == 0
             ? 0
             : Math.Round((double)AudioGuideCount / LocationCount, 1);
+
+        PackageStats = await _packageService.GetDashboardStatsAsync();
     }
 
     private async Task<List<PoiAdminSummary>> BuildPoiAdminSummariesAsync()
@@ -117,13 +122,31 @@ public class IndexModel : PageModel
                 group => group.Select(item => item.LocationId).Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
                 StringComparer.OrdinalIgnoreCase);
 
-        var poiAdmins = _authOptions.Users
+        // Merge users from AuthOptions (config) and database
+        var dbUsers = await _db.AuthUserAccounts
+            .AsNoTracking()
+            .Where(u => u.Role == RoleNames.PoiAdmin && u.IsActive)
+            .Select(u => new { u.Username, u.DisplayName, Role = RoleNames.PoiAdmin })
+            .ToListAsync();
+
+        var configUsers = _authOptions.Users
             .Where(user => string.Equals(user.Role, RoleNames.PoiAdmin, StringComparison.OrdinalIgnoreCase))
+            .Select(user => new { user.Username, user.DisplayName, Role = RoleNames.PoiAdmin });
+
+        // Combined unique by username
+        var allPoiAdmins = dbUsers
+            .Select(u => new { u.Username, u.DisplayName })
+            .Concat(configUsers.Select(u => new { u.Username, u.DisplayName }))
+            .GroupBy(u => u.Username, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.First())
+            .ToList();
+
+        var poiAdmins = allPoiAdmins
             .Select(user => new PoiAdminSummary
             {
                 DisplayName = string.IsNullOrWhiteSpace(user.DisplayName) ? user.Username : user.DisplayName,
                 Username = user.Username,
-                LocationIds = (assignmentMap.TryGetValue(user.Username, out var assignedIds) ? assignedIds : user.LocationIds)
+                LocationIds = (assignmentMap.TryGetValue(user.Username, out var assignedIds) ? assignedIds : new List<string>())
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList()
             })

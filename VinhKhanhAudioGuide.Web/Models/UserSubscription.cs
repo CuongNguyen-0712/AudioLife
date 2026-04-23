@@ -8,9 +8,11 @@ public class UserSubscription
     [Key]
     public Guid Id { get; set; } = Guid.NewGuid();
 
-    [Required]
     [ForeignKey(nameof(AppUser))]
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
+
+    [ForeignKey(nameof(AuthUser))]
+    public int? AuthUserId { get; set; }
 
     [Required]
     [MaxLength(50)]
@@ -30,11 +32,18 @@ public class UserSubscription
     [MaxLength(500)]
     public string? PaymentReference { get; set; }
 
+    /// <summary>Số tiền thực tế đã thanh toán (snapshot tại thời điểm mua)</summary>
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal PaidAmount { get; set; }
+
     public DateTime? LastVerifiedAtUtc { get; set; }
 
     // Navigation properties
     [ForeignKey(nameof(UserId))]
     public virtual AppUser? User { get; set; }
+
+    [ForeignKey(nameof(AuthUserId))]
+    public virtual AuthUserAccount? AuthUser { get; set; }
 
     [ForeignKey(nameof(PackageId))]
     public virtual PaymentPackage? Package { get; set; }

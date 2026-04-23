@@ -56,6 +56,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IPoiChangeRequestService, DbPoiChangeRequestService>();
 builder.Services.AddScoped<IPoiAdminAssignmentService, PoiAdminAssignmentService>();
+builder.Services.AddScoped<IPaymentPackageService, PaymentPackageService>();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor

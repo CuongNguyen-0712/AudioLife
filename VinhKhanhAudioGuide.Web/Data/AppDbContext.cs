@@ -22,6 +22,7 @@ public class AppDbContext : DbContext
     public DbSet<PaymentPackage> PaymentPackages => Set<PaymentPackage>();
     public DbSet<UserSubscription> UserSubscriptions => Set<UserSubscription>();
     public DbSet<UserAppSession> UserAppSessions => Set<UserAppSession>();
+    public DbSet<PoiRegistrationRequest> PoiRegistrationRequests => Set<PoiRegistrationRequest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -119,12 +120,16 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<AppUser>(entity =>
         {
             entity.HasIndex(item => item.QrCodeValue).IsUnique();
+            entity.HasIndex(item => item.DeviceId).IsUnique();
             entity.HasIndex(item => item.Status);
             entity.HasIndex(item => item.CurrentActivityAtUtc);
 
             entity.Property(item => item.QrCodeValue).IsRequired().HasMaxLength(255);
+            entity.Property(item => item.DeviceId).IsRequired().HasMaxLength(255);
             entity.Property(item => item.Status).IsRequired().HasMaxLength(30);
             entity.Property(item => item.CurrentActivity).HasMaxLength(200);
+
+            entity.HasQueryFilter(item => !item.IsDeleted);
         });
 
         modelBuilder.Entity<AppUserActivityLog>(entity =>
@@ -164,6 +169,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<UserSubscription>(entity =>
         {
             entity.HasIndex(item => item.UserId);
+            entity.HasIndex(item => item.AuthUserId);
             entity.HasIndex(item => item.PackageId);
             entity.HasIndex(item => item.Status);
             entity.HasIndex(item => item.ExpiresAtUtc);
@@ -176,6 +182,11 @@ public class AppDbContext : DbContext
                 .WithMany(u => u.Subscriptions)
                 .HasForeignKey(item => item.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(item => item.AuthUser)
+                .WithMany() // AuthUserAccount doesn't have a Subscriptions collection yet
+                .HasForeignKey(item => item.AuthUserId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             entity.HasOne(item => item.Package)
                 .WithMany(p => p.Subscriptions)
@@ -200,6 +211,24 @@ public class AppDbContext : DbContext
                 .WithMany(u => u.AppSessions)
                 .HasForeignKey(item => item.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configuration for PoiRegistrationRequest
+        modelBuilder.Entity<PoiRegistrationRequest>(entity =>
+        {
+            entity.HasKey(item => item.Id);
+            entity.HasIndex(item => item.Status);
+            entity.HasIndex(item => item.ExpiresAtUtc);
+
+            entity.Property(item => item.PackageId).IsRequired().HasMaxLength(50);
+            entity.Property(item => item.Status).IsRequired().HasMaxLength(30);
+            entity.Property(item => item.PaymentReference).HasMaxLength(200);
+            entity.Property(item => item.CreatedUsername).HasMaxLength(100);
+
+            entity.HasOne(item => item.Package)
+                .WithMany()
+                .HasForeignKey(item => item.PackageId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

@@ -23,7 +23,6 @@ public static class DbInitializer
         EnsureListeningHistoryTable(context);
         EnsureLegacyTablesRemoved(context);
         EnsureLocationSpatialColumns(context);
-        EnsureAppUserLegacyColumnsRemoved(context);
 
         var hasVinhKhanhSeed = context.Locations
             .AsNoTracking()
@@ -379,37 +378,6 @@ BEGIN
     IF COL_LENGTH('dbo.Locations', 'DetectionRadiusMeters') IS NULL
     BEGIN
         ALTER TABLE [dbo].[Locations] ADD [DetectionRadiusMeters] float NOT NULL CONSTRAINT [DF_Locations_DetectionRadiusMeters] DEFAULT (80);
-    END
-END
-");
-    }
-
-    private static void EnsureAppUserLegacyColumnsRemoved(AppDbContext context)
-    {
-        context.Database.ExecuteSqlRaw(@"
-IF OBJECT_ID(N'dbo.AppUsers', N'U') IS NOT NULL
-BEGIN
-    IF EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'DisplayName' AND Object_ID = Object_ID(N'dbo.AppUsers'))
-    BEGIN
-        ALTER TABLE [dbo].[AppUsers] DROP COLUMN [DisplayName];
-    END
-
-    IF EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'PhoneNumber' AND Object_ID = Object_ID(N'dbo.AppUsers'))
-    BEGIN
-        IF EXISTS(SELECT 1 FROM sys.indexes WHERE name = N'IX_AppUsers_PhoneNumber' AND object_id = Object_ID(N'dbo.AppUsers'))
-        BEGIN
-            DROP INDEX [IX_AppUsers_PhoneNumber] ON [dbo].[AppUsers];
-        END
-        ALTER TABLE [dbo].[AppUsers] DROP COLUMN [PhoneNumber];
-    END
-
-    IF EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'Email' AND Object_ID = Object_ID(N'dbo.AppUsers'))
-    BEGIN
-        IF EXISTS(SELECT 1 FROM sys.indexes WHERE name = N'IX_AppUsers_Email' AND object_id = Object_ID(N'dbo.AppUsers'))
-        BEGIN
-            DROP INDEX [IX_AppUsers_Email] ON [dbo].[AppUsers];
-        END
-        ALTER TABLE [dbo].[AppUsers] DROP COLUMN [Email];
     END
 END
 ");

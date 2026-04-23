@@ -63,6 +63,14 @@ public partial class App : Application
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            // Ensure we have a persisted culture, default to Vietnamese if not.
+            // This handles the case where user exits the app at LanguageSelection screen.
+            if (string.IsNullOrWhiteSpace(LocalizationService.GetPersistedOrDefaultCulture()) || 
+                Preferences.Default.Get<string?>("AppLanguage", null) == null)
+            {
+                LocalizationService.ApplyDefaultVietnamese(persist: true);
+            }
+
             ApplyPersistedCultureForAuthenticatedShell();
             SetRootPage(new AppShell());
             _ = StartHeartbeatAsync();
@@ -114,6 +122,27 @@ public partial class App : Application
         }
 
         var deviceId = await sessionStore.GetOrCreateDeviceIdAsync();
+
+        // Check if device is offline
+        if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
+        {
+            var snapshot = await sessionStore.GetSnapshotAsync();
+            if (snapshot is not null && snapshot.ExpiresAtUtc > DateTime.UtcNow)
+            {
+                // Local session is still valid
+                NavigateToShellRoot();
+                _ = StartAutoPlaybackAsync();
+                return;
+            }
+
+            // Local session is invalid or expired
+            await sessionStore.ClearSnapshotAsync();
+            _ = StopHeartbeatAsync();
+            LocalizationService.ClearPersistedCulture();
+            NavigateToIntro();
+            return;
+        }
+
         var check = await apiService.CheckDeviceSessionAsync(deviceId);
         if (check is null || !check.HasSession)
         {
@@ -163,6 +192,20 @@ public partial class App : Application
         }
 
         NavigateToShellRoot();
+        _ = StartAutoPlaybackAsync();
+    }
+
+    private static async Task StartAutoPlaybackAsync()
+    {
+        var services = Current?.Handler?.MauiContext?.Services;
+        var autoPlayback = services?.GetService<IAutoPlaybackService>();
+        var geoService = services?.GetService<IGeolocationService>();
+
+        if (autoPlayback != null && geoService != null)
+        {
+            await geoService.StartTrackingAsync();
+            autoPlayback.Start();
+        }
     }
 
     private static async Task ProcessPendingDeepLinkAsync()

@@ -3,172 +3,200 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using VinhKhanhAudioGuide.Web.Data;
 using VinhKhanhAudioGuide.Web.Models;
+using VinhKhanhAudioGuide.Web.Services;
 
 namespace VinhKhanhAudioGuide.Web.Pages.Admin;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Package List Page
+// ─────────────────────────────────────────────────────────────────────────────
 public class PaymentPackagesModel : PageModel
 {
-    private readonly AppDbContext _context;
+    private readonly IPaymentPackageService _packageService;
 
-    public PaymentPackagesModel(AppDbContext context)
+    public PaymentPackagesModel(IPaymentPackageService packageService)
     {
-        _context = context;
+        _packageService = packageService;
     }
 
-    public IList<PaymentPackage> Packages { get; set; } = new List<PaymentPackage>();
-    public int ActiveSubscriptionCount { get; set; }
-    public int PendingSubscriptionCount { get; set; }
-    public int InactivePackageCount { get; set; }
-    public int ActivePackageCount { get; set; }
+    public List<PackageSummaryDto> Packages { get; set; } = new();
+    public PackageDashboardStatsDto Stats { get; set; } = new();
+
+    // Convenience props for legacy Razor view compatibility
+    public int ActiveSubscriptionCount => Stats.TotalActiveSubscriptions;
+    public int PendingSubscriptionCount => Stats.TotalPendingSubscriptions;
+    public int InactivePackageCount => Stats.InactivePackages;
+    public int ActivePackageCount => Stats.ActivePackages;
+
     public string SearchTerm { get; set; } = string.Empty;
     public string StatusFilter { get; set; } = string.Empty;
+    public string TypeFilter { get; set; } = string.Empty;
 
-    public async Task OnGetAsync(string searchTerm = "", string statusFilter = "")
+    public async Task OnGetAsync(
+        string searchTerm = "",
+        string statusFilter = "",
+        string typeFilter = "",
+        CancellationToken cancellationToken = default)
     {
         SearchTerm = searchTerm;
         StatusFilter = statusFilter;
+        TypeFilter = typeFilter;
 
-        var query = _context.PaymentPackages
-            .AsNoTracking()
-            .Include(p => p.Subscriptions)
-            .ThenInclude(s => s.User)
-            .AsSplitQuery()
-            .AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(searchTerm))
+        bool? activeFilter = statusFilter switch
         {
-            var term = searchTerm.Trim();
-            query = query.Where(package =>
-                EF.Functions.Like(package.Id, $"%{term}%") ||
-                EF.Functions.Like(package.Name, $"%{term}%") ||
-                EF.Functions.Like(package.Description ?? string.Empty, $"%{term}%") ||
-                EF.Functions.Like(package.Currency, $"%{term}%"));
-        }
+            "Active" => true,
+            "Inactive" => false,
+            _ => null
+        };
 
-        if (string.Equals(statusFilter, "Active", StringComparison.OrdinalIgnoreCase))
-        {
-            query = query.Where(package => package.IsActive);
-        }
-        else if (string.Equals(statusFilter, "Inactive", StringComparison.OrdinalIgnoreCase))
-        {
-            query = query.Where(package => !package.IsActive);
-        }
+        Packages = await _packageService.GetAllAsync(
+            search: string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm,
+            activeOnly: activeFilter,
+            targetType: string.IsNullOrWhiteSpace(typeFilter) ? null : typeFilter,
+            ct: cancellationToken);
 
-        Packages = await query
-            .OrderByDescending(p => p.IsActive)
-            .ThenBy(p => p.Price)
-            .ToListAsync();
-
-        ActivePackageCount = await _context.PaymentPackages.CountAsync(package => package.IsActive);
-        InactivePackageCount = await _context.PaymentPackages.CountAsync(package => !package.IsActive);
-        ActiveSubscriptionCount = await _context.UserSubscriptions
-            .AsNoTracking()
-            .Where(s => s.Status == "Active")
-            .CountAsync();
-        PendingSubscriptionCount = await _context.UserSubscriptions
-            .AsNoTracking()
-            .Where(s => s.Status == "Pending")
-            .CountAsync();
+        Stats = await _packageService.GetDashboardStatsAsync(cancellationToken);
     }
 
-    public async Task<IActionResult> OnPostToggleAsync(string id)
+    public async Task<IActionResult> OnPostToggleAsync(string id, CancellationToken cancellationToken = default)
     {
-        var package = await _context.PaymentPackages.FindAsync(id);
-        if (package == null)
+        var toggled = await _packageService.ToggleActiveAsync(id, cancellationToken);
+        if (!toggled)
         {
-            return NotFound();
+            TempData["ErrorMessage"] = "Không tìm thấy gói thanh toán.";
         }
-
-        package.IsActive = !package.IsActive;
-        _context.Update(package);
-        await _context.SaveChangesAsync();
 
         return RedirectToPage();
     }
 
-    public async Task<IActionResult> OnPostDeleteAsync(string id)
+    public async Task<IActionResult> OnPostDeleteAsync(string id, CancellationToken cancellationToken = default)
     {
-        var package = await _context.PaymentPackages
-            .Include(p => p.Subscriptions)
-            .FirstOrDefaultAsync(p => p.Id == id);
+        var (success, error) = await _packageService.DeleteAsync(id, cancellationToken);
 
-        if (package == null)
+        if (!success)
         {
-            return NotFound();
+            TempData["ErrorMessage"] = error ?? "Không thể xóa gói thanh toán.";
+        }
+        else
+        {
+            TempData["SuccessMessage"] = "Gói thanh toán đã được xóa thành công.";
         }
 
-        // Can only delete if no active subscriptions
-        if (package.Subscriptions.Any(s => s.Status is "Active" or "Pending"))
-        {
-            TempData["ErrorMessage"] = "Không thể xóa gói này vì còn có gói đăng ký hoạt động.";
-            return RedirectToPage();
-        }
-
-        _context.PaymentPackages.Remove(package);
-        await _context.SaveChangesAsync();
-
-        TempData["SuccessMessage"] = "Gói thanh toán đã được xóa thành công.";
         return RedirectToPage();
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Package Create / Edit Page
+// ─────────────────────────────────────────────────────────────────────────────
 public class PaymentPackageEditModel : PageModel
 {
-    private readonly AppDbContext _context;
+    private readonly IPaymentPackageService _packageService;
 
-    public PaymentPackageEditModel(AppDbContext context)
+    public PaymentPackageEditModel(IPaymentPackageService packageService)
     {
-        _context = context;
+        _packageService = packageService;
     }
 
     [BindProperty]
-    public PaymentPackage Package { get; set; } = new();
+    public PackageFormInput Input { get; set; } = new();
 
     public bool IsCreate { get; set; }
 
-    public async Task<IActionResult> OnGetAsync(string? id)
+    public async Task<IActionResult> OnGetAsync(string? id, CancellationToken cancellationToken = default)
     {
         IsCreate = string.IsNullOrEmpty(id);
 
         if (!IsCreate)
         {
-            var package = await _context.PaymentPackages.FindAsync(id);
-            if (package == null)
+            var existing = await _packageService.GetByIdAsync(id!, cancellationToken);
+            if (existing is null)
             {
                 return NotFound();
             }
 
-            Package = package;
+            Input = new PackageFormInput
+            {
+                Id = existing.Id,
+                Name = existing.Name,
+                Description = existing.Description,
+                Price = existing.Price,
+                Currency = existing.Currency,
+                DurationDays = existing.DurationDays,
+                TargetType = existing.TargetType,
+                IsActive = existing.IsActive
+            };
         }
 
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAsync()
+    public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid)
         {
+            IsCreate = string.IsNullOrEmpty(Input.Id);
             return Page();
         }
 
-        IsCreate = string.IsNullOrEmpty(Package.Id);
+        IsCreate = string.IsNullOrEmpty(Input.Id);
+
+        var dto = new PackageUpsertDto
+        {
+            Id = string.IsNullOrWhiteSpace(Input.Id) ? null : Input.Id.Trim(),
+            Name = Input.Name,
+            Description = Input.Description,
+            Price = Input.Price,
+            Currency = Input.Currency,
+            DurationDays = Input.DurationDays,
+            TargetType = Input.TargetType,
+            IsActive = Input.IsActive
+        };
 
         if (IsCreate)
         {
-            Package.CreatedAtUtc = DateTime.UtcNow;
-            _context.PaymentPackages.Add(Package);
+            await _packageService.CreateAsync(dto, cancellationToken);
+            TempData["SuccessMessage"] = "Gói thanh toán đã được tạo thành công.";
         }
         else
         {
-            _context.PaymentPackages.Update(Package);
+            var updated = await _packageService.UpdateAsync(dto, cancellationToken);
+            if (updated is null)
+            {
+                return NotFound();
+            }
+            TempData["SuccessMessage"] = "Gói thanh toán đã được cập nhật thành công.";
         }
 
-        await _context.SaveChangesAsync();
-
-        TempData["SuccessMessage"] = IsCreate
-            ? "Gói thanh toán đã được tạo thành công."
-            : "Gói thanh toán đã được cập nhật thành công.";
-
         return RedirectToPage("Index");
+    }
+
+    public class PackageFormInput
+    {
+        public string? Id { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vui lòng nhập tên gói.")]
+        [System.ComponentModel.DataAnnotations.MaxLength(150)]
+        public string Name { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.MaxLength(500)]
+        public string? Description { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vui lòng nhập giá.")]
+        [System.ComponentModel.DataAnnotations.Range(0, 100_000_000, ErrorMessage = "Giá không hợp lệ.")]
+        public decimal Price { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required]
+        [System.ComponentModel.DataAnnotations.MaxLength(10)]
+        public string Currency { get; set; } = "VND";
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vui lòng nhập số ngày.")]
+        [System.ComponentModel.DataAnnotations.Range(1, 3650, ErrorMessage = "Số ngày phải từ 1 đến 3650.")]
+        public int DurationDays { get; set; } = 30;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vui lòng chọn loại đối tượng.")]
+        public string TargetType { get; set; } = "User";
+
+        public bool IsActive { get; set; } = true;
     }
 }
