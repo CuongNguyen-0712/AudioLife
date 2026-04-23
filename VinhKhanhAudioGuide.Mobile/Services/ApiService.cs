@@ -1,4 +1,4 @@
-﻿using VinhKhanhAudioGuide.Mobile.Data;
+using VinhKhanhAudioGuide.Mobile.Data;
 using VinhKhanhAudioGuide.Mobile.Models;
 using Location = VinhKhanhAudioGuide.Mobile.Models.Location;
 
@@ -262,7 +262,7 @@ public class ApiService : IApiService
         return ContentLocalizationMapper.ToLanguageCode(persistedCulture);
     }
 
-    public async Task AddListeningHistoryAsync(string audioGuideId, string locationId, double progress)
+    public async Task AddListeningHistoryAsync(string audioGuideId, string locationId, double progress, int interruptedAtSeconds = 0, bool isDirectTap = false)
     {
         await EnsureLocalDataLoadedAsync();
         var audio = _locations.SelectMany(l => l.AudioGuides).FirstOrDefault(a => a.Id == audioGuideId);
@@ -278,6 +278,8 @@ public class ApiService : IApiService
                 existing.LastListenedAt = existing.ListenedAt;
                 existing.IsCompleted = progress >= 0.999;
                 existing.Language = audio.Language;
+                existing.InterruptedAtSeconds = interruptedAtSeconds;
+                existing.IsDirectTap = isDirectTap;
                 await _localDatabaseService.UpsertListeningHistoryAsync(existing);
             }
             else
@@ -297,7 +299,9 @@ public class ApiService : IApiService
                     ListenedSeconds = (int)Math.Round(audio.Duration * 60 * progress),
                     LastListenedAt = DateTime.Now,
                     IsCompleted = progress >= 0.999,
-                    Language = audio.Language
+                    Language = audio.Language,
+                    InterruptedAtSeconds = interruptedAtSeconds,
+                    IsDirectTap = isDirectTap
                 };
                 _history.Add(item);
                 await _localDatabaseService.UpsertListeningHistoryAsync(item);

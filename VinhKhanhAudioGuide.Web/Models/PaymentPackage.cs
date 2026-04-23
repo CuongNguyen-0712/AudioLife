@@ -30,6 +30,7 @@ public class PaymentPackage
     public string TargetType { get; set; } = "User"; // User | Admin
 
     public bool IsActive { get; set; } = true;
+    public int DefaultPoiPriority { get; set; } = 100;
 
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 

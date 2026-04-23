@@ -246,6 +246,7 @@
                                 <dt>Tên gói</dt><dd>@pkg.Name</dd>
                                 <dt>Giá</dt><dd><strong>@pkg.Price.ToString("N0") @pkg.Currency</strong></dd>
                                 <dt>Thời hạn</dt><dd>@pkg.DurationDays ngày</dd>
+                                <dt>Độ ưu tiên POI</dt><dd><span class="badge bg-primary">@pkg.DefaultPoiPriority</span></dd>
                                 <dt>Trạng thái</dt>
                                 <dd>
                                     @if (pkg.IsActive)

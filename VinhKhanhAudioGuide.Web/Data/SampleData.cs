@@ -711,6 +711,7 @@ public static class SampleData
                 DurationDays = 1,
                 TargetType = "User",
                 IsActive = true,
+                DefaultPoiPriority = 0,
                 CreatedAtUtc = SeedBaseUtc
             },
             new()
@@ -723,6 +724,7 @@ public static class SampleData
                 DurationDays = 90,
                 TargetType = "User",
                 IsActive = true,
+                DefaultPoiPriority = 0,
                 CreatedAtUtc = SeedBaseUtc.AddMinutes(5)
             },
 
@@ -737,6 +739,7 @@ public static class SampleData
                 DurationDays = 30,
                 TargetType = "Admin",
                 IsActive = true,
+                DefaultPoiPriority = 100,
                 CreatedAtUtc = SeedBaseUtc.AddMinutes(10)
             },
             new()
@@ -749,6 +752,7 @@ public static class SampleData
                 DurationDays = 30,
                 TargetType = "Admin",
                 IsActive = true,
+                DefaultPoiPriority = 200,
                 CreatedAtUtc = SeedBaseUtc.AddMinutes(15)
             },
             new()
@@ -761,6 +765,7 @@ public static class SampleData
                 DurationDays = 90,
                 TargetType = "Admin",
                 IsActive = true,
+                DefaultPoiPriority = 500,
                 CreatedAtUtc = SeedBaseUtc.AddMinutes(20)
             },
             new()
@@ -773,6 +778,7 @@ public static class SampleData
                 DurationDays = 365,
                 TargetType = "Admin",
                 IsActive = true,
+                DefaultPoiPriority = 1000,
                 CreatedAtUtc = SeedBaseUtc.AddMinutes(25)
             }
         };

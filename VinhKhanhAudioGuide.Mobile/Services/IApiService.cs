@@ -42,7 +42,7 @@ public interface IApiService
 
     // History
     Task<List<ListeningHistory>> GetListeningHistoryAsync();
-    Task AddListeningHistoryAsync(string audioGuideId, string locationId, double progress);
+    Task AddListeningHistoryAsync(string audioGuideId, string locationId, double progress, int interruptedAtSeconds = 0, bool isDirectTap = false);
 
     // Downloads
     Task<List<DownloadedAudio>> GetDownloadedAudiosAsync();

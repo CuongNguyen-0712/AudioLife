@@ -13,6 +13,7 @@ public interface IAudioService
     string? CurrentAudioUrl { get; }
     string? CurrentLocationId { get; }
     string? CurrentAudioGuideId { get; }
+    bool IsDirectTap { get; }
     DateTime LastPlayAttemptUtc { get; }
     TimeSpan PlayCooldown { get; }
 
@@ -20,7 +21,7 @@ public interface IAudioService
     event EventHandler<AudioPositionChangedEventArgs>? PositionChanged;
 
     Task PlayAsync(string audioUrl);
-    Task PlayAsync(string audioUrl, string locationId, string audioGuideId);
+    Task PlayAsync(string audioUrl, string locationId, string audioGuideId, bool isDirectTap = false);
     Task PauseAsync();
     Task ResumeAsync();
     Task StopAsync();

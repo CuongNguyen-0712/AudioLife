@@ -19,6 +19,8 @@ public class LocalDatabaseService : ILocalDatabaseService
         await _database.CreateTableAsync<ListeningHistoryEntity>();
         await _database.CreateTableAsync<DownloadedAudioEntity>();
         await _database.CreateTableAsync<CachedJsonEntity>();
+        await _database.CreateTableAsync<PlaybackQueueEntity>();
+        await _database.CreateTableAsync<LocationPlaybackHistoryEntity>();
     }
 
     public async Task<List<string>> GetFavoriteLocationIdsAsync()
@@ -121,6 +123,71 @@ public class LocalDatabaseService : ILocalDatabaseService
         await _database.InsertOrReplaceAsync(entity);
     }
 
+    public async Task EnqueuePlaybackAsync(string locationId)
+    {
+        if (string.IsNullOrWhiteSpace(locationId)) return;
+        await EnsureInitializedAsync();
+        
+        var entity = new PlaybackQueueEntity
+        {
+            LocationId = locationId,
+            EnqueuedAtUtcTicks = DateTime.UtcNow.Ticks
+        };
+        await _database.InsertAsync(entity);
+    }
+
+    public async Task<string?> DequeuePlaybackAsync()
+    {
+        await EnsureInitializedAsync();
+        var entity = await _database.Table<PlaybackQueueEntity>()
+            .OrderBy(x => x.EnqueuedAtUtcTicks)
+            .FirstOrDefaultAsync();
+
+        if (entity != null)
+        {
+            await _database.DeleteAsync(entity);
+            return entity.LocationId;
+        }
+
+        return null;
+    }
+
+    public async Task ClearPlaybackQueueAsync()
+    {
+        await EnsureInitializedAsync();
+        await _database.DeleteAllAsync<PlaybackQueueEntity>();
+    }
+
+    public async Task<bool> IsInPlaybackQueueAsync(string locationId)
+    {
+        await EnsureInitializedAsync();
+        var count = await _database.Table<PlaybackQueueEntity>()
+            .Where(x => x.LocationId == locationId)
+            .CountAsync();
+        return count > 0;
+    }
+
+    public async Task<DateTime?> GetLastPlayedAtAsync(string locationId)
+    {
+        await EnsureInitializedAsync();
+        var entity = await _database.Table<LocationPlaybackHistoryEntity>()
+            .FirstOrDefaultAsync(x => x.LocationId == locationId);
+            
+        if (entity == null) return null;
+        return new DateTime(entity.LastPlayedAtUtcTicks, DateTimeKind.Utc);
+    }
+
+    public async Task SetLastPlayedAtAsync(string locationId, DateTime time)
+    {
+        await EnsureInitializedAsync();
+        var entity = new LocationPlaybackHistoryEntity
+        {
+            LocationId = locationId,
+            LastPlayedAtUtcTicks = time.ToUniversalTime().Ticks
+        };
+        await _database.InsertOrReplaceAsync(entity);
+    }
+
     private static ListeningHistoryEntity ToEntity(ListeningHistory model)
     {
         return new ListeningHistoryEntity
@@ -137,7 +204,9 @@ public class LocalDatabaseService : ILocalDatabaseService
             UserId = model.UserId,
             ListenedSeconds = model.ListenedSeconds,
             IsCompleted = model.IsCompleted,
-            LastListenedAtUtcTicks = model.LastListenedAt.ToUniversalTime().Ticks
+            LastListenedAtUtcTicks = model.LastListenedAt.ToUniversalTime().Ticks,
+            InterruptedAtSeconds = model.InterruptedAtSeconds,
+            IsDirectTap = model.IsDirectTap
         };
     }
 
@@ -157,7 +226,9 @@ public class LocalDatabaseService : ILocalDatabaseService
             UserId = entity.UserId,
             ListenedSeconds = entity.ListenedSeconds,
             IsCompleted = entity.IsCompleted,
-            LastListenedAt = new DateTime(entity.LastListenedAtUtcTicks, DateTimeKind.Utc).ToLocalTime()
+            LastListenedAt = new DateTime(entity.LastListenedAtUtcTicks, DateTimeKind.Utc).ToLocalTime(),
+            InterruptedAtSeconds = entity.InterruptedAtSeconds,
+            IsDirectTap = entity.IsDirectTap
         };
     }
 
@@ -205,6 +276,8 @@ public class LocalDatabaseService : ILocalDatabaseService
         public int ListenedSeconds { get; set; }
         public bool IsCompleted { get; set; }
         public long LastListenedAtUtcTicks { get; set; }
+        public int InterruptedAtSeconds { get; set; }
+        public bool IsDirectTap { get; set; }
     }
 
     private sealed class DownloadedAudioEntity
@@ -222,5 +295,20 @@ public class LocalDatabaseService : ILocalDatabaseService
         public string CacheKey { get; set; } = string.Empty;
         public string JsonPayload { get; set; } = string.Empty;
         public long UpdatedAtUtcTicks { get; set; }
+    }
+
+    private sealed class PlaybackQueueEntity
+    {
+        [PrimaryKey, AutoIncrement]
+        public int Id { get; set; }
+        public string LocationId { get; set; } = string.Empty;
+        public long EnqueuedAtUtcTicks { get; set; }
+    }
+
+    private sealed class LocationPlaybackHistoryEntity
+    {
+        [PrimaryKey]
+        public string LocationId { get; set; } = string.Empty;
+        public long LastPlayedAtUtcTicks { get; set; }
     }
 }

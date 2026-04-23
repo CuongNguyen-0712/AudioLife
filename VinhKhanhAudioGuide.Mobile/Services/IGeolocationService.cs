@@ -22,7 +22,7 @@ public interface IGeolocationService
 
     double? CurrentLatitude { get; }
     double? CurrentLongitude { get; }
-    Microsoft.Maui.Devices.Sensors.Location? LatestLocation { get; }
+    VinhKhanhAudioGuide.Mobile.Models.Location? LatestLocation { get; }
 
     Task<bool> RequestPermissionAsync();
     Task StartTrackingAsync();

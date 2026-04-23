@@ -265,9 +265,12 @@ public class DbPoiChangeRequestService : IPoiChangeRequestService
                 return false;
             }
 
+            var adminPackagePriority = await GetAdminPackagePriorityAsync(request.SubmittedByUsername);
+
             location = new Location
             {
-                Id = request.TargetEntityId
+                Id = request.TargetEntityId,
+                Priority = adminPackagePriority
             };
 
             ApplyLocationFieldChanges(location, changeSet);
@@ -709,5 +712,19 @@ public class DbPoiChangeRequestService : IPoiChangeRequestService
     private static string NormalizeIdentity(string? raw)
     {
         return (raw ?? string.Empty).Trim();
+    }
+
+    private async Task<int> GetAdminPackagePriorityAsync(string username)
+    {
+        if (string.IsNullOrWhiteSpace(username)) return 100;
+
+        var subscription = await _db.UserSubscriptions
+            .AsNoTracking()
+            .Include(s => s.Package)
+            .Where(s => s.AuthUser != null && s.AuthUser.Username == username && s.Status == "Active")
+            .OrderByDescending(s => s.PurchasedAtUtc)
+            .FirstOrDefaultAsync();
+
+        return subscription?.Package?.DefaultPoiPriority ?? 100;
     }
 }

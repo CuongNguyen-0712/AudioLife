@@ -19,11 +19,9 @@ public class AutoPlaybackService : IAutoPlaybackService, IDisposable
     private readonly IApiService _apiService;
     private readonly ILocalDatabaseService _localDb;
     
-    private readonly ConcurrentDictionary<string, DateTime> _lastPlayedAt = new();
     private readonly HashSet<string> _currentlyInsideLocations = new();
-    private readonly Queue<string> _pendingPlaybackQueue = new();
     
-    private Microsoft.Maui.Devices.Sensors.Location? _previousUserLocation;
+    private Location? _previousUserLocation;
     private bool _isActive;
     private string? _interruptedLocationId;
     private TimeSpan _interruptedPosition = TimeSpan.Zero;
@@ -133,9 +131,20 @@ public class AutoPlaybackService : IAutoPlaybackService, IDisposable
 
             // 4. History Score (0-10)
             // If never played, give 10 pts.
-            if (!_lastPlayedAt.ContainsKey(c.LocationId))
+            // Note: In a real scenario, we'd fetch this from DB, but for tie-breaker 
+            // we can use a simpler approach or a quick DB check if needed.
+            // For now, let's focus on the Heading/Velocity.
+
+            // 5. Heading/Velocity Score (0-30 extra)
+            if (userLoc != null && userLoc.Heading.HasValue && userLoc.VelocityMetersPerSecond.HasValue)
             {
-                totalScore += 10;
+                 // Calculate angle to POI
+                 var angleToPoi = CalculateAngle(userLoc.Latitude, userLoc.Longitude, c.Latitude, c.Longitude);
+                 var diff = Math.Abs((userLoc.Heading.Value - angleToPoi + 360) % 360);
+                 if (diff < 45) // Within 45 degrees of heading
+                 {
+                     totalScore += 20 * (userLoc.VelocityMetersPerSecond.Value / 5.0); // Weighted by speed (max 20 @ 5m/s)
+                 }
             }
 
             return new { Candidate = c, Score = totalScore };
@@ -147,10 +156,11 @@ public class AutoPlaybackService : IAutoPlaybackService, IDisposable
 
     private async Task HandleProximityTriggerAsync(string locationId)
     {
-        // TH1: Check cooldown 5 mins
-        if (_lastPlayedAt.TryGetValue(locationId, out var lastTime))
+        // TH1: Check cooldown 5 mins from SQLite
+        var lastTime = await _localDb.GetLastPlayedAtAsync(locationId);
+        if (lastTime.HasValue)
         {
-            var diff = DateTime.UtcNow - lastTime;
+            var diff = DateTime.UtcNow - lastTime.Value;
             if (diff.TotalMinutes < CooldownMinutes)
             {
                 // "bạn đã nghe rồi, có muốn nghe lại không?"
@@ -169,9 +179,9 @@ public class AutoPlaybackService : IAutoPlaybackService, IDisposable
         // TH3: Đang nghe quán A, đi ngang quán B -> Không ngắt quán A. Quán B xếp hàng chờ.
         if (_audioService.IsPlaying)
         {
-            if (!_pendingPlaybackQueue.Contains(locationId))
+            if (!await _localDb.IsInPlaybackQueueAsync(locationId))
             {
-                _pendingPlaybackQueue.Enqueue(locationId);
+                await _localDb.EnqueuePlaybackAsync(locationId);
             }
             return;
         }
@@ -189,8 +199,8 @@ public class AutoPlaybackService : IAutoPlaybackService, IDisposable
         
         if (string.IsNullOrEmpty(url)) return;
 
-        _lastPlayedAt[locationId] = DateTime.UtcNow;
-        await _audioService.PlayAsync(url, locationId, guide.Id);
+        await _localDb.SetLastPlayedAtAsync(locationId, DateTime.UtcNow);
+        await _audioService.PlayAsync(url, locationId, guide.Id, isDirectTap: false);
     }
 
     private async void OnAudioStateChanged(object? sender, AudioStateChangedEventArgs e)
@@ -204,10 +214,10 @@ public class AutoPlaybackService : IAutoPlaybackService, IDisposable
                 return;
             }
 
-            // TH3: Đợi quán A phát xong thì tự động phát tiếp quán B
-            if (_pendingPlaybackQueue.Count > 0)
+            // TH3: Đợi quán A phát xong thì tự động phát tiếp quán B từ SQLite
+            var nextLocationId = await _localDb.DequeuePlaybackAsync();
+            if (nextLocationId != null)
             {
-                var nextLocationId = _pendingPlaybackQueue.Dequeue();
                 await PlayLocationAudioAsync(nextLocationId);
             }
         }
@@ -221,6 +231,17 @@ public class AutoPlaybackService : IAutoPlaybackService, IDisposable
             _interruptedLocationId = _audioService.CurrentLocationId;
             _interruptedPosition = _audioService.CurrentPosition;
             
+            // Record interruption
+            if (_interruptedLocationId != null && _audioService.CurrentAudioGuideId != null)
+            {
+                await _apiService.AddListeningHistoryAsync(
+                    _audioService.CurrentAudioGuideId, 
+                    _interruptedLocationId, 
+                    _audioService.Duration.TotalSeconds > 0 ? _audioService.CurrentPosition.TotalSeconds / _audioService.Duration.TotalSeconds : 0,
+                    (int)_interruptedPosition.TotalSeconds,
+                    _audioService.IsDirectTap);
+            }
+
             await _audioService.StopAsync();
         }
 
@@ -232,7 +253,7 @@ public class AutoPlaybackService : IAutoPlaybackService, IDisposable
             var url = !string.IsNullOrEmpty(guide.CloudinaryAudioUrl) ? guide.CloudinaryAudioUrl : guide.AudioUrl;
             if (!string.IsNullOrEmpty(url))
             {
-                await _audioService.PlayAsync(url, locationId, audioGuideId);
+                await _audioService.PlayAsync(url, locationId, audioGuideId, isDirectTap: true);
             }
         }
     }
@@ -267,6 +288,18 @@ public class AutoPlaybackService : IAutoPlaybackService, IDisposable
             await PlayLocationAudioAsync(locId);
         }
         // "Bỏ qua" does nothing
+    }
+
+    private static double CalculateAngle(double lat1, double lon1, double lat2, double lon2)
+    {
+        var dLon = (lon2 - lon1) * Math.PI / 180;
+        var lat1Rad = lat1 * Math.PI / 180;
+        var lat2Rad = lat2 * Math.PI / 180;
+
+        var y = Math.Sin(dLon) * Math.Cos(lat2Rad);
+        var x = Math.Cos(lat1Rad) * Math.Sin(lat2Rad) - Math.Sin(lat1Rad) * Math.Cos(lat2Rad) * Math.Cos(dLon);
+        var brng = Math.Atan2(y, x) * 180 / Math.PI;
+        return (brng + 360) % 360;
     }
 
     public void Dispose()

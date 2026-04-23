@@ -18,6 +18,8 @@ public class ListeningHistory
     public bool IsCompleted { get; set; }
     public DateTime LastListenedAt { get; set; }
     public string Language { get; set; } = string.Empty;
+    public int InterruptedAtSeconds { get; set; }
+    public bool IsDirectTap { get; set; }
 
     public int TotalDurationSeconds => Math.Max(0, AudioDuration * 60);
 

@@ -124,7 +124,8 @@ public class PaymentPackageEditModel : PageModel
                 Currency = existing.Currency,
                 DurationDays = existing.DurationDays,
                 TargetType = existing.TargetType,
-                IsActive = existing.IsActive
+                IsActive = existing.IsActive,
+                DefaultPoiPriority = existing.DefaultPoiPriority
             };
         }
 
@@ -150,7 +151,8 @@ public class PaymentPackageEditModel : PageModel
             Currency = Input.Currency,
             DurationDays = Input.DurationDays,
             TargetType = Input.TargetType,
-            IsActive = Input.IsActive
+            IsActive = Input.IsActive,
+            DefaultPoiPriority = Input.DefaultPoiPriority
         };
 
         if (IsCreate)
@@ -198,5 +200,9 @@ public class PaymentPackageEditModel : PageModel
         public string TargetType { get; set; } = "User";
 
         public bool IsActive { get; set; } = true;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vui lòng nhập độ ưu tiên.")]
+        [System.ComponentModel.DataAnnotations.Range(1, 1000, ErrorMessage = "Độ ưu tiên phải từ 1 đến 1000.")]
+        public int DefaultPoiPriority { get; set; } = 100;
     }
 }

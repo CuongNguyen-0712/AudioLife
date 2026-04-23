@@ -95,6 +95,20 @@
                         <span asp-validation-for="Input.Currency" class="text-danger small"></span>
                     </div>
                 </div>
+                
+                <!-- Priority -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Độ Ưu Tiên POI <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="number" asp-for="Input.DefaultPoiPriority" class="form-control"
+                                   placeholder="100" min="1" max="1000" />
+                            <span class="input-group-text"><i class="fa-solid fa-arrow-up-9-1"></i></span>
+                        </div>
+                        <div class="form-text">Mặc định là 100. Càng cao càng ưu tiên.</div>
+                        <span asp-validation-for="Input.DefaultPoiPriority" class="text-danger small"></span>
+                    </div>
+                </div>
 
                 <!-- Active toggle -->
                 <div class="mb-4 p-3 bg-light rounded border">

@@ -1,6 +1,7 @@
 using Microsoft.Maui.Devices.Sensors;
 
 namespace VinhKhanhAudioGuide.Mobile.Services;
+using Location = VinhKhanhAudioGuide.Mobile.Models.Location;
 
 public class GeolocationService : IGeolocationService, IDisposable
 {
@@ -13,6 +14,8 @@ public class GeolocationService : IGeolocationService, IDisposable
     private CancellationTokenSource? _cts;
     private bool _isTracking;
     private Location? _latestLocation;
+    private Microsoft.Maui.Devices.Sensors.Location? _previousLocation;
+    private DateTime _previousLocationTime;
 
     public GeolocationService(IApiService apiService)
     {
@@ -63,8 +66,21 @@ public class GeolocationService : IGeolocationService, IDisposable
 
                     if (location != null)
                     {
-                        _latestLocation = location;
-                        await CheckNearbyLocationsAsync(location.Latitude, location.Longitude, location.Accuracy);
+                        var velocity = CalculateVelocity(_previousLocation, location, _previousLocationTime, DateTime.UtcNow);
+                        var heading = CalculateHeading(_previousLocation, location);
+                        
+                        _latestLocation = new Location
+                        {
+                            Latitude = location.Latitude,
+                            Longitude = location.Longitude,
+                            VelocityMetersPerSecond = velocity,
+                            Heading = heading
+                        };
+
+                        _previousLocation = location;
+                        _previousLocationTime = DateTime.UtcNow;
+
+                        await CheckNearbyLocationsAsync(_latestLocation.Latitude, _latestLocation.Longitude, location.Accuracy);
                     }
                 }
                 catch (FeatureNotSupportedException)
@@ -114,7 +130,7 @@ public class GeolocationService : IGeolocationService, IDisposable
 
             if (location != null)
             {
-                _latestLocation = location;
+                _latestLocation = new Location { Latitude = location.Latitude, Longitude = location.Longitude };
                 return (location.Latitude, location.Longitude);
             }
         }
@@ -166,6 +182,34 @@ public class GeolocationService : IGeolocationService, IDisposable
     /// </summary>
     private static double CalculateDistanceKm(double lat1, double lon1, double lat2, double lon2)
         => DistanceCalculator.CalculateDistanceKm(lat1, lon1, lat2, lon2);
+
+    private static double? CalculateVelocity(Microsoft.Maui.Devices.Sensors.Location? prev, Microsoft.Maui.Devices.Sensors.Location curr, DateTime prevTime, DateTime currTime)
+    {
+        if (prev == null) return null;
+        var timeDiff = (currTime - prevTime).TotalSeconds;
+        if (timeDiff <= 0) return null;
+        
+        var distanceKm = CalculateDistanceKm(prev.Latitude, prev.Longitude, curr.Latitude, curr.Longitude);
+        var distanceMeters = distanceKm * 1000;
+        return distanceMeters / timeDiff;
+    }
+
+    private static double? CalculateHeading(Microsoft.Maui.Devices.Sensors.Location? prev, Microsoft.Maui.Devices.Sensors.Location curr)
+    {
+        if (prev == null) return null;
+
+        var lat1 = prev.Latitude * Math.PI / 180;
+        var lon1 = prev.Longitude * Math.PI / 180;
+        var lat2 = curr.Latitude * Math.PI / 180;
+        var lon2 = curr.Longitude * Math.PI / 180;
+
+        var dLon = lon2 - lon1;
+        var y = Math.Sin(dLon) * Math.Cos(lat2);
+        var x = Math.Cos(lat1) * Math.Sin(lat2) - Math.Sin(lat1) * Math.Cos(lat2) * Math.Cos(dLon);
+
+        var heading = Math.Atan2(y, x) * 180 / Math.PI;
+        return (heading + 360) % 360;
+    }
 
     public void Dispose()
     {

@@ -24,6 +24,7 @@ public class AudioService : IAudioService, IDisposable
     private string? _currentAudioUrl;
     private string? _currentLocationId;
     private string? _currentAudioGuideId;
+    private bool _isDirectTap;
     private IDispatcherTimer? _timer;
     private long _playRequestVersion;
     private DateTime _lastPlayAttemptUtc = DateTime.MinValue;
@@ -36,6 +37,7 @@ public class AudioService : IAudioService, IDisposable
     public string? CurrentAudioUrl => _currentAudioUrl;
     public string? CurrentLocationId => _currentLocationId;
     public string? CurrentAudioGuideId => _currentAudioGuideId;
+    public bool IsDirectTap => _isDirectTap;
     public DateTime LastPlayAttemptUtc => _lastPlayAttemptUtc;
     public TimeSpan PlayCooldown => _playCooldown;
 
@@ -49,10 +51,10 @@ public class AudioService : IAudioService, IDisposable
 
     public async Task PlayAsync(string audioUrl)
     {
-        await PlayAsync(audioUrl, string.Empty, string.Empty);
+        await PlayAsync(audioUrl, string.Empty, string.Empty, false);
     }
 
-    public async Task PlayAsync(string audioUrl, string locationId, string audioGuideId)
+    public async Task PlayAsync(string audioUrl, string locationId, string audioGuideId, bool isDirectTap = false)
     {
         if (string.IsNullOrWhiteSpace(audioUrl))
         {
@@ -85,6 +87,7 @@ public class AudioService : IAudioService, IDisposable
             _currentAudioUrl = audioUrl;
             _currentLocationId = locationId;
             _currentAudioGuideId = audioGuideId;
+            _isDirectTap = isDirectTap;
             
             await LoadPlayerAsync(audioUrl);
             if (_player == null)

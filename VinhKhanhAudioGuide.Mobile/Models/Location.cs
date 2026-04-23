@@ -23,4 +23,8 @@ public partial class Location : ObservableObject
 
     [ObservableProperty]
     private bool isFavorite;
+
+    // Runtime properties
+    public double? Heading { get; set; }
+    public double? VelocityMetersPerSecond { get; set; }
 }

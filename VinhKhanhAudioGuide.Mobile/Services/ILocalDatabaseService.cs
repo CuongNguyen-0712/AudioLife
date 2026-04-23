@@ -16,4 +16,12 @@ public interface ILocalDatabaseService
 
     Task<string?> GetCachedJsonAsync(string cacheKey);
     Task UpsertCachedJsonAsync(string cacheKey, string jsonPayload);
+
+    Task EnqueuePlaybackAsync(string locationId);
+    Task<string?> DequeuePlaybackAsync();
+    Task ClearPlaybackQueueAsync();
+    Task<bool> IsInPlaybackQueueAsync(string locationId);
+
+    Task<DateTime?> GetLastPlayedAtAsync(string locationId);
+    Task SetLastPlayedAtAsync(string locationId, DateTime time);
 }

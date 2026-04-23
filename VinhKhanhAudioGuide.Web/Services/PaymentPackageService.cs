@@ -16,6 +16,7 @@ public sealed class PackageSummaryDto
     public int DurationDays { get; init; }
     public string TargetType { get; init; } = "User";
     public bool IsActive { get; init; }
+    public int DefaultPoiPriority { get; init; }
     public DateTime CreatedAtUtc { get; init; }
     public int TotalSubscriptions { get; init; }
     public int ActiveSubscriptions { get; init; }
@@ -33,6 +34,7 @@ public sealed class PackageUpsertDto
     public int DurationDays { get; init; }
     public string TargetType { get; init; } = "User";
     public bool IsActive { get; init; } = true;
+    public int DefaultPoiPriority { get; init; } = 100;
 }
 
 public sealed class PackageDashboardStatsDto
@@ -135,6 +137,7 @@ public class PaymentPackageService : IPaymentPackageService
                 DurationDays = p.DurationDays,
                 TargetType = p.TargetType,
                 IsActive = p.IsActive,
+                DefaultPoiPriority = p.DefaultPoiPriority,
                 CreatedAtUtc = p.CreatedAtUtc,
                 TotalSubscriptions = stat?.Total ?? 0,
                 ActiveSubscriptions = stat?.Active ?? 0,
@@ -187,6 +190,7 @@ public class PaymentPackageService : IPaymentPackageService
             DurationDays = dto.DurationDays,
             TargetType = dto.TargetType ?? "User",
             IsActive = dto.IsActive,
+            DefaultPoiPriority = dto.DefaultPoiPriority,
             CreatedAtUtc = DateTime.UtcNow
         };
 
@@ -209,6 +213,7 @@ public class PaymentPackageService : IPaymentPackageService
         entity.DurationDays = dto.DurationDays;
         entity.TargetType = dto.TargetType ?? "User";
         entity.IsActive = dto.IsActive;
+        entity.DefaultPoiPriority = dto.DefaultPoiPriority;
 
         await _db.SaveChangesAsync(ct);
         return entity;

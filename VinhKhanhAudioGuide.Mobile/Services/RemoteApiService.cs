@@ -427,14 +427,16 @@ public class RemoteApiService : IApiService
         return await _fallback.GetListeningHistoryAsync();
     }
 
-    public async Task AddListeningHistoryAsync(string audioGuideId, string locationId, double progress)
+    public async Task AddListeningHistoryAsync(string audioGuideId, string locationId, double progress, int interruptedAtSeconds = 0, bool isDirectTap = false)
     {
         var request = new AddListeningHistoryRequest
         {
             AudioGuideId = audioGuideId,
             LocationId = locationId,
             Progress = progress,
-            IsCompleted = progress >= 0.999
+            IsCompleted = progress >= 0.999,
+            InterruptedAtSeconds = interruptedAtSeconds,
+            IsDirectTap = isDirectTap
         };
 
         var posted = await TryPostAsync("api/mobile/history", request);
@@ -443,7 +445,7 @@ public class RemoteApiService : IApiService
             return;
         }
 
-        await _fallback.AddListeningHistoryAsync(audioGuideId, locationId, progress);
+        await _fallback.AddListeningHistoryAsync(audioGuideId, locationId, progress, interruptedAtSeconds, isDirectTap);
     }
 
     public Task<List<DownloadedAudio>> GetDownloadedAudiosAsync() => _fallback.GetDownloadedAudiosAsync();
@@ -722,5 +724,7 @@ public class RemoteApiService : IApiService
         public string LocationId { get; set; } = string.Empty;
         public double Progress { get; set; }
         public bool IsCompleted { get; set; }
+        public int InterruptedAtSeconds { get; set; }
+        public bool IsDirectTap { get; set; }
     }
 }
