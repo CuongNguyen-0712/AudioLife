@@ -29,11 +29,16 @@ public partial class AudioPlayerViewModel : ObservableObject
     private readonly object _actionSync = new();
     private readonly List<AudioScriptSegment> _scriptSegments = new();
     private static readonly TimeSpan ActionThrottleWindow = TimeSpan.FromMilliseconds(250);
+    private static readonly TimeSpan HistorySyncInterval = TimeSpan.FromSeconds(10);
+    private const double HistorySyncProgressDelta = 0.03;
     private int _activeScriptSegmentId = -1;
     private bool _isSubscribedToAudioEvents;
     private bool _isLoadingLocationData;
     private bool _isApplyingGuideInternally;
     private bool _isAutoAdvancing;
+    private DateTime _lastHistorySyncAtUtc = DateTime.MinValue;
+    private string _lastHistoryAudioGuideId = string.Empty;
+    private double _lastSyncedProgress;
 
     [ObservableProperty]
     private string _locationId = string.Empty;
@@ -189,6 +194,8 @@ public partial class AudioPlayerViewModel : ObservableObject
 
     public void OnDisappearing()
     {
+        _ = SyncListeningHistoryAsync(force: true);
+
         if (!_isSubscribedToAudioEvents)
         {
             return;
@@ -218,6 +225,7 @@ public partial class AudioPlayerViewModel : ObservableObject
             }
 
             UpdateCurrentScriptText(TimeSpan.FromSeconds(CurrentPosition));
+            _ = SyncListeningHistoryAsync();
         });
     }
 
@@ -260,6 +268,7 @@ public partial class AudioPlayerViewModel : ObservableObject
             if (!IsPlaying && e.State == AudioPlaybackState.Stopped)
             {
                 CurrentPlayingAudioGuideId = string.Empty;
+                _ = SyncListeningHistoryAsync(force: true);
 
                 if (!_isAutoAdvancing && ShouldAutoPlayNextWithinPoi() && matchedIndex == CurrentAudioGuideIndex && CanPlayNext)
                 {
@@ -398,6 +407,13 @@ public partial class AudioPlayerViewModel : ObservableObject
         }
         try
         {
+            var currentGuideId = AudioGuideId;
+            if (!string.IsNullOrWhiteSpace(currentGuideId)
+                && currentGuideId != AudioGuides[index].Guide.Id)
+            {
+                await SyncListeningHistoryAsync(force: true);
+            }
+
             IsSwitchingGuide = true;
             CurrentAudioGuideIndex = index;
 
@@ -685,6 +701,7 @@ public partial class AudioPlayerViewModel : ObservableObject
             if (IsPlaying)
             {
                 await _audioService.PauseAsync();
+                await SyncListeningHistoryAsync(force: true);
                 return;
             }
 
@@ -892,6 +909,7 @@ public partial class AudioPlayerViewModel : ObservableObject
 
     private async Task FinishTourAsync()
     {
+        await SyncListeningHistoryAsync(force: true);
         _tourPlaybackSessionService.Reset();
 
         await MainThread.InvokeOnMainThreadAsync(async () =>
@@ -921,6 +939,47 @@ public partial class AudioPlayerViewModel : ObservableObject
         return time.Hours > 0
             ? $"{time.Hours}:{time.Minutes:D2}:{time.Seconds:D2}"
             : $"{time.Minutes}:{time.Seconds:D2}";
+    }
+
+    private async Task SyncListeningHistoryAsync(bool force = false)
+    {
+        if (string.IsNullOrWhiteSpace(LocationId) || string.IsNullOrWhiteSpace(AudioGuideId))
+        {
+            return;
+        }
+
+        var durationSeconds = Duration > 0 ? Duration : _audioService.Duration.TotalSeconds;
+        if (durationSeconds <= 0)
+        {
+            return;
+        }
+
+        var progress = Math.Clamp(CurrentPosition / durationSeconds, 0d, 1d);
+        if (!force && progress <= 0d)
+        {
+            return;
+        }
+
+        var nowUtc = DateTime.UtcNow;
+        if (!force
+            && string.Equals(_lastHistoryAudioGuideId, AudioGuideId, StringComparison.Ordinal)
+            && nowUtc - _lastHistorySyncAtUtc < HistorySyncInterval
+            && progress - _lastSyncedProgress < HistorySyncProgressDelta)
+        {
+            return;
+        }
+
+        try
+        {
+            await _apiService.AddListeningHistoryAsync(AudioGuideId, LocationId, progress);
+            _lastHistoryAudioGuideId = AudioGuideId;
+            _lastHistorySyncAtUtc = nowUtc;
+            _lastSyncedProgress = progress;
+        }
+        catch
+        {
+            // Best-effort sync only; never block playback.
+        }
     }
 
     private string T(string key) => _localizationService.GetString(key);

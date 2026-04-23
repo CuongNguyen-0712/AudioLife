@@ -6,6 +6,8 @@ namespace VinhKhanhAudioGuide.Mobile.Services;
 public class LocalDatabaseService : ILocalDatabaseService
 {
     private readonly SQLiteAsyncConnection _database;
+    private readonly SemaphoreSlim _initLock = new(1, 1);
+    private bool _isInitialized;
 
     public LocalDatabaseService()
     {
@@ -15,10 +17,34 @@ public class LocalDatabaseService : ILocalDatabaseService
 
     private async Task EnsureInitializedAsync()
     {
+        if (_isInitialized)
+        {
+            return;
+        }
+
+        await _initLock.WaitAsync();
+        if (_isInitialized)
+        {
+            _initLock.Release();
+            return;
+        }
+
+        try
+        {
         await _database.CreateTableAsync<FavoriteLocationEntity>();
         await _database.CreateTableAsync<ListeningHistoryEntity>();
         await _database.CreateTableAsync<DownloadedAudioEntity>();
         await _database.CreateTableAsync<CachedJsonEntity>();
+
+            await CreateIndexesAsync();
+            await CleanupInvalidRowsAsync();
+
+            _isInitialized = true;
+        }
+        finally
+        {
+            _initLock.Release();
+        }
     }
 
     public async Task<List<string>> GetFavoriteLocationIdsAsync()
@@ -32,30 +58,31 @@ public class LocalDatabaseService : ILocalDatabaseService
     {
         await EnsureInitializedAsync();
 
-        var existing = await _database.Table<FavoriteLocationEntity>().ToListAsync();
-        if (existing.Count > 0)
-        {
-            await _database.DeleteAllAsync<FavoriteLocationEntity>();
-        }
-
         var distinctIds = locationIds
             .Where(id => !string.IsNullOrWhiteSpace(id))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        foreach (var id in distinctIds)
+        await _database.RunInTransactionAsync(connection =>
         {
-            await _database.InsertAsync(new FavoriteLocationEntity { LocationId = id });
-        }
+            connection.DeleteAll<FavoriteLocationEntity>();
+            if (distinctIds.Count > 0)
+            {
+                var entities = distinctIds
+                    .Select(id => new FavoriteLocationEntity { LocationId = id })
+                    .ToList();
+                connection.InsertAll(entities);
+            }
+        });
     }
 
     public async Task<List<ListeningHistory>> GetListeningHistoryAsync()
     {
         await EnsureInitializedAsync();
-        var entities = await _database.Table<ListeningHistoryEntity>().ToListAsync();
+        var entities = await _database.QueryAsync<ListeningHistoryEntity>(
+            "SELECT * FROM ListeningHistoryEntity ORDER BY LastListenedAtUtcTicks DESC, ListenedAtUtcTicks DESC");
         return entities
             .Select(ToModel)
-            .OrderByDescending(x => x.ListenedAt)
             .ToList();
     }
 
@@ -68,10 +95,10 @@ public class LocalDatabaseService : ILocalDatabaseService
     public async Task<List<DownloadedAudio>> GetDownloadedAudiosAsync()
     {
         await EnsureInitializedAsync();
-        var entities = await _database.Table<DownloadedAudioEntity>().ToListAsync();
+        var entities = await _database.QueryAsync<DownloadedAudioEntity>(
+            "SELECT * FROM DownloadedAudioEntity ORDER BY DownloadedAtUtcTicks DESC");
         return entities
             .Select(ToModel)
-            .OrderByDescending(x => x.DownloadedAt)
             .ToList();
     }
 
@@ -119,6 +146,22 @@ public class LocalDatabaseService : ILocalDatabaseService
         };
 
         await _database.InsertOrReplaceAsync(entity);
+    }
+
+    private async Task CreateIndexesAsync()
+    {
+        await _database.ExecuteAsync("CREATE INDEX IF NOT EXISTS idx_history_last_listened ON ListeningHistoryEntity(LastListenedAtUtcTicks DESC)");
+        await _database.ExecuteAsync("CREATE INDEX IF NOT EXISTS idx_history_audio_guide ON ListeningHistoryEntity(AudioGuideId)");
+        await _database.ExecuteAsync("CREATE INDEX IF NOT EXISTS idx_downloaded_at ON DownloadedAudioEntity(DownloadedAtUtcTicks DESC)");
+        await _database.ExecuteAsync("CREATE INDEX IF NOT EXISTS idx_cache_updated_at ON CachedJsonEntity(UpdatedAtUtcTicks DESC)");
+    }
+
+    private async Task CleanupInvalidRowsAsync()
+    {
+        await _database.ExecuteAsync("DELETE FROM FavoriteLocationEntity WHERE LocationId IS NULL OR TRIM(LocationId) = ''");
+        await _database.ExecuteAsync("DELETE FROM ListeningHistoryEntity WHERE Id IS NULL OR TRIM(Id) = '' OR AudioGuideId IS NULL OR TRIM(AudioGuideId) = '' OR LocationId IS NULL OR TRIM(LocationId) = ''");
+        await _database.ExecuteAsync("DELETE FROM DownloadedAudioEntity WHERE AudioGuideId IS NULL OR TRIM(AudioGuideId) = '' OR LocalPath IS NULL OR TRIM(LocalPath) = ''");
+        await _database.ExecuteAsync("DELETE FROM CachedJsonEntity WHERE CacheKey IS NULL OR TRIM(CacheKey) = '' OR JsonPayload IS NULL OR TRIM(JsonPayload) = ''");
     }
 
     private static ListeningHistoryEntity ToEntity(ListeningHistory model)

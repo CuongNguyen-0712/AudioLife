@@ -13,8 +13,10 @@ public class AudioService : IAudioService, IDisposable
 
     private readonly IAudioManager _audioManager;
     private readonly SemaphoreSlim _operationLock = new(1, 1);
+    private readonly object _loadSync = new();
     private IAudioPlayer? _player;
     private Stream? _sourceStream;
+    private CancellationTokenSource? _activeLoadCts;
 
     private TimeSpan _currentPosition = TimeSpan.Zero;
     private TimeSpan _duration = TimeSpan.Zero;
@@ -60,6 +62,7 @@ public class AudioService : IAudioService, IDisposable
 
         _lastPlayAttemptUtc = DateTime.UtcNow;
         var requestVersion = Interlocked.Increment(ref _playRequestVersion);
+        var loadCts = ReplaceActiveLoadCts();
         await _operationLock.WaitAsync();
 
         try
@@ -74,14 +77,14 @@ public class AudioService : IAudioService, IDisposable
             _duration = TimeSpan.Zero;
 
             _currentAudioUrl = audioUrl;
-            await LoadPlayerAsync(audioUrl);
+            await LoadPlayerAsync(audioUrl, loadCts.Token);
             if (_player == null)
             {
                 throw new InvalidOperationException("Không thể khởi tạo audio player.");
             }
 
             // Ignore stale play requests that completed after a newer request.
-            if (requestVersion != _playRequestVersion)
+            if (requestVersion != _playRequestVersion || loadCts.IsCancellationRequested)
             {
                 CleanupPlayer();
                 return;
@@ -99,6 +102,10 @@ public class AudioService : IAudioService, IDisposable
             StartPositionTimer();
             RaisePositionChanged();
         }
+        catch (OperationCanceledException)
+        {
+            CleanupPlayer();
+        }
         catch
         {
             CleanupPlayer();
@@ -109,6 +116,8 @@ public class AudioService : IAudioService, IDisposable
         }
         finally
         {
+            ClearActiveLoadCts(loadCts);
+            loadCts.Dispose();
             _operationLock.Release();
         }
     }
@@ -160,6 +169,7 @@ public class AudioService : IAudioService, IDisposable
 
     public async Task StopAsync()
     {
+        CancelPendingLoad();
         await _operationLock.WaitAsync();
         try
         {
@@ -285,24 +295,33 @@ public class AudioService : IAudioService, IDisposable
         RaisePositionChanged();
     }
 
-    private async Task LoadPlayerAsync(string source)
+    private async Task LoadPlayerAsync(string source, CancellationToken cancellationToken)
     {
         CleanupPlayer();
 
         if (File.Exists(source))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             _player = _audioManager.CreatePlayer(source);
             return;
         }
 
         if (Uri.TryCreate(source, UriKind.Absolute, out var uri))
         {
-            var bytes = await HttpClient.GetByteArrayAsync(uri);
-            _sourceStream = new MemoryStream(bytes);
+            using var response = await HttpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            await using var networkStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            var memoryStream = new MemoryStream();
+            await networkStream.CopyToAsync(memoryStream, 81920, cancellationToken);
+            memoryStream.Position = 0;
+
+            _sourceStream = memoryStream;
             _player = _audioManager.CreatePlayer(_sourceStream);
             return;
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
         _player = _audioManager.CreatePlayer(source);
     }
 
@@ -321,6 +340,16 @@ public class AudioService : IAudioService, IDisposable
         if (_player != null)
         {
             _player.PlaybackEnded -= OnPlaybackEnded;
+
+            try
+            {
+                _player.Stop();
+            }
+            catch
+            {
+                // Ignore stop errors during disposal cleanup.
+            }
+
             if (_player is IDisposable disposablePlayer)
             {
                 disposablePlayer.Dispose();
@@ -333,6 +362,38 @@ public class AudioService : IAudioService, IDisposable
         {
             _sourceStream.Dispose();
             _sourceStream = null;
+        }
+    }
+
+    private CancellationTokenSource ReplaceActiveLoadCts()
+    {
+        lock (_loadSync)
+        {
+            _activeLoadCts?.Cancel();
+            _activeLoadCts?.Dispose();
+            _activeLoadCts = new CancellationTokenSource();
+            return _activeLoadCts;
+        }
+    }
+
+    private void ClearActiveLoadCts(CancellationTokenSource expected)
+    {
+        lock (_loadSync)
+        {
+            if (!ReferenceEquals(_activeLoadCts, expected))
+            {
+                return;
+            }
+
+            _activeLoadCts = null;
+        }
+    }
+
+    private void CancelPendingLoad()
+    {
+        lock (_loadSync)
+        {
+            _activeLoadCts?.Cancel();
         }
     }
 
@@ -357,8 +418,12 @@ public class AudioService : IAudioService, IDisposable
 
     public void Dispose()
     {
+        CancelPendingLoad();
         StopPositionTimer();
         CleanupPlayer();
+        _activeLoadCts?.Dispose();
+        _activeLoadCts = null;
+        _operationLock.Dispose();
         GC.SuppressFinalize(this);
     }
 }

@@ -126,4 +126,4 @@ public static class MauiProgram
         _ = app.Services.GetRequiredService<Services.ILocalizationService>();
         return app;
     }
-    }
+}
