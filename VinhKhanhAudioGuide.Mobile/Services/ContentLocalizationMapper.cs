@@ -74,6 +74,50 @@ internal static class ContentLocalizationMapper
         ["Khám phá ẩm thực"] = ("Food Discovery", "美食探索")
     };
 
+    private static readonly Dictionary<string, string> UrlByGuideAndLanguage = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["ag_001_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939858/audio/seed_ag_001_1_en_293310f4a816486bb50b0f411d404d0e.mp3",
+        ["ag_001_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939860/audio/seed_ag_001_1_zh_de51bed61a884344a278563601b71fcb.mp3",
+        ["ag_001_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939863/audio/seed_ag_001_2_en_4de6f22d2df7472aa9b9a06dc6fb429d.mp3",
+        ["ag_001_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939865/audio/seed_ag_001_2_zh_3bd5f726732a44ac988b39ff1a398e43.mp3",
+        ["ag_002_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939868/audio/seed_ag_002_1_en_f7993908b82f4103906dd54f5b58ca4d.mp3",
+        ["ag_002_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939871/audio/seed_ag_002_1_zh_d4d103171ed547b894fc21fc65e76026.mp3",
+        ["ag_002_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939873/audio/seed_ag_002_2_en_288706f117ab4d8a931bc2dd19871200.mp3",
+        ["ag_002_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939876/audio/seed_ag_002_2_zh_674e6cad8aa1445bb93ebef857e23708.mp3",
+        ["ag_003_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939879/audio/seed_ag_003_1_en_6a411c26f5ec453f8c326c3382347350.mp3",
+        ["ag_003_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939881/audio/seed_ag_003_1_zh_650e159a7de14b38b13ce9f9978247a4.mp3",
+        ["ag_003_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939883/audio/seed_ag_003_2_en_0e0b988be835495dbd94d8dca94e6418.mp3",
+        ["ag_003_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939885/audio/seed_ag_003_2_zh_8fa4cacf95a64b20939b67a58158016f.mp3",
+        ["ag_004_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939887/audio/seed_ag_004_1_en_2e55168b80374ba49e6c770047f64f99.mp3",
+        ["ag_004_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939889/audio/seed_ag_004_1_zh_93b21a86c01e46989ce2ea22d6ce2cfe.mp3",
+        ["ag_004_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939891/audio/seed_ag_004_2_en_a812530bfdd04e09832b05d24013cdd1.mp3",
+        ["ag_004_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939893/audio/seed_ag_004_2_zh_3a2666309121466ba284c9f04d65fb4a.mp3",
+        ["ag_005_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939896/audio/seed_ag_005_1_en_634b6c9f2ce342e69ade959b1a6ff797.mp3",
+        ["ag_005_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939898/audio/seed_ag_005_1_zh_0412003617a846efbec0c882b1025c08.mp3",
+        ["ag_005_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939901/audio/seed_ag_005_2_en_4b34771321c54c3ab7a3ffa302e422ae.mp3",
+        ["ag_005_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939904/audio/seed_ag_005_2_zh_63f6b5ffedd14a87bd712aab51dfd666.mp3",
+        ["ag_006_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939906/audio/seed_ag_006_1_en_e05930d5ddf1484ab92506d8414630d7.mp3",
+        ["ag_006_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939909/audio/seed_ag_006_1_zh_c40b3252e54747d88ff27abceff34012.mp3",
+        ["ag_006_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939911/audio/seed_ag_006_2_en_b23ad2821a77459694a4f4988ea3f062.mp3",
+        ["ag_006_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939914/audio/seed_ag_006_2_zh_6f69344ddc9948469bfc51f22e3ec2f3.mp3",
+        ["ag_007_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939916/audio/seed_ag_007_1_en_7871d27def8f41a29f7995164137a321.mp3",
+        ["ag_007_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939918/audio/seed_ag_007_1_zh_c350154adfb849a9ac7785ba0d764a40.mp3",
+        ["ag_007_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939920/audio/seed_ag_007_2_en_e5280cacde824c209d41603340df5c5e.mp3",
+        ["ag_007_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939922/audio/seed_ag_007_2_zh_392ac72e10d94a48b20a2091c22205bb.mp3",
+        ["ag_008_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939924/audio/seed_ag_008_1_en_99b62b8bde984e1c99132812d22a9ddb.mp3",
+        ["ag_008_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939926/audio/seed_ag_008_1_zh_1d018daeec654ad19ce768b25a402690.mp3",
+        ["ag_008_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939928/audio/seed_ag_008_2_en_2ac9e11c65f046dbab19df2ef3ced616.mp3",
+        ["ag_008_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939930/audio/seed_ag_008_2_zh_f910f7288ae344b2be54d25b59eaf7a1.mp3",
+        ["ag_009_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939932/audio/seed_ag_009_1_en_8959accf9ac84caea8be55d477a8e66f.mp3",
+        ["ag_009_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939934/audio/seed_ag_009_1_zh_3c5d28c81bf5411a845c92cc5e4b9819.mp3",
+        ["ag_009_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939937/audio/seed_ag_009_2_en_cc54a7acd9f84f50998faf98929c4fa6.mp3",
+        ["ag_009_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939939/audio/seed_ag_009_2_zh_b8ba5c4cfda9466b88ca2e7ccb3252d4.mp3",
+        ["ag_010_1_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939941/audio/seed_ag_010_1_en_10f9d40ceb13472d9843c058646fc4b3.mp3",
+        ["ag_010_1_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939944/audio/seed_ag_010_1_zh_881b401a72b1438a9abeca0c1caff93c.mp3",
+        ["ag_010_2_en"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939946/audio/seed_ag_010_2_en_e3bce913740d4a8b86c3a588ea7b37ca.mp3",
+        ["ag_010_2_zh"] = "https://res.cloudinary.com/dex6q1cqh/video/upload/f_mp3/v1776939948/audio/seed_ag_010_2_zh_55a9aabfb0af434fb116d739b8693de5.mp3"
+    };
+
     public static string ToLanguageCode(string? cultureName)
     {
         if (string.IsNullOrWhiteSpace(cultureName))
@@ -144,7 +188,7 @@ internal static class ContentLocalizationMapper
             DetectionRadiusMeters = source.DetectionRadiusMeters,
             Duration = source.Duration,
             CategoryId = source.CategoryId,
-            CategoryName = source.CategoryName,
+            CategoryName = TranslateById(source.CategoryId, source.CategoryName, languageCode, CategoryNameMap),
             AudioGuides = LocalizeAudioGuides(source.AudioGuides, languageCode, source.Id),
             IsFavorite = favoriteLocationIds?.Contains(source.Id) == true || source.IsFavorite
         };
@@ -184,25 +228,49 @@ internal static class ContentLocalizationMapper
 
     private static AudioGuide BuildLocalizedAudioGuide(AudioGuide source, string languageCode, string? locationId)
     {
-        var title = ResolveLocalizedAudioTitle(source, languageCode);
-        var description = ResolveLocalizedAudioDescription(source, title, languageCode);
+        var normalizedLang = NormalizeLanguageCode(languageCode);
+        var localizedId = $"{source.Id}_{normalizedLang}";
+        
+        // Try to find real audio URL for this language
+        string audioUrl = source.AudioUrl;
+        if (UrlByGuideAndLanguage.TryGetValue(localizedId, out var mappedUrl))
+        {
+            audioUrl = mappedUrl;
+        }
+
+        var title = ResolveLocalizedAudioTitle(source, normalizedLang);
+        var description = ResolveLocalizedAudioDescription(source, title, normalizedLang);
 
         var guide = CloneAudioGuide(source);
-        guide.Language = languageCode;
+        guide.Id = localizedId;
+        guide.Language = normalizedLang;
         guide.Title = title;
         guide.Description = description;
-        guide.ScriptSegments = ShouldRebuildScriptSegments(source, languageCode)
-            ? BuildLocalizedScriptSegments(source, title, description, languageCode)
+        guide.AudioUrl = audioUrl;
+        guide.CloudinaryAudioUrl = audioUrl;
+        guide.CloudinaryPublicId = ToCloudinaryPublicId(audioUrl);
+
+        guide.ScriptSegments = ShouldRebuildScriptSegments(source, normalizedLang)
+            ? BuildLocalizedScriptSegments(source, title, description, normalizedLang)
             : source.ScriptSegments.Select(segment => new AudioScriptSegment
             {
                 Id = segment.Id,
-                AudioGuideId = segment.AudioGuideId,
+                AudioGuideId = localizedId,
                 StartTimeSeconds = segment.StartTimeSeconds,
                 EndTimeSeconds = segment.EndTimeSeconds,
                 ScriptText = segment.ScriptText
             }).ToList();
         guide.TranscriptText = string.Join(" ", guide.ScriptSegments.Select(segment => segment.ScriptText));
         return guide;
+    }
+
+    private static string ToCloudinaryPublicId(string audioUrl)
+    {
+        if (string.IsNullOrWhiteSpace(audioUrl)) return string.Empty;
+        var fileName = audioUrl.Split('/').LastOrDefault() ?? string.Empty;
+        var dotIndex = fileName.LastIndexOf('.');
+        var baseName = dotIndex > 0 ? fileName[..dotIndex] : fileName;
+        return string.IsNullOrWhiteSpace(baseName) ? string.Empty : $"audio/{baseName}";
     }
 
     private static bool ShouldRebuildScriptSegments(AudioGuide source, string languageCode)

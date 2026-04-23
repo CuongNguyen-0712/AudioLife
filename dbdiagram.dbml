@@ -24,6 +24,8 @@ Table AudioGuide {
   Title String
   Description String
   AudioUrl String
+  CloudinaryAudioUrl String
+  CloudinaryPublicId String
   TranscriptText String
   Duration Int
   LocationId String
@@ -140,19 +142,17 @@ Table ListeningHistory {
 Table AppUser {
   Id Guid [pk]
   QrCodeValue String [unique] // token định danh lấy từ QR khi onboarding
-  DisplayName String
-  PhoneNumber String
-  Email String
+  DeviceId String [unique]
   Status String // Active | Blocked
   CreatedAtUtc DateTime
   LastSeenAtUtc DateTime
   CurrentActivity String
   CurrentActivityAtUtc DateTime
+  IsDeleted Boolean
 
   indexes {
     (QrCodeValue) [unique]
-    (PhoneNumber)
-    (Email)
+    (DeviceId) [unique]
     (Status)
     (CurrentActivityAtUtc)
   }
@@ -197,6 +197,7 @@ Table PaymentPackage {
 Table UserSubscription {
   Id Guid [pk]
   UserId Guid
+  AuthUserId Int
   PackageId String
   Status String // Pending | Active | Expired | Cancelled
   PurchasedAtUtc DateTime

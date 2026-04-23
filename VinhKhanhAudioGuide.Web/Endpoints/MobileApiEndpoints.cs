@@ -267,6 +267,10 @@ public static class MobileApiEndpoints
             }
 
             var nowUtc = DateTime.UtcNow;
+
+            // Optional: Periodic cleanup of expired items
+            await CleanupExpiredSessionsAndUsersAsync(db, nowUtc);
+
             var session = await db.UserAppSessions
                 .AsNoTracking()
                 .Where(item => item.DeviceId == deviceId && item.IsActive && item.RevokedAtUtc == null)
@@ -1072,5 +1076,64 @@ public static class MobileApiEndpoints
         public double Progress { get; set; }
         public int ListenedSeconds { get; set; }
         public bool IsCompleted { get; set; }
+    }
+    private static async Task CleanupExpiredSessionsAndUsersAsync(AppDbContext db, DateTime nowUtc)
+    {
+        try
+        {
+            // 1. Deactivate expired sessions
+            var expiredSessions = await db.UserAppSessions
+                .Where(s => s.IsActive && s.ExpiresAtUtc <= nowUtc)
+                .ToListAsync();
+
+            if (expiredSessions.Any())
+            {
+                foreach (var s in expiredSessions)
+                {
+                    s.IsActive = false;
+                    s.RevokedAtUtc = nowUtc;
+                }
+            }
+
+            // 2. Mark subscriptions as Expired
+            var expiredSubs = await db.UserSubscriptions
+                .Where(s => s.Status == "Active" && s.ExpiresAtUtc <= nowUtc)
+                .ToListAsync();
+
+            if (expiredSubs.Any())
+            {
+                foreach (var s in expiredSubs)
+                {
+                    s.Status = "Expired";
+                }
+            }
+
+            // 3. Soft-delete users whose all subscriptions have been expired for more than 30 days
+            // and have no active sessions.
+            var threshold = nowUtc.AddDays(-30);
+            var usersToCleanup = await db.AppUsers
+                .Include(u => u.Subscriptions)
+                .Include(u => u.AppSessions)
+                .Where(u => !u.IsDeleted && u.LastSeenAtUtc < threshold)
+                .ToListAsync();
+
+            foreach (var user in usersToCleanup)
+            {
+                bool hasActiveSub = user.Subscriptions.Any(s => s.Status == "Active" || s.ExpiresAtUtc > nowUtc);
+                bool hasActiveSession = user.AppSessions.Any(s => s.IsActive && s.ExpiresAtUtc > nowUtc);
+
+                if (!hasActiveSub && !hasActiveSession)
+                {
+                    user.IsDeleted = true;
+                    user.Status = "Expired_Deleted";
+                }
+            }
+
+            await db.SaveChangesAsync();
+        }
+        catch
+        {
+            // Best effort - failures in cleanup shouldn't block the main API response
+        }
     }
 }

@@ -7,6 +7,7 @@ public class NearbyLocationCandidate
     public double DistanceMeters { get; set; }
     public double Latitude { get; set; }
     public double Longitude { get; set; }
+    public int Priority { get; set; } = 100;
 }
 
 public class NearbyLocationEventArgs : EventArgs

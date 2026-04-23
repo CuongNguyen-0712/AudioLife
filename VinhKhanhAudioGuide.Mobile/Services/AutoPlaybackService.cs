@@ -27,7 +27,7 @@ public class AutoPlaybackService : IAutoPlaybackService, IDisposable
     private bool _isActive;
     private string? _interruptedLocationId;
     private TimeSpan _interruptedPosition = TimeSpan.Zero;
-    private bool _isProcessingQueue;
+
 
     public bool IsActive => _isActive;
 
@@ -99,22 +99,50 @@ public class AutoPlaybackService : IAutoPlaybackService, IDisposable
         if (candidates.Count == 0) return null;
         if (candidates.Count == 1) return candidates[0];
 
-        // TH2: Xem khách đang đi về hướng nào, quán nào khách đang tiến đến thì phát trước
+        // Scoring System to select the best POI to play
+        // Weights: Distance (40%), Approach (30%), Priority (20%), History (10%)
+        
         var userLoc = _geolocationService.LatestLocation;
         var prevLoc = _previousUserLocation;
 
-        if (userLoc == null || prevLoc == null) return candidates[0];
-
-        var approachData = candidates.Select(c => new
+        var scores = candidates.Select(c =>
         {
-            Candidate = c,
-            DistNew = DistanceCalculator.CalculateDistanceKm(userLoc.Latitude, userLoc.Longitude, c.Latitude, c.Longitude),
-            DistOld = DistanceCalculator.CalculateDistanceKm(prevLoc.Latitude, prevLoc.Longitude, c.Latitude, c.Longitude)
+            double totalScore = 0;
+
+            // 1. Distance Score (0-40)
+            // Closer is better. 0m = 40 pts, TriggerRadius (5m) = 0 pts.
+            double distanceFactor = Math.Max(0, 1 - (c.DistanceMeters / TriggerRadiusMeters));
+            totalScore += distanceFactor * 40;
+
+            // 2. Approach Score (0-30)
+            // If user is moving towards the POI, give 30 pts.
+            if (userLoc != null && prevLoc != null)
+            {
+                double distNew = DistanceCalculator.CalculateDistanceKm(userLoc.Latitude, userLoc.Longitude, c.Latitude, c.Longitude);
+                double distOld = DistanceCalculator.CalculateDistanceKm(prevLoc.Latitude, prevLoc.Longitude, c.Latitude, c.Longitude);
+                if (distNew < distOld)
+                {
+                    totalScore += 30;
+                }
+            }
+
+            // 3. Priority Score (0-20)
+            // Use location priority (0-100). Higher is better.
+            double priorityFactor = Math.Clamp(c.Priority / 100.0, 0, 1);
+            totalScore += priorityFactor * 20;
+
+            // 4. History Score (0-10)
+            // If never played, give 10 pts.
+            if (!_lastPlayedAt.ContainsKey(c.LocationId))
+            {
+                totalScore += 10;
+            }
+
+            return new { Candidate = c, Score = totalScore };
         }).ToList();
 
-        var approaching = approachData.Where(x => x.DistNew < x.DistOld).OrderBy(x => x.DistNew).ToList();
-        
-        return approaching.FirstOrDefault()?.Candidate ?? candidates[0];
+        // Sort by score descending and take the best one
+        return scores.OrderByDescending(s => s.Score).First().Candidate;
     }
 
     private async Task HandleProximityTriggerAsync(string locationId)

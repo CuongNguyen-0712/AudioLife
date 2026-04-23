@@ -127,6 +127,10 @@ public partial class AudioPlayerViewModel : ObservableObject
 
     public ObservableCollection<AudioGuideItemViewModel> AudioGuides { get; } = new();
 
+    public AudioPlayerViewModel(
+        INavigationService navigationService,
+        IAudioService audioService,
+        IApiService apiService,
         ITourPlaybackSessionService tourPlaybackSessionService,
         ILocalizationService localizationService,
         IAutoPlaybackService autoPlaybackService)

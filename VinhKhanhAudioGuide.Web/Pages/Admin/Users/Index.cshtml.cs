@@ -159,7 +159,7 @@ public class EndUsersModel : PageModel
             isOnline = u.LastSeenAtUtc >= onlineThreshold,
             status = u.Status,
             currentActivity = u.CurrentActivity,
-            currentActivityAtUtc = u.CurrentActivityAtUtc,
+            currentActivityAtUtc = u.CurrentActivityAtUtc,  
             lastSeenAtUtc = u.LastSeenAtUtc
         });
 
@@ -167,7 +167,7 @@ public class EndUsersModel : PageModel
         {
             activeCount = onlineUserCount,
             totalCount = totalUserCount,
-            onlineCount = onlineUserCount,
+            onlineCount = onlineUserCount, // Thay đổi account online
             offlineCount = Math.Max(totalUserCount - onlineUserCount, 0),
             users = results
         });

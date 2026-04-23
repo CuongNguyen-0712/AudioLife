@@ -131,7 +131,6 @@ public class GeolocationService : IGeolocationService, IDisposable
         var nearbyLocations = await _apiService.GetNearbyLocationsAsync(userLat, userLng, scanRadiusMeters / 1000d);
         if (nearbyLocations.Count == 0)
         {
-            _nearbyQueue.Clear();
             NearbyLocationDetected?.Invoke(this, new NearbyLocationEventArgs { Candidates = new List<NearbyLocationCandidate>() });
             return;
         }
@@ -143,7 +142,8 @@ public class GeolocationService : IGeolocationService, IDisposable
                 LocationName = loc.Name,
                 DistanceMeters = CalculateDistanceKm(userLat, userLng, loc.Latitude, loc.Longitude) * 1000d,
                 Latitude = loc.Latitude,
-                Longitude = loc.Longitude
+                Longitude = loc.Longitude,
+                Priority = loc.Priority
             })
             .OrderBy(item => item.DistanceMeters)
             .ToList();
