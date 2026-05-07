@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1425" height="1320" viewBox="0 0 1425 1320" role="img" aria-labelledby="title desc">
+  <title id="title">ERD diagram imported from diagrams.net</title>
+  <desc id="desc">Entity relationship diagram exported from the diagrams.net Google Drive link provided for AudioLife.</desc>
+  <rect width="100%" height="100%" fill="#f8fafc" />
+  <g font-family="Arial, Helvetica, sans-serif">
+    <path d="M 550 107 L 720 170" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 550 85 L 620 170" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 640 85 L 620 170" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 740 100 L 670 190" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 860 382.5 L 1020 407.5" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 940 338.75 L 1020 407.5" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 940 362.5 L 1020 407.5" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 1030 342.5 L 970 427.5" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 1100 362.5 L 1070 407.5" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 1140 402.5 L 1070 427.5" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 70 415 L 220 430" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 155 400 L 220 430" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 200 370 L 220 430" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 235 335 L 220 430" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 300 355 L 220 430" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 360 387 L 320 430" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 410 417 L 320 430" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 450 440 L 320 430" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 145 790 L 280 810" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 180 772.5 L 230 830" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 230 760 L 230 830" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 250 725 L 280 830" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 330 735 L 280 830" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 360 775 L 330 815" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 390 805 L 330 830" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 910 770 L 1070 790" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 980 755 L 1010 810" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 1040 735 L 1010 810" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 1130 735 L 1010 810" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 270 160 L 620 170" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 270 220 L 320 430" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 270 410 L 330 580" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 270 610 L 280 830" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 1070 790 L 710 790" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 650 820 L 230 830" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 270 410 L 690 402" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 630 432 L 970 427.5" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 910 557 L 1120 620" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 910 535 L 980 620" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 1000 535 L 980 620" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 1100 545 L 980 620" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 580 615 L 980 620" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 270 450 L 580 615" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 1030 970 L 1155 1000" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 1050 965 L 1105 1012.5" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 1085 910 L 1105 1012.5" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 1135 905 L 1155 1000" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 1215 915 L 1155 1000" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 1245 955 L 1205 1012.5" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 1275 985 L 1205 1012.5" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 1265 1015 L 1205 1012.5" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 355 1120 L 480 1150" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 375 1115 L 430 1162.5" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 410 1060 L 430 1162.5" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 460 1055 L 480 1150" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 540 1065 L 480 1150" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 570 1105 L 530 1162.5" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 600 1135 L 530 1162.5" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 590 1182.5 L 530 1162.5" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+<path d="M 570 1235 L 530 1162.5" fill="none" stroke="#334155" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.82" />
+    <g><rect x="220" y="410" width="100" height="40" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="270" y="434" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >LOCATION </text></g>
+<g><rect x="970" y="407.5" width="100" height="40" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="1020" y="431.5" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >TOUR </text></g>
+<g><rect x="620" y="150" width="100" height="40" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="670" y="174" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >CATEGORY </text></g>
+<g><rect x="230" y="810" width="100" height="40" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="280" y="834" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >AUDIO_GUIDE</text></g>
+<g><ellipse cx="860" cy="397.5" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="860" y="401.5" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" font-style="italic">TourID</text></g>
+<g><ellipse cx="900" cy="362.5" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="900" y="366.5" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >name</text></g>
+<g><ellipse cx="980" cy="338.75" rx="40" ry="18.75" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="980" y="342.75" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >description</text></g>
+<g><ellipse cx="1070" cy="342.5" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="1070" y="346.5" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >imageUrl</text></g>
+<g><ellipse cx="1145" cy="362.5" rx="45" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="1145" y="366.5" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >duration</text></g>
+<g><ellipse cx="1185" cy="402.5" rx="45" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="1185" y="406.5" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >price</text></g>
+<g><ellipse cx="110" cy="415" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="110" y="419" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" font-style="italic">LocationID</text></g>
+<g><ellipse cx="155" cy="385" rx="35" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="155" y="389" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >Name</text></g>
+<g><ellipse cx="200" cy="355" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="200" y="359" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >Description</text></g>
+<g><ellipse cx="270" cy="335" rx="35" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="270" y="339" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >ImageUrl</text></g>
+<g><ellipse cx="340" cy="355" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="340" y="359" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >Address</text></g>
+<g><ellipse cx="400" cy="387" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="400" y="391" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >Latitude</text></g>
+<g><ellipse cx="450" cy="417" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="450" y="421" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >Longitude</text></g>
+<g><ellipse cx="450" cy="455" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="450" y="459" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >Duration</text></g>
+<g><ellipse cx="145" cy="805" rx="45" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="145" y="809" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" font-style="italic">AudioGuideID</text></g>
+<g><ellipse cx="230" cy="745" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="230" y="749" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >description</text></g>
+<g><ellipse cx="180" cy="772.5" rx="30" ry="12.5" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="180" y="776.5" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >title</text></g>
+<g><ellipse cx="290" cy="725" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="290" y="729" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >audioUrl</text></g>
+<g><ellipse cx="370" cy="735" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="370" y="739" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >language</text></g>
+<g><ellipse cx="400" cy="775" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="400" y="779" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >duration</text></g>
+<g><ellipse cx="430" cy="805" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="430" y="809" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >transcriptText</text></g>
+<g><ellipse cx="505" cy="107" rx="45" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="505" y="111" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" font-style="italic">CategoryID</text></g>
+<g><ellipse cx="590" cy="85" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="590" y="89" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >name</text></g>
+<g><ellipse cx="780" cy="100" rx="40" ry="20" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="780" y="104" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >description</text></g>
+<g><ellipse cx="680" cy="85" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="680" y="89" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >icon</text></g>
+<g><rect x="1010" y="790" width="120" height="40" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="1070" y="814" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >AUDIO_SEGMENT</text></g>
+<g><ellipse cx="910" cy="785" rx="60" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="910" y="789" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" font-style="italic">AudioSegmentID</text></g>
+<g><ellipse cx="1080" cy="735" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="1080" y="739" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >endTime</text></g>
+<g><ellipse cx="980" cy="742.5" rx="40" ry="12.5" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="980" y="746.5" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >startTime</text></g>
+<g><ellipse cx="1170" cy="735" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="1170" y="739" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >scriptText</text></g>
+<g><rect x="210" y="160" width="120" height="60" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="270" y="194" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >BELONGS</text></g>
+<g><rect x="210" y="550" width="120" height="60" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="270" y="584" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >HAS</text></g>
+<g><rect x="650" y="790" width="120" height="60" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="710" y="824" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >DIVIDED INTO</text></g>
+<g><rect x="630" y="402" width="120" height="60" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="690" y="436" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >CONSISTS_OF</text></g>
+<g><rect x="270" y="220" width="60" height="30" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="300" y="239" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >(1, 1)</text></g>
+<g><rect x="320" y="155" width="60" height="30" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="350" y="174" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >(1, N)</text></g>
+<g><rect x="570" y="387.5" width="60" height="30" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="600" y="406.5" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >(1, N)</text></g>
+<g><rect x="750" y="387.5" width="40" height="30" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="770" y="406.5" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >(1, N)</text></g>
+<g><rect x="600" y="780" width="40" height="30" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="620" y="799" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >(1, 1)</text></g>
+<g><rect x="770" y="780" width="60" height="30" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="800" y="799" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >(1, N)</text></g>
+<g><rect x="280" y="520" width="40" height="30" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="300" y="539" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >(1, 1)</text></g>
+<g><rect x="280" y="620" width="60" height="30" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="310" y="639" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >(1, N)</text></g>
+<g><rect x="980" y="600" width="140" height="40" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="1050" y="624" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >AUTH&amp;nbsp; USER&amp;nbsp; ACCOUNT</text></g>
+<g><ellipse cx="865" cy="557" rx="45" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="865" y="561" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" font-style="italic">authUserID</text></g>
+<g><ellipse cx="950" cy="535" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="950" y="539" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >username</text></g>
+<g><ellipse cx="1130" cy="545" rx="30" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="1130" y="549" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >role</text></g>
+<g><ellipse cx="1040" cy="535" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="1040" y="539" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >password</text></g>
+<g><rect x="580" y="585" width="120" height="60" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="640" y="619" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >ASSIGNED_TO</text></g>
+<g><rect x="715" y="585" width="40" height="30" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="735" y="604" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >(1,N)</text></g>
+<g><rect x="540" y="560" width="60" height="30" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="570" y="579" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >(1, N)</text></g>
+<g><rect x="1105" y="1000" width="100" height="25" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="1155" y="1016.5" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >AppUser</text></g>
+<g><ellipse cx="1030" cy="985" rx="45" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="1030" y="989" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" font-style="italic">Id</text></g>
+<g><ellipse cx="1085" cy="895" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="1085" y="899" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >DisplayName</text></g>
+<g><ellipse cx="1050" cy="942.5" rx="45" ry="22.5" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="1050" y="946.5" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >QrCodeValue</text></g>
+<g><ellipse cx="1175" cy="905" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="1175" y="909" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >PhoneNumber</text></g>
+<g><ellipse cx="1255" cy="915" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="1255" y="919" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >Email</text></g>
+<g><ellipse cx="1285" cy="955" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="1285" y="959" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >Status</text></g>
+<g><ellipse cx="1315" cy="985" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="1315" y="989" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >CreateedAt</text></g>
+<g><ellipse cx="1305" cy="1015" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="1305" y="1019" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >LastSeen</text></g>
+<g><rect x="430" y="1150" width="100" height="25" rx="5" fill="#ffffff" stroke="#1e40af" stroke-width="1.6" /><text x="480" y="1166.5" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="700" >AppUser</text></g>
+<g><ellipse cx="355" cy="1135" rx="45" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="355" y="1139" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" font-style="italic">UserId</text></g>
+<g><ellipse cx="410" cy="1045" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="410" y="1049" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >PackageId</text></g>
+<g><ellipse cx="375" cy="1092.5" rx="45" ry="22.5" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="375" y="1096.5" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >Id</text></g>
+<g><ellipse cx="500" cy="1055" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="500" y="1059" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >Status</text></g>
+<g><ellipse cx="580" cy="1065" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="580" y="1069" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >PurchaseAt</text></g>
+<g><ellipse cx="610" cy="1105" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="610" y="1109" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >StartAt</text></g>
+<g><ellipse cx="640" cy="1135" rx="40" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="640" y="1139" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >ExpiresAt</text></g>
+<g><ellipse cx="670" cy="1182.5" rx="80" ry="22.5" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="670" y="1186.5" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >PaymentReference</text></g>
+<g><ellipse cx="645" cy="1235" rx="75" ry="15" fill="#eef6ff" stroke="#2563eb" stroke-width="1.4" /><text x="645" y="1239" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="500" >LastVerified</text></g>
+  </g>
+</svg>

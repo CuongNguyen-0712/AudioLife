@@ -601,133 +601,101 @@
             <div class="si b"></div>
             <div>
               <span class="ch">Chapter 00</span>
-              <h2>Giới Thiệu Sản Phẩm</h2>
+              <h2>Gi&#7899;i Thi&#7879;u S&#7843;n Ph&#7849;m</h2>
             </div>
           </div>
           <p class="pr">
-            <strong>VinhKhanhAudioGuide</strong> (AudioLife) là hệ thống hướng
-            dẫn âm thanh du lịch ẩm thực đường phố Vĩnh Khánh, Q4, TP.HCM. Kiến
-            trúc enterprise với <strong>MVVM pattern</strong> trên mobile,
-            <strong>Razor Pages</strong> trên web,
-            <strong>EF Core + SQL Server</strong>, lưu trữ audio trên
-            <strong>Cloudinary CDN</strong>, và TTS tự động bằng
-            <strong>Edge Neural Voices</strong> với Google TTS fallback. Hệ
-            thống có <strong>2 portal riêng biệt</strong>: SystemAdmin (quản lý
-            toàn bộ) và PoiAdmin/Shop (chủ quán quản lý địa điểm của mình).
+            <strong>VinhKhanhAudioGuide</strong> (AudioLife) l&agrave; h&#7879; th&#7889;ng h&#432;&#7899;ng d&#7851;n &acirc;m thanh du l&#7883;ch cho tuy&#7871;n &#7849;m th&#7921;c &#273;&#432;&#7901;ng ph&#7889; V&#297;nh Kh&aacute;nh, Qu&#7853;n 4, TP.HCM. S&#7843;n ph&#7849;m k&#7871;t h&#7907;p &#7913;ng d&#7909;ng mobile .NET MAUI cho du kh&aacute;ch, c&#7893;ng qu&#7843;n tr&#7883; ASP.NET Core Razor Pages cho ban v&#7853;n h&agrave;nh v&agrave; ch&#7911; &#273;&#7883;a &#273;i&#7875;m, Minimal API cho d&#7919; li&#7879;u mobile, SQL Server qua EF Core, Cloudinary CDN cho audio, c&ugrave;ng d&#7883;ch v&#7909; Text-to-Speech t&#7921; &#273;&#7897;ng b&#7857;ng Edge Neural Voices v&agrave; Google TTS fallback.
           </p>
           <div class="cg">
             <div class="cd">
-              <h3>Mục Tiêu</h3>
+              <h3>M&#7909;c Ti&ecirc;u S&#7843;n Ph&#7849;m</h3>
               <ul>
-                <li>
-                  Audio guide tự động cho du khách khi đến gần địa điểm
-                  (geolocation 100m)
-                </li>
-                <li>
-                  TTS đa ngôn ngữ: vi, en, zh, ja, ko, fr (Edge Neural + Google
-                  fallback)
-                </li>
-                <li>Cloudinary CDN lưu trữ audio MP3 chuyên nghiệp</li>
-                   
-    +string CloudinaryPublicId
-    +string TranscriptText
-    +int Duration
-    +string LocationId
-    +string Language
-    +bool GeneratedFromTts
-    +string TtsSourceText
-    +ICollection ScriptSegments
-    +ICollection ListeningHistories
-  }
-  class AudioScriptSegment {
-    +int Id
-    +string AudioGuideId
-    +int StartTimeSeconds
-    +int EndTimeSeconds
-    +string ScriptText
-  }
-  class Category {
-    +string Id
-    +string Name
-    +string Icon
-    +string Description
-    +ICollection Locations
-  }
-  class Tour {
-    +string Id
-    +string Name
-    +string Description
-    +string ImageUrl
-    +int Duration
-    +decimal Price
-    +bool IsFeatured
-    +ICollection TourLocations
-  }
-  class TourLocation {
-    +string TourId
-    +string LocationId
-    +int SortOrder
-  }
-  class AppUser {
-    +string Id
-    +string ScannedQrCode
-    +DateTime CreatedAt
-    +bool IsActive
-  }
-  class Feedback {
-    +int Id
-    +string UserId
-    +string LocationId
-    +int Rating
-    +string Comment
-    +DateTime CreatedAt
-  }
-  class ListeningHistory {
-    +int Id
-    +string UserId
-    +string AudioGuideId
-    +int ListenedSeconds
-    +bool IsCompleted
-    +DateTime LastListenedAt
-  }
-  class AuthUserAccount {
-    +int Id
-    +string Username
-    +string Password
-    +string DisplayName
-    +string Role
-    +bool IsActive
-  }
-  class PoiChangeRequest {
-    +Guid Id
-    +string SubmittedByUsername
-    +string LocationId
-    +string Topic
-    +string Title
-    +string Details
-    +PoiChangeTargetType TargetType
-    +string TargetEntityId
-    +string ChangeSetJson
-    +PoiChangeRequestStatus Status
-    +string ReviewNote
-  }
-  class PoiAdminLocationAssignment {
-    +int Id
-    +string Username
-    +string LocationId
-  }
-  Location "1" --> "*" AudioGuide: has
-  Location "1" --> "*" Feedback: receives
-  AudioGuide "1" --> "*" AudioScriptSegment: has segments
-  AudioGuide "1" --> "*" ListeningHistory: tracked
-  Category "1" --> "*" Location: contains
-  Tour "*" --> "*" Location: via TourLocation
-  AppUser "1" --> "*" ListeningHistory: listens
-  AppUser "1" --> "*" Feedback: writes
-  AuthUserAccount "1" --> "*" PoiChangeRequest: submits
-  PoiAdminLocationAssignment "*" --> "1" Location: assigned
-</pre
-            >
+                <li>T&#7921; &#273;&#7897;ng gi&#7899;i thi&#7879;u &#273;&#7883;a &#273;i&#7875;m b&#7857;ng audio khi du kh&aacute;ch &#273;&#7871;n g&#7847;n POI, gi&#7843;m ph&#7909; thu&#7897;c v&agrave;o h&#432;&#7899;ng d&#7851;n vi&ecirc;n tr&#7921;c ti&#7871;p.</li>
+                <li>Cung c&#7845;p n&#7897;i dung &#273;a ng&ocirc;n ng&#7919; cho du kh&aacute;ch Vi&#7879;t Nam v&agrave; qu&#7889;c t&#7871;, h&#7895; tr&#7907; c&aacute;c ng&ocirc;n ng&#7919; vi, en, zh, ja, ko, fr.</li>
+                <li>Cho ph&eacute;p ng&#432;&#7901;i d&ugrave;ng xem b&#7843;n &#273;&#7891;, tour, chi ti&#7871;t &#273;&#7883;a &#273;i&#7875;m, ph&aacute;t audio, t&#7843;i n&#7897;i dung, t&igrave;m ki&#7871;m v&agrave; theo d&otilde;i l&#7883;ch s&#7917; nghe.</li>
+                <li>&#272;&#7891;ng b&#7897; d&#7919; li&#7879;u t&#7915; backend nh&#432;ng v&#7851;n c&oacute; local database tr&ecirc;n mobile &#273;&#7875; c&#7843;i thi&#7879;n tr&#7843;i nghi&#7879;m khi m&#7841;ng y&#7871;u.</li>
+              </ul>
+            </div>
+            <div class="cd">
+              <h3>M&#7909;c Ti&ecirc;u V&#7853;n H&agrave;nh</h3>
+              <ul>
+                <li>SystemAdmin qu&#7843;n l&yacute; danh m&#7909;c, &#273;&#7883;a &#273;i&#7875;m, tour, audio guide, ng&#432;&#7901;i d&ugrave;ng, g&oacute;i thanh to&aacute;n, b&aacute;o c&aacute;o v&agrave; c&#7845;u h&igrave;nh h&#7879; th&#7889;ng.</li>
+                <li>PoiAdmin qu&#7843;n l&yacute; n&#7897;i dung c&aacute;c &#273;&#7883;a &#273;i&#7875;m &#273;&#432;&#7907;c ph&acirc;n quy&#7873;n th&ocirc;ng qua lu&#7891;ng &#273;&#7873; xu&#7845;t thay &#273;&#7893;i, ch&#7901; duy&#7879;t v&agrave; ph&ecirc; duy&#7879;t.</li>
+                <li>T&#7921; &#273;&#7897;ng sinh audio t&#7915; n&#7897;i dung k&#7883;ch b&#7843;n, l&#432;u l&ecirc;n Cloudinary v&agrave; ph&aacute;t qua URL CDN thay v&igrave; ph&#7909; thu&#7897;c file n&#7897;i b&#7897;.</li>
+                <li>Ki&#7875;m so&aacute;t quy&#7873;n truy c&#7853;p app b&#7857;ng QR, session thi&#7871;t b&#7883;, heartbeat, subscription v&agrave; tr&#7841;ng th&aacute;i thanh to&aacute;n.</li>
+              </ul>
+            </div>
+            <div class="cd">
+              <h3>M&#7909;c Ti&ecirc;u K&#7929; Thu&#7853;t</h3>
+              <ul>
+                <li>T&aacute;ch r&otilde; mobile, web admin, API, service nghi&#7879;p v&#7909;, l&#432;u tr&#7919; audio v&agrave; database &#273;&#7875; d&#7877; b&#7843;o tr&igrave;.</li>
+                <li>S&#7917; d&#7909;ng MVVM + Dependency Injection tr&ecirc;n mobile v&agrave; EF Core code-first tr&ecirc;n web backend.</li>
+                <li>Ghi nh&#7853;n listening history, app activity log v&agrave; session &#273;&#7875; ph&#7909;c v&#7909; b&aacute;o c&aacute;o v&#7853;n h&agrave;nh.</li>
+                <li>Duy tr&igrave; RBAC hai vai tr&ograve; ch&iacute;nh: SystemAdmin v&agrave; PoiAdmin, h&#7841;n ch&#7871; truy c&#7853;p theo th&#432; m&#7909;c Razor Pages.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="sec" id="arch">
+          <div class="sh">
+            <div class="si p"></div>
+            <div>
+              <span class="ch">Architecture</span>
+              <h2>Ki&#7871;n Tr&uacute;c H&#7879; Th&#7889;ng</h2>
+            </div>
+          </div>
+          <p class="pr">
+            Ki&#7871;n tr&uacute;c hi&#7879;n t&#7841;i l&agrave; m&ocirc; h&igrave;nh client-server: mobile app l&agrave; client ch&iacute;nh cho du kh&aacute;ch; web app v&#7915;a l&agrave; admin portal v&#7915;a l&agrave; backend API; SQL Server l&agrave; ngu&#7891;n d&#7919; li&#7879;u trung t&acirc;m; Cloudinary l&agrave; l&#7899;p l&#432;u tr&#7919;/ph&acirc;n ph&#7889;i audio; c&aacute;c d&#7883;ch v&#7909; TTS sinh file audio t&#7915; k&#7883;ch b&#7843;n qu&#7843;n tr&#7883;.
+          </p>
+          <div class="dc">
+            <div class="dt">System Context</div>
+            <pre class="mermaid">
+flowchart LR
+  Tourist[Tourist / mobile device] --> Mobile[.NET MAUI Mobile App]
+  Mobile --> LocalDb[(SQLite Local Cache)]
+  Mobile --> Api[Minimal API /api/mobile]
+  Mobile --> Gps[Geolocation Service]
+  Mobile --> Player[Audio Playback Service]
+  Api --> Web[ASP.NET Core 8 Web App]
+  Admin[SystemAdmin] --> Web
+  Poi[PoiAdmin / Shop] --> Web
+  Web --> Ef[EF Core DbContext]
+  Ef --> Sql[(SQL Server AudioDB)]
+  Web --> Tts[Edge TTS Service]
+  Tts --> Google[Google TTS Fallback]
+  Web --> Cloudinary[Cloudinary Audio CDN]
+  Player --> Cloudinary
+            </pre>
+          </div>
+          <div class="cg">
+            <div class="cd"><h3>Mobile Layer</h3><p>.NET MAUI d&ugrave;ng MVVM, CommunityToolkit.Mvvm, Shell navigation, DI, local SQLite, audio playback, geolocation, auto-playback, search, i18n, QR/payment onboarding v&agrave; heartbeat session.</p></div>
+            <div class="cd"><h3>Web/API Layer</h3><p>ASP.NET Core 8 Razor Pages ph&#7909;c v&#7909; SystemAdmin v&agrave; PoiAdmin; Minimal API d&#432;&#7899;i <strong>/api/mobile</strong> cung c&#7845;p health, catalog, payment, session, heartbeat, activity v&agrave; listening history cho mobile.</p></div>
+            <div class="cd"><h3>Data Layer</h3><p>EF Core qu&#7843;n l&yacute; Category, Location, AudioGuide, Tour, AuthUserAccount, PoiChangeRequest, AppUser, ActivityLog, PaymentPackage, Subscription v&agrave; UserAppSession tr&ecirc;n SQL Server.</p></div>
+            <div class="cd"><h3>Content &amp; Audio Layer</h3><p>Audio guide c&oacute; transcript, segment v&agrave; metadata ng&ocirc;n ng&#7919;. N&#7897;i dung c&oacute; th&#7875; &#273;&#432;&#7907;c sinh b&#7857;ng Edge Neural TTS, fallback Google TTS, sau &#273;&oacute; upload l&ecirc;n Cloudinary &#273;&#7875; mobile ph&aacute;t qua CDN.</p></div>
+            <div class="cd"><h3>Authorization Layer</h3><p>Cookie authentication cho web, policy theo role cho SystemAdmin v&agrave; PoiAdmin. PoiAdmin ch&#7881; thao t&aacute;c trong portal shop v&agrave; g&#7917;i change request cho c&aacute;c POI &#273;&#432;&#7907;c ph&acirc;n quy&#7873;n.</p></div>
+            <div class="cd"><h3>Access Layer</h3><p>Mobile &#273;&#7883;nh danh thi&#7871;t b&#7883; b&#7857;ng DeviceId/session token, ki&#7875;m tra subscription c&ograve;n hi&#7879;u l&#7921;c, g&#7917;i heartbeat v&agrave; activity log &#273;&#7875; backend c&oacute; th&#7875; thu h&#7891;i ho&#7863;c h&#7871;t h&#7841;n quy&#7873;n truy c&#7853;p.</p></div>
+          </div>
+        </section>
+
+        <section class="sec" id="class">
+          <div class="sh">
+            <div class="si g"></div>
+            <div>
+              <span class="ch">Diagram</span>
+              <h2>DB Diagram</h2>
+            </div>
+          </div>
+          <p class="pr">
+            S&#417; &#273;&#7891; d&#432;&#7899;i &#273;&acirc;y &#273;&#432;&#7907;c sinh tr&#7921;c ti&#7871;p t&#7915; file <strong>dbdiagram.dbml</strong> trong project, th&#7875; hi&#7879;n c&aacute;c b&#7843;ng, kh&oacute;a ch&iacute;nh, unique key v&agrave; quan h&#7879; Ref c&#7911;a database AudioLife.
+          </p>
+          <div class="dc">
+            <div class="dt">Imported from dbdiagram.dbml</div>
+            <picture>
+              <source srcset="./dbdiagram.svg" type="image/svg+xml" />
+              <img src="./dbdiagram.svg" alt="AudioLife DB diagram imported from dbdiagram.dbml" loading="lazy" />
+            </picture>
           </div>
         </section>
 
@@ -736,155 +704,18 @@
             <div class="si g"></div>
             <div>
               <span class="ch">Diagram</span>
-              <h2>ER Diagram — SQL Server</h2>
+              <h2>ER Diagram &mdash; SQL Server</h2>
             </div>
           </div>
+          <p class="pr">
+            ERD n&agrave;y &#273;&#432;&#7907;c l&#7845;y t&#7915; li&ecirc;n k&#7871;t diagrams.net/Google Drive v&agrave; &#273;&#432;&#7907;c l&#432;u c&#7909;c b&#7897; trong project &#273;&#7875; PRD hi&#7875;n th&#7883; &#273;&#7897;c l&#7853;p v&#7899;i m&#7841;ng.
+          </p>
           <div class="dc">
-            <div class="dt">Database ER Diagram — 16 Tables</div>
-            <pre class="mermaid">
-erDiagram
-  Categories {
-    string Id PK
-    string Name
-    string Icon
-    string Description
-  }
-  Locations {
-    string Id PK
-    string Name
-    string Description
-    string ImageUrl
-    string Address
-    double Latitude
-    double Longitude
-    int Duration
-    string CategoryId FK
-  }
-  AudioGuides {
-    string Id PK
-    string Title
-    string Description
-    string AudioUrl
-    string CloudinaryAudioUrl
-    string CloudinaryPublicId
-    string TranscriptText
-    int Duration
-    string LocationId FK
-    string Language
-    bool GeneratedFromTts
-    string TtsSourceText
-  }
-  AudioScriptSegments {
-    int Id PK
-    string AudioGuideId FK
-    int StartTimeSeconds
-    int EndTimeSeconds
-    string ScriptText
-  }
-  Tours {
-    string Id PK
-    string Name
-    string Description
-    string ImageUrl
-    int Duration
-    decimal Price
-    bool IsFeatured
-  }
-  TourLocations {
-    string TourId FK
-    string LocationId FK
-    int SortOrder
-  }
-  AppUsers {
-    string Id PK
-    string ScannedQrCode
-    datetime CreatedAt
-    bool IsActive
-  }
-  ListeningHistories {
-    int Id PK
-    string UserId FK
-    string AudioGuideId FK
-    int ListenedSeconds
-    bool IsCompleted
-  }
-  AuthUserAccounts {
-    int Id PK
-    string Username
-    string Password
-    string DisplayName
-    string Role
-    bool IsActive
-  }
-  PoiChangeRequests {
-    guid Id PK
-    string SubmittedByUsername
-    string LocationId
-    string TargetEntityId
-    string ChangeSetJson
-    int Status
-    string ReviewNote
-  }
-  PoiAdminLocationAssignments {
-    int Id PK
-    string Username
-    string LocationId
-  }
-  PaymentPackages {
-    string Id PK
-    string Name
-    decimal Price
-    string Currency
-    int DurationDays
-    string TargetType
-    bool IsActive
-  }
-  UserSubscriptions {
-    guid Id PK
-    guid UserId FK
-    int AuthUserId FK
-    string PackageId FK
-    string Status
-    decimal PaidAmount
-  }
-  UserAppSessions {
-    guid Id PK
-    guid UserId FK
-    string DeviceId
-    string TokenValue
-    datetime ExpiresAtUtc
-    bool IsActive
-  }
-  PoiRegistrationRequests {
-    guid Id PK
-    string PackageId FK
-    string Status
-    string PaymentReference
-    string CreatedUsername
-  }
-  AppUserActivityLogs {
-    guid Id PK
-    guid UserId FK
-    string DeviceId
-    string SessionToken
-    string ActivityName
-    datetime LoggedAtUtc
-  }
-  Categories ||--o{ Locations: "contains"
-  Locations ||--o{ AudioGuides: "has"
-  AudioGuides ||--o{ AudioScriptSegments: "has"
-  AudioGuides ||--o{ ListeningHistories: "tracked"
-  AppUsers ||--o{ ListeningHistories: "listens"
-  Tours }o--o{ Locations: "via TourLocations"
-  Locations ||--o{ PoiAdminLocationAssignments: "assigned"
-  PaymentPackages ||--o{ UserSubscriptions: "plans"
-  AppUsers ||--o{ UserSubscriptions: "subscribes"
-  AuthUserAccounts ||--o{ UserSubscriptions: "admin purchases"
-  AppUsers ||--o{ UserAppSessions: "sessions"
-  AppUsers ||--o{ AppUserActivityLogs: "activity logs"
-  PaymentPackages ||--o{ PoiRegistrationRequests: "registration flow"
-</pre
-            >
+            <div class="dt">ERD diagram</div>
+            <picture>
+              <source srcset="./ERD_diagrams_net.svg" type="image/svg+xml" />
+              <img src="./ERD_diagrams_net.svg" alt="AudioLife ERD imported from diagrams.net" loading="lazy" />
+            </picture>
           </div>
         </section>
 
@@ -1458,82 +1289,142 @@ erDiagram
           </div>
 
           <div class="dc">
-            <div class="dt">Audio Playback — State Machine</div>
+            <div class="dt">Mobile App Access State</div>
+            <p>State machine based on App.InitializeStartupAsync, AppSessionStore, RemoteApiService session endpoints, LanguageSection and AppHeartbeatService.</p>
+            <pre class="mermaid">
+stateDiagram-v2
+  [*] --> StartupLoading
+  StartupLoading --> DeepLinkPending: App.HasPendingDeepLink
+  DeepLinkPending --> QrPayloadParsed: QrCodePayloadService.TryParseAudioPayload
+  QrPayloadParsed --> PaymentPlanSelection: CompleteQrOnboardingAsync
+  DeepLinkPending --> StartupLoading: invalid deep link ignored
+
+  StartupLoading --> ReadLocalSession: no pending deep link
+  ReadLocalSession --> ShellAuthenticated: local snapshot valid
+  ReadLocalSession --> ShellOfflineGuest: offline and no valid snapshot
+  ReadLocalSession --> IntroPreAuth: online and no local session
+
+  ShellAuthenticated --> ServerVerification: internet available
+  ShellOfflineGuest --> [*]: local catalog fallback
+  ServerVerification --> ShellAuthenticated: by-device and validate success
+  ServerVerification --> IntroPreAuth: no session or invalid subscription
+  ServerVerification --> IntroPreAuth: API failure with no local session
+
+  IntroPreAuth --> QrScanner: camera permission granted
+  IntroPreAuth --> IntroPreAuth: camera denied
+  QrScanner --> PaymentPlanSelection: QR parsed
+  QrScanner --> QrScanner: invalid QR or rescan
+  PaymentPlanSelection --> PaymentCheckout: synced packages and plan selected
+  PaymentCheckout --> PaymentCheckout: payment failed or validation pending
+  PaymentCheckout --> LanguageSelection: payment complete and session valid
+  LanguageSelection --> ShellAuthenticated: user chooses language
+
+  ShellAuthenticated --> HeartbeatRunning: NavigateToShellRoot
+  HeartbeatRunning --> ShellAuthenticated: heartbeat success refreshes snapshot
+  HeartbeatRunning --> IntroPreAuth: heartbeat invalid or expired
+            </pre>
+          </div>
+
+          <div class="dc">
+            <div class="dt">Audio Playback State</div>
+            <p>State machine implemented by AudioService and observed by AudioPlayerViewModel and AutoPlaybackService.</p>
             <pre class="mermaid">
 stateDiagram-v2
   [*] --> None
-  None --> Loading: PlayAsync(url)
-  Loading --> Playing: Player ready
-  Loading --> Error: Load failed
-  Playing --> Paused: PauseAsync()
-  Paused --> Playing: ResumeAsync()
-  Playing --> Stopped: StopAsync()
-  Paused --> Stopped: StopAsync()
-  Playing --> Completed: PlaybackEnded
-  Completed --> None: Reset
-  Stopped --> None: Reset
-  Error --> None: Reset
+  None --> Loading: PlayAsync(url, locationId, guideId)
+  Stopped --> Loading: new play request
+  Paused --> Loading: switch guide
+  Playing --> Loading: switch guide or manual override
+  Loading --> Playing: player loaded and Play starts
+  Loading --> Error: empty URL, HTTP failure, player init failure
+  Loading --> Stopped: stale request cancelled
+  Playing --> Paused: PauseAsync
+  Paused --> Playing: ResumeAsync
+  Playing --> Stopped: StopAsync or PlaybackEnded
+  Paused --> Stopped: StopAsync
+  Error --> Loading: retry
+  Error --> None: dispose or reset
+  Stopped --> None: no active URL
   note right of Playing
-    Position timer 500ms
-    Transcript sync per segment
-    Volume control 0.0-1.0
+    Position timer updates UI every 150ms
+    History sync is triggered by AudioPlayerViewModel
+    Play requests are throttled by a 2.5s cooldown
   end note
-</pre
-            >
+            </pre>
           </div>
 
           <div class="dc">
-            <div class="dt">POI Change Request — State Machine</div>
+            <div class="dt">Auto Playback State</div>
+            <p>State machine based on GeolocationService plus AutoPlaybackService proximity, scoring, cooldown, queue and manual override behavior.</p>
             <pre class="mermaid">
 stateDiagram-v2
-  [*] --> Pending: PoiAdmin submits
-  Pending --> InReview: Admin starts review
-  InReview --> Approved: Admin approves
-  InReview --> Rejected: Admin rejects
-  Approved --> Applied: TryApplyChangeSetAsync()
-  Applied --> [*]: Done
-  note right of Approved
-    Auto parse ChangeSetJson
-    Apply field-by-field to
-    Location or AudioGuide
+  [*] --> Inactive
+  Inactive --> Tracking: App enters shell and starts services
+  Tracking --> PermissionDenied: location permission denied
+  PermissionDenied --> Inactive
+  Tracking --> Scanning: GPS location received every 5s
+  Scanning --> NoCandidate: no nearby POI
+  NoCandidate --> Tracking
+  Scanning --> CandidateScoring: candidates within effective scan radius
+  CandidateScoring --> WaitingForEntry: best candidate farther than 5m
+  WaitingForEntry --> Tracking
+  CandidateScoring --> CooldownCheck: selected POI within 5m
+  CooldownCheck --> AskReplay: played within 5 minutes
+  AskReplay --> Tracking: user says no
+  AskReplay --> QueueDecision: user says yes
+  CooldownCheck --> QueueDecision: no cooldown block
+  QueueDecision --> Queued: audio is already playing
+  QueueDecision --> AutoPlaying: player is idle
+  AutoPlaying --> Tracking: playback stopped
+  Queued --> AutoPlaying: current audio stops and queue dequeues
+  Tracking --> ExitedPoi: distance is at least 20m
+  ExitedPoi --> Tracking: remove from inside set
+  AutoPlaying --> Interrupted: manual playback starts another guide
+  Interrupted --> ResumePrompt: manual audio stops
+  ResumePrompt --> AutoPlaying: resume interrupted or replay from start
+  ResumePrompt --> Tracking: skip resume
+  Tracking --> Inactive: Stop or dispose
+            </pre>
+          </div>
+
+          <div class="dc">
+            <div class="dt">POI Change Request State</div>
+            <p>State machine from DbPoiChangeRequestService.TryUpdateStatusAsync and the SystemAdmin review page.</p>
+            <pre class="mermaid">
+stateDiagram-v2
+  [*] --> Pending: PoiAdmin submits request
+  Pending --> InReview: SystemAdmin marks in review
+  Pending --> Applying: SystemAdmin approves directly
+  InReview --> Applying: SystemAdmin approves
+  Pending --> Rejected: SystemAdmin rejects with note
+  InReview --> Rejected: SystemAdmin rejects with note
+  Applying --> Approved: ChangeSet applied and saved
+  Applying --> Pending: apply failed, status not changed
+  Approved --> [*]
+  Rejected --> [*]
+  note right of Applying
+    ChangeSetJson may create, update or delete Location and AudioGuide
+    AudioGuide approval can generate TTS and upload to Cloudinary
   end note
-</pre
-            >
+            </pre>
           </div>
 
           <div class="dc">
-            <div class="dt">TTS Generation — State Machine</div>
+            <div class="dt">Catalog Data Source State</div>
+            <p>State machine used by RemoteApiService for home, map, search, audio, tours and history data retrieval.</p>
             <pre class="mermaid">
 stateDiagram-v2
-  [*] --> TextInput: Admin enters text
-  TextInput --> EdgeTTS: SynthesizeAsync()
-  EdgeTTS --> MP3Generated: Success
-  EdgeTTS --> GoogleFallback: 403 Error
-  GoogleFallback --> MP3Generated: Chunks merged
-  GoogleFallback --> Failed: Also rejected
-  MP3Generated --> CloudinaryUpload: Upload MP3
-  CloudinaryUpload --> Saved: AudioGuide updated
-  Saved --> [*]
-  Failed --> [*]: Manual upload needed
-</pre
-            >
-          </div>
-
-          <div class="dc">
-            <div class="dt">Geolocation Tracking — State Machine</div>
-            <pre class="mermaid">
-stateDiagram-v2
-  [*] --> Idle
-  Idle --> RequestPermission: StartTrackingAsync()
-  RequestPermission --> Tracking: Permission granted
-  RequestPermission --> Idle: Denied
-  Tracking --> CheckNearby: GPS position received
-  CheckNearby --> Notify: Location within 100m
-  CheckNearby --> Tracking: No nearby location
-  Notify --> Tracking: Wait 60s next cycle
-  Tracking --> Idle: StopTracking()
-</pre
-            >
+  [*] --> RemoteRequest
+  RemoteRequest --> RemoteSuccess: API returns data
+  RemoteSuccess --> CacheUpdated: catalog payload saved to SQLite cache
+  CacheUpdated --> LocalizedResult: apply ContentLocalizationMapper
+  RemoteRequest --> CacheLookup: timeout or backend unavailable
+  CacheLookup --> CachedResult: cached JSON exists
+  CachedResult --> LocalizedResult
+  CacheLookup --> FallbackSampleData: no cache
+  FallbackSampleData --> LocalizedResult
+  LocalizedResult --> [*]
+            </pre>
           </div>
         </section>
 
@@ -1692,91 +1583,235 @@ stateDiagram-v2
           </div>
 
           <div class="dc">
-            <div class="dt">Audio Guide Creation — Full Pipeline</div>
+            <div class="dt">App Startup and Session Resolution</div>
             <pre class="mermaid">
 flowchart TD
-  A([Admin opens AudioGuide Create]) --> B{Upload or TTS?}
-  B -->|Upload file| C[Validate file format]
-  C --> D[CloudinaryAudioStorageService.Upload]
-  D --> E[Transform URL: f_mp3]
-  B -->|Generate TTS| F[Enter text + select language]
-  F --> G[EdgeTTSService.SynthesizeAsync]
-  G --> H{Edge success?}
-  H -->|Yes| I[MP3 bytes ready]
-  H -->|No 403| J[Google TTS Fallback]
-  J --> K[Split text 180 chars]
-  K --> L[Merge chunks + strip ID3]
-  L --> I
-  I --> D
-  E --> M[Save to DB: AudioUrl, CloudinaryPublicId]
-  M --> N{Add ScriptSegments?}
-  N -->|Yes| O[Add timestamp + text segments]
-  N -->|No| P([AudioGuide created])
-  O --> P
-  style A fill:#7c3aed,color:#fff
-  style P fill:#16a34a,color:#fff
-</pre
-            >
-          </div>
-
-          <div class="dc">
-            <div class="dt">POI Change Request — Apply Logic</div>
-            <pre class="mermaid">
-flowchart TD
-  A([TryApplyChangeSetAsync]) --> B[Parse ChangeSetJson]
-  B --> C{TargetType?}
-  C -->|Location| D[Find Location by TargetEntityId]
-  D --> E{Location exists?}
-  E -->|No| FAIL([Return false])
-  E -->|Yes| F[Apply field changes]
-  F --> G[Name, Description, Address]
-  F --> H[ImageUrl, Lat, Lng, Duration]
-  G --> OK([Return true])
-  H --> OK
-  C -->|AudioGuide| I{Action = create?}
-  I -->|Yes| J[Verify LocationId exists]
-  J --> K[Create new AudioGuide]
-  K --> L[Apply fields from ChangeSet]
-  L --> OK
-  I -->|No| M[Find existing AudioGuide]
-  M --> N{Exists and same LocationId?}
-  N -->|No| FAIL
-  N -->|Yes| O[Apply field changes]
-  O --> P[Title, Description, AudioUrl]
-  O --> Q[Cloudinary fields, Language, TTS]
-  P --> OK
-  Q --> OK
-  style A fill:#7c3aed,color:#fff
-  style OK fill:#16a34a,color:#fff
-  style FAIL fill:#dc2626,color:#fff
+  A([App window created]) --> B[Show StartupLoadingPage]
+  B --> C{Pending deep link?}
+  C -->|Yes| D[Parse QR audio payload]
+  D --> E{Payload valid?}
+  E -->|Yes| F[Store pending QR payload]
+  F --> G[Open PaymentPlanSelectionPage]
+  E -->|No| H[Ignore deep link]
+  H --> I[Continue startup]
+  C -->|No| I
+  I --> J[Resolve IAppSessionStore and IApiService]
+  J --> K[Get or create DeviceId]
+  K --> L[Read local AppSessionSnapshot]
+  L --> M{Local snapshot valid or offline fallback allowed?}
+  M -->|Yes| N[NavigateToShellRoot]
+  N --> O[Start heartbeat]
+  N --> P[Start geolocation and auto playback]
+  M -->|No| Q{Internet available?}
+  Q -->|No| R[NavigateToIntro]
+  Q -->|Yes| S[Call session/by-device]
+  S --> T{Device has session?}
+  T -->|No| U[Clear snapshot and go Intro]
+  T -->|Yes| V[Call session/validate]
+  V --> W{Valid subscription?}
+  W -->|Yes| X[Save refreshed snapshot]
+  X --> N
+  W -->|No| U
             </pre>
           </div>
 
           <div class="dc">
-            <div class="dt">Geolocation Nearby Detection Loop</div>
+            <div class="dt">QR Onboarding, Payment and Session Creation</div>
             <pre class="mermaid">
 flowchart TD
-  A([StartTrackingAsync]) --> B{Permission granted?}
-  B -->|No| Z([Stop])
-  B -->|Yes| C[Set _isTracking = true]
-  C --> D[GetLocationAsync GPS]
-  D --> E{Got position?}
-  E -->|No| F[Wait 60s retry]
-  F --> D
-  E -->|Yes| G[CheckNearbyLocationsAsync]
-  G --> H[GetNearbyLocationsAsync lat,lng,0.1km]
-  H --> I{Found nearby?}
-  I -->|No| F
-  I -->|Yes| J{Same as lastNearestId?}
-  J -->|Yes| F
-  J -->|No| K[Fire NearbyLocationDetected]
-  K --> L[Update _lastNearestLocationId]
-  L --> F
-  style A fill:#00838f,color:#fff
-  style K fill:#1565C0,color:#fff
-  style Z fill:#64748b,color:#fff
-</pre
-            >
+  A([IntroPage]) --> B[Request camera permission]
+  B --> C{Granted?}
+  C -->|No| D[Stay on Intro]
+  C -->|Yes| E[Open QrScannerPage]
+  E --> F[Scan camera, pick image or sample QR]
+  F --> G{QR parses as audio deep link?}
+  G -->|No| H[Show invalid message and resume scanner]
+  G -->|Yes| I[Store QrAudioPayload]
+  I --> J[Open PaymentPlanSelectionPage]
+  J --> K[Load payment packages from API]
+  K --> L{Packages synced?}
+  L -->|No| M[Block continue or use fallback status]
+  L -->|Yes| N[User selects package]
+  N --> O[Open PaymentCheckoutPage]
+  O --> P[Get DeviceId and existing device session]
+  P --> Q[POST /api/mobile/payment/complete]
+  Q --> R[Server creates or updates AppUser]
+  R --> S[Create or update UserSubscription]
+  S --> T[Create or refresh UserAppSession]
+  T --> U[Return session token and expiry]
+  U --> V[GET /api/mobile/session/validate]
+  V --> W{Session valid?}
+  W -->|No| X[Show pending or failed message]
+  W -->|Yes| Y[Save AppSessionSnapshot]
+  Y --> Z[Clear pending QR and open LanguageSection]
+  Z --> AA[NavigateToShellRoot]
+            </pre>
+          </div>
+
+          <div class="dc">
+            <div class="dt">Auto Playback Proximity Flow</div>
+            <pre class="mermaid">
+flowchart TD
+  A([Shell authenticated]) --> B[GeolocationService.StartTrackingAsync]
+  B --> C{Location permission granted?}
+  C -->|No| Z([Auto playback inactive])
+  C -->|Yes| D[Every 5s get GPS location]
+  D --> E[Calculate effective scan radius: 50m to 150m]
+  E --> F[IApiService.GetNearbyLocationsAsync]
+  F --> G[Remote API, cache or local fallback]
+  G --> H{Candidates returned?}
+  H -->|No| D
+  H -->|Yes| I[Build candidates with distance and priority]
+  I --> J{Any candidate within 5m trigger radius?}
+  J -->|No| K[Keep tracking and update exit set]
+  K --> D
+  J -->|Yes| L[Score candidates]
+  L --> M[Distance 40, approach 30, priority 20, history 10]
+  M --> N[Select best POI]
+  N --> O{Already inside this POI?}
+  O -->|Yes| D
+  O -->|No| P[Mark as inside]
+  P --> Q{Played in last 5 minutes?}
+  Q -->|Yes| R[Ask user whether to replay]
+  R -->|No| D
+  R -->|Yes| S[QueueOrPlayAsync]
+  Q -->|No| S
+  S --> T{Audio currently playing?}
+  T -->|Yes| U[Enqueue POI if not already queued]
+  T -->|No| V[Load first AudioGuide and play CloudinaryAudioUrl or AudioUrl]
+  U --> W[Wait for AudioService Stopped]
+  W --> X[Dequeue next POI]
+  X --> V
+  V --> D
+            </pre>
+          </div>
+
+          <div class="dc">
+            <div class="dt">Catalog, Search and History Data Flow</div>
+            <pre class="mermaid">
+flowchart TD
+  A([Page or ViewModel requests data]) --> B{Request type}
+  B -->|Catalog or search| C[RemoteApiService TryGetAsync]
+  C --> D{Remote success?}
+  D -->|Yes| E[Normalize and localize payload]
+  E --> F[Upsert SQLite JSON cache for catalog]
+  F --> G[Bind ObservableCollection]
+  D -->|No| H[Read cached JSON from LocalDatabaseService]
+  H --> I{Cache available?}
+  I -->|Yes| E
+  I -->|No| J[Use ApiService SampleData fallback]
+  J --> G
+  B -->|Listening history read| K[GET /api/mobile/history]
+  K --> L{Remote history returned?}
+  L -->|Yes| M[Upsert local listening history]
+  M --> G
+  L -->|No| N[Load local history]
+  N --> G
+  B -->|Listening history write| O[POST /api/mobile/history]
+  O --> P[Also update local fallback history]
+  P --> G
+            </pre>
+          </div>
+
+          <div class="dc">
+            <div class="dt">Audio Player, Transcript and History Sync</div>
+            <pre class="mermaid">
+flowchart TD
+  A([Open AudioPlayerPage]) --> B[Read route params: LocationId, AudioGuideId, AudioUrl, PlaybackSource]
+  B --> C[Load location and audio guides]
+  C --> D[Resolve preferred or selected guide]
+  D --> E{Auto play requested?}
+  E -->|Yes| F[AudioService.PlayAsync]
+  E -->|No| G[Wait for user command]
+  G --> H{Command}
+  H -->|Play/Pause| I[Play, Pause or Resume via AudioService]
+  H -->|Seek| J[SeekAsync and update position]
+  H -->|Next/Back| K[SetCurrentAudioGuideAsync]
+  K --> F
+  F --> L[AudioService enters Loading]
+  L --> M{Player loaded?}
+  M -->|No| N[State Error]
+  M -->|Yes| O[State Playing and timer ticks]
+  O --> P[PositionChanged updates slider and transcript segment]
+  P --> Q{10s elapsed or progress delta >= 3 percent?}
+  Q -->|Yes| R[SyncListeningHistoryAsync]
+  R --> S[API/local AddListeningHistoryAsync]
+  Q -->|No| O
+  O --> T{Playback stopped?}
+  T -->|Yes| U[Force history sync]
+  U --> V{Next guide or tour checkpoint?}
+  V -->|Yes| K
+  V -->|No| G
+            </pre>
+          </div>
+
+          <div class="dc">
+            <div class="dt">POI Change Request Approval and TTS Flow</div>
+            <pre class="mermaid">
+flowchart TD
+  A([PoiAdmin edits assigned POI or audio]) --> B[Build ChangeSetJson]
+  B --> C[SubmitAsync stores Pending request]
+  C --> D[SystemAdmin opens Admin ChangeRequests]
+  D --> E[Review current values vs proposed values]
+  E --> F{Decision}
+  F -->|Reject| G[Require review note]
+  G --> H[Set status Rejected]
+  F -->|In review| I[Set status InReview]
+  I --> D
+  F -->|Approve| J[TryUpdateStatusAsync Approved]
+  J --> K[Parse ChangeSetJson]
+  K --> L{TargetType}
+  L -->|Location| M{Action}
+  M -->|create-location| N[Create Location]
+  M -->|delete-location| O[Delete Location]
+  M -->|update| P[Apply Location fields]
+  L -->|AudioGuide| Q{Action}
+  Q -->|create-audio-guide| R[Create AudioGuide for Location]
+  Q -->|delete-audio-guide| S[Delete AudioGuide]
+  Q -->|update| T[Apply AudioGuide fields]
+  R --> U{__tts_on_approval true?}
+  T --> U
+  U -->|No| V[Save DB changes]
+  U -->|Yes| W[Resolve transcript and language]
+  W --> X[ITextToSpeechService.SynthesizeAsync]
+  X --> Y{TTS success?}
+  Y -->|No| Z[Return false and keep old status]
+  Y -->|Yes| AA[Upload MP3 via CloudinaryAudioStorageService]
+  AA --> AB[Update AudioUrl, CloudinaryAudioUrl, PublicId, TTS metadata]
+  AB --> V
+  N --> V
+  O --> V
+  P --> V
+  S --> V
+  V --> AC[Set status Approved, UpdatedBy, ReviewNote]
+            </pre>
+          </div>
+
+          <div class="dc">
+            <div class="dt">Mobile API Request Processing</div>
+            <pre class="mermaid">
+flowchart TD
+  A([Mobile calls /api/mobile]) --> B{Endpoint group}
+  B -->|Session by device| C[Cleanup expired sessions and users]
+  C --> D[Find active UserAppSession by DeviceId]
+  D --> E[Return HasSession and subscription snapshot]
+  B -->|Session validate| F[Find session by token and device]
+  F --> G{Session active and not expired?}
+  G -->|No| H[Return IsValid false]
+  G -->|Yes| I[Find active UserSubscription]
+  I --> J[Return validation result]
+  B -->|Heartbeat| K[Find session and AppUser]
+  K --> L{User and subscription active?}
+  L -->|No| M[Return SessionValid false]
+  L -->|Yes| N[Update LastSeen, activity, session validation time]
+  N --> O[Insert AppUserActivityLog]
+  O --> P[Return refreshed expiry]
+  B -->|Catalog| Q[Query EF Core AsNoTracking]
+  Q --> R[Project locations, audio, tours, categories]
+  R --> S[Return JSON to RemoteApiService]
+  B -->|History| T[Read or upsert ListeningHistory]
+  T --> S
+            </pre>
           </div>
         </section>
 
