@@ -58,6 +58,8 @@ public class AutoPlaybackService : IAutoPlaybackService, IDisposable
 
     private async void OnNearbyLocationDetected(object? sender, NearbyLocationEventArgs e)
     {
+        // Nhận danh sách POI gần từ GPS và quyết định có trigger phát tự động hay không.
+        // Đây là điểm vào chính của flow TH1/TH2 auto-play theo vị trí.
         if (!_isActive || e.Candidates.Count == 0) return;
 
         var currentUserLocation = _geolocationService.LatestLocation;
@@ -94,6 +96,8 @@ public class AutoPlaybackService : IAutoPlaybackService, IDisposable
 
     private NearbyLocationCandidate? ResolveTieBreaker(List<NearbyLocationCandidate> candidates)
     {
+        // Chấm điểm nhiều POI cùng lúc để chọn POI ưu tiên phát.
+        // Thuộc flow TH2/TH4: xét khoảng cách, hướng di chuyển, priority và lịch sử nghe.
         if (candidates.Count == 0) return null;
         if (candidates.Count == 1) return candidates[0];
 
@@ -176,6 +180,8 @@ public class AutoPlaybackService : IAutoPlaybackService, IDisposable
 
     private async Task QueueOrPlayAsync(string locationId)
     {
+        // Nếu đang phát audio khác thì đưa vào queue, nếu idle thì phát ngay.
+        // Thuộc flow TH3: không ngắt luồng đang nghe trừ khi manual override.
         // TH3: Đang nghe quán A, đi ngang quán B -> Không ngắt quán A. Quán B xếp hàng chờ.
         if (_audioService.IsPlaying)
         {
@@ -205,6 +211,8 @@ public class AutoPlaybackService : IAutoPlaybackService, IDisposable
 
     private async void OnAudioStateChanged(object? sender, AudioStateChangedEventArgs e)
     {
+        // Theo dõi khi audio kết thúc để xử lý resume logic hoặc phát phần tử tiếp theo trong queue.
+        // Thuộc flow TH3/TH4 tự động chuyển luồng.
         if (e.State == AudioPlaybackState.Stopped || e.State == AudioPlaybackState.None)
         {
             // TH4: Sau khi quán B xong thì hỏi khách: muốn nghe tiếp chỗ bị ngắt của quán A...
@@ -225,6 +233,8 @@ public class AutoPlaybackService : IAutoPlaybackService, IDisposable
 
     public async Task HandleManualPlaybackAsync(string locationId, string audioGuideId)
     {
+        // Manual override: ngắt audio hiện tại, lưu trạng thái bị ngắt và phát guide user chọn.
+        // Thuộc flow TH4 bấm tay phát quán B khi đang nghe quán A.
         // TH4: Đang nghe quán A, bấm tay vào quán B -> Ngắt quán A ngay lập tức, phát quán B liền.
         if (_audioService.IsPlaying)
         {
@@ -260,6 +270,8 @@ public class AutoPlaybackService : IAutoPlaybackService, IDisposable
 
     private async Task HandleResumptionLogicAsync()
     {
+        // Sau khi audio override kết thúc, hỏi user có muốn quay lại nội dung bị ngắt hay không.
+        // Thuộc flow TH4 resume từ vị trí cũ hoặc phát lại từ đầu.
         var locId = _interruptedLocationId;
         _interruptedLocationId = null; // Clear state
 

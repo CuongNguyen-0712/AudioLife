@@ -56,6 +56,8 @@ public class AudioService : IAudioService, IDisposable
 
     public async Task PlayAsync(string audioUrl, string locationId, string audioGuideId, bool isDirectTap = false)
     {
+        // Hàm phát audio chính: chặn spam bằng cooldown, load player mới và cập nhật state sự kiện.
+        // Thuộc flow manual play, auto-play POI và resume playback.
         if (string.IsNullOrWhiteSpace(audioUrl))
         {
             SetState(AudioPlaybackState.Error, audioUrl);
@@ -82,6 +84,7 @@ public class AudioService : IAudioService, IDisposable
             CleanupPlayer();
             _isPlaying = false;
             _currentPosition = TimeSpan.Zero;
+
             _duration = TimeSpan.Zero;
 
             _currentAudioUrl = audioUrl;
@@ -132,6 +135,8 @@ public class AudioService : IAudioService, IDisposable
 
     public async Task PauseAsync()
     {
+        // Tạm dừng audio hiện tại và giữ lại vị trí để resume.
+        // Thuộc flow điều khiển player từ AudioPlayerViewModel.
         await _operationLock.WaitAsync();
         try
         {
@@ -155,6 +160,8 @@ public class AudioService : IAudioService, IDisposable
 
     public async Task ResumeAsync()
     {
+        // Tiếp tục phát từ vị trí đã pause nếu player còn hợp lệ.
+        // Dùng trong flow play/pause và resume theo checkpoint.
         await _operationLock.WaitAsync();
         try
         {
@@ -203,6 +210,8 @@ public class AudioService : IAudioService, IDisposable
 
     public async Task SeekAsync(TimeSpan position)
     {
+        // Nhảy tới vị trí cần nghe (seek) và phát sự kiện cập nhật progress.
+        // Thuộc flow tua tiến/lùi 10s và kéo slider.
         await _operationLock.WaitAsync();
         try
         {
@@ -306,6 +315,8 @@ public class AudioService : IAudioService, IDisposable
 
     private async Task LoadPlayerAsync(string source)
     {
+        // Tạo player từ file local hoặc stream HTTP, hỗ trợ cả URL Cloudinary.
+        // Là lõi load dữ liệu audio trước khi gọi Play().
         CleanupPlayer();
 
         if (File.Exists(source))

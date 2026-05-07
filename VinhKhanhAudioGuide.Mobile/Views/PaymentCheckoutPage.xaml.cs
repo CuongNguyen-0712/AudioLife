@@ -24,6 +24,8 @@ public partial class PaymentCheckoutPage : ContentPage
 
     private void ApplyPlan()
     {
+        // Bind thông tin gói thanh toán lên UI checkout.
+        // Thuộc flow QR onboarding -> chọn gói.
         PlanTitleLabel.Text = _plan.Title;
         PlanSubtitleLabel.Text = _plan.PriceLabel;
         PriceLabel.Text = string.Format(_localizationService.GetString("PaymentCheckout_PriceAmountFormat"), _plan.Amount);
@@ -32,6 +34,8 @@ public partial class PaymentCheckoutPage : ContentPage
 
     private async void OnPayClicked(object sender, EventArgs e)
     {
+        // Xử lý nút thanh toán: tạo request, gọi API complete payment, validate session rồi điều hướng tiếp.
+        // Đây là bước chính để khởi tạo session sau khi user trả phí.
         if (_isProcessingPayment)
         {
             return;

@@ -224,6 +224,8 @@ public partial class AudioPlayerViewModel : ObservableObject
         });
     }
 
+    // Nhận state từ AudioService để cập nhật icon, highlight và auto-advance khi hết bài.
+    // Thuộc flow state management chính của AudioPlayer.
     private void OnStateChanged(object? sender, AudioStateChangedEventArgs e)
     {
         MainThread.BeginInvokeOnMainThread(() =>
@@ -304,6 +306,8 @@ public partial class AudioPlayerViewModel : ObservableObject
         }
     }
 
+    // Load toàn bộ dữ liệu POI + danh sách audio guide rồi bind lên màn hình player.
+    // Thuộc flow mở AudioPlayer từ manual/auto/tour.
     private async Task LoadLocationDataAsync(string locationId)
     {
         _isLoadingLocationData = true;
@@ -391,6 +395,8 @@ public partial class AudioPlayerViewModel : ObservableObject
         return 0;
     }
 
+    // Chuyển guide đang chọn, cập nhật UI/state và quyết định có auto-play ngay hay không.
+    // Thuộc flow đổi track, next/back và manual selection.
     private async Task SetCurrentAudioGuideAsync(int index, bool autoPlay, bool forceRestart, bool persistAsUserSelection)
     {
         await _guideSelectionLock.WaitAsync();
@@ -490,6 +496,8 @@ public partial class AudioPlayerViewModel : ObservableObject
         WeakReferenceMessenger.Default.Send(new AutoAudioSelectionChangedMessage(payload));
     }
 
+    // Khởi động phát guide hiện tại theo trạng thái player (play mới/resume/restart).
+    // Đồng bộ với AutoPlaybackService để xử lý manual override đúng flow.
     private async Task StartSelectedAudioAsync(bool forceRestart)
     {
         if (string.IsNullOrWhiteSpace(AudioUrl))
@@ -817,6 +825,8 @@ public partial class AudioPlayerViewModel : ObservableObject
         }
     }
 
+    // Bọc thao tác player bằng throttle + lock để tránh bấm nhanh gây race condition.
+    // Thuộc flow ổn định điều khiển play/pause/seek/next/back.
     private async Task ExecutePlayerActionAsync(string actionKey, Func<Task> action, bool useThrottle = true)
     {
         if (useThrottle && !TryThrottleAction(actionKey))

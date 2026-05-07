@@ -79,6 +79,8 @@ public class PaymentPackageService : IPaymentPackageService
         string? targetType = null,
         CancellationToken ct = default)
     {
+        // Lấy danh sách gói thanh toán kèm thống kê subscription/revenue.
+        // Thuộc flow dashboard và quản trị package CRUD.
         var query = _db.PaymentPackages.AsNoTracking().AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
@@ -155,6 +157,8 @@ public class PaymentPackageService : IPaymentPackageService
 
     public async Task<PackageDashboardStatsDto> GetDashboardStatsAsync(CancellationToken ct = default)
     {
+        // Tổng hợp KPI package (active, pending, revenue, gói phổ biến nhất).
+        // Dùng cho màn hình tổng quan PaymentPackages admin.
         var allPackages = await GetAllAsync(ct: ct);
 
         var totalActive = allPackages.Sum(p => p.ActiveSubscriptions);
@@ -180,6 +184,8 @@ public class PaymentPackageService : IPaymentPackageService
 
     public async Task<PaymentPackage> CreateAsync(PackageUpsertDto dto, CancellationToken ct = default)
     {
+        // Tạo mới gói thanh toán từ dữ liệu form admin.
+        // Thuộc flow CRUD Create package.
         var entity = new PaymentPackage
         {
             Id = (dto.Id ?? Guid.NewGuid().ToString("N")[..12]).Trim().ToLowerInvariant(),
@@ -201,6 +207,8 @@ public class PaymentPackageService : IPaymentPackageService
 
     public async Task<PaymentPackage?> UpdateAsync(PackageUpsertDto dto, CancellationToken ct = default)
     {
+        // Cập nhật thông tin gói hiện có (giá, thời hạn, trạng thái).
+        // Thuộc flow CRUD Update package.
         if (string.IsNullOrWhiteSpace(dto.Id)) return null;
 
         var entity = await _db.PaymentPackages.FindAsync(new object[] { dto.Id }, ct);
@@ -231,6 +239,8 @@ public class PaymentPackageService : IPaymentPackageService
 
     public async Task<(bool Success, string? Error)> DeleteAsync(string id, CancellationToken ct = default)
     {
+        // Xóa gói nếu không còn subscription Active/Pending để tránh phá dữ liệu nghiệp vụ.
+        // Thuộc flow CRUD Delete package có kiểm tra ràng buộc.
         var entity = await _db.PaymentPackages
             .Include(p => p.Subscriptions)
             .FirstOrDefaultAsync(p => p.Id == id, ct);

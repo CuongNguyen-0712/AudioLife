@@ -59,6 +59,8 @@ public class RemoteApiService : IApiService
 
     public async Task<List<Location>> GetLocationsAsync()
     {
+        // Lấy catalog location từ API, nếu lỗi thì fallback cache SQLite rồi mới tới SampleData local.
+        // Thuộc flow tải dữ liệu trang Home/Map theo chiến lược remote -> cache -> local.
         var remote = await TryGetAsync<List<Location>>(WithLanguage("api/mobile/locations"));
         if (remote is not null)
         {
@@ -153,6 +155,8 @@ public class RemoteApiService : IApiService
 
     public async Task<List<Location>> GetNearbyLocationsAsync(double latitude, double longitude, double radiusKm = 0.1)
     {
+        // Trả danh sách POI gần user để phục vụ auto-play và màn hình map.
+        // Khi API lỗi sẽ tự tính từ cache theo khoảng cách + ưu tiên POI.
         var remote = await TryGetAsync<List<Location>>(WithLanguage($"api/mobile/locations/nearby?latitude={latitude}&longitude={longitude}&radiusKm={radiusKm}"));
         if (remote is not null)
         {
@@ -277,6 +281,8 @@ public class RemoteApiService : IApiService
 
     public async Task<DeviceSessionCheckResult?> CheckDeviceSessionAsync(string deviceId)
     {
+        // Kiểm tra thiết bị đã có session hợp lệ chưa trước khi vào app/checkout.
+        // Thuộc flow startup + QR onboarding.
         var path = $"api/mobile/session/by-device?deviceId={Uri.EscapeDataString(deviceId)}";
         var remote = await TryGetAsync<DeviceSessionCheckResult>(path);
         if (remote is not null)
@@ -289,6 +295,8 @@ public class RemoteApiService : IApiService
 
     public async Task<PaymentCompletionResult?> CompletePaymentAsync(PaymentCompletionRequest request)
     {
+        // Gửi kết quả thanh toán để server tạo/cập nhật subscription và session token.
+        // Thuộc flow QR Scan -> Payment -> Session Start.
         var payload = new
         {
             request.DeviceId,
@@ -315,6 +323,8 @@ public class RemoteApiService : IApiService
 
     public async Task<SessionValidationResult?> ValidateSessionAsync(string sessionToken, string deviceId)
     {
+        // Validate session token với server trước khi cho phép vào luồng chính.
+        // Dùng ở startup và sau checkout để đảm bảo session còn hợp lệ.
         var path = $"api/mobile/session/validate?sessionToken={Uri.EscapeDataString(sessionToken)}&deviceId={Uri.EscapeDataString(deviceId)}";
         var remote = await TryGetAsync<SessionValidationResult>(path);
         if (remote is not null)
@@ -327,6 +337,8 @@ public class RemoteApiService : IApiService
 
     public async Task<HeartbeatResponse?> SendHeartbeatAsync(HeartbeatRequest request)
     {
+        // Ping định kỳ lên server để keep-alive session và log activity user.
+        // Thuộc flow background heartbeat 5 giây/lần.
         var payload = new
         {
             request.DeviceId,
@@ -455,6 +467,8 @@ public class RemoteApiService : IApiService
 
     private async Task<T?> TryGetAsync<T>(string relativePath)
     {
+        // Wrapper GET: thử base URL đang active trước, sau đó failover qua các base URL dự phòng.
+        // Giúp app linh hoạt giữa môi trường local, emulator và public tunnel.
         if (!string.IsNullOrWhiteSpace(_activeBaseUrl))
         {
             var data = await TryGetFromBaseAsync<T>(_activeBaseUrl!, relativePath);
@@ -511,6 +525,8 @@ public class RemoteApiService : IApiService
 
     private async Task<bool> TryPostAsync<TBody>(string relativePath, TBody body)
     {
+        // Wrapper POST không cần response body, có failover base URL tương tự GET.
+        // Dùng cho các tác vụ ghi dữ liệu như history, heartbeat.
         if (!string.IsNullOrWhiteSpace(_activeBaseUrl))
         {
             var postedToActive = await TryPostToBaseAsync(_activeBaseUrl!, relativePath, body);

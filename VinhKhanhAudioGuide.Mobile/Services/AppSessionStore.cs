@@ -12,6 +12,8 @@ public sealed class AppSessionStore : IAppSessionStore
 
     public Task<string> GetOrCreateDeviceIdAsync()
     {
+        // Lấy định danh thiết bị ổn định, nếu chưa có thì tạo mới và lưu Preferences.
+        // Dùng trong flow session/device binding khi gọi API auth.
         var deviceId = Preferences.Default.Get(DeviceIdKey, string.Empty);
         if (!string.IsNullOrWhiteSpace(deviceId))
         {
@@ -25,6 +27,8 @@ public sealed class AppSessionStore : IAppSessionStore
 
     public Task<AppSessionSnapshot?> GetSnapshotAsync()
     {
+        // Đọc snapshot session local để biết user có thể vào app ngay hay phải login/scan lại.
+        // Thuộc flow startup offline-first.
         var json = Preferences.Default.Get(SnapshotKey, string.Empty);
         if (string.IsNullOrWhiteSpace(json))
         {
@@ -44,6 +48,8 @@ public sealed class AppSessionStore : IAppSessionStore
 
     public Task SaveSnapshotAsync(AppSessionSnapshot snapshot)
     {
+        // Lưu session token + metadata mới sau validate/payment/heartbeat.
+        // Là state persistence chính cho authentication trên mobile.
         var json = JsonSerializer.Serialize(snapshot, JsonOptions);
         Preferences.Default.Set(SnapshotKey, json);
         Preferences.Default.Set("app.session.session-token", snapshot.SessionToken);
@@ -52,6 +58,8 @@ public sealed class AppSessionStore : IAppSessionStore
 
     public Task ClearSnapshotAsync()
     {
+        // Xóa toàn bộ session local khi logout hoặc session invalid.
+        // Thuộc flow bảo mật và reset trạng thái user.
         Preferences.Default.Remove(SnapshotKey);
         Preferences.Default.Remove("app.session.session-token");
         return Task.CompletedTask;
