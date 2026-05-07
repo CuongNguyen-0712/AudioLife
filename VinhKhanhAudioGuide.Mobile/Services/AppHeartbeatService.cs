@@ -23,6 +23,8 @@ public sealed class AppHeartbeatService : IAppHeartbeatService, IDisposable
 
     public async Task<bool> StartAsync(Func<Task>? onSessionInvalidated = null)
     {
+        // Bắt đầu background heartbeat khi có session hợp lệ.
+        // Thuộc flow keep-alive session sau startup/checkout.
         await _gate.WaitAsync();
         try
         {
@@ -69,6 +71,8 @@ public sealed class AppHeartbeatService : IAppHeartbeatService, IDisposable
 
     private async Task RunAsync(CancellationToken cancellationToken)
     {
+        // Vòng lặp 5 giây/lần: gửi heartbeat, refresh snapshot và phát hiện session invalid.
+        // Đây là luồng background task chính của mobile.
         using var timer = new PeriodicTimer(HeartbeatInterval);
 
         while (!cancellationToken.IsCancellationRequested && await timer.WaitForNextTickAsync(cancellationToken))
@@ -147,6 +151,8 @@ public sealed class AppHeartbeatService : IAppHeartbeatService, IDisposable
 
     private async Task HandleInvalidSessionAsync()
     {
+        // Khi session hỏng/hết hạn: dừng heartbeat, xóa snapshot và callback điều hướng lại intro/login.
+        // Thuộc flow bảo vệ authentication state.
         await StopAsync();
         await _sessionStore.ClearSnapshotAsync();
 

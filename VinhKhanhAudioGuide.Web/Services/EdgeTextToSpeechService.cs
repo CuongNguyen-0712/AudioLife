@@ -47,6 +47,8 @@ public class EdgeTextToSpeechService : ITextToSpeechService
 
     public async Task<byte[]> SynthesizeAsync(string text, string language, CancellationToken cancellationToken = default)
     {
+        // Sinh audio từ transcript bằng Edge TTS; nếu 403 thì chuyển sang Google fallback.
+        // Thuộc flow tạo AudioGuide tự động khi duyệt change request.
         if (string.IsNullOrWhiteSpace(text))
         {
             throw new ArgumentException("Text không được để trống.", nameof(text));
@@ -136,6 +138,8 @@ public class EdgeTextToSpeechService : ITextToSpeechService
 
     private async Task<byte[]> SynthesizeWithGoogleFallbackAsync(string text, string language, CancellationToken cancellationToken)
     {
+        // Fallback Google TTS theo từng chunk, sau đó ghép MP3 để trả về 1 file hoàn chỉnh.
+        // Giúp hệ thống vẫn tạo audio khi Edge bị chặn.
         var googleLanguage = GoogleLanguageMap.TryGetValue(language, out var mapped) ? mapped : "en";
         var chunks = SplitTextForGoogleTts(text, 180);
         var client = _httpClientFactory.CreateClient();

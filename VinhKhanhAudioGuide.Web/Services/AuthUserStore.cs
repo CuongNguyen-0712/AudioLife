@@ -19,6 +19,8 @@ public class AuthUserStore : IAuthUserStore
 
     public async Task<AuthenticatedUser?> FindByCredentialsAsync(string username, string password, CancellationToken cancellationToken = default)
     {
+        // Xác thực tài khoản web admin theo username/password và role.
+        // Thuộc flow login + phân quyền SystemAdmin/PoiAdmin.
         var normalizedUsername = username.Trim();
         if (string.IsNullOrWhiteSpace(normalizedUsername) || string.IsNullOrEmpty(password))
         {

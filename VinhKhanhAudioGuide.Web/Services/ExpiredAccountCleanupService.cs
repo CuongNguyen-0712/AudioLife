@@ -19,6 +19,8 @@ public class ExpiredAccountCleanupService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // Background loop chạy định kỳ 6 giờ để quét account hết hiệu lực.
+        // Thuộc flow maintenance và dọn dẹp dữ liệu hệ thống.
         _logger.LogInformation("ExpiredAccountCleanupService is starting.");
 
         while (!stoppingToken.IsCancellationRequested)
@@ -39,6 +41,8 @@ public class ExpiredAccountCleanupService : BackgroundService
 
     private async Task CleanupExpiredAccountsAsync(CancellationToken cancellationToken)
     {
+        // Soft-delete user không còn subscription active để giữ lịch sử nhưng khóa sử dụng.
+        // Thuộc flow quản trị vòng đời tài khoản.
         using var scope = _serviceProvider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 

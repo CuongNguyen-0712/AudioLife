@@ -27,6 +27,8 @@ public class CloudinaryAudioStorageService : IAudioStorageService
 
     public async Task<AudioUploadResult> UploadAudioAsync(IFormFile file, string publicIdPrefix, CancellationToken cancellationToken = default)
     {
+        // Upload file audio từ form lên Cloudinary và trả URL phát chuẩn f_mp3.
+        // Thuộc flow CRUD AudioGuide khi admin upload thủ công.
         if (file.Length <= 0)
         {
             throw new InvalidOperationException("File audio rỗng.");
@@ -73,6 +75,8 @@ public class CloudinaryAudioStorageService : IAudioStorageService
 
     public async Task<AudioUploadResult> UploadAudioAsync(Stream stream, string fileName, string publicIdPrefix, CancellationToken cancellationToken = default)
     {
+        // Upload audio từ stream (thường là output TTS) lên Cloudinary.
+        // Thuộc flow tự động tạo audio và lưu URL về database.
         if (stream.Length <= 0)
         {
             throw new InvalidOperationException("Audio stream rỗng.");

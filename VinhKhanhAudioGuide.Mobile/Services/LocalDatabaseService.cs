@@ -17,6 +17,8 @@ public class LocalDatabaseService : ILocalDatabaseService
 
     private async Task EnsureInitializedAsync()
     {
+        // Khởi tạo schema SQLite, index và dọn dữ liệu lỗi trước khi app đọc/ghi local.
+        // Đây là điểm vào chính cho toàn bộ flow cache/favorite/history/download.
         if (_isInitialized)
         {
             return;
@@ -56,6 +58,8 @@ public class LocalDatabaseService : ILocalDatabaseService
 
     public async Task SaveFavoriteLocationIdsAsync(IReadOnlyCollection<string> locationIds)
     {
+        // Ghi đè danh sách yêu thích mới xuống SQLite theo transaction.
+        // Thuộc flow toggle favorite và đồng bộ UI trang chi tiết/favorites.
         await EnsureInitializedAsync();
 
         var distinctIds = locationIds
@@ -88,6 +92,8 @@ public class LocalDatabaseService : ILocalDatabaseService
 
     public async Task UpsertListeningHistoryAsync(ListeningHistory history)
     {
+        // Upsert lịch sử nghe để lưu tiến độ nghe gần nhất theo từng audio.
+        // Thuộc flow player + resume lịch sử nghe.
         await EnsureInitializedAsync();
         await _database.InsertOrReplaceAsync(ToEntity(history));
     }
@@ -104,6 +110,8 @@ public class LocalDatabaseService : ILocalDatabaseService
 
     public async Task UpsertDownloadedAudioAsync(DownloadedAudio download)
     {
+        // Lưu metadata file audio đã tải về để hỗ trợ offline playback.
+        // Thuộc flow download/manage dữ liệu offline.
         await EnsureInitializedAsync();
         await _database.InsertOrReplaceAsync(ToEntity(download));
     }
@@ -131,6 +139,8 @@ public class LocalDatabaseService : ILocalDatabaseService
 
     public async Task UpsertCachedJsonAsync(string cacheKey, string jsonPayload)
     {
+        // Cache JSON theo key (categories/locations/tours) để fallback khi mất mạng.
+        // Thuộc flow remote -> cache -> local sample data.
         await EnsureInitializedAsync();
 
         if (string.IsNullOrWhiteSpace(cacheKey) || string.IsNullOrWhiteSpace(jsonPayload))

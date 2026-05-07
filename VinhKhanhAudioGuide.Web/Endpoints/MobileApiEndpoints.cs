@@ -9,6 +9,8 @@ namespace VinhKhanhAudioGuide.Web.Endpoints;
 
 public static class MobileApiEndpoints
 {
+    // Đăng ký toàn bộ endpoint cho mobile app (health, payment, session, heartbeat, catalog).
+    // Đây là entry point chính của flow API mobile phía server.
     public static IEndpointRouteBuilder MapMobileApi(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/mobile");
@@ -36,6 +38,7 @@ public static class MobileApiEndpoints
             return Results.Ok(packages);
         });
 
+        // Xử lý callback thanh toán: tạo/cập nhật user, subscription và session cho thiết bị.
         group.MapPost("/payment/complete", async (MobilePaymentCompletionRequest request, AppDbContext db) =>
         {
             if (string.IsNullOrWhiteSpace(request.DeviceId) || string.IsNullOrWhiteSpace(request.PackageId))
@@ -190,6 +193,7 @@ public static class MobileApiEndpoints
             });
         });
 
+        // Validate session token theo device để quyết định user có được vào app hay không.
         group.MapGet("/session/validate", async (string sessionToken, string deviceId, AppDbContext db) =>
         {
             if (string.IsNullOrWhiteSpace(sessionToken) || string.IsNullOrWhiteSpace(deviceId))
@@ -248,6 +252,7 @@ public static class MobileApiEndpoints
             });
         });
 
+        // Kiểm tra nhanh session hiện tại của thiết bị, dùng ở startup/QR onboarding.
         group.MapGet("/session/by-device", async (string deviceId, AppDbContext db) =>
         {
             if (string.IsNullOrWhiteSpace(deviceId))
@@ -313,6 +318,7 @@ public static class MobileApiEndpoints
             });
         });
 
+        // Nhận heartbeat định kỳ để keep-alive session và lưu activity user.
         group.MapPost("/heartbeat", async (MobileHeartbeatRequest request, AppDbContext db) =>
         {
             if (string.IsNullOrWhiteSpace(request.DeviceId) || string.IsNullOrWhiteSpace(request.SessionToken))

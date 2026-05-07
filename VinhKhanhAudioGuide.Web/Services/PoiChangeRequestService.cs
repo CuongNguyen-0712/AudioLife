@@ -94,6 +94,8 @@ public class DbPoiChangeRequestService : IPoiChangeRequestService
 
     public async Task<PoiChangeRequest> SubmitAsync(PoiChangeRequest request)
     {
+        // Tạo mới change request từ PoiAdmin và chuẩn hóa thông tin submitter.
+        // Thuộc flow gửi yêu cầu chỉnh sửa POI/AudioGuide.
         request.SubmittedByUsername = NormalizeIdentity(request.SubmittedByUsername);
         request.SubmittedByName = NormalizeIdentity(request.SubmittedByName);
 
@@ -118,6 +120,8 @@ public class DbPoiChangeRequestService : IPoiChangeRequestService
 
     public async Task<bool> TryUpdateStatusAsync(Guid id, PoiChangeRequestStatus status, string updatedBy, string? reviewNote = null)
     {
+        // Đổi trạng thái request (review/approve/reject) và áp change set khi approve.
+        // Thuộc flow duyệt yêu cầu của SystemAdmin.
         var item = await _db.PoiChangeRequests.FirstOrDefaultAsync(request => request.Id == id);
         if (item is null)
         {
@@ -164,6 +168,8 @@ public class DbPoiChangeRequestService : IPoiChangeRequestService
 
     private async Task<bool> TryApplyChangeSetAsync(PoiChangeRequest request)
     {
+        // Parse ChangeSetJson và điều phối apply theo từng target (Location/AudioGuide).
+        // Đây là business logic lõi khi request được approve.
         var changeSet = ParseChangeSet(request.ChangeSetJson);
 
         if (changeSet is null || changeSet.Fields.Count == 0)
@@ -252,6 +258,8 @@ public class DbPoiChangeRequestService : IPoiChangeRequestService
 
     private async Task<bool> ApplyLocationChangesAsync(PoiChangeRequest request, PoiChangeSet changeSet)
     {
+        // Áp thay đổi cho Location theo action create/update/delete và kiểm tra ràng buộc liên quan.
+        // Thuộc flow CRUD Location qua cơ chế request approval.
         changeSet.Fields.TryGetValue(ChangeActionField, out var actionValue);
         var isCreateAction = string.Equals(actionValue, CreateLocationAction, StringComparison.OrdinalIgnoreCase);
         var isDeleteAction = string.Equals(actionValue, DeleteLocationAction, StringComparison.OrdinalIgnoreCase);
@@ -478,6 +486,8 @@ public class DbPoiChangeRequestService : IPoiChangeRequestService
 
     private async Task<bool> ApplyAudioGuideChangesAsync(PoiChangeRequest request, PoiChangeSet changeSet)
     {
+        // Áp thay đổi cho AudioGuide, hỗ trợ create/update/delete và tùy chọn TTS on approval.
+        // Thuộc flow CRUD AudioGuide qua request approval.
         changeSet.Fields.TryGetValue(ChangeActionField, out var actionValue);
         changeSet.Fields.TryGetValue(TtsOnApprovalField, out var ttsOnApprovalValue);
         var isCreateAction = string.Equals(actionValue, CreateAudioGuideAction, StringComparison.OrdinalIgnoreCase);
@@ -575,6 +585,8 @@ public class DbPoiChangeRequestService : IPoiChangeRequestService
 
     private async Task<bool> TryGenerateTtsAudioAsync(AudioGuide audio, PoiChangeSet changeSet)
     {
+        // Sinh audio bằng TTS, upload Cloudinary và cập nhật URL/audio metadata cho guide.
+        // Thuộc flow duyệt request có bật __tts_on_approval.
         var transcript = GetFieldValue(changeSet, nameof(AudioGuide.TranscriptText));
         if (string.IsNullOrWhiteSpace(transcript))
         {

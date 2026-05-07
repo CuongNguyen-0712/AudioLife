@@ -505,14 +505,14 @@
     <aside class="sb">
       <div class="sb-logo">
         <h2>VinhKhanhAudioGuide</h2>
-        <span>PRD v1.0 — Full System Documentation</span>
+        <span>PRD v4.0 — Full System Documentation</span>
       </div>
       <nav>
         <div class="ng">
           <div class="ngt">Tổng Quan</div>
           <a href="#overview" class="nl">Giới Thiệu</a>
           <a href="#arch" class="nl">Kiến Trúc Hệ Thống</a>
-          <a href="#class" class="nl">Class Diagram</a>
+          <a href="#class" class="nl">DB Diagram</a>
           <a href="#er" class="nl">ER Diagram</a>
         </div>
         <div class="ng">
@@ -551,7 +551,7 @@
     <main class="mn">
       <header class="hero">
         <div class="hi">
-          <div class="hb">PRD v1.0 — April 2026</div>
+          <div class="hb">PRD v4.0 — May 2026</div>
           <h1>VinhKhanhAudioGuide<br />Hệ Thống Hướng Dẫn Âm Thanh</h1>
           <p class="sub">
             Full-stack enterprise: .NET MAUI (MVVM + DI) — ASP.NET Core 8 Razor
@@ -568,19 +568,19 @@
           </div>
           <div class="hs">
             <div>
-              <div class="v">17</div>
+              <div class="v">19</div>
               <div class="l">Mobile Pages</div>
             </div>
             <div>
-              <div class="v">15</div>
+              <div class="v">14</div>
               <div class="l">ViewModels</div>
             </div>
             <div>
-              <div class="v">13+</div>
+              <div class="v">19</div>
               <div class="l">API Endpoints</div>
             </div>
             <div>
-              <div class="v">12</div>
+              <div class="v">16</div>
               <div class="l">DB Tables</div>
             </div>
             <div>
@@ -628,142 +628,7 @@
                   fallback)
                 </li>
                 <li>Cloudinary CDN lưu trữ audio MP3 chuyên nghiệp</li>
-                <li>MVVM + Dependency Injection trên mobile</li>
-                <li>
-                  POI Change Request: PoiAdmin gửi yêu cầu -> SystemAdmin duyệt
-                </li>
-                <li>Offline support: SQLite local database + audio download</li>
-              </ul>
-            </div>
-            <div class="cd">
-              <h3>2 Roles Quản Trị</h3>
-              <ul>
-                <li>
-                  <strong>SystemAdmin:</strong> Full access — CRUD Locations,
-                  Categories, Tours, AudioGuides, Users, Reports, Settings,
-                  Change Requests
-                </li>
-                <li>
-                  <strong>PoiAdmin (Shop):</strong> Quản lý địa điểm được gán —
-                  sửa Location, tạo/sửa AudioGuide, gửi Change Request, xem
-                  Analytics, Reviews
-                </li>
-              </ul>
-            </div>
-            <div class="cd">
-              <h3>Tính Năng Nổi Bật</h3>
-              <ul>
-                <li>
-                  Plugin.Maui.Audio — audio player chuyên nghiệp
-                  (play/pause/seek/volume)
-                </li>
-                <li>
-                  AudioScriptSegment — hiển thị transcript đồng bộ theo thời
-                  gian phát
-                </li>
-                <li>Cloudinary upload + f_mp3 on-the-fly transformation</li>
-                <li>
-                  Edge TTS với 6 Neural voices + Google TTS fallback khi 403
-                </li>
-                <li>QR code scanning cho AppUser identification</li>
-                <li>Feedback/Rating system (1-5 stars) per location</li>
-                <li>Download audio offline với SQLite tracking</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        <section class="sec" id="arch">
-          <div class="sh">
-            <div class="si t"></div>
-            <div>
-              <span class="ch">Chapter 01</span>
-              <h2>Kiến Trúc Hệ Thống</h2>
-            </div>
-          </div>
-          <div class="dc">
-            <div class="dt">System Architecture — Component Diagram</div>
-            <pre class="mermaid">
-graph TB
-  subgraph Mobile ["Mobile — .NET MAUI (MVVM + DI)"]
-    M_VIEWS["Views<br />(17 pages)<br />XAML + Code-behind"]
-    M_VM["ViewModels (15)<br />CommunityToolkit.Mvvm"]
-    M_SVC["Services<br />ApiService, AudioService<br />GeolocationService"]
-    M_DB["SQLite<br />mobile_local.db3"]
-    M_NAV["NavigationService<br />Shell routing"]
-  end
-  subgraph Web ["Web — ASP.NET Core 8"]
-    W_RAZOR["Razor Pages<br />Admin + Shop portals"]
-    W_API["Minimal API<br />/api/mobile/*"]
-    W_SVC["Services<br />TTS, Cloudinary<br />ChangeRequest, Auth"]
-    W_EF["EF Core<br />AppDbContext"]
-  end
-  subgraph Infra ["Infrastructure"]
-    SQLSRV[("SQL Server<br />AudioDB")]
-    CLOUD["Cloudinary CDN<br />Audio MP3 storage"]
-    EDGE["Edge TTS<br />Neural Voices"]
-    GTTS["Google TTS<br />Fallback"]
-  end
-  M_VIEWS --> M_VM
-  M_VM --> M_SVC
-  M_SVC --> M_DB
-  M_SVC -->|HTTP| W_API
-  W_RAZOR --> W_SVC
-  W_RAZOR --> W_EF
-  W_API --> W_EF
-  W_SVC --> CLOUD
-  W_SVC --> EDGE
-  W_SVC -.->|fallback| GTTS
-  W_EF --> SQLSRV
-  style M_VIEWS fill:#1565C0,color:#fff
-  style W_RAZOR fill:#7c3aed,color:#fff
-  style W_API fill:#16a34a,color:#fff
-  style CLOUD fill:#e65100,color:#fff
-  style EDGE fill:#00838f,color:#fff
-</pre>
-          </div>
-          <div class="hl">
-            <strong>Kiến trúc:</strong> Mobile dùng MVVM + DI
-            (CommunityToolkit.Mvvm). Web dùng Razor Pages + Minimal API.
-            Database: SQL Server + EF Core (code-first migrations). Audio
-            storage: Cloudinary CDN với on-the-fly MP3 transformation. TTS: Edge
-            Neural Voices (vi, en, zh, ja, ko, fr) với Google TTS fallback khi
-            Edge trả về 403.
-          </div>
-        </section>
-
-        <section class="sec" id="class">
-          <div class="sh">
-            <div class="si p"></div>
-            <div>
-              <span class="ch">Diagram</span>
-              <h2>Class Diagram</h2>
-            </div>
-          </div>
-          <div class="dc">
-            <div class="dt">Domain Model — Class Diagram</div>
-            <pre class="mermaid">
-classDiagram
-  class Location {
-    +string Id
-    +string Name
-    +string Description
-    +string ImageUrl
-    +string Address
-    +double Latitude
-    +double Longitude
-    +int Duration
-    +string CategoryId
-    +ICollection AudioGuides
-    +ICollection TourLocations
-    +ICollection Feedbacks
-  }
-  class AudioGuide {
-    +string Id
-    +string Title
-    +string Description
-    +string AudioUrl
-    +string CloudinaryAudioUrl
+                   
     +string CloudinaryPublicId
     +string TranscriptText
     +int Duration
@@ -875,7 +740,7 @@ classDiagram
             </div>
           </div>
           <div class="dc">
-            <div class="dt">Database ER Diagram — 12 Tables</div>
+            <div class="dt">Database ER Diagram — 16 Tables</div>
             <pre class="mermaid">
 erDiagram
   Categories {
@@ -936,13 +801,6 @@ erDiagram
     datetime CreatedAt
     bool IsActive
   }
-  Feedbacks {
-    int Id PK
-    string UserId FK
-    string LocationId FK
-    int Rating
-    string Comment
-  }
   ListeningHistories {
     int Id PK
     string UserId FK
@@ -972,15 +830,59 @@ erDiagram
     string Username
     string LocationId
   }
+  PaymentPackages {
+    string Id PK
+    string Name
+    decimal Price
+    string Currency
+    int DurationDays
+    string TargetType
+    bool IsActive
+  }
+  UserSubscriptions {
+    guid Id PK
+    guid UserId FK
+    int AuthUserId FK
+    string PackageId FK
+    string Status
+    decimal PaidAmount
+  }
+  UserAppSessions {
+    guid Id PK
+    guid UserId FK
+    string DeviceId
+    string TokenValue
+    datetime ExpiresAtUtc
+    bool IsActive
+  }
+  PoiRegistrationRequests {
+    guid Id PK
+    string PackageId FK
+    string Status
+    string PaymentReference
+    string CreatedUsername
+  }
+  AppUserActivityLogs {
+    guid Id PK
+    guid UserId FK
+    string DeviceId
+    string SessionToken
+    string ActivityName
+    datetime LoggedAtUtc
+  }
   Categories ||--o{ Locations: "contains"
   Locations ||--o{ AudioGuides: "has"
   AudioGuides ||--o{ AudioScriptSegments: "has"
   AudioGuides ||--o{ ListeningHistories: "tracked"
   AppUsers ||--o{ ListeningHistories: "listens"
-  AppUsers ||--o{ Feedbacks: "writes"
-  Locations ||--o{ Feedbacks: "receives"
   Tours }o--o{ Locations: "via TourLocations"
   Locations ||--o{ PoiAdminLocationAssignments: "assigned"
+  PaymentPackages ||--o{ UserSubscriptions: "plans"
+  AppUsers ||--o{ UserSubscriptions: "subscribes"
+  AuthUserAccounts ||--o{ UserSubscriptions: "admin purchases"
+  AppUsers ||--o{ UserAppSessions: "sessions"
+  AppUsers ||--o{ AppUserActivityLogs: "activity logs"
+  PaymentPackages ||--o{ PoiRegistrationRequests: "registration flow"
 </pre
             >
           </div>
@@ -991,7 +893,7 @@ erDiagram
             <div class="si b"></div>
             <div>
               <span class="ch">Chapter 02</span>
-              <h2>Mobile App — 17 Pages, MVVM Pattern</h2>
+              <h2>Mobile App — 19 Pages, 14 ViewModels</h2>
             </div>
           </div>
           <p class="pr">
@@ -1148,7 +1050,7 @@ erDiagram
             <div class="si g"></div>
             <div>
               <span class="ch">Chapter 05</span>
-              <h2>Mobile API — Minimal API Endpoints</h2>
+              <h2>Mobile API — 19 Routes</h2>
             </div>
           </div>
           <div class="tw">
@@ -1233,7 +1135,7 @@ erDiagram
             </table>
           </div>
         </section>
-
+              <h2>ER Diagram — SQL Server (16 Tables)</h2>
         <section class="sec" id="tts">
           <div class="sh">
             <div class="si t"></div>
@@ -1251,20 +1153,20 @@ erDiagram
           </p>
           <div class="tw">
             <table>
-              <thead>
-                <tr>
+            mobile (19 pages, 14 VMs), Razor Pages admin (2 portals), EF Core +
+            SQL Server (16 tables), Cloudinary CDN, Edge TTS 6 languages +
                   <th>Language</th>
                   <th>Edge Voice</th>
                   <th>Google Code</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
+        <p><strong>VinhKhanhAudioGuide (AudioLife)</strong> — PRD v4.0</p>
                   <td>vi - Tiếng Việt</td>
                   <td>vi-VN-HoaiMyNeural</td>
                   <td>vi</td>
                 </tr>
-                <tr>
+        <p>Generated May 2026 — Verified against source code</p>
                   <td>en - English</td>
                   <td>en-US-JennyNeural</td>
                   <td>en</td>
@@ -1645,214 +1547,137 @@ stateDiagram-v2
           </div>
 
           <div class="dc">
-            <div class="dt">
-              1. Khởi động App & Kiểm tra Session (Offline-first)
-            </div>
+            <div class="dt">1. Phát thuyết minh audio tự động theo vị trí (Auto-Playback)</div>
+            <p>Quy trình gọi tự động kích hoạt audio khi đã xác định được điểm phù hợp từ hàng đợi.</p>
             <picture>
-              <source
-                srcset="./charts/sequence/seq-01-startup-session.svg"
-                type="image/svg+xml"
-              />
-              <img
-                src="./charts/sequence/seq-01-startup-session.png"
-                alt="Sequence diagram: Khởi động App và kiểm tra session"
-              />
+              <source srcset="./charts/sequence/seq-17.svg" type="image/svg+xml" />
+              <img src="./charts/sequence/seq-17.png" alt="Auto-Playback Sequence Diagram" loading="lazy" />
             </picture>
           </div>
 
           <div class="dc">
-            <div class="dt">
-              2. QR Code Scan -> Payment -> Session Start (Mobile)
-            </div>
+            <div class="dt">2. Trình phát audio (Audio Player)</div>
+            <p>Giao tiếp giữa người dùng và bộ điều khiển Audio (Play, Pause, Seek).</p>
             <picture>
-              <source
-                srcset="./charts/sequence/seq-02-qr-payment-session.svg"
-                type="image/svg+xml"
-              />
-              <img
-                src="./charts/sequence/seq-02-qr-payment-session.png"
-                alt="Sequence diagram: QR code scan to payment and session start"
-              />
+              <source srcset="./charts/sequence/seq-18.svg" type="image/svg+xml" />
+              <img src="./charts/sequence/seq-18.png" alt="Audio Player Sequence Diagram" loading="lazy" />
             </picture>
           </div>
 
           <div class="dc">
-            <div class="dt">3. Heartbeat Loop (Mobile)</div>
+            <div class="dt">3. Quản lý lịch sử nghe</div>
+            <p>Ghi nhận quá trình nghe của người dùng sau khi hoàn tất hoặc dừng audio.</p>
             <picture>
-              <source
-                srcset="./charts/sequence/seq-03-heartbeat-loop.svg"
-                type="image/svg+xml"
-              />
-              <img
-                src="./charts/sequence/seq-03-heartbeat-loop.png"
-                alt="Sequence diagram: Heartbeat loop"
-              />
+              <source srcset="./charts/sequence/seq-19.svg" type="image/svg+xml" />
+              <img src="./charts/sequence/seq-19.png" alt="Listening History Sequence Diagram" loading="lazy" />
             </picture>
           </div>
 
           <div class="dc">
-            <div class="dt">
-              4. Định vị vị trí người dùng + quét vùng nhận POI
-            </div>
-            <img
-              src="./charts/sequence/seq-04-geolocation-scan-poi.png"
-              alt="Sequence diagram: Định vị và quét POI"
-            />
-          </div>
-
-          <div class="dc">
-            <div class="dt">5. GPS Proximity -> Auto-Play (Mobile)</div>
+            <div class="dt">4. Xem chi tiết điểm tham quan (POI)</div>
+            <p>Kiểm tra dữ liệu local trước khi lấy dữ liệu qua mạng.</p>
             <picture>
-              <source
-                srcset="./charts/sequence/seq-05-gps-autoplay.svg"
-                type="image/svg+xml"
-              />
-              <img
-                src="./charts/sequence/seq-05-gps-autoplay.png"
-                alt="Sequence diagram: GPS proximity auto-play"
-              />
+              <source srcset="./charts/sequence/seq-20.svg" type="image/svg+xml" />
+              <img src="./charts/sequence/seq-20.png" alt="POI Details Sequence Diagram" loading="lazy" />
             </picture>
           </div>
 
           <div class="dc">
-            <div class="dt">6. Phát Audio Guide (Manual)</div>
+            <div class="dt">5. Định vị GPS & phát hiện điểm gần nhất</div>
+            <p>Theo dõi vị trí thiết bị và lấy dữ liệu các POI nằm trong bán kính cho phép.</p>
             <picture>
-              <source
-                srcset="./charts/sequence/seq-06-manual-audio-guide.svg"
-                type="image/svg+xml"
-              />
-              <img
-                src="./charts/sequence/seq-06-manual-audio-guide.png"
-                alt="Sequence diagram: Phat Audio Guide manual"
-              />
+              <source srcset="./charts/sequence/seq-21.svg" type="image/svg+xml" />
+              <img src="./charts/sequence/seq-21.png" alt="GPS & Nearby Detection Sequence Diagram" loading="lazy" />
             </picture>
           </div>
 
           <div class="dc">
-            <div class="dt">7. Chức năng đăng nhập + phân quyền</div>
-            <img
-              src="./charts/sequence/seq-07-web-login-rbac.png"
-              alt="Sequence diagram: Đăng nhập và phân quyền"
-            />
-          </div>
-
-          <div class="dc">
-            <div class="dt">8. POI Admin Registration (Web)</div>
+            <div class="dt">6. Quản lý hàng đợi (Queue Management)</div>
+            <p>Đẩy các POI nhận được từ tính năng định vị vào một hàng chờ để xử lý tuần tự.</p>
             <picture>
-              <source
-                srcset="./charts/sequence/seq-08-poi-admin-registration.svg"
-                type="image/svg+xml"
-              />
-              <img
-                src="./charts/sequence/seq-08-poi-admin-registration.png"
-                alt="Sequence diagram: POI Admin Registration"
-              />
+              <source srcset="./charts/sequence/seq-22.svg" type="image/svg+xml" />
+              <img src="./charts/sequence/seq-22.png" alt="Queue Management Sequence Diagram" loading="lazy" />
             </picture>
           </div>
 
           <div class="dc">
-            <div class="dt">9. Payment Package Management (Admin CRUD)</div>
+            <div class="dt">7. Xử lý trùng (chia rõ các trường hợp)</div>
+            <p>Các lớp bảo vệ nhằm tránh việc spam phát audio hoặc lặp lại cùng một địa điểm liên tục.</p>
             <picture>
-              <source
-                srcset="./charts/sequence/seq-09-payment-package-management.svg"
-                type="image/svg+xml"
-              />
-              <img
-                src="./charts/sequence/seq-09-payment-package-management.png"
-                alt="Sequence diagram: Payment package management"
-              />
+              <source srcset="./charts/sequence/seq-23.svg" type="image/svg+xml" />
+              <img src="./charts/sequence/seq-23.png" alt="Deduplication Sequence Diagram" loading="lazy" />
             </picture>
           </div>
 
           <div class="dc">
-            <div class="dt">10. Chức năng chỉnh sửa + duyệt POI</div>
-            <img
-              src="./charts/sequence/seq-10-poi-edit-approve.png"
-              alt="Sequence diagram: Chỉnh sửa và duyệt POI"
-            />
-          </div>
-
-          <div class="dc">
-            <div class="dt">11. TTS Generation (Edge + Google Fallback)</div>
+            <div class="dt">8. Ưu tiên POI theo scoring</div>
+            <p>Thuật toán tính điểm (Scoring) để chọn ra POI nào sẽ được phát audio trước khi có nhiều điểm ở gần nhau.</p>
             <picture>
-              <source
-                srcset="./charts/sequence/seq-11-tts-fallback.svg"
-                type="image/svg+xml"
-              />
-              <img
-                src="./charts/sequence/seq-11-tts-fallback.png"
-                alt="Sequence diagram: TTS generation with fallback"
-              />
+              <source srcset="./charts/sequence/seq-24.svg" type="image/svg+xml" />
+              <img src="./charts/sequence/seq-24.png" alt="POI Scoring Sequence Diagram" loading="lazy" />
             </picture>
           </div>
 
           <div class="dc">
-            <div class="dt">12. TH1 - Tự động phát khi vào vùng POI</div>
+            <div class="dt">9. Tìm kiếm địa điểm & tour (Search)</div>
+            <p>Tìm kiếm tức thời (với Debounce) để giảm tải request.</p>
             <picture>
-              <source
-                srcset="./charts/sequence/seq-12-autoplay-th1.svg"
-                type="image/svg+xml"
-              />
-              <img
-                src="./charts/sequence/seq-12-autoplay-th1.png"
-                alt="Sequence diagram: TH1 auto-play when entering POI zone"
-              />
+              <source srcset="./charts/sequence/seq-25.svg" type="image/svg+xml" />
+              <img src="./charts/sequence/seq-25.png" alt="Search Sequence Diagram" loading="lazy" />
             </picture>
           </div>
 
           <div class="dc">
-            <div class="dt">13. TH2 - Đang nghe POI A, phát hiện POI B gần hơn</div>
+            <div class="dt">10. Xem chi tiết tour</div>
+            <p>Hiển thị mô tả và lộ trình các điểm dừng.</p>
             <picture>
-              <source
-                srcset="./charts/sequence/seq-13-autoplay-th2-switch-poi.svg"
-                type="image/svg+xml"
-              />
-              <img
-                src="./charts/sequence/seq-13-autoplay-th2-switch-poi.png"
-                alt="Sequence diagram: TH2 switch from POI A to closer POI B"
-              />
+              <source srcset="./charts/sequence/seq-26.svg" type="image/svg+xml" />
+              <img src="./charts/sequence/seq-26.png" alt="Tour Details Sequence Diagram" loading="lazy" />
             </picture>
           </div>
 
           <div class="dc">
-            <div class="dt">14. TH3 - Người dùng chọn tay audio khác</div>
+            <div class="dt">11. Quản lý tiến trình tour</div>
+            <p>Lưu trạng thái và giúp người dùng tiếp tục tour từ điểm đến hiện tại.</p>
             <picture>
-              <source
-                srcset="./charts/sequence/seq-14-autoplay-th3-manual-override.svg"
-                type="image/svg+xml"
-              />
-              <img
-                src="./charts/sequence/seq-14-autoplay-th3-manual-override.png"
-                alt="Sequence diagram: TH3 manual override audio selection"
-              />
+              <source srcset="./charts/sequence/seq-27.svg" type="image/svg+xml" />
+              <img src="./charts/sequence/seq-27.png" alt="Tour Progress Sequence Diagram" loading="lazy" />
             </picture>
           </div>
 
           <div class="dc">
-            <div class="dt">15. TH4 - Đứng giữa 2 POI cùng lúc</div>
+            <div class="dt">12. Quét QR, thanh toán</div>
+            <p>Hai luồng vào duy nhất để lấy được quyền truy cập app.</p>
             <picture>
-              <source
-                srcset="./charts/sequence/seq-15-autoplay-th4-two-poi.svg"
-                type="image/svg+xml"
-              />
-              <img
-                src="./charts/sequence/seq-15-autoplay-th4-two-poi.png"
-                alt="Sequence diagram: TH4 between two POIs"
-              />
+              <source srcset="./charts/sequence/seq-28.svg" type="image/svg+xml" />
+              <img src="./charts/sequence/seq-28.png" alt="QR/Payment Sequence Diagram" loading="lazy" />
             </picture>
           </div>
 
           <div class="dc">
-            <div class="dt">16. TH5 - Hàng đợi theo lộ trình Tour</div>
+            <div class="dt">13. Quản lý session thiết bị (lưu/kiểm tra token)</div>
+            <p>Cơ chế kiểm tra quyền truy cập mỗi khi app khởi động.</p>
             <picture>
-              <source
-                srcset="./charts/sequence/seq-16-autoplay-th5-tour-queue.svg"
-                type="image/svg+xml"
-              />
-              <img
-                src="./charts/sequence/seq-16-autoplay-th5-tour-queue.png"
-                alt="Sequence diagram: TH5 tour route queue"
-              />
+              <source srcset="./charts/sequence/seq-29.svg" type="image/svg+xml" />
+              <img src="./charts/sequence/seq-29.png" alt="Session Management Sequence Diagram" loading="lazy" />
+            </picture>
+          </div>
+
+          <div class="dc">
+            <div class="dt">14. Heartbeat định kỳ (duy trì session)</div>
+            <p>Cập nhật trạng thái 'đang hoạt động' của người dùng lên server và thu hồi quyền ngay khi hết hạn.</p>
+            <picture>
+              <source srcset="./charts/sequence/seq-30.svg" type="image/svg+xml" />
+              <img src="./charts/sequence/seq-30.png" alt="Heartbeat Sequence Diagram" loading="lazy" />
+            </picture>
+          </div>
+
+          <div class="dc">
+            <div class="dt">15. Đa ngôn ngữ (i18n)</div>
+            <p>Dịch thuật giao diện ngay lập tức khi người dùng thay đổi tùy chọn ngôn ngữ.</p>
+            <picture>
+              <source srcset="./charts/sequence/seq-31.svg" type="image/svg+xml" />
+              <img src="./charts/sequence/seq-31.png" alt="i18n Sequence Diagram" loading="lazy" />
             </picture>
           </div>
         </section>
@@ -2101,8 +1926,8 @@ flowchart TD
           </div>
           <div class="hl ok">
             <strong>Đã hoàn thành:</strong> Full-stack enterprise với MVVM
-            mobile (17 pages, 15 VMs), Razor Pages admin (2 portals), EF Core +
-            SQL Server (12 tables), Cloudinary CDN, Edge TTS 6 languages +
+            mobile (19 pages, 14 VMs), Razor Pages admin (2 portals), EF Core +
+            SQL Server (16 tables), Cloudinary CDN, Edge TTS 6 languages +
             Google fallback, POI Change Request workflow, Role-based RBAC,
             AudioScriptSegment transcript sync, offline downloads,
             feedback/rating system.
@@ -2110,12 +1935,12 @@ flowchart TD
         </section>
       </div>
       <footer class="ft">
-        <p><strong>VinhKhanhAudioGuide (AudioLife)</strong> — PRD v1.0</p>
+        <p><strong>VinhKhanhAudioGuide (AudioLife)</strong> — PRD v4.0</p>
         <p>
           .NET MAUI (MVVM) + ASP.NET Core 8 Razor Pages + SQL Server +
           Cloudinary + Edge TTS
         </p>
-        <p>Generated April 2026 — Verified against source code</p>
+        <p>Generated May 2026 — Verified against source code</p>
       </footer>
     </main>
 

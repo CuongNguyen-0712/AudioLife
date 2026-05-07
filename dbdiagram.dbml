@@ -269,4 +269,4 @@ Table PoiRegistrationRequest {
     (Status)
     (ExpiresAtUtc)
   }
-}
+}
