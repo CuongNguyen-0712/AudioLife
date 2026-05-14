@@ -261,3 +261,36 @@ Infrastructure:
 
 VinhKhanhAudioGuide (AudioLife) - PRD v1.0  
 .NET MAUI + ASP.NET Core 8 + SQL Server + Cloudinary + Edge TTS
+
+
+sequenceDiagram
+    participant Mobile as Mobile App
+    participant Store as AppSessionStore
+    participant HB as AppHeartbeatService
+    participant API as MobileApiEndpoints
+    participant DB as Database
+    
+    Mobile->>API: POST /api/mobile/payment/complete
+    API->>DB: Create UserAppSession & Subscription
+    DB-->>API: SessionToken
+    API-->>Mobile: Lưu Local AppSessionSnapshot (Token, DeviceId)
+    Mobile->>Store: SaveSnapshotAsync(Token, DeviceId)
+    Mobile->>HB: StartAsync()
+    
+    loop Every 60s
+        HB->>HB: SendHeartbeatAsync()
+        HB->>API: POST /api/mobile/heartbeat (DeviceId, Token)
+        API->>DB: Find active UserAppSession
+        alt Session Valid
+            API->>DB: Update LastSeen, Subscription.ValidationTime
+            API-->>HB: 200 OK (Keep-alive)
+        else Session Invalid/Expired
+            API-->>HB: 401 Unauthorized
+            HB->>Store: ClearSnapshotAsync()
+            HB->>HB: StopAsync()
+            HB->>Mobile: Event: SessionExpired
+        end
+    end
+    note right of API
+      Heartbeat ghi lại vị trí thiết bị qua AppHeartbeatService. GetOrCreateDeviceIdAsync() đảm bảo ID duy nhất.
+    end note

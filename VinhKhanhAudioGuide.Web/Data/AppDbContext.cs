@@ -23,6 +23,8 @@ public class AppDbContext : DbContext
     public DbSet<UserSubscription> UserSubscriptions => Set<UserSubscription>();
     public DbSet<UserAppSession> UserAppSessions => Set<UserAppSession>();
     public DbSet<PoiRegistrationRequest> PoiRegistrationRequests => Set<PoiRegistrationRequest>();
+    public DbSet<LocationReview> LocationReviews => Set<LocationReview>();
+    public DbSet<UserDeviceToken> UserDeviceTokens => Set<UserDeviceToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -230,5 +232,43 @@ public class AppDbContext : DbContext
                 .HasForeignKey(item => item.PackageId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
+
+        // Configuration for LocationReview
+        modelBuilder.Entity<LocationReview>(entity =>
+        {
+            entity.HasKey(item => item.Id);
+            entity.HasIndex(item => item.LocationId);
+            entity.HasIndex(item => item.Status);
+            entity.HasIndex(item => item.CreatedAtUtc);
+            entity.HasIndex(item => new { item.LocationId, item.Status, item.CreatedAtUtc });
+
+            entity.HasOne(item => item.Location)
+                .WithMany(l => l.Reviews)
+                .HasForeignKey(item => item.LocationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(item => item.LocationId).IsRequired().HasMaxLength(50);
+            entity.Property(item => item.Comment).HasMaxLength(500);
+            entity.Property(item => item.ReviewedBy).HasMaxLength(100);
+        });
+
+        // Configuration for UserDeviceToken
+        modelBuilder.Entity<UserDeviceToken>(entity =>
+        {
+            entity.HasKey(item => item.Id);
+            entity.HasIndex(item => item.UserId);
+            entity.HasIndex(item => item.DeviceId);
+            entity.HasIndex(item => item.FCMToken);
+            entity.HasIndex(item => new { item.UserId, item.DeviceId }).IsUnique();
+
+            entity.Property(item => item.DeviceId).IsRequired().HasMaxLength(255);
+            entity.Property(item => item.FCMToken).IsRequired().HasMaxLength(1000);
+            entity.Property(item => item.Platform).HasMaxLength(50);
+
+            entity.HasOne(item => item.User)
+                .WithMany()
+                .HasForeignKey(item => item.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
     }
-}
+}

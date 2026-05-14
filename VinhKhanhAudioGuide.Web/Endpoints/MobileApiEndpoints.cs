@@ -2,63 +2,67 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.RateLimiting;
 using VinhKhanhAudioGuide.Web.Data;
 using VinhKhanhAudioGuide.Web.Models;
+using VinhKhanhAudioGuide.Web.Services;
+using VinhKhanhAudioGuide.Web.Filters;
+using Microsoft.Extensions.Caching.Memory;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using VinhKhanhAudioGuide.Web.Extensions;
+
 
 namespace VinhKhanhAudioGuide.Web.Endpoints;
 
 public static class MobileApiEndpoints
 {
+    // Fix: Static types cannot be used as type arguments.
+    // We use this private class as a marker for ILogger category.
+    public class MobileApiLogger { }
+
     // Đăng ký toàn bộ endpoint cho mobile app (health, payment, session, heartbeat, catalog).
     // Đây là entry point chính của flow API mobile phía server.
     public static IEndpointRouteBuilder MapMobileApi(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/mobile");
+        var group = app.MapGroup("/api/mobile")
+            .RequireAuthorization("MobileApi")
+            .RequireRateLimiting("fixed-mobile");
 
-        group.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+        group.MapGet("/health", () => Results.Ok(new { status = "ok" })).AllowAnonymous();
 
-        group.MapGet("/payment/packages", async (AppDbContext db) =>
+        group.MapGet("/payment/packages", async (AppDbContext db, IMemoryCache cache) =>
         {
-            var packages = await db.PaymentPackages
-                .AsNoTracking()
-                .OrderBy(item => item.Price)
-                .Select(item => new MobilePaymentPackageDto
-                {
-                    Id = item.Id,
-                    Name = item.Name,
-                    Description = item.Description,
-                    Price = item.Price,
-                    Currency = item.Currency,
-                    DurationDays = item.DurationDays,
-                    IsActive = item.IsActive,
-                    CreatedAtUtc = item.CreatedAtUtc
-                })
-                .ToListAsync();
+            var cacheKey = "MobileApi_PaymentPackages";
+            if (!cache.TryGetValue(cacheKey, out List<MobilePaymentPackageDto>? packages))
+            {
+                packages = await db.PaymentPackages
+                    .AsNoTracking()
+                    .OrderBy(item => item.Price)
+                    .Select(item => new MobilePaymentPackageDto
+                    {
+                        Id = item.Id,
+                        Name = item.Name,
+                        Description = item.Description,
+                        Price = item.Price,
+                        Currency = item.Currency,
+                        DurationDays = item.DurationDays,
+                        IsActive = item.IsActive,
+                        CreatedAtUtc = item.CreatedAtUtc
+                    })
+                    .ToListAsync();
+
+                cache.Set(cacheKey, packages, TimeSpan.FromHours(1));
+            }
 
             return Results.Ok(packages);
         });
 
         // Xử lý callback thanh toán: tạo/cập nhật user, subscription và session cho thiết bị.
-        group.MapPost("/payment/complete", async (MobilePaymentCompletionRequest request, AppDbContext db) =>
+        group.MapPost("/payment/complete", async (MobilePaymentCompletionRequest request, AppDbContext db, IJwtTokenService jwtService) =>
         {
-            if (string.IsNullOrWhiteSpace(request.DeviceId) || string.IsNullOrWhiteSpace(request.PackageId))
-            {
-                return Results.BadRequest(new MobilePaymentCompletionResponse
-                {
-                    Success = false,
-                    Message = "DeviceId và PackageId là bắt buộc.",
-                    UserAppId = string.Empty,
-                    SessionToken = request.SessionToken ?? string.Empty,
-                    RefreshToken = request.RefreshToken,
-                    PackageId = request.PackageId,
-                    PaymentStatus = request.PaymentStatus,
-                    PaymentReference = request.PaymentReference,
-                    ExpiresAtUtc = DateTime.UtcNow,
-                    LastValidatedAtUtc = DateTime.UtcNow
-                });
-            }
-
             var package = await db.PaymentPackages.FirstOrDefaultAsync(item => item.Id == request.PackageId && item.IsActive);
+
             if (package is null)
             {
                 return Results.NotFound(new MobilePaymentCompletionResponse
@@ -179,11 +183,16 @@ public static class MobileApiEndpoints
 
             await db.SaveChangesAsync();
 
+            var accessToken = isPaid 
+                ? jwtService.GenerateToken(user.Id.ToString(), user.DeviceId, "MobileUser") 
+                : null;
+
             return Results.Ok(new MobilePaymentCompletionResponse
             {
                 Success = isPaid,
                 Message = isPaid ? "Thanh toán đã được xác nhận." : "Thanh toán đang chờ xử lý.",
                 SessionToken = sessionToken,
+                AccessToken = accessToken,
                 RefreshToken = request.RefreshToken,
                 PackageId = package.Id,
                 PaymentStatus = subscription.Status,
@@ -191,10 +200,12 @@ public static class MobileApiEndpoints
                 ExpiresAtUtc = session.ExpiresAtUtc,
                 LastValidatedAtUtc = nowUtc
             });
-        });
+        }).AllowAnonymous()
+          .AddEndpointFilter<ValidationFilter<MobilePaymentCompletionRequest>>();
+
 
         // Validate session token theo device để quyết định user có được vào app hay không.
-        group.MapGet("/session/validate", async (string sessionToken, string deviceId, AppDbContext db) =>
+        group.MapGet("/session/validate", async (string sessionToken, string deviceId, AppDbContext db, IJwtTokenService jwtService) =>
         {
             if (string.IsNullOrWhiteSpace(sessionToken) || string.IsNullOrWhiteSpace(deviceId))
             {
@@ -238,22 +249,27 @@ public static class MobileApiEndpoints
                 .OrderByDescending(item => item.ExpiresAtUtc)
                 .FirstOrDefaultAsync();
 
+            var accessToken = activeSubscription is not null
+                ? jwtService.GenerateToken(session.UserId.ToString(), session.DeviceId, "MobileUser")
+                : null;
+
             return Results.Ok(new SessionValidationResult
             {
                 IsValid = activeSubscription is not null,
                 Message = activeSubscription is null ? "Không tìm thấy gói hoạt động." : "Phiên hợp lệ.",
                 UserAppId = session.UserId.ToString(),
                 SessionToken = session.TokenValue,
+                AccessToken = accessToken,
                 RefreshToken = session.RefreshToken,
                 PackageId = activeSubscription?.PackageId,
                 PaymentStatus = activeSubscription?.Status,
                 ExpiresAtUtc = session.ExpiresAtUtc,
                 LastValidatedAtUtc = DateTime.UtcNow
             });
-        });
+        }).AllowAnonymous();
 
         // Kiểm tra nhanh session hiện tại của thiết bị, dùng ở startup/QR onboarding.
-        group.MapGet("/session/by-device", async (string deviceId, AppDbContext db) =>
+        group.MapGet("/session/by-device", async (string deviceId, AppDbContext db, IJwtTokenService jwtService) =>
         {
             if (string.IsNullOrWhiteSpace(deviceId))
             {
@@ -273,8 +289,8 @@ public static class MobileApiEndpoints
 
             var nowUtc = DateTime.UtcNow;
 
-            // Optional: Periodic cleanup of expired items
-            await CleanupExpiredSessionsAndUsersAsync(db, nowUtc);
+            // Cleanup is now handled by SessionCleanupBackgroundService
+
 
             var session = await db.UserAppSessions
                 .AsNoTracking()
@@ -304,41 +320,145 @@ public static class MobileApiEndpoints
                 .OrderByDescending(item => item.ExpiresAtUtc)
                 .FirstOrDefaultAsync();
 
+            var accessToken = activeSubscription is not null
+                ? jwtService.GenerateToken(session.UserId.ToString(), session.DeviceId, "MobileUser")
+                : null;
+
             return Results.Ok(new DeviceSessionCheckResult
             {
                 HasSession = true,
                 Message = "Đã tìm thấy phiên thiết bị.",
                 UserAppId = session.UserId.ToString(),
                 SessionToken = session.TokenValue,
+                AccessToken = accessToken,
                 RefreshToken = session.RefreshToken,
                 PackageId = activeSubscription?.PackageId,
                 PaymentStatus = activeSubscription?.Status,
                 ExpiresAtUtc = session.ExpiresAtUtc,
                 LastValidatedAtUtc = session.LastValidatedAtUtc ?? nowUtc
             });
-        });
+        }).AllowAnonymous();
+
+        // Refresh JWT token dùng RefreshToken — không cần thanh toán lại.
+        group.MapPost("/session/refresh", async (SessionRefreshRequest? request, AppDbContext db, IJwtTokenService jwtService, ILogger<MobileApiLogger> logger) =>
+        {
+            try 
+            {
+                if (request == null)
+                {
+                    return Results.BadRequest(new SessionValidationResult
+                    {
+                        IsValid = false,
+                        Message = "Dữ liệu yêu cầu không hợp lệ."
+                    });
+                }
+                logger.LogInformation("Refreshing session for DeviceId: {DeviceId}", request.DeviceId);
+
+                var session = await db.UserAppSessions
+                    .FirstOrDefaultAsync(s => s.DeviceId == request.DeviceId
+                                           && s.RefreshToken == request.RefreshToken
+                                           && s.IsActive
+                                           && s.RevokedAtUtc == null);
+
+                if (session is null)
+                {
+                    logger.LogWarning("Session not found or inactive for RefreshToken in DeviceId: {DeviceId}", request.DeviceId);
+                    return Results.Ok(new SessionValidationResult
+                    {
+                        IsValid = false,
+                        Message = "Phiên không tồn tại hoặc đã bị thu hồi.",
+                        LastValidatedAtUtc = DateTime.UtcNow
+                    });
+                }
+
+                if (session.ExpiresAtUtc <= DateTime.UtcNow)
+                {
+                    logger.LogWarning("Expired RefreshToken for DeviceId: {DeviceId}", request.DeviceId);
+                    return Results.Ok(new SessionValidationResult
+                    {
+                        IsValid = false,
+                        Message = "Phiên đã hết hạn.",
+                        UserAppId = session.UserId.ToString(),
+                        ExpiresAtUtc = session.ExpiresAtUtc,
+                        LastValidatedAtUtc = DateTime.UtcNow
+                    });
+                }
+
+                var activeSubscription = await db.UserSubscriptions
+                    .AsNoTracking()
+                    .Where(s => s.UserId == session.UserId && s.Status == "Active")
+                    .OrderByDescending(s => s.ExpiresAtUtc)
+                    .FirstOrDefaultAsync();
+
+                if (activeSubscription is null)
+                {
+                    logger.LogWarning("No active subscription for UserId: {UserId} during refresh", session.UserId);
+                    return Results.Ok(new SessionValidationResult
+                    {
+                        IsValid = false,
+                        Message = "Gói dịch vụ đã hết hạn hoặc không hợp lệ.",
+                        UserAppId = session.UserId.ToString(),
+                        SessionToken = session.TokenValue,
+                        ExpiresAtUtc = session.ExpiresAtUtc,
+                        LastValidatedAtUtc = DateTime.UtcNow
+                    });
+                }
+
+                // Issue a fresh JWT — rotate RefreshToken for security
+                var newAccessToken = jwtService.GenerateToken(session.UserId.ToString(), session.DeviceId, "MobileUser");
+                var newRefreshToken = Guid.NewGuid().ToString("N");
+
+                session.RefreshToken = newRefreshToken;
+                session.LastValidatedAtUtc = DateTime.UtcNow;
+                await db.SaveChangesAsync();
+
+                logger.LogInformation("Successfully refreshed session for UserId: {UserId}", session.UserId);
+
+                return Results.Ok(new SessionValidationResult
+                {
+                    IsValid = true,
+                    Message = "Token đã được làm mới.",
+                    UserAppId = session.UserId.ToString(),
+                    SessionToken = session.TokenValue,
+                    AccessToken = newAccessToken,
+                    RefreshToken = newRefreshToken,
+                    PackageId = activeSubscription.PackageId,
+                    PaymentStatus = activeSubscription.Status,
+                    ExpiresAtUtc = session.ExpiresAtUtc,
+                    LastValidatedAtUtc = DateTime.UtcNow
+                });
+            }
+            catch (Exception ex)
+            {
+                // Safety check for logger to avoid secondary exception
+                if (logger != null)
+                {
+                    logger.LogError(ex, "Error refreshing session for DeviceId: {DeviceId}", request?.DeviceId ?? "Unknown");
+                }
+                return Results.Problem("Có lỗi xảy ra trong quá trình làm mới phiên.");
+            }
+        }).AllowAnonymous()
+          .AddEndpointFilter<ValidationFilter<SessionRefreshRequest>>();
+
+        // Đăng ký token thiết bị cho thông báo đẩy (Push Notifications)
+        group.MapPost("/devices/register", async (MobileDeviceRegistrationRequest request, INotificationService notificationService, ClaimsPrincipal user) =>
+        {
+            var userId = user.GetUserId();
+            if (userId == null)
+            {
+                return Results.Unauthorized();
+            }
+
+            var success = await notificationService.RegisterDeviceTokenAsync(userId.Value, request.DeviceId, request.DeviceToken, request.Platform);
+            
+            return success ? Results.Ok(new { success = true }) : Results.Problem("Lỗi đăng ký token thiết bị.");
+        }).AddEndpointFilter<ValidationFilter<MobileDeviceRegistrationRequest>>();
 
         // Nhận heartbeat định kỳ để keep-alive session và lưu activity user.
         group.MapPost("/heartbeat", async (MobileHeartbeatRequest request, AppDbContext db) =>
         {
-            if (string.IsNullOrWhiteSpace(request.DeviceId) || string.IsNullOrWhiteSpace(request.SessionToken))
-            {
-                return Results.BadRequest(new MobileHeartbeatResponse
-                {
-                    Success = false,
-                    SessionValid = false,
-                    Message = "DeviceId và SessionToken là bắt buộc.",
-                    UserAppId = string.Empty,
-                    SessionToken = request.SessionToken ?? string.Empty,
-                    CurrentActivity = request.ActivityName,
-                    CurrentActivityAtUtc = DateTime.UtcNow,
-                    LastSeenAtUtc = DateTime.UtcNow,
-                    LastValidatedAtUtc = DateTime.UtcNow,
-                    ExpiresAtUtc = DateTime.UtcNow
-                });
-            }
-
             var nowUtc = DateTime.UtcNow;
+
             var session = await db.UserAppSessions
                 .Include(item => item.User)
                 .FirstOrDefaultAsync(item => item.TokenValue == request.SessionToken && item.DeviceId == request.DeviceId);
@@ -444,62 +564,142 @@ public static class MobileApiEndpoints
                 LastValidatedAtUtc = nowUtc,
                 ExpiresAtUtc = session.ExpiresAtUtc
             });
-        });
+        }).AddEndpointFilter<ValidationFilter<MobileHeartbeatRequest>>();
 
-        group.MapGet("/categories", async (AppDbContext db) =>
+
+        group.MapGet("/categories", async (AppDbContext db, IMemoryCache cache) =>
         {
-            var categories = await db.Categories
-                .AsNoTracking()
-                .OrderBy(c => c.Name)
-                .Select(c => new MobileCategoryDto
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    Icon = c.Icon,
-                    Description = c.Description,
-                    LocationCount = c.Locations.Count
-                })
-                .ToListAsync();
+            var cacheKey = "MobileApi_Categories";
+            if (!cache.TryGetValue(cacheKey, out List<MobileCategoryDto>? categories))
+            {
+                categories = await db.Categories
+                    .AsNoTracking()
+                    .OrderBy(c => c.Name)
+                    .Select(c => new MobileCategoryDto
+                    {
+                        Id = c.Id,
+                        Name = c.Name,
+                        Icon = c.Icon,
+                        Description = c.Description,
+                        LocationCount = c.Locations.Count
+                    })
+                    .ToListAsync();
+
+                cache.Set(cacheKey, categories, TimeSpan.FromMinutes(10));
+            }
 
             return Results.Ok(categories);
         });
 
-        group.MapGet("/locations", async (string? language, AppDbContext db) =>
+        group.MapGet("/locations", async (string? language, AppDbContext db, IMemoryCache cache) =>
         {
-            var locations = await db.Locations
-                .AsNoTracking()
-                .Include(l => l.Category)
-                .Include(l => l.AudioGuides)
-                .OrderBy(l => l.Name)
-                .ToListAsync();
+            var cacheKey = $"MobileApi_Locations_{language ?? "default"}";
+            if (!cache.TryGetValue(cacheKey, out List<MobileLocationDto>? result))
+            {
+                var locations = await db.Locations
+                    .AsNoTracking()
+                    .Include(l => l.Category)
+                    .Include(l => l.AudioGuides)
+                    .Include(l => l.Reviews)
+                    .OrderBy(l => l.Name)
+                    .ToListAsync();
 
-            return Results.Ok(locations.Select(l => ToLocationDto(l, includeAudioGuides: true, language)));
+                result = locations.Select(l => ToLocationDto(l, includeAudioGuides: true, language)).ToList();
+                cache.Set(cacheKey, result, TimeSpan.FromMinutes(5));
+            }
+
+            return Results.Ok(result);
         });
 
-        group.MapGet("/locations/{id}", async (string id, string? language, AppDbContext db) =>
+        group.MapGet("/locations/{id}", async (string id, string? language, AppDbContext db, IMemoryCache cache) =>
         {
-            var location = await db.Locations
-                .AsNoTracking()
-                .Include(l => l.Category)
-                .Include(l => l.AudioGuides)
-                .FirstOrDefaultAsync(l => l.Id == id);
+            var cacheKey = $"MobileApi_Location_{id}_{language ?? "default"}";
+            if (!cache.TryGetValue(cacheKey, out MobileLocationDto? result))
+            {
+                var location = await db.Locations
+                    .AsNoTracking()
+                    .Include(l => l.Category)
+                    .Include(l => l.AudioGuides)
+                    .Include(l => l.Reviews)
+                    .FirstOrDefaultAsync(l => l.Id == id);
 
-            return location is null
-                ? Results.NotFound()
-                : Results.Ok(ToLocationDto(location, includeAudioGuides: true, language));
+                if (location is null) return Results.NotFound();
+
+                result = ToLocationDto(location, includeAudioGuides: true, language);
+                cache.Set(cacheKey, result, TimeSpan.FromMinutes(5));
+            }
+
+            return Results.Ok(result);
         });
 
-        group.MapGet("/locations/by-category/{categoryId}", async (string categoryId, string? language, AppDbContext db) =>
+        group.MapGet("/locations/{id}/reviews", async (string id, AppDbContext db) =>
         {
-            var locations = await db.Locations
+            var reviews = await db.LocationReviews
                 .AsNoTracking()
-                .Include(l => l.Category)
-                .Include(l => l.AudioGuides)
-                .Where(l => l.CategoryId == categoryId)
-                .OrderBy(l => l.Name)
+                .Where(r => r.LocationId == id && r.Status == ReviewStatus.Approved)
+                .OrderByDescending(r => r.CreatedAtUtc)
+                .Select(r => new MobileLocationReviewDto
+                {
+                    Id = r.Id,
+                    LocationId = r.LocationId,
+                    Rating = r.Rating,
+                    Comment = r.Comment,
+                    CreatedAt = r.CreatedAtUtc
+                })
                 .ToListAsync();
 
-            return Results.Ok(locations.Select(l => ToLocationDto(l, includeAudioGuides: true, language)));
+            return Results.Ok(reviews);
+        }).AllowAnonymous();
+
+        group.MapPost("/locations/{id}/reviews", async (string id, MobileSubmitReviewRequest request, ClaimsPrincipal user, AppDbContext db) =>
+        {
+            var userId = user.GetUserId();
+            if (userId == null)
+            {
+                return Results.Unauthorized();
+            }
+
+            // Check if location exists
+            var locationExists = await db.Locations.AnyAsync(l => l.Id == id);
+            if (!locationExists) return Results.NotFound();
+
+            var review = new LocationReview
+            {
+                Id = Guid.NewGuid(),
+                LocationId = id,
+                UserId = userId,
+                
+                Rating = request.Rating,
+                Comment = request.Comment,
+                Status = ReviewStatus.Pending,
+                CreatedAtUtc = DateTime.UtcNow
+            };
+
+            db.LocationReviews.Add(review);
+            await db.SaveChangesAsync();
+
+            return Results.Ok(new { success = true, message = "Đánh giá của bạn đã được gửi và đang chờ duyệt." });
+        }).AddEndpointFilter<ValidationFilter<MobileSubmitReviewRequest>>();
+
+        group.MapGet("/locations/by-category/{categoryId}", async (string categoryId, string? language, AppDbContext db, IMemoryCache cache) =>
+        {
+            var cacheKey = $"MobileApi_LocationsByCategory_{categoryId}_{language ?? "default"}";
+            if (!cache.TryGetValue(cacheKey, out List<MobileLocationDto>? result))
+            {
+                var locations = await db.Locations
+                    .AsNoTracking()
+                    .Include(l => l.Category)
+                    .Include(l => l.AudioGuides)
+                    .Include(l => l.Reviews)
+                    .Where(l => l.CategoryId == categoryId)
+                    .OrderBy(l => l.Name)
+                    .ToListAsync();
+
+                result = locations.Select(l => ToLocationDto(l, includeAudioGuides: true, language)).ToList();
+                cache.Set(cacheKey, result, TimeSpan.FromMinutes(5));
+            }
+
+            return Results.Ok(result);
         });
 
         group.MapGet("/locations/search", async (string query, string? language, AppDbContext db) =>
@@ -514,6 +714,7 @@ public static class MobileApiEndpoints
                 .AsNoTracking()
                 .Include(l => l.Category)
                 .Include(l => l.AudioGuides)
+                .Include(l => l.Reviews)
                 .Where(l =>
                     EF.Functions.Like(l.Name, $"%{normalized}%") ||
                     EF.Functions.Like(l.Description, $"%{normalized}%") ||
@@ -531,6 +732,7 @@ public static class MobileApiEndpoints
                 .AsNoTracking()
                 .Include(l => l.Category)
                 .Include(l => l.AudioGuides)
+                .Include(l => l.Reviews)
                 .ToListAsync();
 
             var nearby = locations
@@ -550,69 +752,138 @@ public static class MobileApiEndpoints
             return Results.Ok(nearby);
         });
 
-        group.MapGet("/tours", async (AppDbContext db) =>
+        group.MapGet("/tours", async (AppDbContext db, IMemoryCache cache) =>
         {
-            var tours = await db.Tours
-                .AsNoTracking()
-                .Include(t => t.TourLocations)
-                .OrderBy(t => t.Name)
-                .ToListAsync();
+            var cacheKey = "MobileApi_Tours";
+            if (!cache.TryGetValue(cacheKey, out List<MobileTourDto>? result))
+            {
+                var tours = await db.Tours
+                    .AsNoTracking()
+                    .Include(t => t.TourLocations)
+                    .OrderBy(t => t.Name)
+                    .ToListAsync();
 
-            return Results.Ok(tours.Select(ToTourDto));
+                result = tours.Select(ToTourDto).ToList();
+                cache.Set(cacheKey, result, TimeSpan.FromMinutes(10));
+            }
+
+            return Results.Ok(result);
         });
 
-        group.MapGet("/tours/{id}", async (string id, AppDbContext db) =>
+        group.MapGet("/tours/{id}", async (string id, AppDbContext db, IMemoryCache cache) =>
         {
-            var tour = await db.Tours
-                .AsNoTracking()
-                .Include(t => t.TourLocations)
-                .FirstOrDefaultAsync(t => t.Id == id);
+            var cacheKey = $"MobileApi_Tour_{id}";
+            if (!cache.TryGetValue(cacheKey, out MobileTourDto? result))
+            {
+                var tour = await db.Tours
+                    .AsNoTracking()
+                    .Include(t => t.TourLocations)
+                    .FirstOrDefaultAsync(t => t.Id == id);
 
-            return tour is null ? Results.NotFound() : Results.Ok(ToTourDto(tour));
+                if (tour is null) return Results.NotFound();
+
+                result = ToTourDto(tour);
+                cache.Set(cacheKey, result, TimeSpan.FromMinutes(10));
+            }
+
+            return Results.Ok(result);
         });
 
-        group.MapGet("/tours/featured", async (AppDbContext db) =>
+        group.MapGet("/tours/featured", async (AppDbContext db, IMemoryCache cache) =>
         {
-            var tours = await db.Tours
-                .AsNoTracking()
-                .Include(t => t.TourLocations)
-                .Where(t => t.IsFeatured)
-                .OrderBy(t => t.Name)
-                .ToListAsync();
+            var cacheKey = "MobileApi_FeaturedTours";
+            if (!cache.TryGetValue(cacheKey, out List<MobileTourDto>? result))
+            {
+                var tours = await db.Tours
+                    .AsNoTracking()
+                    .Include(t => t.TourLocations)
+                    .Where(t => t.IsFeatured)
+                    .OrderBy(t => t.Name)
+                    .ToListAsync();
 
-            return Results.Ok(tours.Select(ToTourDto));
+                result = tours.Select(ToTourDto).ToList();
+                cache.Set(cacheKey, result, TimeSpan.FromMinutes(10));
+            }
+
+            return Results.Ok(result);
         });
 
-        group.MapGet("/audio/by-location/{locationId}", async (string locationId, string? language, AppDbContext db) =>
+        group.MapGet("/audio/by-location/{locationId}", async (string locationId, string? language, AppDbContext db, IMemoryCache cache) =>
         {
-            var allGuides = await db.AudioGuides
-                .AsNoTracking()
-                .Include(a => a.ScriptSegments)
-                .Where(a => a.LocationId == locationId)
-                .OrderBy(a => a.Title)
-                .ToListAsync();
+            var cacheKey = $"MobileApi_AudioByLocation_{locationId}_{language ?? "default"}";
+            if (!cache.TryGetValue(cacheKey, out List<MobileAudioGuideDto>? result))
+            {
+                var allGuides = await db.AudioGuides
+                    .AsNoTracking()
+                    .Include(a => a.ScriptSegments)
+                    .Where(a => a.LocationId == locationId)
+                    .OrderBy(a => a.Title)
+                    .ToListAsync();
 
-            var languageResolution = ResolveLanguageSelection(allGuides, language);
-            var guides = languageResolution.Guides;
+                var languageResolution = ResolveLanguageSelection(allGuides, language);
+                var guides = languageResolution.Guides;
 
-            return Results.Ok(guides.Select(a => ToAudioGuideDto(a, includeSegments: true, languageResolution.ResolvedLanguage)));
+                result = guides.Select(a => ToAudioGuideDto(a, includeSegments: true, languageResolution.ResolvedLanguage)).ToList();
+                cache.Set(cacheKey, result, TimeSpan.FromMinutes(5));
+            }
+
+            return Results.Ok(result);
         });
 
-        group.MapGet("/audio/{id}", async (string id, AppDbContext db) =>
+        group.MapGet("/audio/{id}", async (string id, AppDbContext db, IMemoryCache cache) =>
         {
-            var guide = await db.AudioGuides
-                .AsNoTracking()
-                .Include(a => a.ScriptSegments)
-                .FirstOrDefaultAsync(a => a.Id == id);
+            var cacheKey = $"MobileApi_Audio_{id}";
+            if (!cache.TryGetValue(cacheKey, out MobileAudioGuideDto? result))
+            {
+                var guide = await db.AudioGuides
+                    .AsNoTracking()
+                    .Include(a => a.ScriptSegments)
+                    .FirstOrDefaultAsync(a => a.Id == id);
 
-            return guide is null ? Results.NotFound() : Results.Ok(ToAudioGuideDto(guide, includeSegments: true));
+                if (guide is null) return Results.NotFound();
+
+                result = ToAudioGuideDto(guide, includeSegments: true);
+                cache.Set(cacheKey, result, TimeSpan.FromMinutes(10));
+            }
+
+            return Results.Ok(result);
         });
 
-        group.MapGet("/history", async (int? take, AppDbContext db) =>
+
+        group.MapPost("/reviews", async (MobileSubmitReviewRequest request, AppDbContext db, ClaimsPrincipal user) =>
         {
+            var userId = user.GetUserId();
+
+            var review = new LocationReview
+            {
+                Id = Guid.NewGuid(),
+                LocationId = request.LocationId,
+                UserId = userId,
+                
+                Rating = Math.Clamp(request.Rating, 1, 5),
+                Comment = request.Comment,
+                Status = ReviewStatus.Pending,
+                CreatedAtUtc = DateTime.UtcNow
+            };
+
+            db.LocationReviews.Add(review);
+            await db.SaveChangesAsync();
+
+            return Results.Ok(new { success = true, message = "Cảm ơn bạn đã gửi đánh giá. Đánh giá của bạn đang chờ kiểm duyệt." });
+        }).AddEndpointFilter<ValidationFilter<MobileSubmitReviewRequest>>();
+
+        group.MapGet("/history", async (int? take, AppDbContext db, ClaimsPrincipal user) =>
+        {
+            var userId = user.GetUserId();
+            if (userId == null)
+            {
+                return Results.Unauthorized();
+            }
+
             var maxItems = Math.Clamp(take.GetValueOrDefault(50), 1, 200);
             var history = await db.ListeningHistories
                 .AsNoTracking()
+                .Where(item => item.UserId == userId.Value)
                 .OrderByDescending(item => item.LastListenedAtUtc)
                 .Take(maxItems)
                 .Select(item => new MobileListeningHistoryDto
@@ -629,21 +900,22 @@ public static class MobileApiEndpoints
                     IsCompleted = item.IsCompleted,
                     LastListenedAt = item.LastListenedAtUtc,
                     ListenedAt = item.LastListenedAtUtc,
-                    UserId = "anonymous"
+                    UserId = userId.Value.ToString()
                 })
                 .ToListAsync();
 
             return Results.Ok(history);
         });
 
-        group.MapPost("/history", async (MobileAddListeningHistoryRequest request, AppDbContext db) =>
+        group.MapPost("/history", async (MobileAddListeningHistoryRequest request, AppDbContext db, ClaimsPrincipal user) =>
         {
-            if (string.IsNullOrWhiteSpace(request.AudioGuideId) || string.IsNullOrWhiteSpace(request.LocationId))
+            var userId = user.GetUserId();
+            if (userId == null)
             {
-                return Results.BadRequest(new { message = "audioGuideId and locationId are required." });
+                return Results.Unauthorized();
             }
-
             var audio = await db.AudioGuides
+
                 .AsNoTracking()
                 .FirstOrDefaultAsync(item => item.Id == request.AudioGuideId);
             if (audio is null)
@@ -665,12 +937,15 @@ public static class MobileApiEndpoints
                 : (int)Math.Round(audio.Duration * 60 * (double)progress);
             var nowUtc = DateTime.UtcNow;
 
-            var existing = await db.ListeningHistories.FirstOrDefaultAsync(item => item.AudioGuideId == request.AudioGuideId);
+            var existing = await db.ListeningHistories
+                .FirstOrDefaultAsync(item => item.AudioGuideId == request.AudioGuideId && item.UserId == userId.Value);
+            
             if (existing is null)
             {
                 existing = new ListeningHistory
                 {
-                    Id = $"hist_{request.AudioGuideId}",
+                    Id = $"hist_{userId.Value}_{request.AudioGuideId}",
+                    UserId = userId.Value,
                     AudioGuideId = request.AudioGuideId,
                     LocationId = request.LocationId
                 };
@@ -704,9 +979,10 @@ public static class MobileApiEndpoints
                 IsCompleted = existing.IsCompleted,
                 LastListenedAt = existing.LastListenedAtUtc,
                 ListenedAt = existing.LastListenedAtUtc,
-                UserId = "anonymous"
+                UserId = userId.Value.ToString()
             });
-        });
+        }).AddEndpointFilter<ValidationFilter<MobileAddListeningHistoryRequest>>();
+
 
         return app;
     }
@@ -717,6 +993,9 @@ public static class MobileApiEndpoints
         var filteredGuides = includeAudioGuides
             ? languageResolution.Guides
             : Array.Empty<AudioGuide>();
+
+        var approvedReviews = location.Reviews.Where(r => r.Status == ReviewStatus.Approved).ToList();
+        var avgRating = approvedReviews.Any() ? approvedReviews.Average(r => r.Rating) : 0;
 
         return new MobileLocationDto
         {
@@ -734,6 +1013,8 @@ public static class MobileApiEndpoints
             CategoryName = location.Category?.Name ?? string.Empty,
             IsFavorite = false,
             ResolvedLanguage = languageResolution.ResolvedLanguage,
+            AverageRating = Math.Round(avgRating, 1),
+            ReviewCount = approvedReviews.Count,
             AudioGuides = filteredGuides
                 .Select(guide => ToAudioGuideDto(guide, includeSegments: false, languageResolution.ResolvedLanguage))
                 .ToList()
@@ -882,264 +1163,20 @@ public static class MobileApiEndpoints
         return request.DeviceId;
     }
 
-    private sealed class MobileCategoryDto
-    {
-        public string Id { get; set; } = string.Empty;
-        public string Name { get; set; } = string.Empty;
-        public string Icon { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public int LocationCount { get; set; }
-    }
-
-    private sealed class MobileLocationDto
-    {
-        public string Id { get; set; } = string.Empty;
-        public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string ImageUrl { get; set; } = string.Empty;
-        public string Address { get; set; } = string.Empty;
-        public double Latitude { get; set; }
-        public double Longitude { get; set; }
-        public int Priority { get; set; }
-        public double DetectionRadiusMeters { get; set; }
-        public int Duration { get; set; }
-        public string CategoryId { get; set; } = string.Empty;
-        public string CategoryName { get; set; } = string.Empty;
-        public bool IsFavorite { get; set; }
-        public string ResolvedLanguage { get; set; } = string.Empty;
-        public List<MobileAudioGuideDto> AudioGuides { get; set; } = new();
-    }
-
-    private sealed class MobileTourDto
-    {
-        public string Id { get; set; } = string.Empty;
-        public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string ImageUrl { get; set; } = string.Empty;
-        public int Duration { get; set; }
-        public List<string> LocationIds { get; set; } = new();
-        public decimal Price { get; set; }
-        public bool IsFeatured { get; set; }
-    }
-
-    private sealed class MobileAudioGuideDto
-    {
-        public string Id { get; set; } = string.Empty;
-        public string Title { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string AudioUrl { get; set; } = string.Empty;
-        public string? CloudinaryAudioUrl { get; set; }
-        public string? CloudinaryPublicId { get; set; }
-        public string TranscriptText { get; set; } = string.Empty;
-        public int Duration { get; set; }
-        public string LocationId { get; set; } = string.Empty;
-        public string Language { get; set; } = "vi";
-        public string ResolvedLanguage { get; set; } = string.Empty;
-        public List<MobileAudioScriptSegmentDto> ScriptSegments { get; set; } = new();
-    }
-
-    private sealed record LanguageResolution(IReadOnlyList<AudioGuide> Guides, string ResolvedLanguage);
-
-    private sealed class MobileAudioScriptSegmentDto
-    {
-        public int Id { get; set; }
-        public string AudioGuideId { get; set; } = string.Empty;
-        public int StartTimeSeconds { get; set; }
-        public int EndTimeSeconds { get; set; }
-        public string ScriptText { get; set; } = string.Empty;
-    }
-
-    private sealed class MobileListeningHistoryDto
-    {
-        public string Id { get; set; } = string.Empty;
-        public string AudioGuideId { get; set; } = string.Empty;
-        public string AudioTitle { get; set; } = string.Empty;
-        public string LocationId { get; set; } = string.Empty;
-        public string LocationName { get; set; } = string.Empty;
-        public string LocationImageUrl { get; set; } = string.Empty;
-        public int AudioDuration { get; set; }
-        public double Progress { get; set; }
-        public DateTime ListenedAt { get; set; }
-        public string UserId { get; set; } = string.Empty;
-        public int ListenedSeconds { get; set; }
-        public bool IsCompleted { get; set; }
-        public DateTime LastListenedAt { get; set; }
-    }
-
-    private sealed class MobileHeartbeatRequest
-    {
-        public string DeviceId { get; set; } = string.Empty;
-        public string SessionToken { get; set; } = string.Empty;
-        public string? ActivityName { get; set; }
-        public string? ActivityContext { get; set; }
-        public string? ScreenName { get; set; }
-        public string? Route { get; set; }
-        public bool IsForeground { get; set; } = true;
-    }
-
-    private sealed class MobileHeartbeatResponse
-    {
-        public bool Success { get; set; }
-        public bool SessionValid { get; set; }
-        public string Message { get; set; } = string.Empty;
-        public string UserAppId { get; set; } = string.Empty;
-        public string SessionToken { get; set; } = string.Empty;
-        public string? CurrentActivity { get; set; }
-        public DateTime CurrentActivityAtUtc { get; set; }
-        public DateTime LastSeenAtUtc { get; set; }
-        public DateTime LastValidatedAtUtc { get; set; }
-        public DateTime ExpiresAtUtc { get; set; }
-    }
 
     private static string NormalizeHeartbeatActivityName(string? activityName, string? route)
     {
-        var name = (activityName ?? route ?? "Shell").Trim();
-        return string.IsNullOrWhiteSpace(name) ? "Shell" : name;
+        if (!string.IsNullOrWhiteSpace(activityName)) return activityName;
+        if (!string.IsNullOrWhiteSpace(route)) return $"Route: {route}";
+        return "Idle";
     }
 
-    private static string? NormalizeHeartbeatContext(string? activityContext, string? screenName)
+    private static string NormalizeHeartbeatContext(string? context, string? screenName)
     {
-        var context = !string.IsNullOrWhiteSpace(activityContext) ? activityContext : screenName;
-        if (string.IsNullOrWhiteSpace(context))
-        {
-            return null;
-        }
-
-        return context.Trim();
-    }
-
-    private sealed class MobilePaymentPackageDto
-    {
-        public string Id { get; set; } = string.Empty;
-        public string Name { get; set; } = string.Empty;
-        public string? Description { get; set; }
-        public decimal Price { get; set; }
-        public string Currency { get; set; } = string.Empty;
-        public int DurationDays { get; set; }
-        public bool IsActive { get; set; }
-        public DateTime CreatedAtUtc { get; set; }
-    }
-
-    private sealed class MobilePaymentCompletionRequest
-    {
-        public string DeviceId { get; set; } = string.Empty;
-        public string SessionToken { get; set; } = string.Empty;
-        public string? RefreshToken { get; set; }
-        public string? QrToken { get; set; }
-        public string? UserAppId { get; set; }
-        public string? LocationId { get; set; }
-        public string? AudioGuideId { get; set; }
-        public string? AudioUrl { get; set; }
-        public string PackageId { get; set; } = string.Empty;
-        public string PaymentStatus { get; set; } = string.Empty;
-        public string? PaymentReference { get; set; }
-    }
-
-    private sealed class MobilePaymentCompletionResponse
-    {
-        public bool Success { get; set; }
-        public string Message { get; set; } = string.Empty;
-        public string UserAppId { get; set; } = string.Empty;
-        public string SessionToken { get; set; } = string.Empty;
-        public string? RefreshToken { get; set; }
-        public string PackageId { get; set; } = string.Empty;
-        public string PaymentStatus { get; set; } = string.Empty;
-        public string? PaymentReference { get; set; }
-        public DateTime ExpiresAtUtc { get; set; }
-        public DateTime LastValidatedAtUtc { get; set; }
-    }
-
-    private sealed class SessionValidationResult
-    {
-        public bool IsValid { get; set; }
-        public string Message { get; set; } = string.Empty;
-        public string UserAppId { get; set; } = string.Empty;
-        public string SessionToken { get; set; } = string.Empty;
-        public string? RefreshToken { get; set; }
-        public string? PackageId { get; set; }
-        public string? PaymentStatus { get; set; }
-        public DateTime ExpiresAtUtc { get; set; }
-        public DateTime LastValidatedAtUtc { get; set; }
-    }
-
-    private sealed class DeviceSessionCheckResult
-    {
-        public bool HasSession { get; set; }
-        public string Message { get; set; } = string.Empty;
-        public string UserAppId { get; set; } = string.Empty;
-        public string SessionToken { get; set; } = string.Empty;
-        public string? RefreshToken { get; set; }
-        public string? PackageId { get; set; }
-        public string? PaymentStatus { get; set; }
-        public DateTime ExpiresAtUtc { get; set; }
-        public DateTime LastValidatedAtUtc { get; set; }
-    }
-
-    private sealed class MobileAddListeningHistoryRequest
-    {
-        public string AudioGuideId { get; set; } = string.Empty;
-        public string LocationId { get; set; } = string.Empty;
-        public double Progress { get; set; }
-        public int ListenedSeconds { get; set; }
-        public bool IsCompleted { get; set; }
-    }
-    private static async Task CleanupExpiredSessionsAndUsersAsync(AppDbContext db, DateTime nowUtc)
-    {
-        try
-        {
-            // 1. Deactivate expired sessions
-            var expiredSessions = await db.UserAppSessions
-                .Where(s => s.IsActive && s.ExpiresAtUtc <= nowUtc)
-                .ToListAsync();
-
-            if (expiredSessions.Any())
-            {
-                foreach (var s in expiredSessions)
-                {
-                    s.IsActive = false;
-                    s.RevokedAtUtc = nowUtc;
-                }
-            }
-
-            // 2. Mark subscriptions as Expired
-            var expiredSubs = await db.UserSubscriptions
-                .Where(s => s.Status == "Active" && s.ExpiresAtUtc <= nowUtc)
-                .ToListAsync();
-
-            if (expiredSubs.Any())
-            {
-                foreach (var s in expiredSubs)
-                {
-                    s.Status = "Expired";
-                }
-            }
-
-            // 3. Soft-delete users whose all subscriptions have been expired for more than 30 days
-            // and have no active sessions.
-            var threshold = nowUtc.AddDays(-30);
-            var usersToCleanup = await db.AppUsers
-                .Include(u => u.Subscriptions)
-                .Include(u => u.AppSessions)
-                .Where(u => !u.IsDeleted && u.LastSeenAtUtc < threshold)
-                .ToListAsync();
-
-            foreach (var user in usersToCleanup)
-            {
-                bool hasActiveSub = user.Subscriptions.Any(s => s.Status == "Active" || s.ExpiresAtUtc > nowUtc);
-                bool hasActiveSession = user.AppSessions.Any(s => s.IsActive && s.ExpiresAtUtc > nowUtc);
-
-                if (!hasActiveSub && !hasActiveSession)
-                {
-                    user.IsDeleted = true;
-                    user.Status = "Expired_Deleted";
-                }
-            }
-
-            await db.SaveChangesAsync();
-        }
-        catch
-        {
-            // Best effort - failures in cleanup shouldn't block the main API response
-        }
+        if (!string.IsNullOrWhiteSpace(context)) return context;
+        if (!string.IsNullOrWhiteSpace(screenName)) return screenName;
+        return "N/A";
     }
 }
+
+internal record LanguageResolution(IEnumerable<AudioGuide> Guides, string ResolvedLanguage);

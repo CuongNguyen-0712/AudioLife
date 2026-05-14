@@ -25,14 +25,20 @@ public class RemoteApiService : IApiService
     private readonly ApiService _fallback;
     private readonly ILocalizationService _localizationService;
     private readonly ILocalDatabaseService _localDatabaseService;
+    private readonly IAppSessionStore _sessionStore;
     private readonly HttpClient _httpClient;
     private string? _activeBaseUrl;
 
-    public RemoteApiService(ApiService fallback, ILocalizationService localizationService, ILocalDatabaseService localDatabaseService)
+    public RemoteApiService(
+        ApiService fallback, 
+        ILocalizationService localizationService, 
+        ILocalDatabaseService localDatabaseService,
+        IAppSessionStore sessionStore)
     {
         _fallback = fallback;
         _localizationService = localizationService;
         _localDatabaseService = localDatabaseService;
+        _sessionStore = sessionStore;
 
         var handler = new HttpClientHandler
         {
@@ -62,40 +68,68 @@ public class RemoteApiService : IApiService
         // Lấy catalog location từ API, nếu lỗi thì fallback cache SQLite rồi mới tới SampleData local.
         // Thuộc flow tải dữ liệu trang Home/Map theo chiến lược remote -> cache -> local.
         var remote = await TryGetAsync<List<Location>>(WithLanguage("api/mobile/locations"));
+        List<Location> locations;
+
         if (remote is not null)
         {
             var normalized = NormalizeLocations(remote);
             await UpsertCacheAsync(LocationsCacheKey, normalized);
-            return ContentLocalizationMapper.LocalizeLocations(normalized, GetCurrentLanguageCode());
+            locations = normalized;
         }
-
-        var cached = await GetCachedAsync<List<Location>>(LocationsCacheKey);
-        if (cached is { Count: > 0 })
+        else
         {
-            var normalized = NormalizeLocations(cached);
-            return ContentLocalizationMapper.LocalizeLocations(normalized, GetCurrentLanguageCode());
+            var cached = await GetCachedAsync<List<Location>>(LocationsCacheKey);
+            if (cached is { Count: > 0 })
+            {
+                locations = NormalizeLocations(cached);
+            }
+            else
+            {
+                locations = await _fallback.GetLocationsAsync();
+            }
         }
 
-        return await _fallback.GetLocationsAsync();
+        var favoriteIds = await _localDatabaseService.GetFavoriteIdsAsync();
+        foreach (var loc in locations)
+        {
+            loc.IsFavorite = favoriteIds.Contains(loc.Id);
+        }
+
+        return ContentLocalizationMapper.LocalizeLocations(locations, GetCurrentLanguageCode());
     }
 
     public async Task<Location?> GetLocationByIdAsync(string locationId)
     {
         var remote = await TryGetAsync<Location>(WithLanguage($"api/mobile/locations/{Uri.EscapeDataString(locationId)}"));
+        Location? location = null;
+
         if (remote is not null)
         {
-            return ContentLocalizationMapper.LocalizeLocation(NormalizeLocation(remote), GetCurrentLanguageCode());
+            location = NormalizeLocation(remote);
         }
-
-        var cachedLocations = await GetCachedAsync<List<Location>>(LocationsCacheKey);
-        var cached = cachedLocations?
-            .FirstOrDefault(location => string.Equals(location.Id, locationId, StringComparison.OrdinalIgnoreCase));
-        if (cached is not null)
+        else
         {
-            return ContentLocalizationMapper.LocalizeLocation(NormalizeLocation(cached), GetCurrentLanguageCode());
+            var cachedLocations = await GetCachedAsync<List<Location>>(LocationsCacheKey);
+            var cached = cachedLocations?
+                .FirstOrDefault(l => string.Equals(l.Id, locationId, StringComparison.OrdinalIgnoreCase));
+            
+            if (cached is not null)
+            {
+                location = NormalizeLocation(cached);
+            }
+            else
+            {
+                location = await _fallback.GetLocationByIdAsync(locationId);
+            }
         }
 
-        return await _fallback.GetLocationByIdAsync(locationId);
+        if (location != null)
+        {
+            location.IsFavorite = await _localDatabaseService.IsFavoriteAsync(location.Id);
+            return ContentLocalizationMapper.LocalizeLocation(location, GetCurrentLanguageCode());
+        }
+
+        return null;
     }
 
     public async Task<List<Location>> SearchLocationsAsync(string query)
@@ -461,9 +495,65 @@ public class RemoteApiService : IApiService
     }
 
     public Task<List<DownloadedAudio>> GetDownloadedAudiosAsync() => _fallback.GetDownloadedAudiosAsync();
-    public Task<bool> DownloadAudioAsync(string audioGuideId) => _fallback.DownloadAudioAsync(audioGuideId);
     public Task<bool> DeleteDownloadedAudioAsync(string audioGuideId) => _fallback.DeleteDownloadedAudioAsync(audioGuideId);
     public Task<long> GetTotalDownloadSizeAsync() => _fallback.GetTotalDownloadSizeAsync();
+
+    public async Task<List<MobileLocationReviewDto>> GetLocationReviewsAsync(string locationId)
+    {
+        var remote = await TryGetAsync<List<MobileLocationReviewDto>>($"api/mobile/locations/{Uri.EscapeDataString(locationId)}/reviews");
+        return remote ?? new List<MobileLocationReviewDto>();
+    }
+
+    public async Task<bool> SubmitLocationReviewAsync(string locationId, SubmitReviewRequest request)
+    {
+        return await TryPostAsync($"api/mobile/locations/{Uri.EscapeDataString(locationId)}/reviews", request);
+    }
+
+    public async Task<bool> DownloadAudioAsync(string audioGuideId)
+    {
+        // Resolve the audio guide to get the remote URL
+        var guide = await GetAudioGuideByIdAsync(audioGuideId);
+        if (guide is null || string.IsNullOrWhiteSpace(guide.AudioUrl))
+        {
+            return await _fallback.DownloadAudioAsync(audioGuideId);
+        }
+
+        try
+        {
+            // Download the audio file
+            using var request = new HttpRequestMessage(HttpMethod.Get, guide.AudioUrl);
+            await AddAuthHeaderAsync(request);
+            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            if (!response.IsSuccessStatusCode) return false;
+
+            // Save to local cache directory
+            var cacheDir = FileSystem.CacheDirectory;
+            var ext = System.IO.Path.GetExtension(guide.AudioUrl.Split('?')[0]);
+            if (string.IsNullOrWhiteSpace(ext)) ext = ".mp3";
+            var fileName = $"audio_{audioGuideId.Replace("/", "_").Replace("\\", "_")}{ext}";
+            var localPath = System.IO.Path.Combine(cacheDir, fileName);
+
+            await using var contentStream = await response.Content.ReadAsStreamAsync();
+            await using var fileStream = System.IO.File.Create(localPath);
+            await contentStream.CopyToAsync(fileStream);
+
+            // Persist download record in local DB
+            var fileInfo = new System.IO.FileInfo(localPath);
+            await _localDatabaseService.UpsertDownloadedAudioAsync(new DownloadedAudio
+            {
+                AudioGuideId = audioGuideId,
+                LocalPath = localPath,
+                DownloadedAt = DateTime.UtcNow,
+                FileSize = fileInfo.Exists ? fileInfo.Length : 0
+            });
+
+            return true;
+        }
+        catch
+        {
+            return await _fallback.DownloadAudioAsync(audioGuideId);
+        }
+    }
 
     private async Task<T?> TryGetAsync<T>(string relativePath)
     {
@@ -508,7 +598,27 @@ public class RemoteApiService : IApiService
 
         try
         {
-            using var response = await _httpClient.GetAsync(requestUri);
+            using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+            await AddAuthHeaderAsync(request);
+
+            using var response = await _httpClient.SendAsync(request);
+
+            // If 401 Unauthorized, try refreshing the JWT token and retry once
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                var refreshed = await TryRefreshTokenAsync(baseUrl);
+                if (refreshed)
+                {
+                    using var retryRequest = new HttpRequestMessage(HttpMethod.Get, requestUri);
+                    await AddAuthHeaderAsync(retryRequest);
+                    using var retryResponse = await _httpClient.SendAsync(retryRequest);
+                    if (!retryResponse.IsSuccessStatusCode) return default;
+                    await using var retryStream = await retryResponse.Content.ReadAsStreamAsync();
+                    return await JsonSerializer.DeserializeAsync<T>(retryStream, JsonOptions);
+                }
+                return default;
+            }
+
             if (!response.IsSuccessStatusCode)
             {
                 return default;
@@ -522,6 +632,85 @@ public class RemoteApiService : IApiService
             return default;
         }
     }
+
+    private async Task AddAuthHeaderAsync(HttpRequestMessage request)
+    {
+        var snapshot = await _sessionStore.GetSnapshotAsync();
+        if (!string.IsNullOrWhiteSpace(snapshot?.AccessToken))
+        {
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", snapshot.AccessToken);
+        }
+    }
+
+    /// <summary>
+    /// Attempts to refresh JWT using stored RefreshToken.
+    /// On success, updates the snapshot with the new tokens.
+    /// </summary>
+    private async Task<bool> TryRefreshTokenAsync(string baseUrl)
+    {
+        try
+        {
+            var snapshot = await _sessionStore.GetSnapshotAsync();
+            if (snapshot is null || string.IsNullOrWhiteSpace(snapshot.RefreshToken))
+            {
+                return false;
+            }
+
+            var payload = new { snapshot.DeviceId, snapshot.SessionToken, snapshot.RefreshToken };
+            var json = JsonSerializer.Serialize(payload, JsonOptions);
+            using var req = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl.TrimEnd('/')}/api/mobile/session/refresh")
+            {
+                Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+            };
+
+            using var res = await _httpClient.SendAsync(req);
+            if (!res.IsSuccessStatusCode) return false;
+
+            await using var stream = await res.Content.ReadAsStreamAsync();
+            using var doc = await JsonDocument.ParseAsync(stream);
+            var root = doc.RootElement;
+
+            if (!root.TryGetProperty("isValid", out var isValidProp) || !isValidProp.GetBoolean()) return false;
+            if (!root.TryGetProperty("accessToken", out var atProp) || atProp.ValueKind == JsonValueKind.Null) return false;
+
+            var newAccessToken = atProp.GetString() ?? string.Empty;
+            var newRefreshToken = root.TryGetProperty("refreshToken", out var rtProp) ? rtProp.GetString() : null;
+            var newSessionToken = root.TryGetProperty("sessionToken", out var stProp) ? stProp.GetString() : null;
+
+            var expiresAt = snapshot.ExpiresAtUtc;
+            if (root.TryGetProperty("expiresAtUtc", out var expProp) && expProp.TryGetDateTime(out var parsedExp))
+                expiresAt = parsedExp;
+
+            var lastValidated = DateTime.UtcNow;
+            if (root.TryGetProperty("lastValidatedAtUtc", out var lvProp) && lvProp.TryGetDateTime(out var parsedLv))
+                lastValidated = parsedLv;
+
+            // Update snapshot with new tokens
+            var updated = new AppSessionSnapshot(
+                snapshot.DeviceId,
+                newSessionToken ?? snapshot.SessionToken,
+                newAccessToken,
+                newRefreshToken ?? snapshot.RefreshToken,
+                snapshot.QrToken,
+                snapshot.UserAppId,
+                snapshot.PackageId,
+                snapshot.PaymentStatus,
+                snapshot.PaymentReference,
+                snapshot.LocationId,
+                snapshot.AudioGuideId,
+                snapshot.AudioUrl,
+                expiresAt,
+                lastValidated
+            );
+            await _sessionStore.SaveSnapshotAsync(updated);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
 
     private async Task<bool> TryPostAsync<TBody>(string relativePath, TBody body)
     {
@@ -580,8 +769,31 @@ public class RemoteApiService : IApiService
         try
         {
             var json = JsonSerializer.Serialize(body, JsonOptions);
-            using var content = new StringContent(json, Encoding.UTF8, "application/json");
-            using var response = await _httpClient.PostAsync(requestUri, content);
+            
+            // Define a helper to send the request
+            async Task<HttpResponseMessage> SendRequest()
+            {
+                var request = new HttpRequestMessage(HttpMethod.Post, requestUri)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
+                await AddAuthHeaderAsync(request);
+                return await _httpClient.SendAsync(request);
+            }
+
+            using var response = await SendRequest();
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                var refreshed = await TryRefreshTokenAsync(baseUrl);
+                if (refreshed)
+                {
+                    using var retryResponse = await SendRequest();
+                    return retryResponse.IsSuccessStatusCode;
+                }
+                return false;
+            }
+
             return response.IsSuccessStatusCode;
         }
         catch
@@ -597,8 +809,32 @@ public class RemoteApiService : IApiService
         try
         {
             var json = JsonSerializer.Serialize(body, JsonOptions);
-            using var content = new StringContent(json, Encoding.UTF8, "application/json");
-            using var response = await _httpClient.PostAsync(requestUri, content);
+
+            async Task<HttpResponseMessage> SendRequest()
+            {
+                var request = new HttpRequestMessage(HttpMethod.Post, requestUri)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
+                await AddAuthHeaderAsync(request);
+                return await _httpClient.SendAsync(request);
+            }
+
+            using var response = await SendRequest();
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                var refreshed = await TryRefreshTokenAsync(baseUrl);
+                if (refreshed)
+                {
+                    using var retryResponse = await SendRequest();
+                    if (!retryResponse.IsSuccessStatusCode) return default;
+                    await using var retryStream = await retryResponse.Content.ReadAsStreamAsync();
+                    return await JsonSerializer.DeserializeAsync<TResponse>(retryStream, JsonOptions);
+                }
+                return default;
+            }
+
             if (!response.IsSuccessStatusCode)
             {
                 return default;

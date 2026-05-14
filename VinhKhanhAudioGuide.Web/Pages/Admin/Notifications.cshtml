@@ -1,0 +1,103 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Admin.NotificationsModel
+@{
+    ViewData["Title"] = "Gửi thông báo";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card my-4">
+                <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                    <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                        <h6 class="text-white text-capitalize ps-3">Gửi thông báo đẩy (Push Notifications)</h6>
+                    </div>
+                </div>
+                <div class="card-body px-4 pb-2">
+                    @if (TempData["Message"] != null)
+                    {
+                        <div class="alert alert-info alert-dismissible text-white fade show" role="alert">
+                            <span class="text-sm">@TempData["Message"]</span>
+                            <button type="button" class="btn-close text-lg py-3 opacity-10" data-bs-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    }
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card border border-light p-3">
+                                <h5>Trạng thái hệ thống</h5>
+                                <p class="mb-0">Tổng số thiết bị đang hoạt động: <strong>@Model.ActiveDeviceCount</strong></p>
+                                <p class="text-sm text-secondary">Hệ thống sử dụng FCM (Firebase Cloud Messaging) để gửi thông báo.</p>
+                            </div>
+
+                            <div class="mt-4">
+                                <form method="post">
+                                    <div class="mb-3">
+                                        <label class="form-label">Tiêu đề</label>
+                                        <input asp-for="Input.Title" class="form-control border p-2" placeholder="VD: Khuyến mãi mới!" />
+                                        <span asp-validation-for="Input.Title" class="text-danger text-xs"></span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Nội dung</label>
+                                        <textarea asp-for="Input.Body" class="form-control border p-2" rows="4" placeholder="Nhập nội dung thông báo..."></textarea>
+                                        <span asp-validation-for="Input.Body" class="text-danger text-xs"></span>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input asp-for="Input.SendToAll" class="form-check-input" type="checkbox" id="sendToAll">
+                                            <label class="form-check-label" for="sendToAll">
+                                                Gửi cho tất cả người dùng có thiết bị
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div id="targetUserSection" class="mb-4">
+                                        <label class="form-label">Người dùng mục tiêu</label>
+                                        <select asp-for="Input.TargetUserId" class="form-select border p-2">
+                                            <option value="">-- Chọn người dùng --</option>
+                                            @foreach (var user in Model.TargetUsers)
+                                            {
+                                                <option value="@user.Id">@user.QrCodeValue (Device: @user.DeviceId)</option>
+                                            }
+                                        </select>
+                                    </div>
+
+                                    <button type="submit" class="btn bg-gradient-primary">Gửi thông báo</button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border border-light p-3 bg-light">
+                                <h6>Mẹo gửi thông báo:</h6>
+                                <ul class="text-sm">
+                                    <li>Tiêu đề nên ngắn gọn và hấp dẫn.</li>
+                                    <li>Nội dung không nên quá 200 ký tự để hiển thị tốt nhất trên thiết bị di động.</li>
+                                    <li>Sử dụng thông báo để nhắc nhở người dùng về các tour du lịch mới hoặc khuyến mãi.</li>
+                                    <li>Hệ thống hiện tại đang sử dụng log để giả lập việc gửi thông báo. Khi tích hợp FCM, thông báo sẽ được gửi thật tới thiết bị.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#sendToAll').change(function() {
+                if(this.checked) {
+                    $('#targetUserSection').fadeOut();
+                } else {
+                    $('#targetUserSection').fadeIn();
+                }
+            });
+        });
+    </script>
+}

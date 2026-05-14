@@ -220,3 +220,61 @@ public class AudioCountConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
+
+public class RatingToColorConverter : IValueConverter
+{
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is int rating && parameter is string starIndexStr && int.TryParse(starIndexStr, out int starIndex))
+        {
+            if (rating >= starIndex)
+            {
+                return Color.FromArgb("#FFD700"); // Gold
+            }
+        }
+        return Application.Current?.Resources["Gray300"] as Color ?? Colors.Gray;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public class RatingToStarsConverter : IValueConverter
+{
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is int rating)
+        {
+            return new string('★', rating).PadRight(5, '☆');
+        }
+        return "☆☆☆☆☆";
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public class CollectionEmptyToBoolConverter : IValueConverter
+{
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is int count)
+        {
+            return count == 0;
+        }
+        if (value is System.Collections.ICollection collection)
+        {
+            return collection.Count == 0;
+        }
+        return true;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}

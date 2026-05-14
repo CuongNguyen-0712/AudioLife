@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
@@ -62,6 +62,9 @@
                     <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminRequests" ? "active" : "")" asp-page="/Admin/ChangeRequests">
                         <i class="fas fa-inbox"></i> <span>Yêu cầu từ POI</span>
                     </a>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminReviews" ? "active" : "")" asp-page="/Admin/Reviews">
+                        <i class="fas fa-star"></i> <span>Đánh giá & Bình luận</span>
+                    </a>
                     <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminReports" ? "active" : "")" asp-page="/Admin/Reports">
                         <i class="fas fa-chart-line"></i> <span>Báo cáo trực quan</span>
                     </a>
@@ -87,12 +90,19 @@
                     <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminAudioTranslations" ? "active" : "")" asp-page="/Admin/Translations">
                         <i class="fas fa-headphones-alt"></i> <span>Audio & bản dịch</span>
                     </a>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "MediaExplorer" ? "active" : "")" asp-page="/Admin/MediaExplorer">
+                        <i class="fas fa-cloud"></i> <span>Quản lý Media Cloud</span>
+                    </a>
                     <div class="sidebar-heading">Người Dùng & Thanh Toán</div>
                     <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminEndUsers" ? "active" : "")" asp-page="/Admin/Users/Index">
                         <i class="fas fa-user-circle"></i> <span>Người dùng app</span>
                     </a>
                     <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminPaymentPackages" ? "active" : "")" asp-page="/Admin/PaymentPackages/Index">
                         <i class="fas fa-credit-card"></i> <span>Gói thanh toán</span>
+                    </a>
+                    <div class="sidebar-heading">Kiểm thử hệ thống</div>
+                    <a class="sidebar-link @(ViewData["ActivePage"]?.ToString() == "AdminSimulation" ? "active" : "")" asp-page="/Admin/Simulation">
+                        <i class="fas fa-flask"></i> <span>Giả lập Tải POI</span>
                     </a>
                 }
             </nav>

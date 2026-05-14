@@ -363,4 +363,34 @@
   <data name="Tour_DurationMinutesFormat" xml:space="preserve"><value>{0} minutes</value></data>
   <data name="Tour_DurationHoursMinutesFormat" xml:space="preserve"><value>{0} hours {1} minutes</value></data>
   <data name="Tour_DurationHoursOnlyFormat" xml:space="preserve"><value>{0} hours</value></data>
+  <data name="LocationDetail_ReviewsTitle" xml:space="preserve">
+    <value>Reviews from Travelers</value>
+  </data>
+  <data name="LocationDetail_AddReviewTitle" xml:space="preserve">
+    <value>Leave a review</value>
+  </data>
+  <data name="LocationDetail_RatingLabel" xml:space="preserve">
+    <value>Rating</value>
+  </data>
+  <data name="LocationDetail_CommentPlaceholder" xml:space="preserve">
+    <value>Share your experience...</value>
+  </data>
+  <data name="LocationDetail_SubmitReviewButton" xml:space="preserve">
+    <value>Submit Review</value>
+  </data>
+  <data name="LocationDetail_NoReviewsMessage" xml:space="preserve">
+    <value>No reviews yet. Be the first to share your thoughts!</value>
+  </data>
+  <data name="Review_SuccessTitle" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="Review_SuccessMessage" xml:space="preserve">
+    <value>Thank you for your review!</value>
+  </data>
+  <data name="Review_ErrorTitle" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Review_ErrorMessage" xml:space="preserve">
+    <value>Could not submit review. Please try again later.</value>
+  </data>
 </root>

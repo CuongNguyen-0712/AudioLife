@@ -361,11 +361,6 @@ public partial class SettingsViewModel : ObservableObject
         };
     }
 
-    [RelayCommand]
-    private async Task GoToFavoritesAsync()
-    {
-        await _navigationService.NavigateToAsync(nameof(Views.FavoritesPage));
-    }
 
     [RelayCommand]
     private async Task GoToDownloadsAsync()

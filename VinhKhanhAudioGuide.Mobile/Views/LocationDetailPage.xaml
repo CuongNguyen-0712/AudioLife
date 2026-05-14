@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
@@ -274,7 +274,110 @@
                             </CollectionView> -->
 
                             <!-- Start Button -->
-                            <Button Text="{ext:Translate LocationDetail_StartListeningButton}"
+                                                         <Grid Style="{StaticResource LayerDivider}" Margin="-20,20,-20,20"/>
+
+                             <!-- Reviews Section -->
+                             <Label Text="{ext:Translate LocationDetail_ReviewsTitle}"
+                                    FontSize="22"
+                                    TextColor="{StaticResource OnPrimaryContainer}"
+                                    FontAttributes="Bold"/>
+
+                             <Label Text="{ext:Translate LocationDetail_NoReviewsMessage}"
+                                    IsVisible="{Binding Reviews.Count, Converter={StaticResource CollectionEmptyToBoolConverter}}"
+                                    FontSize="14"
+                                    TextColor="{StaticResource OnSurfaceVariant}"
+                                    Margin="0,10"/>
+
+                             <CollectionView ItemsSource="{Binding Reviews}"
+                                             Margin="0,10">
+                                    <CollectionView.ItemTemplate>
+                                           <DataTemplate x:DataType="models:MobileLocationReviewDto">
+                                                  <Frame Padding="12"
+                                                         Margin="0,4"
+                                                         CornerRadius="10"
+                                                         BorderColor="{StaticResource SurfaceContainerHigh}"
+                                                         BackgroundColor="{StaticResource SurfaceContainerLow}"
+                                                         HasShadow="False">
+                                                         <VerticalStackLayout Spacing="4">
+                                                                <Grid ColumnDefinitions="*,Auto">
+                                                                       <Label Text="{Binding UserName}"
+                                                                              FontAttributes="Bold"
+                                                                              FontSize="14"/>
+                                                                       <Label Grid.Column="1"
+                                                                              Text="{Binding Rating, Converter={StaticResource RatingToStarsConverter}}"
+                                                                              TextColor="#FFD700"
+                                                                              FontSize="12"/>
+                                                                </Grid>
+                                                                <Label Text="{Binding Comment}"
+                                                                       FontSize="14"
+                                                                       TextColor="{StaticResource OnSurfaceVariant}"/>
+                                                                <Label Text="{Binding CreatedAtUtc, StringFormat='{0:dd/MM/yyyy}'}"
+                                                                       FontSize="11"
+                                                                       TextColor="{StaticResource Gray500}"
+                                                                       HorizontalOptions="End"/>
+                                                         </VerticalStackLayout>
+                                                  </Frame>
+                                           </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                             </CollectionView>
+
+                             <Grid Style="{StaticResource LayerDivider}" Margin="-20,20,-20,20"/>
+
+                             <!-- Add Review Section -->
+                             <VerticalStackLayout Spacing="10" Margin="0,10">
+                                    <Label Text="{ext:Translate LocationDetail_AddReviewTitle}"
+                                           FontSize="20"
+                                           TextColor="{StaticResource OnPrimaryContainer}"
+                                           FontAttributes="Bold"/>
+                                    
+                                    <HorizontalStackLayout Spacing="10">
+                                           <Label Text="{ext:Translate LocationDetail_RatingLabel}"
+                                                  VerticalOptions="Center"
+                                                  FontSize="14"/>
+                                           <HorizontalStackLayout Spacing="2">
+                                                  <Label Text="★" FontSize="32" TextColor="{Binding UserRating, Converter={StaticResource RatingToColorConverter}, ConverterParameter='1'}">
+                                                         <Label.GestureRecognizers><TapGestureRecognizer Command="{Binding SetRatingCommand}" CommandParameter="1"/></Label.GestureRecognizers>
+                                                  </Label>
+                                                  <Label Text="★" FontSize="32" TextColor="{Binding UserRating, Converter={StaticResource RatingToColorConverter}, ConverterParameter='2'}">
+                                                         <Label.GestureRecognizers><TapGestureRecognizer Command="{Binding SetRatingCommand}" CommandParameter="2"/></Label.GestureRecognizers>
+                                                  </Label>
+                                                  <Label Text="★" FontSize="32" TextColor="{Binding UserRating, Converter={StaticResource RatingToColorConverter}, ConverterParameter='3'}">
+                                                         <Label.GestureRecognizers><TapGestureRecognizer Command="{Binding SetRatingCommand}" CommandParameter="3"/></Label.GestureRecognizers>
+                                                  </Label>
+                                                  <Label Text="★" FontSize="32" TextColor="{Binding UserRating, Converter={StaticResource RatingToColorConverter}, ConverterParameter='4'}">
+                                                         <Label.GestureRecognizers><TapGestureRecognizer Command="{Binding SetRatingCommand}" CommandParameter="4"/></Label.GestureRecognizers>
+                                                  </Label>
+                                                  <Label Text="★" FontSize="32" TextColor="{Binding UserRating, Converter={StaticResource RatingToColorConverter}, ConverterParameter='5'}">
+                                                         <Label.GestureRecognizers><TapGestureRecognizer Command="{Binding SetRatingCommand}" CommandParameter="5"/></Label.GestureRecognizers>
+                                                  </Label>
+                                           </HorizontalStackLayout>
+                                    </HorizontalStackLayout>
+
+                                    <Frame BorderColor="{StaticResource SurfaceContainerHigh}"
+                                           BackgroundColor="{StaticResource SurfaceContainerLow}"
+                                           Padding="5"
+                                           CornerRadius="12"
+                                           HasShadow="False">
+                                           <Editor Placeholder="{ext:Translate LocationDetail_CommentPlaceholder}"
+                                                   Text="{Binding UserComment}"
+                                                   HeightRequest="100"
+                                                   AutoSize="TextChanges"
+                                                   BackgroundColor="Transparent"/>
+                                    </Frame>
+
+                                    <Button Text="{ext:Translate LocationDetail_SubmitReviewButton}"
+                                            Command="{Binding SubmitReviewCommand}"
+                                            IsEnabled="{Binding IsSubmittingReview, Converter={StaticResource InvertedBoolConverter}}"
+                                            Style="{StaticResource PrimaryButton}"
+                                            Margin="0,10,0,0"/>
+                                    
+                                    <ActivityIndicator IsRunning="{Binding IsSubmittingReview}"
+                                                       IsVisible="{Binding IsSubmittingReview}"
+                                                       HeightRequest="40"
+                                                       Color="{StaticResource Primary}"/>
+                             </VerticalStackLayout>
+
+                             <Button Text="{ext:Translate LocationDetail_StartListeningButton}"
                                    TextColor="{StaticResource Primary}"
                                    BackgroundColor="{StaticResource PrimaryContainer}"
                                     Command="{Binding StartListeningCommand}"

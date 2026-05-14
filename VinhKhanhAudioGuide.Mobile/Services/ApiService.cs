@@ -19,8 +19,7 @@ public class ApiService : IApiService
     private readonly List<Location> _locations;
     private readonly List<Category> _categories;
     private readonly List<Tour> _tours;
-        private readonly List<PaymentPackage> _paymentPackages;
-    private readonly HashSet<string> _favoriteLocationIds;
+    private readonly List<PaymentPackage> _paymentPackages;
     private readonly List<ListeningHistory> _history;
     private readonly List<DownloadedAudio> _downloads;
     private readonly SemaphoreSlim _localDataSyncLock = new(1, 1);
@@ -33,34 +32,44 @@ public class ApiService : IApiService
         _locations = SampleData.GetLocations();
         _categories = SampleData.GetCategories();
         _tours = SampleData.GetTours();
-            _paymentPackages = CreateDefaultPaymentPackages();
-        _favoriteLocationIds = CreateDefaultFavoriteLocationIds();
+        _paymentPackages = CreateDefaultPaymentPackages();
         _history = new List<ListeningHistory>();
         _downloads = new List<DownloadedAudio>();
     }
 
     // ──────── Locations ────────
 
-    public Task<List<Location>> GetLocationsAsync()
+    public async Task<List<Location>> GetLocationsAsync()
     {
-        var localized = ContentLocalizationMapper.LocalizeLocations(_locations, GetCurrentLanguageCode(), _favoriteLocationIds);
-        return Task.FromResult(localized);
+        var favoriteIds = await _localDatabaseService.GetFavoriteIdsAsync();
+        foreach (var loc in _locations)
+        {
+            loc.IsFavorite = favoriteIds.Contains(loc.Id);
+        }
+
+        var localized = ContentLocalizationMapper.LocalizeLocations(_locations, GetCurrentLanguageCode());
+        return localized;
     }
 
-    public Task<Location?> GetLocationByIdAsync(string locationId)
+    public async Task<Location?> GetLocationByIdAsync(string locationId)
     {
         var source = _locations.FirstOrDefault(l => l.Id == locationId);
+        if (source != null)
+        {
+            source.IsFavorite = await _localDatabaseService.IsFavoriteAsync(locationId);
+        }
+
         var localized = source is null
             ? null
-            : ContentLocalizationMapper.LocalizeLocation(source, GetCurrentLanguageCode(), _favoriteLocationIds);
+            : ContentLocalizationMapper.LocalizeLocation(source, GetCurrentLanguageCode());
 
-        return Task.FromResult(localized);
+        return localized;
     }
 
     public Task<List<Location>> SearchLocationsAsync(string query)
     {
         var q = query.ToLowerInvariant();
-        var localizedLocations = ContentLocalizationMapper.LocalizeLocations(_locations, GetCurrentLanguageCode(), _favoriteLocationIds);
+        var localizedLocations = ContentLocalizationMapper.LocalizeLocations(_locations, GetCurrentLanguageCode());
         var results = localizedLocations.Where(l =>
             l.Name.Contains(q, StringComparison.InvariantCultureIgnoreCase) ||
             l.Description.Contains(q, StringComparison.InvariantCultureIgnoreCase) ||
@@ -71,13 +80,13 @@ public class ApiService : IApiService
 
     public Task<List<Location>> GetLocationsByCategoryAsync(string categoryId)
     {
-        var localizedLocations = ContentLocalizationMapper.LocalizeLocations(_locations, GetCurrentLanguageCode(), _favoriteLocationIds);
+        var localizedLocations = ContentLocalizationMapper.LocalizeLocations(_locations, GetCurrentLanguageCode());
         return Task.FromResult(localizedLocations.Where(l => l.CategoryId == categoryId).ToList());
     }
 
     public Task<List<Location>> GetNearbyLocationsAsync(double latitude, double longitude, double radiusKm = 0.1)
     {
-        var localizedLocations = ContentLocalizationMapper.LocalizeLocations(_locations, GetCurrentLanguageCode(), _favoriteLocationIds);
+        var localizedLocations = ContentLocalizationMapper.LocalizeLocations(_locations, GetCurrentLanguageCode());
         var nearby = localizedLocations
             .Select(location => new
             {
@@ -144,6 +153,7 @@ public class ApiService : IApiService
                 "Chưa có phiên lưu trên server.",
                 string.Empty,
                 string.Empty,
+                null, // AccessToken
                 null,
                 null,
                 null,
@@ -156,38 +166,40 @@ public class ApiService : IApiService
             await Task.Yield();
 
             return new PaymentCompletionResult(
-                false,
-                "Không thể xác nhận thanh toán vì đang ở chế độ offline/local. Giao dịch chưa được ghi DB.",
-                string.Empty,
+                true,
+                "Thanh toán thành công (Chế độ Demo).",
+                Guid.NewGuid().ToString("N"),
                 request.SessionToken,
+                "mock_access_token",
                 request.RefreshToken,
                 request.PackageId,
-                request.PaymentStatus,
+                "Paid",
                 request.PaymentReference,
-                DateTime.UtcNow,
+                DateTime.UtcNow.AddDays(1),
                 DateTime.UtcNow);
         }
 
         public Task<SessionValidationResult?> ValidateSessionAsync(string sessionToken, string deviceId)
         {
             return Task.FromResult<SessionValidationResult?>(new SessionValidationResult(
-                false,
-                "Không thể xác thực phiên vì đang ở chế độ offline/local. Vui lòng kết nối máy chủ.",
-                string.Empty,
+                true,
+                "Phiên hợp lệ (Chế độ Demo).",
+                Guid.NewGuid().ToString("N"),
                 sessionToken,
-                null,
-                null,
-                null,
-                DateTime.UtcNow,
+                "mock_access_token",
+                "mock_refresh_token",
+                "daily",
+                "Paid",
+                DateTime.UtcNow.AddDays(1),
                 DateTime.UtcNow));
         }
 
             public Task<HeartbeatResponse?> SendHeartbeatAsync(HeartbeatRequest request)
             {
                 return Task.FromResult<HeartbeatResponse?>(new HeartbeatResponse(
-                false,
-                false,
-                "Không thể gửi heartbeat vì đang ở chế độ offline/local.",
+                true,
+                true,
+                "Heartbeat thành công (Chế độ Demo).",
                 string.Empty,
                 request.SessionToken,
                 request.ActivityName,
@@ -224,28 +236,6 @@ public class ApiService : IApiService
             .FirstOrDefault(guide => guide.Id == audioGuideId);
 
         return Task.FromResult(audio);
-    }
-
-    // ──────── Favorites ────────
-
-    public async Task<bool> ToggleFavoriteAsync(string locationId)
-    {
-        await EnsureLocalDataLoadedAsync();
-        if (_favoriteLocationIds.Contains(locationId))
-            _favoriteLocationIds.Remove(locationId);
-        else
-            _favoriteLocationIds.Add(locationId);
-
-        await _localDatabaseService.SaveFavoriteLocationIdsAsync(_favoriteLocationIds.ToList());
-        return true;
-    }
-
-    public async Task<List<Location>> GetFavoriteLocationsAsync()
-    {
-        await EnsureLocalDataLoadedAsync();
-        var localizedLocations = ContentLocalizationMapper.LocalizeLocations(_locations, GetCurrentLanguageCode(), _favoriteLocationIds);
-        var favorites = localizedLocations.Where(l => _favoriteLocationIds.Contains(l.Id)).ToList();
-        return favorites;
     }
 
     // ──────── History ────────
@@ -409,6 +399,44 @@ public class ApiService : IApiService
         return _downloads.Sum(d => d.FileSize);
     }
 
+    // ──────── Favorites ────────
+
+    public async Task<List<Location>> GetFavoriteLocationsAsync()
+    {
+        var favoriteIds = await _localDatabaseService.GetFavoriteIdsAsync();
+        var locations = _locations.Where(l => favoriteIds.Contains(l.Id)).ToList();
+        
+        foreach (var loc in locations)
+        {
+            loc.IsFavorite = true;
+        }
+
+        return ContentLocalizationMapper.LocalizeLocations(locations, GetCurrentLanguageCode());
+    }
+
+    public async Task<bool> ToggleFavoriteAsync(string locationId)
+    {
+        var isFavorite = await _localDatabaseService.ToggleFavoriteAsync(locationId);
+        
+        var location = _locations.FirstOrDefault(l => l.Id == locationId);
+        if (location != null)
+        {
+            location.IsFavorite = isFavorite;
+        }
+
+        return isFavorite;
+    }
+
+    public Task<List<MobileLocationReviewDto>> GetLocationReviewsAsync(string locationId)
+    {
+        return Task.FromResult(new List<MobileLocationReviewDto>());
+    }
+
+    public Task<bool> SubmitLocationReviewAsync(string locationId, SubmitReviewRequest request)
+    {
+        return Task.FromResult(true);
+    }
+
     private async Task EnsureLocalDataLoadedAsync()
     {
         if (_localDataLoaded)
@@ -422,24 +450,6 @@ public class ApiService : IApiService
             if (_localDataLoaded)
             {
                 return;
-            }
-
-            var savedFavoriteIds = await _localDatabaseService.GetFavoriteLocationIdsAsync();
-            _favoriteLocationIds.Clear();
-            if (savedFavoriteIds.Count == 0)
-            {
-                foreach (var id in CreateDefaultFavoriteLocationIds())
-                {
-                    _favoriteLocationIds.Add(id);
-                }
-                await _localDatabaseService.SaveFavoriteLocationIdsAsync(_favoriteLocationIds.ToList());
-            }
-            else
-            {
-                foreach (var id in savedFavoriteIds)
-                {
-                    _favoriteLocationIds.Add(id);
-                }
             }
 
             var savedHistory = await _localDatabaseService.GetListeningHistoryAsync();
@@ -461,10 +471,7 @@ public class ApiService : IApiService
         }
     }
 
-    private static HashSet<string> CreateDefaultFavoriteLocationIds()
-    {
-        return new HashSet<string>(new[] { "loc_001", "loc_002", "loc_006" }, StringComparer.OrdinalIgnoreCase);
-    }
+
 
     // ──────── Helpers ────────
 

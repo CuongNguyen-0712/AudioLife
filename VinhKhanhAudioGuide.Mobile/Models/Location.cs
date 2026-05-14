@@ -21,10 +21,12 @@ public partial class Location : ObservableObject
     public int AudioGuideCount => AudioGuides.Count;
     public string CategoryName { get; set; } = string.Empty;
 
-    [ObservableProperty]
-    private bool isFavorite;
+
 
     // Runtime properties
     public double? Heading { get; set; }
     public double? VelocityMetersPerSecond { get; set; }
+
+    [ObservableProperty]
+    private bool _isFavorite;
 }

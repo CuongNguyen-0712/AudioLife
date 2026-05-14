@@ -114,4 +114,43 @@ public class CloudinaryAudioStorageService : IAudioStorageService
             CloudinaryPublicId = result.PublicId
         };
     }
+
+    public async Task<List<CloudinaryAssetDto>> ListAssetsAsync(string? prefix = null, CancellationToken cancellationToken = default)
+    {
+        var listParams = new ListResourcesByPrefixParams
+        {
+            ResourceType = ResourceType.Video,
+            Type = "upload",
+            Prefix = prefix ?? _options.AudioFolder,
+            MaxResults = 500
+        };
+
+        var result = await _cloudinary.ListResourcesAsync(listParams, cancellationToken);
+
+        if (result.Error is not null)
+        {
+            throw new InvalidOperationException($"Lỗi lấy danh sách asset: {result.Error.Message}");
+        }
+
+        return result.Resources.Select(r => new CloudinaryAssetDto
+        {
+            PublicId = r.PublicId,
+            SecureUrl = r.SecureUrl?.ToString() ?? string.Empty,
+            Format = r.Format,
+            CreatedAt = DateTime.TryParse(r.CreatedAt, out var dt) ? dt : DateTime.MinValue,
+            Bytes = r.Bytes,
+            ResourceType = r.ResourceType
+        }).ToList();
+    }
+
+    public async Task<bool> DeleteAssetAsync(string publicId, CancellationToken cancellationToken = default)
+    {
+        var delParams = new DeletionParams(publicId)
+        {
+            ResourceType = ResourceType.Video
+        };
+
+        var result = await _cloudinary.DestroyAsync(delParams);
+        return result.Result == "ok";
+    }
 }

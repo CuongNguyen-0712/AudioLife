@@ -1,9 +1,9 @@
 # VinhKhanhAudioGuide - System Sequence Diagrams
 
-Dưới đây là các Sequence Diagram (Biểu đồ tuần tự) mô tả luồng hoạt động của các chức năng trong hệ thống VinhKhanhAudioGuide dựa trên kiến trúc và yêu cầu hiện tại.
+Dưới đây là các Sequence Diagram (Biểu đồ tuần tự) cập nhật theo kiến trúc và chức năng hiện tại của dự án AudioLife (VinhKhanhAudioGuide).
 
-## 1. Authentication (Đăng nhập/Đăng xuất)
-Xử lý đăng nhập phân quyền cho Admin và POI Admin.
+## 1. Authentication (Web Admin)
+Xử lý đăng nhập phân quyền cho System Admin và POI Admin trên giao diện Web.
 
 ```mermaid
 sequenceDiagram
@@ -30,102 +30,149 @@ sequenceDiagram
     Web-->>User: Chuyển hướng về trang Đăng nhập
 ```
 
-## 2. Dashboard Admin
-Thống kê tổng quan số liệu hệ thống.
+## 2. Mobile Onboarding & Payment (Kích hoạt thiết bị)
+Quy trình từ lúc Mobile app quét QR/chọn gói đến khi nhận được JWT Access Token.
 
 ```mermaid
 sequenceDiagram
-    actor Admin
-    participant Web as Web Dashboard
-    participant API as Dashboard Controller
+    participant Mobile as Mobile App
+    participant API as Mobile API (/payment)
+    participant JWT as JWT Token Service
     participant DB as Database
     
-    Admin->>Web: Truy cập trang chủ Dashboard
-    Web->>API: Yêu cầu lấy dữ liệu thống kê
-    API->>DB: Count(Locations, AudioGuides, Tours, PoiAdmins, PendingRequests)
-    DB-->>API: Trả về số liệu thống kê
-    API-->>Web: Render Razor Page với dữ liệu
-    Web-->>Admin: Hiển thị Dashboard tổng quan
+    Mobile->>API: GET /payment/packages
+    API->>DB: Query active packages
+    DB-->>API: List packages
+    API-->>Mobile: Trả về danh sách gói cước
+    
+    Note over Mobile, API: Người dùng thanh toán qua cổng ngoài (VNPay/Momo/Store)
+    
+    Mobile->>API: POST /payment/complete (DeviceId, PackageId, PaymentRef)
+    API->>DB: Tìm/Tạo AppUser (theo DeviceId)
+    API->>DB: Tạo UserSubscription & UserAppSession
+    JWT->>JWT: Generate JWT AccessToken (UserId, DeviceId)
+    DB-->>API: Lưu thành công
+    API-->>Mobile: Trả về SessionToken, AccessToken, RefreshToken, ExpireDate
 ```
 
-## 3. Quản lý địa điểm (Locations)
-Thêm/sửa/xóa địa điểm, cập nhật tọa độ, hình ảnh, cấu hình bán kính phát hiện (Geofencing).
+## 3. Session Validation & Refresh (Mobile)
+Kiểm tra và làm mới phiên làm việc của thiết bị di động.
 
 ```mermaid
 sequenceDiagram
-    actor Admin as Admin/POI Admin
-    participant Web as Web Interface
-    participant LocCtrl as Location Controller
+    participant Mobile as Mobile App
+    participant API as Mobile API (/session)
+    participant JWT as JWT Token Service
     participant DB as Database
-    
-    Admin->>Web: Thêm/Sửa/Xóa địa điểm (Nhập Tọa độ, Bán kính, Ảnh...)
-    Web->>LocCtrl: POST/PUT/DELETE /Locations
-    LocCtrl->>DB: Validate & Cập nhật Location Table
-    DB-->>LocCtrl: Trạng thái thành công
-    LocCtrl-->>Web: Redirect/Hiển thị thông báo
-    Web-->>Admin: Cập nhật danh sách địa điểm
-```
 
-## 4. Quản lý Audio Guide
-Thêm/sửa/xóa nội dung audio, upload file trực tiếp, quản lý transcript và tùy chọn ngôn ngữ.
-
-```mermaid
-sequenceDiagram
-    actor Admin as Admin/POI Admin
-    participant Web as Web Interface
-    participant AudioCtrl as AudioGuide Controller
-    participant Cloud as CloudinaryStorage
-    participant DB as Database
-    
-    Admin->>Web: Tạo/Sửa Audio Guide (Upload file/Transcript/Ngôn ngữ)
-    Web->>AudioCtrl: POST /AudioGuides (File, Text, Lang, LocationId)
-    alt Có upload file audio trực tiếp
-        AudioCtrl->>Cloud: UploadStream(File)
-        Cloud-->>AudioCtrl: Trả về CloudinaryAudioUrl & PublicId
+    alt Kiểm tra session khi khởi động
+        Mobile->>API: GET /session/validate (SessionToken, DeviceId)
+        API->>DB: Kiểm tra Session & Subscription còn hạn?
+        alt Hợp lệ
+            JWT->>JWT: Generate new AccessToken
+            API-->>Mobile: 200 OK (AccessToken, IsValid=true)
+        else Hết hạn/Không tồn tại
+            API-->>Mobile: 200 OK (IsValid=false, Message)
+            Mobile->>Mobile: Force Logout / Redirect to Onboarding
+        end
     end
-    AudioCtrl->>DB: Lưu AudioGuide Record
-    DB-->>AudioCtrl: Trạng thái thành công
-    AudioCtrl-->>Web: Redirect/Thông báo
-    Web-->>Admin: Cập nhật danh sách Audio Guide
+
+    alt Làm mới Token (Refresh)
+        Mobile->>API: POST /session/refresh (RefreshToken, DeviceId)
+        API->>DB: Kiểm tra RefreshToken & Session
+        API->>DB: Rotate RefreshToken (Tạo token mới)
+        JWT->>JWT: Generate new AccessToken
+        DB-->>API: Lưu thay đổi
+        API-->>Mobile: Trả về AccessToken & RefreshToken mới
+    end
 ```
 
-## 5. Quản lý danh mục (Categories)
-Thao tác CRUD danh mục dành cho các địa điểm.
+## 4. Heartbeat & Activity Logging (Mobile)
+Duy trì session và ghi nhận hoạt động người dùng theo thời gian thực.
 
 ```mermaid
 sequenceDiagram
-    actor Admin
-    participant Web as Web Interface
-    participant CatCtrl as Category Controller
+    participant Mobile as Mobile App
+    participant API as Mobile API (/heartbeat)
     participant DB as Database
     
-    Admin->>Web: Thêm/Sửa/Xóa Category
-    Web->>CatCtrl: Gửi thay đổi /Categories
-    CatCtrl->>DB: Validate & Update Categories Table
-    DB-->>CatCtrl: Thành công
-    CatCtrl-->>Web: Render lại danh sách
-    Web-->>Admin: Hiển thị danh mục mới
+    loop Định kỳ (mỗi 1-5 phút)
+        Mobile->>API: POST /heartbeat (SessionToken, DeviceId, Activity, Route, IsForeground)
+        API->>DB: Validate Session
+        alt Session Valid
+            API->>DB: Cập nhật LastSeenAtUtc & CurrentActivity
+            API->>DB: Ghi log vào AppUserActivityLogs
+            API->>DB: Prolong Session Expiry (nếu < 30p)
+            DB-->>API: Success
+            API-->>Mobile: 200 OK (Keep-alive)
+        else Session Invalid
+            API-->>Mobile: 401 Unauthorized / Session Invalid
+            Mobile->>Mobile: Stop Background Services & Redirect
+        end
+    end
 ```
 
-## 6. Quản lý Tour
-Tạo, chỉnh sửa tour và sắp xếp các điểm dừng (stops).
+## 5. Catalog Management (Locations, Tours, Audio)
+Luồng lấy dữ liệu danh mục cho Mobile App với cơ chế Cache.
 
 ```mermaid
 sequenceDiagram
-    actor Admin
-    participant Web as Web Interface
-    participant TourCtrl as Tour Controller
+    participant Mobile as Mobile App
+    participant API as Mobile API
+    participant Cache as MemoryCache
     participant DB as Database
     
-    Admin->>Web: Tạo/Sửa Tour (Nhập thông tin & chọn/sắp xếp Locations)
-    Web->>TourCtrl: Gửi thông tin Tour & List<LocationIds>
-    TourCtrl->>DB: Cập nhật Tour & thứ tự TourStops Table
-    DB-->>TourCtrl: Cập nhật thành công
-    TourCtrl-->>Web: Redirect/Thông báo
-    Web-->>Admin: Hiển thị danh sách Tour
+    Mobile->>API: GET /locations (language)
+    API->>Cache: TryGet(CacheKey)
+    alt Cache Miss
+        API->>DB: Query Locations + Categories + Reviews
+        API->>Cache: Set(CacheKey, data, 5 mins)
+    end
+    API-->>Mobile: Trả về danh sách Locations (DTO)
+    
+    Note right of Mobile: Tương tự cho /categories, /tours, /audio/by-location
 ```
 
-## 7. Text-to-Speech (TTS)
+## 6. Listening History (Lịch sử nghe)
+Ghi nhận tiến trình nghe audio của người dùng.
+
+```mermaid
+sequenceDiagram
+    participant Mobile as Mobile App
+    participant API as Mobile API (/history)
+    participant DB as Database
+    
+    Mobile->>API: POST /history (AudioGuideId, LocationId, Progress, ListenedSeconds)
+    Note over API: Sử dụng [Authorize] JWT Claim để lấy UserId
+    API->>DB: Find/Create ListeningHistory (UserId, AudioGuideId)
+    API->>DB: Cập nhật Progress, Duration, IsCompleted, LastListenedAtUtc
+    DB-->>API: Lưu thành công
+    API-->>Mobile: Trả về ListeningHistory DTO hiện tại
+```
+
+## 7. Location Reviews (Đánh giá địa điểm)
+Người dùng gửi đánh giá và Admin kiểm duyệt.
+
+```mermaid
+sequenceDiagram
+    actor User as Mobile User
+    participant API as Mobile API (/reviews)
+    participant DB as Database
+    actor Admin as System Admin
+    participant Web as Web Admin
+
+    User->>API: POST /reviews (LocationId, Rating, Comment)
+    API->>DB: Lưu LocationReview (Status: Pending)
+    API-->>User: Thông báo chờ duyệt
+    
+    Admin->>Web: Truy cập trang quản lý đánh giá
+    Web->>DB: Query Pending Reviews
+    Admin->>Web: Phê duyệt (Approve)
+    Web->>DB: Update Status = Approved
+    Note right of DB: Review sẽ hiển thị trên Mobile từ thời điểm này
+```
+
+## 8. Text-to-Speech (TTS) Workflow
 Tự động sinh audio từ văn bản (Hỗ trợ nhiều ngôn ngữ, fallback giữa Edge TTS và Google TTS).
 
 ```mermaid
@@ -141,7 +188,7 @@ sequenceDiagram
     Admin->>Web: Nhập Transcript, Ngôn ngữ & chọn Auto-Generate
     Web->>TTS: Yêu cầu GenerateAudio(Text, Language)
     TTS->>Edge: Gọi API Edge Neural (vi/en/fr/jp/ko/zh)
-    alt Nếu Edge API Lỗi (403/Timeout)
+    alt Nếu Edge API Lỗi (403/Timeout/Unsupported)
         Edge-->>TTS: Trả về lỗi
         TTS->>Google: Fallback gọi Google TTS API
         Google-->>TTS: Audio Stream
@@ -154,22 +201,6 @@ sequenceDiagram
     DB-->>TTS: Thành công
     TTS-->>Web: Thông báo sinh audio thành công
     Web-->>Admin: Hiển thị Audio Guide vừa tạo
-```
-
-## 8. Upload audio lên Cloudinary
-Tích hợp dịch vụ lưu trữ file audio độc lập trên Cloudinary.
-
-```mermaid
-sequenceDiagram
-    participant App as Hệ thống (Controller/Service)
-    participant CloudStorage as CloudinaryStorageService
-    participant Cloudinary as Cloudinary CDN
-    
-    App->>CloudStorage: Yêu cầu Upload(FileStream)
-    CloudStorage->>Cloudinary: Gọi API Upload (lưu vào folder: audio/)
-    Cloudinary-->>CloudStorage: Trả về PublicId & SecureUrl gốc
-    CloudStorage->>CloudStorage: Transform URL (thêm tham số f_mp3)
-    CloudStorage-->>App: Trả về URL đã được tối ưu hóa
 ```
 
 ## 9. Quy trình Change Request (POI Admin)
@@ -201,137 +232,41 @@ sequenceDiagram
     ReqCtrl-->>Web: Cập nhật danh sách yêu cầu
 ```
 
-## 10. Quản lý tài khoản POI (System Admin)
-Xem, khóa, mở khóa người dùng và phân quyền quản lý POI.
+## 10. Background Session & Subscription Cleanup
+Tự động dọn dẹp các session và gói cước hết hạn (SessionCleanupBackgroundService).
 
 ```mermaid
 sequenceDiagram
-    actor Admin as System Admin
-    participant Web as Web Admin
-    participant UserCtrl as User Controller
+    participant Cron as Background Service
     participant DB as Database
     
-    Admin->>Web: Xem User, Block/Unblock, Gán/Gỡ POI Role
-    Web->>UserCtrl: Yêu cầu thay đổi trạng thái user
-    UserCtrl->>DB: Cập nhật bảng AuthUserAccounts (Status, Role, Assigned POIs)
-    DB-->>UserCtrl: Cập nhật thành công
-    UserCtrl-->>Web: Cập nhật trạng thái hiển thị
-    Web-->>Admin: Thông báo thao tác thành công
+    loop Mỗi giờ
+        Cron->>DB: Query UserAppSessions (Expired OR Revoked) AND Active
+        DB-->>Cron: Danh sách session quá hạn
+        Cron->>DB: Set IsActive = false
+        
+        Cron->>DB: Query UserSubscriptions (Active) AND Expired
+        DB-->>Cron: Danh sách gói cước hết hạn
+        Cron->>DB: Set Status = 'Expired'
+        
+        Cron->>DB: SaveChangesAsync()
+    end
 ```
 
-## 11. Quản lý gói thanh toán
-Thêm, sửa, xóa, quản lý trạng thái các gói dịch vụ và thống kê Subscription.
+## 11. Dashboard & Reports (Web Admin)
+Thống kê số liệu hệ thống dành cho Admin.
 
 ```mermaid
 sequenceDiagram
     actor Admin
-    participant Web as Web Admin
-    participant PkgCtrl as PaymentPackage Controller
+    participant Web as Web Dashboard
+    participant API as Dashboard/Report Controller
     participant DB as Database
     
-    Admin->>Web: Tạo/Sửa Package (Giá, Thời hạn, Status)
-    Web->>PkgCtrl: Submit thông tin Package
-    PkgCtrl->>DB: CRUD bảng PaymentPackages
-    DB-->>PkgCtrl: Xử lý xong
-    PkgCtrl-->>Web: Cập nhật UI
-    Web-->>Admin: Xem thống kê subscription
-```
-
-## 12. Báo cáo & Thống kê (Reports)
-Tổng số lượng thực thể, phân bổ và top địa điểm phổ biến.
-
-```mermaid
-sequenceDiagram
-    actor Admin
-    participant Web as Web Admin
-    participant RepCtrl as Report Controller
-    participant DB as Database
-    
-    Admin->>Web: Vào trang Báo cáo thống kê
-    Web->>RepCtrl: Yêu cầu dữ liệu báo cáo
-    RepCtrl->>DB: Aggregate data (Total, Group by Category, Top Locations with most audio)
-    DB-->>RepCtrl: Trả về Dataset thống kê
-    RepCtrl-->>Web: Render Biểu đồ & Bảng
-    Web-->>Admin: Hiển thị giao diện báo cáo
-```
-
-## 13. Lịch sử sử dụng (Usage History)
-Ghi nhận và hiển thị lịch sử hoạt động của người dùng hệ thống/thiết bị.
-
-```mermaid
-sequenceDiagram
-    actor Admin as System/POI Admin
-    participant Web as Web Interface
-    participant UsageCtrl as Usage History Controller
-    participant DB as Database
-    
-    Admin->>Web: Yêu cầu xem Lịch sử sử dụng
-    Web->>UsageCtrl: Get Log History
-    UsageCtrl->>DB: Query bảng UserActivityLogs (Phát audio, Scan QR, v.v)
-    DB-->>UsageCtrl: Danh sách Logs
-    UsageCtrl-->>Web: Hiển thị danh sách Logs
-    Web-->>Admin: Xem chi tiết hoạt động
-```
-
-## 14. API phục vụ Mobile
-REST API cung cấp dữ liệu cho thiết bị di động.
-
-```mermaid
-sequenceDiagram
-    participant Mobile as Mobile App (MAUI)
-    participant API as Minimal API (/api/mobile/*)
-    participant Service as Business Services
-    participant DB as Database
-    
-    Mobile->>API: Gửi HTTP Request (GET Locations, Tours, Session, etc.)
-    API->>Service: Gọi service xử lý logic
-    Service->>DB: Truy xuất hoặc cập nhật dữ liệu
-    DB-->>Service: Dữ liệu Entities
-    Service-->>API: Chuyển đổi Entities -> DTOs
-    API-->>Mobile: Trả về JSON Response (200 OK, 400, 401...)
-```
-
-## 15. Session & Heartbeat Management
-Xác thực session, gửi heartbeat duy trì kết nối và ghi log hoạt động của thiết bị.
-
-```mermaid
-sequenceDiagram
-    participant Mobile as Mobile App
-    participant API as Session/Heartbeat API
-    participant DB as Database
-    
-    Mobile->>API: Scan QR / Thanh toán thành công -> Nhận Session Token
-    API->>DB: Khởi tạo Session và lưu vào bảng Subscriptions
-    DB-->>API: Trả về Token
-    API-->>Mobile: Lưu Local Session (Token + DeviceId)
-    
-    loop Mỗi chu kỳ định kỳ
-        Mobile->>API: Gửi Request Heartbeat (kèm DeviceId, Token)
-        API->>DB: Validate Token & Kiểm tra Hết hạn
-        alt Session Hợp lệ
-            DB->>DB: Cập nhật LastActiveTime & ghi log
-            DB-->>API: Trạng thái Valid
-            API-->>Mobile: 200 OK (Keep-alive)
-        else Session Hết hạn hoặc Lỗi
-            DB-->>API: Trạng thái Invalid
-            API-->>Mobile: 401 Unauthorized
-            Mobile->>Mobile: Xóa Local Session & Force Redirect về trang Intro
-        end
-    end
-```
-
-## 16. Dọn dẹp tài khoản hết hạn
-Background job tự động dọn dẹp các session/tài khoản quá hạn sử dụng.
-
-```mermaid
-sequenceDiagram
-    participant Cron as Background Job (Hosted Service)
-    participant DB as Database
-    
-    loop Chạy theo lịch trình (VD: Mỗi giờ / Nửa đêm)
-        Cron->>DB: Truy vấn bảng Sessions/Subscriptions đã vượt quá ExpireDate
-        DB-->>Cron: Trả về Danh sách cần dọn dẹp
-        Cron->>DB: Thực hiện Update Status = Expired / Hard Delete các record liên quan
-        DB-->>Cron: Xác nhận cập nhật thành công
-    end
+    Admin->>Web: Truy cập Dashboard/Reports
+    Web->>API: Yêu cầu lấy dữ liệu thống kê
+    API->>DB: Aggregate (Locations, Audio, Tours, Subscriptions, History)
+    DB-->>API: Trả về kết quả
+    API-->>Web: Render Charts & Tables
+    Web-->>Admin: Hiển thị thông tin tổng quan
 ```

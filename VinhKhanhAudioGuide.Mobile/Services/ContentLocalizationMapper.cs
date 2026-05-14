@@ -164,16 +164,14 @@ internal static class ContentLocalizationMapper
 
     public static List<LocationModel> LocalizeLocations(
         IEnumerable<LocationModel> source,
-        string languageCode,
-        ISet<string>? favoriteLocationIds = null)
+        string languageCode)
     {
-        return source.Select(item => LocalizeLocation(item, languageCode, favoriteLocationIds)).ToList();
+        return source.Select(item => LocalizeLocation(item, languageCode)).ToList();
     }
 
     public static LocationModel LocalizeLocation(
         LocationModel source,
-        string languageCode,
-        ISet<string>? favoriteLocationIds = null)
+        string languageCode)
     {
         return new LocationModel
         {
@@ -189,8 +187,7 @@ internal static class ContentLocalizationMapper
             Duration = source.Duration,
             CategoryId = source.CategoryId,
             CategoryName = TranslateById(source.CategoryId, source.CategoryName, languageCode, CategoryNameMap),
-            AudioGuides = LocalizeAudioGuides(source.AudioGuides, languageCode, source.Id),
-            IsFavorite = favoriteLocationIds?.Contains(source.Id) == true || source.IsFavorite
+            AudioGuides = LocalizeAudioGuides(source.AudioGuides, languageCode, source.Id)
         };
     }
 

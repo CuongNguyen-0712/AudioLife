@@ -1,0 +1,188 @@
+@page
+@model VinhKhanhAudioGuide.Web.Pages.Admin.MediaExplorerModel
+@{
+    ViewData["Title"] = "Quản lý Media Cloud";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-gray-800">Media Explorer</h1>
+            <p class="text-muted small">Quản lý và dọn dẹp các tài nguyên audio trên Cloudinary</p>
+        </div>
+        <div class="d-flex gap-2">
+            @if (Model.Assets.Any(a => a.IsOrphan))
+            {
+                <button type="button" class="btn btn-outline-danger" onclick="confirmDeleteAllOrphans()">
+                    <i class="fas fa-broom me-2"></i>Dọn dẹp rác (@Model.Assets.Count(a => a.IsOrphan))
+                </button>
+            }
+            <button type="button" class="btn btn-primary" onclick="location.reload()">
+                <i class="fas fa-sync-alt me-2"></i>Làm mới
+            </button>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="px-4 py-3">Tên / Public ID</th>
+                            <th class="py-3">Định dạng</th>
+                            <th class="py-3">Dung lượng</th>
+                            <th class="py-3">Ngày tạo</th>
+                            <th class="py-3 text-end px-4">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Assets.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="fas fa-cloud-upload-alt fa-3x mb-3 opacity-25"></i>
+                                        <p>Không tìm thấy asset nào trên Cloudinary.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        @foreach (var asset in Model.Assets.OrderByDescending(a => a.CreatedAt))
+                        {
+                            <tr>
+                                <td class="px-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-3 me-3">
+                                            <i class="fas fa-file-audio fa-lg"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark text-break" style="max-width: 300px;">@asset.PublicId</div>
+                                            <div class="d-flex align-items-center gap-2 mt-1">
+                                                <span class="text-muted small">@asset.ResourceType</span>
+                                                @if (asset.IsOrphan)
+                                                {
+                                                    <span class="badge bg-warning text-dark x-small rounded-pill">
+                                                        <i class="fas fa-unlink me-1"></i>Chưa sử dụng
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success bg-opacity-10 text-success x-small rounded-pill">
+                                                        <i class="fas fa-link me-1"></i>Đang sử dụng
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25">
+                                        @asset.Format.ToUpper()
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="text-muted">@((asset.Bytes / 1024.0 / 1024.0).ToString("N2")) MB</span>
+                                </td>
+                                <td>
+                                    <div class="text-dark small">@asset.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                                    <div class="text-muted x-small">@asset.CreatedAt.ToLocalTime().ToString("t")</div>
+                                </td>
+                                <td class="text-end px-4">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a href="@asset.SecureUrl" target="_blank" class="btn btn-sm btn-outline-primary" title="Nghe thử">
+                                            <i class="fas fa-play"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                onclick="confirmDelete('@asset.PublicId')" title="Xóa vĩnh viễn">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-white border-top-0 py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-muted small">
+                    Hiển thị <strong>@Model.Assets.Count</strong> assets trong thư mục cấu hình.
+                </div>
+                <div class="text-muted small">
+                    Tổng dung lượng ước tính: <strong>@((Model.Assets.Sum(a => a.Bytes) / 1024.0 / 1024.0).ToString("N2")) MB</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<form method="post" asp-page-handler="Delete" id="deleteForm">
+    <input type="hidden" name="publicId" id="deletePublicId" />
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-danger text-white border-0">
+                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Xác nhận xóa</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body py-4 text-center">
+                    <p class="mb-0">Bạn có chắc chắn muốn xóa asset này vĩnh viễn khỏi Cloudinary?</p>
+                    <p class="text-danger small mt-2 fw-bold" id="displayPublicId"></p>
+                    <p class="text-muted x-small">Hành động này không thể hoàn tác và sẽ làm hỏng các liên kết audio hiện tại.</p>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger px-4">Xóa ngay</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Delete All Orphans Modal -->
+<form method="post" asp-page-handler="DeleteAllOrphans" id="deleteAllOrphansForm">
+    <div class="modal fade" id="deleteAllOrphansModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-warning text-dark border-0">
+                    <h5 class="modal-title"><i class="fas fa-broom me-2"></i>Dọn dẹp rác hệ thống</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body py-4 text-center">
+                    <p class="mb-0">Bạn sắp xóa <strong>@Model.Assets.Count(a => a.IsOrphan)</strong> file audio không được liên kết với bất kỳ địa điểm nào.</p>
+                    <p class="text-muted small mt-2">Hành động này giúp tiết kiệm dung lượng lưu trữ Cloudinary.</p>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-warning px-4">Xác nhận dọn dẹp</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        const deleteAllOrphansModal = new bootstrap.Modal(document.getElementById('deleteAllOrphansModal'));
+        
+        function confirmDelete(publicId) {
+            document.getElementById('deletePublicId').value = publicId;
+            document.getElementById('displayPublicId').innerText = publicId;
+            deleteModal.show();
+        }
+
+        function confirmDeleteAllOrphans() {
+            deleteAllOrphansModal.show();
+        }
+    </script>
+    <style>
+        .x-small { font-size: 0.75rem; }
+        .table > thead { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .bg-opacity-10 { --bs-bg-opacity: 0.1; }
+        .role-pill { font-size: 0.75rem; padding: 0.25rem 0.6rem; border-radius: 50px; font-weight: 600; }
+    </style>
+}

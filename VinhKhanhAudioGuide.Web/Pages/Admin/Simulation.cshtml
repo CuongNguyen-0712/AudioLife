@@ -1,0 +1,480 @@
+@page
+@model SimulationModel
+@{
+    ViewData["Title"] = "Giả lập tải POI";
+    ViewData["ActivePage"] = "AdminSimulation";
+}
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script src="~/lib/microsoft-signalr/dist/browser/signalr.min.js"></script>
+<script>
+// ─── SignalR Connection ───────────────────────────────────────────────────────
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl("/hubs/simulation")
+    .withAutomaticReconnect([0, 1000, 3000, 5000])
+    .configureLogging(signalR.LogLevel.Warning)
+    .build();
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let rpsHistory = Array(60).fill(0);
+let rpsChart = null;
+let logCount = 0;
+const MAX_LOG_LINES = 300;
+
+// ─── Chart Setup ─────────────────────────────────────────────────────────────
+function initChart() {
+    const ctx = document.getElementById('rpsChart').getContext('2d');
+    rpsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: Array(60).fill(''),
+            datasets: [{
+                label: 'Requests/giây',
+                data: rpsHistory,
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99,102,241,0.12)',
+                borderWidth: 2,
+                pointRadius: 0,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 200 },
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,0.06)' },
+                    ticks: { color: '#94a3b8', font: { size: 11 } }
+                },
+                x: { display: false }
+            }
+        }
+    });
+}
+
+// ─── Metrics update ───────────────────────────────────────────────────────────
+function updateMetrics(snap) {
+    if (!snap) return;
+    setEl('metricTotal', snap.totalUsers);
+    setEl('metricActive', snap.activeUsers);
+    setEl('metricCompleted', snap.completedUsers);
+    setEl('metricFailed', snap.failedUsers);
+    setEl('metricRequests', snap.totalRequests.toLocaleString());
+    setEl('metricRps', snap.requestsPerSecond.toFixed(1));
+    setEl('metricSuccess', snap.successRate.toFixed(1) + '%');
+    setEl('metricElapsed', snap.elapsedDisplay);
+    setEl('metricTimestamp', snap.timestamp);
+
+    // Progress bar
+    const pct = snap.overallProgressPercent;
+    const bar = document.getElementById('progressBar');
+    if (bar) { bar.style.width = pct + '%'; bar.textContent = pct.toFixed(1) + '%'; }
+
+    // Badge status
+    const badge = document.getElementById('statusBadge');
+    if (badge) {
+        const map = { 0:'idle', 1:'running', 2:'paused', 3:'completed', 4:'cancelled' };
+        const labels = { 0:'Chờ', 1:'Đang chạy', 2:'Tạm dừng', 3:'Hoàn thành', 4:'Đã dừng' };
+        badge.className = 'sim-status-badge sim-status-' + (map[snap.status] || 'idle');
+        badge.textContent = labels[snap.status] || 'Chờ';
+    }
+
+    // RPS Chart
+    if (rpsChart) {
+        rpsHistory.push(snap.requestsPerSecond);
+        if (rpsHistory.length > 60) rpsHistory.shift();
+        rpsChart.data.datasets[0].data = [...rpsHistory];
+        rpsChart.update('none');
+    }
+
+    // Control buttons
+    const isRunning = snap.status === 1;
+    document.getElementById('btnStart').disabled = isRunning;
+    document.getElementById('btnStop').disabled = !isRunning;
+}
+
+// ─── Log append ───────────────────────────────────────────────────────────────
+function appendLog(entry) {
+    const console = document.getElementById('simConsole');
+    if (!console) return;
+
+    logCount++;
+    if (logCount > MAX_LOG_LINES) {
+        // Xóa dòng đầu để tránh DOM quá nặng
+        const first = console.querySelector('.log-line');
+        if (first) first.remove();
+    }
+
+    const levelMap = {
+        'INFO': 'log-info', 'WARN': 'log-warn', 'ERROR': 'log-error',
+        'SUCCESS': 'log-success', 'SIM': 'log-sim'
+    };
+
+    const line = document.createElement('div');
+    line.className = 'log-line ' + (levelMap[entry.level] || 'log-info');
+    const vu = entry.virtualUserId ? `<span class="log-vu">${entry.virtualUserId}</span> ` : '';
+    const progress = entry.progress != null ? ` <span class="log-progress">[${(entry.progress * 100).toFixed(0)}%]</span>` : '';
+    line.innerHTML = `<span class="log-ts">${entry.timestamp}</span> <span class="log-level">${entry.level}</span> ${vu}${entry.message}${progress}`;
+    console.appendChild(line);
+    console.scrollTop = console.scrollHeight;
+}
+
+// ─── SignalR Handlers ─────────────────────────────────────────────────────────
+connection.on('ReceiveSimulationMetrics', updateMetrics);
+connection.on('ReceiveCurrentBatch', updateMetrics);
+connection.on('ReceiveStatus', updateMetrics);
+connection.on('ReceiveSimulationLog', appendLog);
+
+connection.onreconnecting(() => {
+    appendLog({ timestamp: now(), level: 'WARN', message: '⚠ Đang kết nối lại...' });
+});
+connection.onreconnected(() => {
+    appendLog({ timestamp: now(), level: 'SUCCESS', message: '✓ Đã kết nối lại.' });
+    connection.invoke('RequestStatus');
+});
+connection.onclose(() => {
+    appendLog({ timestamp: now(), level: 'ERROR', message: '✗ Mất kết nối SignalR.' });
+});
+
+// ─── Start/Stop ───────────────────────────────────────────────────────────────
+async function startSimulation() {
+    const locationId = document.getElementById('selLocation').value;
+    const audioGuideId = document.getElementById('selAudio').value;
+    const userCount = parseInt(document.getElementById('inpUsers').value);
+    const speed = parseInt(document.getElementById('inpSpeed').value);
+    const concurrency = parseInt(document.getElementById('inpConcurrency').value);
+    const writeDb = document.getElementById('chkWriteDb').checked;
+
+    if (!locationId || !audioGuideId) {
+        alert('Vui lòng chọn POI và Audio Guide.');
+        return;
+    }
+
+    document.getElementById('simConsole').innerHTML = '';
+    logCount = 0;
+
+    await connection.invoke('StartSimulation', {
+        locationId, audioGuideId,
+        virtualUserCount: userCount,
+        speedMultiplier: speed,
+        maxConcurrency: concurrency,
+        writeToDatabase: writeDb
+    });
+}
+
+async function stopSimulation() {
+    await connection.invoke('StopSimulation');
+}
+
+// ─── Location → Audio cascade ─────────────────────────────────────────────────
+document.getElementById('selLocation')?.addEventListener('change', async function () {
+    const locationId = this.value;
+    const audioSel = document.getElementById('selAudio');
+    audioSel.innerHTML = '<option value="">-- Chọn Audio Guide --</option>';
+    if (!locationId) return;
+
+    const res = await fetch(`?handler=AudiosByLocation&locationId=${encodeURIComponent(locationId)}`);
+    const audios = await res.json();
+    audios.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = `${a.title} (${a.durationMinutes} phút)`;
+        audioSel.appendChild(opt);
+    });
+    if (audios.length === 1) audioSel.value = audios[0].id;
+});
+
+// ─── Utils ────────────────────────────────────────────────────────────────────
+function setEl(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+function now() { return new Date().toTimeString().slice(0, 12); }
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+    initChart();
+    try {
+        await connection.start();
+        appendLog({ timestamp: now(), level: 'SUCCESS', message: '✓ Đã kết nối SignalR. Sẵn sàng giả lập.' });
+        await connection.invoke('RequestStatus');
+    } catch (err) {
+        appendLog({ timestamp: now(), level: 'ERROR', message: '✗ Lỗi kết nối: ' + err.message });
+    }
+});
+</script>
+}
+
+<style>
+/* ─── Layout ──────────────────────────────────────────────────────────────── */
+.sim-grid { display: grid; grid-template-columns: 340px 1fr; gap: 1.25rem; align-items: start; }
+@@media (max-width: 900px) { .sim-grid { grid-template-columns: 1fr; } }
+
+/* ─── Cards ───────────────────────────────────────────────────────────────── */
+.sim-card {
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    color: #e2e8f0;
+}
+.sim-card-title {
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 1rem;
+}
+
+/* ─── Form ────────────────────────────────────────────────────────────────── */
+.sim-form-group { margin-bottom: .85rem; }
+.sim-form-group label { display: block; font-size: .8rem; color: #94a3b8; margin-bottom: .3rem; font-weight: 500; }
+.sim-form-group select,
+.sim-form-group input[type="number"] {
+    width: 100%;
+    background: #0f172a;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: #e2e8f0;
+    padding: .45rem .75rem;
+    font-size: .875rem;
+    outline: none;
+    transition: border-color .2s;
+}
+.sim-form-group select:focus,
+.sim-form-group input[type="number"]:focus { border-color: #6366f1; }
+.sim-form-group .hint { font-size: .72rem; color: #475569; margin-top: .2rem; }
+.sim-check { display: flex; align-items: center; gap: .5rem; }
+.sim-check input[type="checkbox"] { accent-color: #6366f1; width: 15px; height: 15px; }
+.sim-check label { font-size: .82rem; color: #94a3b8; margin: 0; cursor: pointer; }
+
+/* ─── Buttons ─────────────────────────────────────────────────────────────── */
+.btn-sim-start {
+    width: 100%; padding: .6rem;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white; border: none; border-radius: 9px; font-weight: 600;
+    font-size: .9rem; cursor: pointer; transition: opacity .2s, transform .1s;
+    display: flex; align-items: center; justify-content: center; gap: .4rem;
+}
+.btn-sim-start:disabled { opacity: .4; cursor: not-allowed; }
+.btn-sim-start:not(:disabled):hover { opacity: .88; transform: translateY(-1px); }
+.btn-sim-stop {
+    width: 100%; padding: .6rem; margin-top: .5rem;
+    background: rgba(239,68,68,0.15); color: #f87171;
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 9px; font-weight: 600; font-size: .9rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: .4rem;
+    transition: background .2s;
+}
+.btn-sim-stop:disabled { opacity: .35; cursor: not-allowed; }
+.btn-sim-stop:not(:disabled):hover { background: rgba(239,68,68,0.25); }
+
+/* ─── Status Badge ────────────────────────────────────────────────────────── */
+.sim-status-badge {
+    display: inline-block; padding: .2rem .7rem;
+    border-radius: 20px; font-size: .72rem; font-weight: 700;
+    letter-spacing: .06em; text-transform: uppercase;
+}
+.sim-status-idle     { background: rgba(100,116,139,0.2); color: #94a3b8; }
+.sim-status-running  { background: rgba(34,197,94,0.15); color: #4ade80; animation: pulse 1.5s infinite; }
+.sim-status-completed{ background: rgba(99,102,241,0.2); color: #818cf8; }
+.sim-status-cancelled{ background: rgba(239,68,68,0.15); color: #f87171; }
+@@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+
+/* ─── Metric Grid ─────────────────────────────────────────────────────────── */
+.metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; margin-bottom: 1rem; }
+@@media(max-width: 700px) { .metric-grid { grid-template-columns: repeat(2,1fr); } }
+.metric-box {
+    background: #0f172a; border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px; padding: .75rem 1rem; text-align: center;
+}
+.metric-box .metric-val { font-size: 1.6rem; font-weight: 800; color: #e2e8f0; line-height: 1; }
+.metric-box .metric-lbl { font-size: .68rem; color: #64748b; margin-top: .25rem; text-transform: uppercase; letter-spacing: .06em; }
+
+/* ─── Progress Bar ────────────────────────────────────────────────────────── */
+.progress-wrap { background: rgba(255,255,255,0.05); border-radius: 6px; height: 22px; overflow: hidden; margin-bottom: .75rem; position: relative; }
+#progressBar {
+    height: 100%; background: linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4);
+    background-size: 200% 100%; border-radius: 6px;
+    transition: width .6s ease;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .72rem; font-weight: 700; color: white;
+    min-width: 2%;
+}
+
+/* ─── RPS Chart ───────────────────────────────────────────────────────────── */
+.rps-chart-wrap { height: 120px; margin-bottom: 1rem; position: relative; }
+
+/* ─── Console ─────────────────────────────────────────────────────────────── */
+#simConsole {
+    background: #020617; border-radius: 10px; padding: .75rem 1rem;
+    height: 340px; overflow-y: auto; font-family: 'JetBrains Mono','Fira Mono','Consolas',monospace;
+    font-size: .76rem; line-height: 1.7; border: 1px solid rgba(255,255,255,0.05);
+}
+.log-line { white-space: pre-wrap; word-break: break-all; }
+.log-ts   { color: #475569; margin-right: .3rem; }
+.log-level{ display: inline-block; min-width: 55px; font-weight: 700; border-radius: 3px; padding: 0 4px; }
+.log-vu   { color: #38bdf8; }
+.log-progress { color: #a78bfa; }
+.log-info .log-level    { background: rgba(148,163,184,.15); color: #94a3b8; }
+.log-warn .log-level    { background: rgba(251,191,36,.15); color: #fbbf24; }
+.log-error .log-level   { background: rgba(239,68,68,.15); color: #f87171; }
+.log-success .log-level { background: rgba(34,197,94,.15); color: #4ade80; }
+.log-sim .log-level     { background: rgba(99,102,241,.15); color: #818cf8; }
+</style>
+
+<div class="sim-page-header d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h1 class="page-title mb-0">
+            <i class="fas fa-flask me-2" style="color:#6366f1"></i>Giả lập Tải POI
+        </h1>
+        <p class="text-muted small mb-0">Mô phỏng nhiều người dùng cùng nghe một điểm âm thanh (POI) theo thời gian thực.</p>
+    </div>
+    <div>
+        <span id="statusBadge" class="sim-status-badge sim-status-idle">Chờ</span>
+        <span class="ms-2 text-muted small" id="metricTimestamp"></span>
+    </div>
+</div>
+
+<div class="sim-grid">
+    <!-- ── CỘT TRÁI: Form cấu hình ─────────────────────────────────────── -->
+    <div>
+        <div class="sim-card">
+            <div class="sim-card-title"><i class="fas fa-sliders-h me-1"></i> Cấu hình Giả lập</div>
+
+            <div class="sim-form-group">
+                <label for="selLocation">Chọn POI (Location)</label>
+                <select id="selLocation">
+                    <option value="">-- Chọn địa điểm --</option>
+                    @foreach (var loc in Model.Locations)
+                    {
+                        <option value="@loc.Id">@loc.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="sim-form-group">
+                <label for="selAudio">Chọn Audio Guide</label>
+                <select id="selAudio">
+                    <option value="">-- Chọn audio --</option>
+                </select>
+            </div>
+
+            <div class="sim-form-group">
+                <label for="inpUsers">Số Virtual Users <span style="color:#6366f1">*</span></label>
+                <input type="number" id="inpUsers" value="100" min="1" max="2000" />
+                <div class="hint">Tối đa 2000 users mỗi batch</div>
+            </div>
+
+            <div class="sim-form-group">
+                <label for="inpSpeed">Tốc độ tăng tốc (x lần)</label>
+                <input type="number" id="inpSpeed" value="20" min="1" max="100" />
+                <div class="hint">x20 = hoàn thành 5 phút audio trong ~15 giây thực</div>
+            </div>
+
+            <div class="sim-form-group">
+                <label for="inpConcurrency">Max Concurrency</label>
+                <input type="number" id="inpConcurrency" value="30" min="1" max="200" />
+                <div class="hint">Số user xử lý đồng thời — tránh overload DB</div>
+            </div>
+
+            <div class="sim-form-group">
+                <div class="sim-check">
+                    <input type="checkbox" id="chkWriteDb" />
+                    <label for="chkWriteDb">Ghi dữ liệu vào Database (Write-through)</label>
+                </div>
+                <div class="hint mt-1">Tắt = Dry-run in-memory. Bật = stress test DB thực.</div>
+            </div>
+
+            <div class="mt-3">
+                <button id="btnStart" class="btn-sim-start" onclick="startSimulation()">
+                    <i class="fas fa-play"></i> Bắt đầu Giả lập
+                </button>
+                <button id="btnStop" class="btn-sim-stop" onclick="stopSimulation()" disabled>
+                    <i class="fas fa-stop"></i> Dừng
+                </button>
+            </div>
+        </div>
+
+        <!-- Chú thích màu log -->
+        <div class="sim-card mt-3">
+            <div class="sim-card-title"><i class="fas fa-info-circle me-1"></i> Chú thích Log</div>
+            <div style="font-size:.75rem; line-height:2;">
+                <span class="log-level log-sim" style="background:rgba(99,102,241,.15);color:#818cf8;border-radius:3px;padding:0 6px">SIM</span> Sự kiện giả lập<br>
+                <span class="log-level log-success" style="background:rgba(34,197,94,.15);color:#4ade80;border-radius:3px;padding:0 6px">SUCCESS</span> Hoàn thành<br>
+                <span class="log-level log-warn" style="background:rgba(251,191,36,.15);color:#fbbf24;border-radius:3px;padding:0 6px">WARN</span> Cảnh báo<br>
+                <span class="log-level log-error" style="background:rgba(239,68,68,.15);color:#f87171;border-radius:3px;padding:0 6px">ERROR</span> Lỗi nghiêm trọng
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CỘT PHẢI: Dashboard ─────────────────────────────────────────── -->
+    <div>
+        <!-- Metrics -->
+        <div class="sim-card mb-3">
+            <div class="sim-card-title d-flex justify-content-between">
+                <span><i class="fas fa-chart-bar me-1"></i> Metrics Thời gian thực</span>
+                <span style="color:#475569">Elapsed: <strong id="metricElapsed" style="color:#94a3b8">--:--</strong></span>
+            </div>
+
+            <div class="progress-wrap mb-3">
+                <div id="progressBar" style="width:0%">0%</div>
+            </div>
+
+            <div class="metric-grid">
+                <div class="metric-box">
+                    <div class="metric-val" id="metricTotal">0</div>
+                    <div class="metric-lbl">Tổng Users</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-val" id="metricActive" style="color:#4ade80">0</div>
+                    <div class="metric-lbl">Đang nghe</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-val" id="metricCompleted" style="color:#818cf8">0</div>
+                    <div class="metric-lbl">Hoàn thành</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-val" id="metricFailed" style="color:#f87171">0</div>
+                    <div class="metric-lbl">Thất bại</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-val" id="metricRequests" style="color:#38bdf8">0</div>
+                    <div class="metric-lbl">Tổng Requests</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-val" id="metricRps" style="color:#fb923c">0.0</div>
+                    <div class="metric-lbl">Req/giây (RPS)</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-val" id="metricSuccess" style="color:#4ade80">100%</div>
+                    <div class="metric-lbl">Tỷ lệ thành công</div>
+                </div>
+                <div class="metric-box" style="grid-column:span 1">
+                    <div class="metric-val" style="font-size:1rem;color:#a78bfa" id="metricTimestampBox">--:--:--</div>
+                    <div class="metric-lbl">Thời điểm cập nhật</div>
+                </div>
+            </div>
+
+            <!-- Biểu đồ RPS -->
+            <div class="rps-chart-wrap">
+                <canvas id="rpsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Live Log Console -->
+        <div class="sim-card">
+            <div class="sim-card-title d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-terminal me-1"></i> Live Log Console</span>
+                <button onclick="document.getElementById('simConsole').innerHTML='';logCount=0;"
+                        style="background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#64748b;font-size:.72rem;padding:2px 10px;cursor:pointer;">
+                    Xóa log
+                </button>
+            </div>
+            <div id="simConsole"></div>
+        </div>
+    </div>
+</div>

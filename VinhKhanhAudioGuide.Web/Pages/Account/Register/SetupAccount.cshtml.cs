@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using VinhKhanhAudioGuide.Web.Data;
@@ -11,13 +12,17 @@ using VinhKhanhAudioGuide.Web.Services;
 
 namespace VinhKhanhAudioGuide.Web.Pages.Account.Register;
 
+[EnableRateLimiting("fixed-login")]
 public class SetupAccountModel : PageModel
 {
     private readonly AppDbContext _db;
 
-    public SetupAccountModel(AppDbContext db)
+    private readonly IPasswordHasher _passwordHasher;
+
+    public SetupAccountModel(AppDbContext db, IPasswordHasher passwordHasher)
     {
         _db = db;
+        _passwordHasher = passwordHasher;
     }
 
     [BindProperty]
@@ -80,7 +85,7 @@ public class SetupAccountModel : PageModel
         var newAccount = new AuthUserAccount
         {
             Username = normalizedUsername,
-            Password = Input.Password, // plaintext (consistent with existing system)
+            Password = _passwordHasher.HashPassword(Input.Password),
             DisplayName = Input.DisplayName.Trim(),
             Role = RoleNames.PoiAdmin,
             IsActive = true,

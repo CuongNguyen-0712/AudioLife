@@ -4,9 +4,6 @@ namespace VinhKhanhAudioGuide.Mobile.Services;
 
 public interface ILocalDatabaseService
 {
-    Task<List<string>> GetFavoriteLocationIdsAsync();
-    Task SaveFavoriteLocationIdsAsync(IReadOnlyCollection<string> locationIds);
-
     Task<List<ListeningHistory>> GetListeningHistoryAsync();
     Task UpsertListeningHistoryAsync(ListeningHistory history);
 
@@ -24,4 +21,9 @@ public interface ILocalDatabaseService
 
     Task<DateTime?> GetLastPlayedAtAsync(string locationId);
     Task SetLastPlayedAtAsync(string locationId, DateTime time);
+
+    // Favorites
+    Task<List<string>> GetFavoriteIdsAsync();
+    Task<bool> IsFavoriteAsync(string locationId);
+    Task<bool> ToggleFavoriteAsync(string locationId);
 }

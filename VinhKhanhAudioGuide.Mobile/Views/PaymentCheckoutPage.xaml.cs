@@ -45,84 +45,70 @@ public partial class PaymentCheckoutPage : ContentPage
 
         try
         {
-            var payload = App.PendingQrPayload;
+            // Mock payment processing delay
+            await Task.Delay(1500);
+
             var deviceId = await _sessionStore.GetOrCreateDeviceIdAsync();
-            var deviceSession = await _apiService.CheckDeviceSessionAsync(deviceId);
-            var sessionToken = string.IsNullOrWhiteSpace(deviceSession?.SessionToken)
-                ? Guid.NewGuid().ToString("N")
-                : deviceSession!.SessionToken;
+            var payload = App.PendingQrPayload;
 
-            var packageId = string.IsNullOrWhiteSpace(_plan.Id)
-                ? payload?.PaymentPackageId ?? string.Empty
-                : _plan.Id;
-
-            if (string.IsNullOrWhiteSpace(packageId))
-            {
-                await DisplayAlert(
-                    _localizationService.GetString("PaymentCheckout_AlertMissingPackageTitle"),
-                    _localizationService.GetString("PaymentCheckout_AlertMissingPackageMessage"),
-                    _localizationService.GetString("Common_Close"));
-                return;
-            }
-
+            // Call real API to complete payment (mocking the "Paid" status but registering with server)
             var request = new PaymentCompletionRequest(
-                deviceId,
-                sessionToken,
-                deviceSession?.RefreshToken,
-                !string.IsNullOrWhiteSpace(payload?.IdentityToken) ? payload!.IdentityToken : null,
-                deviceSession?.UserAppId,
-                payload?.LocationId,
-                payload?.AudioGuideId,
-                payload?.AudioUrl,
-                packageId,
-                "Paid",
-                $"pay_{DateTime.UtcNow:yyyyMMddHHmmss}");
+                DeviceId: deviceId,
+                SessionToken: Guid.NewGuid().ToString("N"), // Start fresh session
+                RefreshToken: Guid.NewGuid().ToString("N"),
+                QrToken: payload?.IdentityToken,
+                UserAppId: null,
+                LocationId: payload?.LocationId,
+                AudioGuideId: payload?.AudioGuideId,
+                AudioUrl: payload?.AudioUrl,
+                PackageId: _plan.Id ?? "daily",
+                PaymentStatus: "Paid", // Always succeed in mock mode
+                PaymentReference: $"PAY_{DateTime.UtcNow:yyyyMMddHHmmss}_{deviceId.Substring(0, 4)}"
+            );
 
             var result = await _apiService.CompletePaymentAsync(request);
-            if (result is null || !result.Success)
-            {
-                await DisplayAlert(
-                    _localizationService.GetString("PaymentCheckout_AlertFailedTitle"),
-                    result?.Message ?? _localizationService.GetString("PaymentCheckout_AlertFailedMessage"),
-                    _localizationService.GetString("Common_Close"));
-                return;
-            }
 
-            var validation = await _apiService.ValidateSessionAsync(result.SessionToken, deviceId);
-            if (validation is null || !validation.IsValid)
+            if (result != null && result.Success)
             {
-                await DisplayAlert(
-                    _localizationService.GetString("PaymentCheckout_AlertPendingTitle"),
-                    validation?.Message ?? _localizationService.GetString("PaymentCheckout_AlertPendingMessage"),
-                    _localizationService.GetString("Common_Close"));
-                return;
-            }
-
-            if (Application.Current?.Handler?.MauiContext?.Services.GetService<IAppSessionStore>() is IAppSessionStore sessionStore)
-            {
-                await sessionStore.SaveSnapshotAsync(new AppSessionSnapshot(
+                await _sessionStore.SaveSnapshotAsync(new AppSessionSnapshot(
                     deviceId,
                     result.SessionToken,
+                    result.AccessToken,
                     result.RefreshToken,
                     payload?.IdentityToken,
                     result.UserAppId,
                     result.PackageId,
                     result.PaymentStatus,
-                    request.PaymentReference,
+                    result.PaymentReference,
                     payload?.LocationId,
                     payload?.AudioGuideId,
                     payload?.AudioUrl,
                     result.ExpiresAtUtc,
                     result.LastValidatedAtUtc));
+
+                App.ClearPendingQrPayload();
+
+                await DisplayAlert(
+                    _localizationService.GetString("PaymentCheckout_AlertSuccessTitle"),
+                    string.Format(_localizationService.GetString("PaymentCheckout_AlertSuccessMessageFormat"), _plan.Title),
+                    _localizationService.GetString("Common_Close"));
+                
+                App.NavigateToLanguageSelection();
             }
-
-            App.ClearPendingQrPayload();
-
+            else
+            {
+                await DisplayAlert(
+                    _localizationService.GetString("Common_Notice"),
+                    result?.Message ?? "Payment registration failed. Please try again.",
+                    _localizationService.GetString("Common_Close"));
+            }
+        }
+        catch (Exception ex)
+        {
             await DisplayAlert(
-                _localizationService.GetString("PaymentCheckout_AlertSuccessTitle"),
-                string.Format(_localizationService.GetString("PaymentCheckout_AlertSuccessMessageFormat"), _plan.Title),
+                _localizationService.GetString("Common_Notice"),
+                "Payment Error: " + ex.Message,
                 _localizationService.GetString("Common_Close"));
-            App.NavigateToLanguageSelection();
         }
         finally
         {

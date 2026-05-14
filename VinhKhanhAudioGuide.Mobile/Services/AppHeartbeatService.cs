@@ -74,6 +74,8 @@ public sealed class AppHeartbeatService : IAppHeartbeatService, IDisposable
         // Vòng lặp 5 giây/lần: gửi heartbeat, refresh snapshot và phát hiện session invalid.
         // Đây là luồng background task chính của mobile.
         using var timer = new PeriodicTimer(HeartbeatInterval);
+        int consecutiveFailures = 0;
+        const int MaxConsecutiveFailures = 3;
 
         while (!cancellationToken.IsCancellationRequested && await timer.WaitForNextTickAsync(cancellationToken))
         {
@@ -96,11 +98,28 @@ public sealed class AppHeartbeatService : IAppHeartbeatService, IDisposable
                     true);
 
                 var response = await _apiService.SendHeartbeatAsync(request);
-                if (response is null || !response.Success || !response.SessionValid)
+                
+                if (response is null)
                 {
+                    consecutiveFailures++;
+                    System.Diagnostics.Debug.WriteLine($"[Heartbeat] Network error. Consecutive failures: {consecutiveFailures}");
+                    if (consecutiveFailures >= MaxConsecutiveFailures)
+                    {
+                        // Potential offline state
+                    }
+                    continue; 
+                }
+
+                if (!response.SessionValid)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Heartbeat] Session INVALIDated by server: {response.Message}");
                     await HandleInvalidSessionAsync();
                     return;
                 }
+
+                // Success! Reset failure counter
+                consecutiveFailures = 0;
+                System.Diagnostics.Debug.WriteLine($"[Heartbeat] Success. Session: {response.SessionToken}, Expires: {response.ExpiresAtUtc:u}");
 
                 var refreshedSnapshot = snapshot with
                 {
@@ -116,10 +135,15 @@ public sealed class AppHeartbeatService : IAppHeartbeatService, IDisposable
             {
                 return;
             }
-            catch
+            catch (Exception ex)
             {
-                await HandleInvalidSessionAsync();
-                return;
+                // General error (e.g. JSON parsing)
+                consecutiveFailures++;
+                System.Diagnostics.Debug.WriteLine($"[Heartbeat] Critical Error: {ex.Message}");
+                if (consecutiveFailures >= MaxConsecutiveFailures)
+                {
+                    // Optional: could logout here if we suspect data corruption
+                }
             }
         }
     }

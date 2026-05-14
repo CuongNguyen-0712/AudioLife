@@ -2,12 +2,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using VinhKhanhAudioGuide.Web.Models;
+using VinhKhanhAudioGuide.Web.Services;
 
 namespace VinhKhanhAudioGuide.Web.Data;
 
 public static class DbInitializer
 {
-    public static void Seed(AppDbContext context)
+    public static void Seed(AppDbContext context, IPasswordHasher passwordHasher)
     {
         var creator = context.Database.GetService<IRelationalDatabaseCreator>();
         if (!creator.Exists())
@@ -30,7 +31,7 @@ public static class DbInitializer
 
         if (context.Categories.Any() && hasVinhKhanhSeed)
         {
-            EnsureAuthUserAccounts(context);
+            EnsureAuthUserAccounts(context, passwordHasher);
             EnsurePoiAdminAssignments(context);
             EnsureListeningHistory(context);
             EnsurePaymentPackages(context);
@@ -87,14 +88,34 @@ public static class DbInitializer
             context.SaveChanges();
         }
 
-        EnsureAuthUserAccounts(context);
+        EnsureAuthUserAccounts(context, passwordHasher);
         EnsurePoiAdminAssignments(context);
         EnsureListeningHistory(context);
         EnsurePaymentPackages(context);
     }
 
-    private static void EnsureAuthUserAccounts(AppDbContext context)
+    private static void EnsureAuthUserAccounts(AppDbContext context, IPasswordHasher passwordHasher)
     {
+        // 1. Hash existing plain text passwords if any
+        var existingAccounts = context.AuthUserAccounts.ToList();
+        bool changed = false;
+        foreach (var account in existingAccounts)
+        {
+            // Simple heuristic: BCrypt hashes start with $2 and are 60 chars long.
+            // If it doesn't look like a hash, it's probably plain text from old seed or manual entry.
+            if (!account.Password.StartsWith("$2") || account.Password.Length < 50)
+            {
+                account.Password = passwordHasher.HashPassword(account.Password);
+                changed = true;
+            }
+        }
+
+        if (changed)
+        {
+            context.SaveChanges();
+        }
+
+        // 2. Add default accounts if table is empty
         if (context.AuthUserAccounts.Any())
         {
             return;
@@ -104,6 +125,11 @@ public static class DbInitializer
         if (defaultAccounts.Count == 0)
         {
             return;
+        }
+
+        foreach (var account in defaultAccounts)
+        {
+            account.Password = passwordHasher.HashPassword(account.Password);
         }
 
         context.AuthUserAccounts.AddRange(defaultAccounts);

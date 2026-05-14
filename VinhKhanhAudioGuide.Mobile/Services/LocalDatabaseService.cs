@@ -15,41 +15,47 @@ public class LocalDatabaseService : ILocalDatabaseService
 
     private async Task EnsureInitializedAsync()
     {
-        await _database.CreateTableAsync<FavoriteLocationEntity>();
         await _database.CreateTableAsync<ListeningHistoryEntity>();
         await _database.CreateTableAsync<DownloadedAudioEntity>();
         await _database.CreateTableAsync<CachedJsonEntity>();
         await _database.CreateTableAsync<PlaybackQueueEntity>();
         await _database.CreateTableAsync<LocationPlaybackHistoryEntity>();
+        await _database.CreateTableAsync<FavoriteLocationEntity>();
     }
 
-    public async Task<List<string>> GetFavoriteLocationIdsAsync()
+    public async Task<List<string>> GetFavoriteIdsAsync()
     {
         await EnsureInitializedAsync();
-        var entities = await _database.Table<FavoriteLocationEntity>().ToListAsync();
-        return entities.Select(x => x.LocationId).ToList();
+        var favorites = await _database.Table<FavoriteLocationEntity>().ToListAsync();
+        return favorites.Select(f => f.LocationId).ToList();
     }
 
-    public async Task SaveFavoriteLocationIdsAsync(IReadOnlyCollection<string> locationIds)
+    public async Task<bool> IsFavoriteAsync(string locationId)
     {
-        // Ghi đè danh sách yêu thích mới xuống SQLite theo transaction.
-        // Thuộc flow toggle favorite và đồng bộ UI trang chi tiết/favorites.
+        if (string.IsNullOrEmpty(locationId)) return false;
+        await EnsureInitializedAsync();
+        var entity = await _database.Table<FavoriteLocationEntity>()
+            .FirstOrDefaultAsync(f => f.LocationId == locationId);
+        return entity != null;
+    }
+
+    public async Task<bool> ToggleFavoriteAsync(string locationId)
+    {
+        if (string.IsNullOrEmpty(locationId)) return false;
         await EnsureInitializedAsync();
 
-        var existing = await _database.Table<FavoriteLocationEntity>().ToListAsync();
-        if (existing.Count > 0)
+        var existing = await _database.Table<FavoriteLocationEntity>()
+            .FirstOrDefaultAsync(f => f.LocationId == locationId);
+
+        if (existing != null)
         {
-            await _database.DeleteAllAsync<FavoriteLocationEntity>();
+            await _database.DeleteAsync(existing);
+            return false;
         }
-
-        var distinctIds = locationIds
-            .Where(id => !string.IsNullOrWhiteSpace(id))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList();
-
-        foreach (var id in distinctIds)
+        else
         {
-            await _database.InsertAsync(new FavoriteLocationEntity { LocationId = id });
+            await _database.InsertAsync(new FavoriteLocationEntity { LocationId = locationId });
+            return true;
         }
     }
 
@@ -262,12 +268,6 @@ public class LocalDatabaseService : ILocalDatabaseService
         };
     }
 
-    private sealed class FavoriteLocationEntity
-    {
-        [PrimaryKey]
-        public string LocationId { get; set; } = string.Empty;
-    }
-
     private sealed class ListeningHistoryEntity
     {
         [PrimaryKey]
@@ -318,5 +318,11 @@ public class LocalDatabaseService : ILocalDatabaseService
         [PrimaryKey]
         public string LocationId { get; set; } = string.Empty;
         public long LastPlayedAtUtcTicks { get; set; }
+    }
+
+    private sealed class FavoriteLocationEntity
+    {
+        [PrimaryKey]
+        public string LocationId { get; set; } = string.Empty;
     }
 }

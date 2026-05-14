@@ -14,13 +14,15 @@ public class IndexModel : PageModel
     private readonly AuthOptions _authOptions;
     private readonly IPoiChangeRequestService _changeRequestService;
     private readonly IPaymentPackageService _packageService;
+    private readonly IAnalyticsService _analyticsService;
 
-    public IndexModel(AppDbContext db, IOptions<AuthOptions> authOptions, IPoiChangeRequestService changeRequestService, IPaymentPackageService packageService)
+    public IndexModel(AppDbContext db, IOptions<AuthOptions> authOptions, IPoiChangeRequestService changeRequestService, IPaymentPackageService packageService, IAnalyticsService analyticsService)
     {
         _db = db;
         _authOptions = authOptions.Value;
         _changeRequestService = changeRequestService;
         _packageService = packageService;
+        _analyticsService = analyticsService;
     }
 
     public int LocationCount { get; set; }
@@ -38,6 +40,7 @@ public class IndexModel : PageModel
     public List<PoiAdminSummary> PoiAdminSummaries { get; set; } = new();
     public List<RecentRequestSummary> RecentRequests { get; set; } = new();
     public PackageDashboardStatsDto PackageStats { get; set; } = new();
+    public ListeningAnalyticsDto ListeningAnalytics { get; set; } = new();
 
     public async Task OnGetAsync()
     {
@@ -110,6 +113,7 @@ public class IndexModel : PageModel
             : Math.Round((double)AudioGuideCount / LocationCount, 1);
 
         PackageStats = await _packageService.GetDashboardStatsAsync();
+        ListeningAnalytics = await _analyticsService.GetListeningAnalyticsAsync();
     }
 
     private async Task<List<PoiAdminSummary>> BuildPoiAdminSummariesAsync()

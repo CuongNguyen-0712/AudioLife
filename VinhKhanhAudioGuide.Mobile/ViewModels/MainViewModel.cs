@@ -95,7 +95,6 @@ public partial class MainViewModel : ObservableObject
     public ObservableCollection<Category> Categories { get; } = new();
     public ObservableCollection<Location> FeaturedLocations { get; } = new();
     public ObservableCollection<Location> MoreLocations { get; } = new();
-    public ObservableCollection<Location> FavoriteLocations { get; } = new();
     public ObservableCollection<FeaturedTourItem> FeaturedTours { get; } = new();
 
     public MainViewModel(
@@ -119,38 +118,12 @@ public partial class MainViewModel : ObservableObject
         _audioService.StateChanged += OnAudioStateChanged;
         WeakReferenceMessenger.Default.Register<AutoAudioSelectionChangedMessage>(this, OnAutoAudioSelectionChanged);
 
-        // Raise preview property when FavoriteLocations changes
-        FavoriteLocations.CollectionChanged += (_, _) => OnPropertyChanged(nameof(FavoriteLocationsPreview));
-
         _ = LoadDataAsync();
     }
 
-    // Provide a limited view (max 4) for the grid preview
-    public IEnumerable<Location> FavoriteLocationsPreview => FavoriteLocations.Take(4);
 
-    [RelayCommand]
-    private void ToggleFavorite(Location? location)
-    {
-        if (location is null) return;
-        location.IsFavorite = !location.IsFavorite;
 
-        // maintain FavoriteLocations collection (max 4)
-        if (location.IsFavorite)
-        {
-            if (!FavoriteLocations.Contains(location))
-            {
-                // if more than 4, remove last
-                if (FavoriteLocations.Count >= 4)
-                    FavoriteLocations.RemoveAt(FavoriteLocations.Count - 1);
-                FavoriteLocations.Insert(0, location);
-            }
-        }
-        else
-        {
-            if (FavoriteLocations.Contains(location))
-                FavoriteLocations.Remove(location);
-        }
-    }
+
 
     private async Task LoadDataAsync()
     {
@@ -189,13 +162,7 @@ public partial class MainViewModel : ObservableObject
         foreach (var loc in locations.Skip(6))
             MoreLocations.Add(loc);
 
-        // Favorite locations: initially pick up to 4 locations with IsFavorite, otherwise first 4
-        FavoriteLocations.Clear();
-        var favs = locations.Where(l => l.IsFavorite).Take(4).ToList();
-        if (!favs.Any())
-            favs = locations.Take(4).ToList();
-        foreach (var f in favs)
-            FavoriteLocations.Add(f);
+
 
         // Featured tours (matching web)
         FeaturedTours.Clear();

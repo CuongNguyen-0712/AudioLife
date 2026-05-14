@@ -3,6 +3,7 @@ namespace VinhKhanhAudioGuide.Mobile.Models;
 public sealed record AppSessionSnapshot(
     string DeviceId,
     string SessionToken,
+    string? AccessToken,
     string? RefreshToken,
     string? QrToken,
     string? UserAppId,

@@ -36,9 +36,7 @@ public interface IApiService
     Task<List<AudioGuide>> GetAudioGuidesForLocationAsync(string locationId);
     Task<AudioGuide?> GetAudioGuideByIdAsync(string audioGuideId);
 
-    // Favorites
-    Task<bool> ToggleFavoriteAsync(string locationId);
-    Task<List<Location>> GetFavoriteLocationsAsync();
+
 
     // History
     Task<List<ListeningHistory>> GetListeningHistoryAsync();
@@ -49,4 +47,12 @@ public interface IApiService
     Task<bool> DownloadAudioAsync(string audioGuideId);
     Task<bool> DeleteDownloadedAudioAsync(string audioGuideId);
     Task<long> GetTotalDownloadSizeAsync();
+
+    // Favorites
+    Task<List<Location>> GetFavoriteLocationsAsync();
+    Task<bool> ToggleFavoriteAsync(string locationId);
+    // Reviews
+    Task<List<MobileLocationReviewDto>> GetLocationReviewsAsync(string locationId);
+    Task<bool> SubmitLocationReviewAsync(string locationId, SubmitReviewRequest request);
 }
+

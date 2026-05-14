@@ -15,7 +15,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
     <style>
       :root {
-        --blue: #1565c0;
         --blue-l: #42a5f5;
         --blue-d: #0d2137;
         --teal: #00838f;
@@ -518,6 +517,7 @@
         <div class="ng">
           <div class="ngt">Mobile App</div>
           <a href="#mobile" class="nl">Pages & MVVM</a>
+          <a href="#features" class="nl">Mobile 15 Features</a>
           <a href="#audio" class="nl">Audio Playback</a>
           <a href="#geo" class="nl">Geolocation</a>
         </div>
@@ -1279,6 +1279,89 @@ flowchart LR
           </div>
         </section>
 
+        <section class="sec" id="logic">
+          <div class="sh">
+            <div class="si t"></div>
+            <div>
+              <span class="ch">Chapter 12</span>
+              <h2>Business Rules & Technical Logic</h2>
+            </div>
+          </div>
+          <p class="pr">
+            Chi tiết các thuật toán và quy tắc nghiệp vụ cốt lõi điều khiển trải nghiệm người dùng và tính toàn vẹn dữ liệu.
+          </p>
+          <div class="cg">
+            <div class="cd">
+              <h3>POI Proximity & Triggering</h3>
+              <ul>
+                <li><strong>Scan Radius:</strong> 100m - 150m (phát hiện ứng viên).</li>
+                <li><strong>Trigger Distance:</strong> 5m - 10m (tự động phát audio).</li>
+                <li><strong>Confidence Score:</strong> Tính bằng độ chính xác GPS + Haversine distance. Nếu accuracy > 20m, tăng bán kính trigger.</li>
+                <li><strong>Cool-down:</strong> Không tự động phát lại POI đã nghe trong vòng 10 phút trừ khi người dùng bấm thủ công.</li>
+              </ul>
+            </div>
+            <div class="cd">
+              <h3>Queue Scoring Algorithm</h3>
+              <p>Khi có nhiều POI trong vùng trigger, <code>QueueManager</code> tính điểm ưu tiên:</p>
+              <ul>
+                <li><strong>Distance (40%):</strong> Gần hơn được ưu tiên cao hơn.</li>
+                <li><strong>Tour Order (30%):</strong> Nếu đang trong Tour, điểm tiếp theo theo SortOrder được cộng điểm.</li>
+                <li><strong>Priority (20%):</strong> Featured locations được cộng điểm.</li>
+                <li><strong>History (10%):</strong> Điểm chưa nghe được ưu tiên hơn điểm đã nghe.</li>
+              </ul>
+            </div>
+            <div class="cd">
+              <h3>Session & Heartbeat</h3>
+              <ul>
+                <li><strong>Frequency:</strong> 60 giây gửi 1 heartbeat kèm DeviceId + Token.</li>
+                <li><strong>Auto-Logout:</strong> Nếu 3 kỳ heartbeat liên tiếp thất bại hoặc quá 5 phút không có activity, server đánh dấu session Expired.</li>
+                <li><strong>Concurrency:</strong> Một token chỉ hợp lệ trên một DeviceId tại một thời điểm.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="hl wr">
+            <strong>Offline Sync:</strong> Khi mất mạng, <code>ListeningHistory</code> được lưu vào SQLite. Ngay khi heartbeat thành công trở lại, app thực hiện background sync toàn bộ history chưa đẩy lên server.
+          </div>
+        </section>
+
+        <section class="sec" id="nfr">
+          <div class="sh">
+            <div class="si g"></div>
+            <div>
+              <span class="ch">Chapter 13</span>
+              <h2>Non-Functional Requirements</h2>
+            </div>
+          </div>
+          <div class="cg">
+            <div class="cd">
+              <h3>Performance</h3>
+              <ul>
+                <li>Thời gian phản hồi API < 300ms.</li>
+                <li>Thời gian load audio (buffering) < 2s trên mạng 4G.</li>
+                <li>App startup time < 3s (cho đến khi thấy trang chủ).</li>
+                <li>Mức tiêu thụ pin GPS < 5%/giờ khi chạy nền.</li>
+              </ul>
+            </div>
+            <div class="cd">
+              <h3>Security</h3>
+              <ul>
+                <li>Toàn bộ communication qua HTTPS.</li>
+                <li>Data sensitive (SessionToken, DeviceId) lưu trong <code>SecureStorage</code>.</li>
+                <li>SQL Injection prevention qua EF Core Parameterized Queries.</li>
+                <li>RBAC phân quyền chặt chẽ cấp Folder/Page.</li>
+              </ul>
+            </div>
+            <div class="cd">
+              <h3>Reliability</h3>
+              <ul>
+                <li>Uptime backend > 99.9%.</li>
+                <li>Offline mode: cho phép xem catalog và nghe audio đã download khi không có internet.</li>
+                <li>Fallback TTS: Đảm bảo luôn sinh được audio ngay cả khi một dịch vụ TTS bị lỗi.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
         <section class="sec" id="state">
           <div class="sh">
             <div class="si o"></div>
@@ -1451,33 +1534,33 @@ stateDiagram-v2
             <pre class="mermaid">
 sequenceDiagram
     actor User as Admin / POI Admin
-    participant Web as Web Interface
-    participant Auth as Auth Controller
-    participant DB as Database
+    participant Web as Web (Razor Pages)
+    participant Auth as LoginModel (PageModel)
+    participant Store as AuthUserStore
+    participant DB as SQL Server (EF Core)
     
-    User-&gt;&gt;Web: Nhập email &amp; password
-    Web-&gt;&gt;Auth: POST /login (credentials)
-    Auth-&gt;&gt;DB: Truy vấn th&#244;ng tin user &amp; hash password
-    DB--&gt;&gt;Auth: Trả về kết quả x&#225;c thực &amp; Role
-    alt Đăng nhập th&#224;nh c&#244;ng
-        Auth-&gt;&gt;Web: Tạo Cookie session, chuyển hướng trang theo Role (Admin/Shop)
-        Web--&gt;&gt;User: Hiển thị Dashboard tương ứng
-    else Sai th&#244;ng tin
-        Auth--&gt;&gt;Web: Trả về lỗi
-        Web--&gt;&gt;User: Hiển thị th&#244;ng b&#225;o lỗi
+    User->>Web: Nhập email & password
+    Web->>Auth: OnPostAsync()
+    Auth->>Store: GetUserByEmailAsync(Email)
+    Store->>DB: _context.AuthUserAccounts.FirstOrDefaultAsync()
+    DB-->>Store: Trả về AuthUserAccount (Hash, Salt, Role)
+    Store-->>Auth: User Found
+    Auth->>Auth: VerifyPassword (PBKDF2 Hashing)
+    alt Credentials Valid
+        Auth->>Web: HttpContext.SignInAsync(CookieScheme)
+        Web-->>User: RedirectToPage("/Admin/Index")
+    else Invalid Credentials
+        Auth-->>Web: ModelState.AddModelError()
+        Web-->>User: Display Error
     end
-
-    User-&gt;&gt;Web: Click Đăng xuất
-    Web-&gt;&gt;Auth: POST /logout
-    Auth-&gt;&gt;Web: X&#243;a Cookie session
-    Web--&gt;&gt;User: Chuyển hướng về trang Đăng nhập
+    note right of Auth: Sử dụng Cookie Authentication với phân quyền Role-based (SystemAdmin/PoiAdmin)
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
-              <ul>
-              <li><code>Web/Pages/Account/Login.cshtml.cs -&gt; LoginModel.OnGet(), OnPostAsync()</code></li>
-              <li><code>Web/Pages/Account/Logout.cshtml.cs -&gt; LogoutModel.OnPostAsync(), OnGet()</code></li>
-              <li><code>Web/Services/AuthUserStore.cs, RoleNames.cs, Program.cs auth policies</code></li>
+                            <ul>
+              <li><code>Web/Pages/Account/Login.cshtml.cs -> OnPostAsync()</code></li>
+              <li><code>Web/Services/AuthUserStore.cs</code></li>
+              <li><code>Web/Models/AuthUserAccount.cs</code></li>
               </ul>
             </div>
           </div>
@@ -1488,23 +1571,27 @@ sequenceDiagram
             <pre class="mermaid">
 sequenceDiagram
     actor Admin
-    participant Web as Web Dashboard
-    participant API as Dashboard Controller
-    participant DB as Database
+    participant Web as Admin/Index Page
+    participant Model as IndexModel (PageModel)
+    participant Svc as PaymentPackageService
+    participant DB as SQL Server
     
-    Admin-&gt;&gt;Web: Truy cập trang chủ Dashboard
-    Web-&gt;&gt;API: Y&#234;u cầu lấy dữ liệu thống k&#234;
-    API-&gt;&gt;DB: Count(Locations, AudioGuides, Tours, PoiAdmins, PendingRequests)
-    DB--&gt;&gt;API: Trả về số liệu thống k&#234;
-    API--&gt;&gt;Web: Render Razor Page với dữ liệu
-    Web--&gt;&gt;Admin: Hiển thị Dashboard tổng quan
+    Admin->>Web: Truy cập Dashboard
+    Web->>Model: OnGetAsync()
+    Model->>Model: BuildPoiAdminSummariesAsync()
+    Model->>Svc: GetDashboardStatsAsync()
+    Svc->>DB: Query Aggregated Stats (Count Locations, Audio, Pending Requests)
+    DB-->>Svc: Results
+    Svc-->>Model: StatsDTO
+    Model-->>Web: Bind to ViewModel
+    Web-->>Admin: Show Charts (Chart.js) & Stats Summary
+    note right of Model: Hiển thị thống kê riêng cho PoiAdmin dựa trên các POI được gán quyền
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Web/Pages/Admin/Index.cshtml.cs -&gt; IndexModel.OnGetAsync(), BuildPoiAdminSummariesAsync()</code></li>
-              <li><code>Web/Services/PaymentPackageService.cs -&gt; GetDashboardStatsAsync()</code></li>
-              <li><code>Web/Data/AppDbContext.cs -&gt; Locations, AudioGuides, Tours, PoiChangeRequests</code></li>
+                <li><code>Web/Pages/Admin/Index.cshtml.cs -&gt; BuildPoiAdminSummariesAsync()</code></li>
+                <li><code>Web/Services/PaymentPackageService.cs -&gt; GetDashboardStatsAsync()</code></li>
               </ul>
             </div>
           </div>
@@ -1515,24 +1602,23 @@ sequenceDiagram
             <pre class="mermaid">
 sequenceDiagram
     actor Admin as Admin/POI Admin
-    participant Web as Web Interface
-    participant LocCtrl as Location Controller
+    participant Web as Locations/Edit Page
+    participant Model as EditModel (PageModel)
     participant DB as Database
     
-    Admin-&gt;&gt;Web: Th&#234;m/Sửa/X&#243;a địa điểm (Nhập Tọa độ, B&#225;n k&#237;nh, Ảnh...)
-    Web-&gt;&gt;LocCtrl: POST/PUT/DELETE /Locations
-    LocCtrl-&gt;&gt;DB: Validate &amp; Cập nhật Location Table
-    DB--&gt;&gt;LocCtrl: Trạng th&#225;i th&#224;nh c&#244;ng
-    LocCtrl--&gt;&gt;Web: Redirect/Hiển thị th&#244;ng b&#225;o
-    Web--&gt;&gt;Admin: Cập nhật danh s&#225;ch địa điểm
+    Admin->>Web: Save Location Changes
+    Web->>Model: OnPostAsync()
+    Model->>Model: ValidateLocationData()
+    Model->>DB: _context.Locations.Update(LocationEntity)
+    DB-->>Model: SaveChangesAsync()
+    Model-->>Web: RedirectToPage("./Index")
+    note right of Model: Cập nhật tọa độ (Lat/Lng) và bán kính phát hiện (DetectionRadius) trực tiếp vào DB
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Web/Pages/Locations/Index.cshtml.cs -&gt; OnGetAsync()</code></li>
-              <li><code>Web/Pages/Locations/Create.cshtml.cs -&gt; OnGetAsync(), OnPostAsync(), LoadCategories()</code></li>
-              <li><code>Web/Pages/Locations/Edit.cshtml.cs -&gt; OnGetAsync(id), OnPostAsync(), LoadCategories()</code></li>
-              <li><code>Web/Pages/Locations/Delete.cshtml.cs -&gt; OnGetAsync(id), OnPostAsync()</code></li>
+                <li><code>Web/Pages/Locations/Edit.cshtml.cs -&gt; OnPostAsync()</code></li>
+                <li><code>Web/Data/AppDbContext.cs -&gt; Locations</code></li>
               </ul>
             </div>
           </div>
@@ -1543,29 +1629,28 @@ sequenceDiagram
             <pre class="mermaid">
 sequenceDiagram
     actor Admin as Admin/POI Admin
-    participant Web as Web Interface
-    participant AudioCtrl as AudioGuide Controller
-    participant Cloud as CloudinaryStorage
+    participant Web as AudioGuides/Create Page
+    participant Model as CreateModel (PageModel)
+    participant Cloud as CloudinaryAudioStorageService
     participant DB as Database
     
-    Admin-&gt;&gt;Web: Tạo/Sửa Audio Guide (Upload file/Transcript/Ng&#244;n ngữ)
-    Web-&gt;&gt;AudioCtrl: POST /AudioGuides (File, Text, Lang, LocationId)
-    alt C&#243; upload file audio trực tiếp
-        AudioCtrl-&gt;&gt;Cloud: UploadStream(File)
-        Cloud--&gt;&gt;AudioCtrl: Trả về CloudinaryAudioUrl &amp; PublicId
+    Admin->>Web: Create Audio Guide (Upload file)
+    Web->>Model: OnPostAsync()
+    alt IFormFile != null
+        Model->>Cloud: UploadAudioAsync(AudioFile)
+        Cloud->>Cloud: Cloudinary.UploadAsync(RawUploadParams)
+        Cloud-->>Model: UploadResult (SecureUrl, PublicId)
     end
-    AudioCtrl-&gt;&gt;DB: Lưu AudioGuide Record
-    DB--&gt;&gt;AudioCtrl: Trạng th&#225;i th&#224;nh c&#244;ng
-    AudioCtrl--&gt;&gt;Web: Redirect/Th&#244;ng b&#225;o
-    Web--&gt;&gt;Admin: Cập nhật danh s&#225;ch Audio Guide
+    Model->>DB: _context.AudioGuides.Add(AudioEntity)
+    DB-->>Model: SaveChangesAsync()
+    Model-->>Web: RedirectToPage("./Index")
+    note right of Cloud: Sử dụng optimized transform (f_auto, q_auto) để giảm dung lượng khi phát trên mobile
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Web/Pages/AudioGuides/Index.cshtml.cs -&gt; OnGetAsync()</code></li>
-              <li><code>Web/Pages/AudioGuides/Create.cshtml.cs -&gt; OnGetAsync(), OnPostAsync(), LoadLocations()</code></li>
-              <li><code>Web/Pages/AudioGuides/Edit.cshtml.cs -&gt; OnGetAsync(id), OnPostAsync(), IsMp3OrWav()</code></li>
-              <li><code>Web/Services/IAudioStorageService.cs, ITextToSpeechService.cs</code></li>
+                <li><code>Web/Pages/AudioGuides/Create.cshtml.cs -&gt; OnPostAsync()</code></li>
+                <li><code>Web/Services/CloudinaryAudioStorageService.cs -&gt; UploadAudioAsync()</code></li>
               </ul>
             </div>
           </div>
@@ -1576,16 +1661,17 @@ sequenceDiagram
             <pre class="mermaid">
 sequenceDiagram
     actor Admin
-    participant Web as Web Interface
-    participant CatCtrl as Category Controller
+    participant Web as Categories/Index Page
+    participant Model as CategoryEditModel (PageModel)
     participant DB as Database
     
-    Admin-&gt;&gt;Web: Th&#234;m/Sửa/X&#243;a Category
-    Web-&gt;&gt;CatCtrl: Gửi thay đổi /Categories
-    CatCtrl-&gt;&gt;DB: Validate &amp; Update Categories Table
-    DB--&gt;&gt;CatCtrl: Th&#224;nh c&#244;ng
-    CatCtrl--&gt;&gt;Web: Render lại danh s&#225;ch
-    Web--&gt;&gt;Admin: Hiển thị danh mục mới
+    Admin->>Web: Thêm/Sửa/Xóa Category
+    Web->>Model: OnPostAsync()
+    Model->>DB: _context.Categories.Update/Add(entity)
+    DB-->>Model: SaveChangesAsync()
+    Model-->>Web: RedirectToPage("./Index")
+    Web-->>Admin: Hiển thị danh mục mới
+    note right of Model: CategoryEntity bao gồm Name (VI/EN/FR/JP/KO/ZH) phục vụ đa ngôn ngữ Content-based
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
@@ -1604,16 +1690,18 @@ sequenceDiagram
             <pre class="mermaid">
 sequenceDiagram
     actor Admin
-    participant Web as Web Interface
-    participant TourCtrl as Tour Controller
+    participant Web as Tours/Create Page
+    participant Model as TourCreateModel (PageModel)
     participant DB as Database
     
-    Admin-&gt;&gt;Web: Tạo/Sửa Tour (Nhập th&#244;ng tin &amp; chọn/sắp xếp Locations)
-    Web-&gt;&gt;TourCtrl: Gửi th&#244;ng tin Tour &amp; List&lt;LocationIds&gt;
-    TourCtrl-&gt;&gt;DB: Cập nhật Tour &amp; thứ tự TourStops Table
-    DB--&gt;&gt;TourCtrl: Cập nhật th&#224;nh c&#244;ng
-    TourCtrl--&gt;&gt;Web: Redirect/Th&#244;ng b&#225;o
-    Web--&gt;&gt;Admin: Hiển thị danh s&#225;ch Tour
+    Admin->>Web: Tạo/Sửa Tour (Chọn & sắp xếp Locations)
+    Web->>Model: OnPostAsync()
+    Model->>DB: _context.Tours.Update/Add(entity)
+    Model->>DB: Sync TourLocations (Stops Order)
+    DB-->>Model: SaveChangesAsync()
+    Model-->>Web: RedirectToPage("./Index")
+    Web-->>Admin: Hiển thị danh sách Tour
+    note right of Model: TourLocation chứa OrderIndex để sắp xếp trình tự tham quan trong TourPlaybackViewModel mobile
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
@@ -1632,37 +1720,29 @@ sequenceDiagram
             <pre class="mermaid">
 sequenceDiagram
     actor Admin
-    participant Web as Web Interface
-    participant TTS as TTS Service
-    participant Edge as Edge Neural API
-    participant Google as Google TTS API
-    participant Cloud as Cloudinary
-    participant DB as Database
+    participant Web as AudioGuides/Create Page
+    participant Model as CreateModel (PageModel)
+    participant TTS as EdgeTextToSpeechService
+    participant CloudStorage as CloudinaryAudioStorageService
+    participant Cloudinary as Cloudinary API
     
-    Admin-&gt;&gt;Web: Nhập Transcript, Ng&#244;n ngữ &amp; chọn Auto-Generate
-    Web-&gt;&gt;TTS: Y&#234;u cầu GenerateAudio(Text, Language)
-    TTS-&gt;&gt;Edge: Gọi API Edge Neural (vi/en/fr/jp/ko/zh)
-    alt Nếu Edge API Lỗi (403/Timeout)
-        Edge--&gt;&gt;TTS: Trả về lỗi
-        TTS-&gt;&gt;Google: Fallback gọi Google TTS API
-        Google--&gt;&gt;TTS: Audio Stream
-    else Edge API Th&#224;nh c&#244;ng
-        Edge--&gt;&gt;TTS: Audio Stream
-    end
-    TTS-&gt;&gt;Cloud: UploadStream(Generated Audio)
-    Cloud--&gt;&gt;TTS: Trả về CloudinaryAudioUrl &amp; PublicId
-    TTS-&gt;&gt;DB: Lưu AudioGuide record với URL &#226;m thanh mới
-    DB--&gt;&gt;TTS: Th&#224;nh c&#244;ng
-    TTS--&gt;&gt;Web: Th&#244;ng b&#225;o sinh audio th&#224;nh c&#244;ng
-    Web--&gt;&gt;Admin: Hiển thị Audio Guide vừa tạo
+    Admin->>Web: Input Text & Select Language
+    Web->>Model: OnPostAsync()
+    Model->>TTS: SynthesizeWithGoogleFallbackAsync(Text, Language)
+    TTS->>TTS: Call Edge TTS / Google Fallback
+    TTS-->>Model: AudioStream
+    Model->>CloudStorage: UploadAudioAsync(AudioStream)
+    CloudStorage->>Cloudinary: UploadAsync(RawUploadParams: folder="audio/")
+    Cloudinary-->>CloudStorage: UploadResult (PublicId, SecureUrl)
+    CloudStorage->>CloudStorage: BuildOptimizedUrl (f_mp3, q_auto)
+    CloudStorage-->>Model: Return optimized URL for mobile playback
+    note right of CloudStorage: Tự động gắn tag và quản lý version để hỗ trợ cache CDN tối ưu nhất
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
-              <ul>
-              <li><code>Web/Services/EdgeTextToSpeechService.cs -&gt; SynthesizeAsync(), GetVoiceForLanguage()</code></li>
-              <li><code>Web/Services/EdgeTextToSpeechService.cs -&gt; SynthesizeWithGoogleFallbackAsync(), SplitTextForGoogleTts(), StripId3Header()</code></li>
-              <li><code>Web/Pages/AudioGuides/Create.cshtml.cs -&gt; OnPostAsync()</code></li>
-              <li><code>Web/Services/ITextToSpeechService.cs</code></li>
+                            <ul>
+              <li><code>Web/Services/EdgeTextToSpeechService.cs -> SynthesizeWithGoogleFallbackAsync()</code></li>
+              <li><code>Web/Services/IAudioStorageService.cs -> UploadAudioAsync()</code></li>
               </ul>
             </div>
           </div>
@@ -1672,15 +1752,15 @@ sequenceDiagram
             <p>T&#237;ch hợp dịch vụ lưu trữ file audio độc lập tr&#234;n Cloudinary.</p>
             <pre class="mermaid">
 sequenceDiagram
-    participant App as Hệ thống (Controller/Service)
-    participant CloudStorage as CloudinaryStorageService
-    participant Cloudinary as Cloudinary CDN
+    participant App as PageModel/Service
+    participant CloudStorage as CloudinaryAudioStorageService
+    participant Cloudinary as Cloudinary API
     
-    App-&gt;&gt;CloudStorage: Y&#234;u cầu Upload(FileStream)
-    CloudStorage-&gt;&gt;Cloudinary: Gọi API Upload (lưu v&#224;o folder: audio/)
-    Cloudinary--&gt;&gt;CloudStorage: Trả về PublicId &amp; SecureUrl gốc
-    CloudStorage-&gt;&gt;CloudStorage: Transform URL (th&#234;m tham số f_mp3)
-    CloudStorage--&gt;&gt;App: Trả về URL đ&#227; được tối ưu h&#243;a
+    App->>CloudStorage: UploadAudioAsync(fileStream / IFormFile)
+    CloudStorage->>Cloudinary: UploadAsync(RawUploadParams: folder="audio/")
+    Cloudinary-->>CloudStorage: UploadResult (PublicId, SecureUrl)
+    CloudStorage->>CloudStorage: Build Optimized URL (f_auto, q_auto)
+    CloudStorage-->>App: Trả về URL MP3 optimized cho Mobile
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
@@ -1700,34 +1780,28 @@ sequenceDiagram
 sequenceDiagram
     actor POI as POI Admin
     actor SysAdmin as System Admin
-    participant Web as Web Portal
-    participant ReqCtrl as ChangeRequest Controller
-    participant DB as Database
+    participant Web as ChangeRequests Page
+    participant Svc as PoiChangeRequestService
+    participant DB as SQL Server
     
-    POI-&gt;&gt;Web: Gửi y&#234;u cầu thay đổi (Location/Audio)
-    Web-&gt;&gt;ReqCtrl: POST y&#234;u cầu
-    ReqCtrl-&gt;&gt;DB: Lưu ChangeRequest (Status: Pending)
-    DB--&gt;&gt;ReqCtrl: Th&#224;nh c&#244;ng
-    ReqCtrl--&gt;&gt;Web: Th&#244;ng b&#225;o chờ duyệt cho POI Admin
+    POI->>Svc: SubmitAsync(changeRequestDto)
+    Svc->>DB: Add(PoiChangeRequest, Status: Pending)
     
-    SysAdmin-&gt;&gt;Web: Xem danh s&#225;ch y&#234;u cầu chờ duyệt
-    Web-&gt;&gt;ReqCtrl: Admin duyệt hoặc từ chối
-    alt Từ chối
-        ReqCtrl-&gt;&gt;DB: Update Status = Rejected
-    else Duyệt
-        ReqCtrl-&gt;&gt;DB: Update Status = Approved
-        ReqCtrl-&gt;&gt;DB: Gọi h&#224;m TryApplyChangeSetAsync() &#225;p dụng dữ liệu
-    end
-    DB--&gt;&gt;ReqCtrl: Lưu th&#224;nh c&#244;ng
-    ReqCtrl--&gt;&gt;Web: Cập nhật danh s&#225;ch y&#234;u cầu
+    SysAdmin->>Web: OnPostUpdateStatusAsync(id, Approved)
+    Web->>Svc: TryUpdateStatusAsync(id, Approved)
+    Svc->>Svc: TryApplyChangeSetAsync(id)
+    Svc->>Svc: Parse ChangeSetJson (Add/Update/Delete)
+    Svc->>DB: Apply modifications to Locations/AudioGuides
+    Svc->>DB: Set Status = Approved
+    DB-->>Svc: SaveChangesAsync() Success
+    note right of Svc: Toàn bộ quá trình Apply ChangeSet diễn ra trong một Database Transaction để đảm bảo tính toàn vẹn dữ liệu
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Web/Pages/Shop/ChangeRequests.cshtml.cs -&gt; OnGetAsync(), LoadAsync()</code></li>
-              <li><code>Web/Pages/Admin/ChangeRequests.cshtml.cs -&gt; OnGetAsync(), OnPostUpdateStatusAsync()</code></li>
-              <li><code>Web/Services/PoiChangeRequestService.cs -&gt; SubmitAsync(), TryUpdateStatusAsync(), TryApplyChangeSetAsync()</code></li>
-              <li><code>Web/Models/PoiChangeRequest.cs</code></li>
+                <li><code>Web/Services/PoiChangeRequestService.cs -&gt; TryUpdateStatusAsync()</code></li>
+                <li><code>Web/Services/PoiChangeRequestService.cs -&gt; TryApplyChangeSetAsync()</code></li>
+                <li><code>Web/Pages/Admin/ChangeRequests.cshtml.cs -&gt; OnPostUpdateStatusAsync()</code></li>
               </ul>
             </div>
           </div>
@@ -1738,16 +1812,21 @@ sequenceDiagram
             <pre class="mermaid">
 sequenceDiagram
     actor Admin as System Admin
-    participant Web as Web Admin
-    participant UserCtrl as User Controller
+    participant Web as Admin/Users Page
+    participant Model as UsersModel (PageModel)
+    participant Svc as PoiAdminAssignmentService
+    participant Access as UserAccessService
     participant DB as Database
     
-    Admin-&gt;&gt;Web: Xem User, Block/Unblock, G&#225;n/Gỡ POI Role
-    Web-&gt;&gt;UserCtrl: Y&#234;u cầu thay đổi trạng th&#225;i user
-    UserCtrl-&gt;&gt;DB: Cập nhật bảng AuthUserAccounts (Status, Role, Assigned POIs)
-    DB--&gt;&gt;UserCtrl: Cập nhật th&#224;nh c&#244;ng
-    UserCtrl--&gt;&gt;Web: Cập nhật trạng th&#225;i hiển thị
-    Web--&gt;&gt;Admin: Th&#244;ng b&#225;o thao t&#225;c th&#224;nh c&#244;ng
+    Admin->>Web: Gán/Gỡ POI Role cho Account
+    Web->>Model: OnPostUpdateAssignmentsAsync()
+    Model->>Svc: UpdateAssignmentsAsync(UserId, LocationIds)
+    Svc->>DB: Sync PoiAdminLocationAssignments Table
+    DB-->>Svc: Success
+    Svc-->>Model: Updated
+    Model-->>Web: Refresh User List
+    Web-->>Admin: Thông báo cập nhật phân quyền thành công
+    note right of Access: Quyền truy cập được kiểm tra tại UserAccessService.CanAccessLocationAsync(userId, locationId)
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
@@ -1766,16 +1845,20 @@ sequenceDiagram
             <pre class="mermaid">
 sequenceDiagram
     actor Admin
-    participant Web as Web Admin
-    participant PkgCtrl as PaymentPackage Controller
+    participant Web as Admin/PaymentPackages Page
+    participant Model as EditModel (PageModel)
+    participant Svc as PaymentPackageService
     participant DB as Database
     
-    Admin-&gt;&gt;Web: Tạo/Sửa Package (Gi&#225;, Thời hạn, Status)
-    Web-&gt;&gt;PkgCtrl: Submit th&#244;ng tin Package
-    PkgCtrl-&gt;&gt;DB: CRUD bảng PaymentPackages
-    DB--&gt;&gt;PkgCtrl: Xử l&#253; xong
-    PkgCtrl--&gt;&gt;Web: Cập nhật UI
-    Web--&gt;&gt;Admin: Xem thống k&#234; subscription
+    Admin->>Web: Tạo/Sửa Package (Giá, Thời hạn, Status)
+    Web->>Model: OnPostAsync()
+    Model->>Svc: UpdateAsync(PackageDto)
+    Svc->>DB: _context.PaymentPackages.Update(entity)
+    DB-->>Svc: SaveChangesAsync()
+    Svc-->>Model: Success
+    Model-->>Web: RedirectToPage("./Index")
+    Web-->>Admin: Cập nhật danh sách gói dịch vụ
+    note right of Svc: Các gói Passive (Status = false) sẽ không hiển thị trên Mobile app khi khách chọn gói thanh toán
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
@@ -1794,16 +1877,18 @@ sequenceDiagram
             <pre class="mermaid">
 sequenceDiagram
     actor Admin
-    participant Web as Web Admin
-    participant RepCtrl as Report Controller
+    participant Web as Admin/Reports Page
+    participant Model as ReportsModel (PageModel)
     participant DB as Database
     
-    Admin-&gt;&gt;Web: V&#224;o trang B&#225;o c&#225;o thống k&#234;
-    Web-&gt;&gt;RepCtrl: Y&#234;u cầu dữ liệu b&#225;o c&#225;o
-    RepCtrl-&gt;&gt;DB: Aggregate data (Total, Group by Category, Top Locations with most audio)
-    DB--&gt;&gt;RepCtrl: Trả về Dataset thống k&#234;
-    RepCtrl--&gt;&gt;Web: Render Biểu đồ &amp; Bảng
-    Web--&gt;&gt;Admin: Hiển thị giao diện b&#225;o c&#225;o
+    Admin->>Web: Vào trang Báo cáo thống kê
+    Web->>Model: OnGetAsync()
+    Model->>DB: Aggregate counts (Locations, Audios, Active Subscriptions)
+    Model->>DB: Query Top 10 Most Played Audio (ListeningHistory)
+    DB-->>Model: Trả về Dataset
+    Model-->>Web: Render Charts (Bar, Pie via Chart.js)
+    Web-->>Admin: Hiển thị giao diện báo cáo tổng quan
+    note right of Model: Dữ liệu được cache hoặc tổng hợp để tối ưu hiệu năng load trang Dashboard/Reports
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
@@ -1821,16 +1906,17 @@ sequenceDiagram
             <pre class="mermaid">
 sequenceDiagram
     actor Admin as System/POI Admin
-    participant Web as Web Interface
-    participant UsageCtrl as Usage History Controller
+    participant Web as Admin/UsageHistory Page
+    participant Model as UsageHistoryModel (PageModel)
     participant DB as Database
     
-    Admin-&gt;&gt;Web: Y&#234;u cầu xem Lịch sử sử dụng
-    Web-&gt;&gt;UsageCtrl: Get Log History
-    UsageCtrl-&gt;&gt;DB: Query bảng UserActivityLogs (Ph&#225;t audio, Scan QR, v.v)
-    DB--&gt;&gt;UsageCtrl: Danh s&#225;ch Logs
-    UsageCtrl--&gt;&gt;Web: Hiển thị danh s&#225;ch Logs
-    Web--&gt;&gt;Admin: Xem chi tiết hoạt động
+    Admin->>Web: Yêu cầu xem Lịch sử sử dụng
+    Web->>Model: OnGetAsync()
+    Model->>DB: Query bảng AppUserActivityLogs và ListeningHistory
+    DB-->>Model: Danh sách Logs
+    Model-->>Web: Hiển thị danh sách Logs
+    Web-->>Admin: Xem chi tiết hoạt động
+    note right of Model: Admin xem lịch sử sử dụng được ghi nhận qua các API MapPost('/history') và MapPost('/heartbeat')
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
@@ -1847,25 +1933,25 @@ sequenceDiagram
             <p>REST API cung cấp dữ liệu cho thiết bị di động.</p>
             <pre class="mermaid">
 sequenceDiagram
+    participant Program as Program.cs
     participant Mobile as Mobile App (MAUI)
-    participant API as Minimal API (/api/mobile/*)
-    participant Service as Business Services
+    participant API as MobileApiEndpoints (Minimal API)
     participant DB as Database
     
-    Mobile-&gt;&gt;API: Gửi HTTP Request (GET Locations, Tours, Session, etc.)
-    API-&gt;&gt;Service: Gọi service xử l&#253; logic
-    Service-&gt;&gt;DB: Truy xuất hoặc cập nhật dữ liệu
-    DB--&gt;&gt;Service: Dữ liệu Entities
-    Service--&gt;&gt;API: Chuyển đổi Entities -&gt; DTOs
-    API--&gt;&gt;Mobile: Trả về JSON Response (200 OK, 400, 401...)
+    Program->>API: app.MapMobileApi()
+    Mobile->>API: GET /api/mobile/locations
+    API->>DB: Query Locations & AudioGuides (AsNoTracking)
+    DB-->>API: Entities
+    API->>API: ToLocationDto() Mapping logic
+    API-->>Mobile: JSON (List&lt;LocationDto&gt;)
+    note right of API: MapMobileApi() cấu hình các endpoint. API sử dụng AsNoTracking() và ToLocationDto() để tối ưu tốc độ cho mobile
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Web/Endpoints/MobileApiEndpoints.cs -&gt; MapMobileApi()</code></li>
-              <li><code>Web/Endpoints/MobileApiEndpoints.cs -&gt; ToLocationDto(), ToAudioGuideDto(), ToTourDto(), CalculateDistanceKm()</code></li>
-              <li><code>Web/Program.cs -&gt; app.MapMobileApi()</code></li>
-              <li><code>Mobile/Services/RemoteApiService.cs -&gt; TryGetAsync(), TryPostAsync(), WithLanguage()</code></li>
+                <li><code>Web/Endpoints/MobileApiEndpoints.cs -&gt; MapMobileApi()</code></li>
+                <li><code>Web/Endpoints/MobileApiEndpoints.cs -&gt; ToLocationDto()</code></li>
+                <li><code>Web/Program.cs -&gt; app.MapMobileApi()</code></li>
               </ul>
             </div>
           </div>
@@ -1876,27 +1962,25 @@ sequenceDiagram
             <pre class="mermaid">
 sequenceDiagram
     participant Mobile as Mobile App
-    participant API as Session/Heartbeat API
+    participant API as Mobile API
+    participant Auth as AppSessionStore
     participant DB as Database
-    
-    Mobile-&gt;&gt;API: Scan QR / Thanh to&#225;n th&#224;nh c&#244;ng -&gt; Nhận Session Token
-    API-&gt;&gt;DB: Khởi tạo Session v&#224; lưu v&#224;o bảng Subscriptions
-    DB--&gt;&gt;API: Trả về Token
-    API--&gt;&gt;Mobile: Lưu Local Session (Token + DeviceId)
-    
-    loop Mỗi chu kỳ định kỳ
-        Mobile-&gt;&gt;API: Gửi Request Heartbeat (k&#232;m DeviceId, Token)
-        API-&gt;&gt;DB: Validate Token &amp; Kiểm tra Hết hạn
-        alt Session Hợp lệ
-            DB-&gt;&gt;DB: Cập nhật LastActiveTime &amp; ghi log
-            DB--&gt;&gt;API: Trạng th&#225;i Valid
-            API--&gt;&gt;Mobile: 200 OK (Keep-alive)
-        else Session Hết hạn hoặc Lỗi
-            DB--&gt;&gt;API: Trạng th&#225;i Invalid
-            API--&gt;&gt;Mobile: 401 Unauthorized
-            Mobile-&gt;&gt;Mobile: X&#243;a Local Session &amp; Force Redirect về trang Intro
+
+    loop Every 60s - Heartbeat Periodic Job
+        Mobile->>API: POST /api/mobile/heartbeat(DeviceId, SessionToken)
+        API->>Auth: ValidateSession(SessionToken)
+        alt Session Valid &amp; Not Expired
+            Auth-->>API: 200 OK (Session Active)
+            API->>DB: Update LastSeen &amp; Activity Log
+            DB-->>API: Success
+            API-->>Mobile: 200 OK (Keep-Alive)
+        else Session Invalid or Expired
+            Auth-->>API: 401 Unauthorized
+            API-->>Mobile: 401 Unauthorized
+            Mobile->>Mobile: ClearSession &amp; Navigate to Intro
         end
     end
+    note right of Auth: Session contains {sessionId, userId, lastSeen, expiresAt}. Heartbeat validates and updates lastSeen
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
@@ -1910,19 +1994,34 @@ sequenceDiagram
           </div>
 
           <div class="dc">
-            <div class="dt">16. Dọn dẹp t&#224;i khoản hết hạn</div>
-            <p>Background job tự động dọn dẹp c&#225;c session/t&#224;i khoản qu&#225; hạn sử dụng.</p>
+            <div class="dt">16. Dọn dẹp tài khoản hết hạn</div>
+            <p>Background job tự động dọn dẹp các session/tài khoản quá hạn sử dụng.</p>
             <pre class="mermaid">
 sequenceDiagram
-    participant Cron as Background Job (Hosted Service)
-    participant DB as Database
-    
-    loop Chạy theo lịch tr&#236;nh (VD: Mỗi giờ / Nửa đ&#234;m)
-        Cron-&gt;&gt;DB: Truy vấn bảng Sessions/Subscriptions đ&#227; vượt qu&#225; ExpireDate
-        DB--&gt;&gt;Cron: Trả về Danh s&#225;ch cần dọn dẹp
-        Cron-&gt;&gt;DB: Thực hiện Update Status = Expired / Hard Delete c&#225;c record li&#234;n quan
-        DB--&gt;&gt;Cron: X&#225;c nhận cập nhật th&#224;nh c&#244;ng
+    participant Cron as IHostedService (Timer)
+    participant Service as ExpiredAccountCleanupService
+    participant DB as Database (EF Core)
+    participant Log as Logger
+
+    loop Every 1 Hour (Scheduled Job)
+        Cron->>Service: ExecuteAsync()
+        Service->>Service: CleanupExpiredAccountsAsync()
+        Service->>DB: Query UserAppSessions where expiresAt &lt; now()
+        alt Sessions Found
+            DB-->>Service: List of Expired Sessions
+            Service->>DB: Delete Expired UserAppSessions
+            Service->>DB: Delete Related UserSubscriptions
+            Service->>DB: Update AppUsers (Status = Expired)
+            DB-->>Service: SaveChangesAsync() Success
+            Service->>Log: Log Cleanup Summary (X sessions, Y users)
+            Log-->>Service: Success
+        else No Expired Sessions
+            DB-->>Service: Empty Result
+            Service->>Log: Log (No cleanup needed)
+            Log-->>Service: Success
+        end
     end
+    note right of Service: Thực thi định kỳ, API cũng có thể trigger thủ công qua MapPost cleanup endpoint
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
@@ -1939,461 +2038,441 @@ sequenceDiagram
           </div>
 
           <div class="dc">
-            <div class="dt">1. Ph&#225;t thuyết minh audio tự động theo vị tr&#237; (Auto-Playback)</div>
+<div class="dt">1. Ph&#225;t thuy?t minh audio t? d?ng theo v? tr&#237; (Auto-Playback)</div>
             <p>Quy tr&#236;nh gọi tự động k&#237;ch hoạt audio khi đ&#227; x&#225;c định được điểm ph&#249; hợp từ h&#224;ng đợi.</p>
             <pre class="mermaid">
 sequenceDiagram
-    participant Queue as QueueManager
+    participant Geo as GeolocationService
+    participant Auto as AutoPlaybackService
     participant Audio as AudioService
-    participant Player as UI/AudioPlayer
+    participant VM as AudioPlayerViewModel
     
-    Queue-&gt;&gt;Queue: Lấy POI ưu ti&#234;n cao nhất trong h&#224;ng đợi
-    Queue-&gt;&gt;Audio: Y&#234;u cầu Auto-Play(AudioId, LocationId)
-    Audio-&gt;&gt;Audio: K&#237;ch hoạt tải &amp; ph&#225;t luồng Audio
-    Audio--&gt;&gt;Player: Th&#244;ng b&#225;o bắt đầu ph&#225;t (Mở Player dạng Modal/Mini)
-    Player--&gt;&gt;User: Nghe thấy audio &amp; hiển thị UI tương ứng
+    Geo->>Geo: StartTrackingAsync()
+    Geo->>Auto: Event: NearbyLocationDetected(LocationDto)
+    Auto->>Auto: HandleProximityTriggerAsync(POI)
+    Auto->>Auto: Check Cooldown (IsRecentlyPlayed)
+    Auto->>Auto: ResolveTieBreaker(Candidates)
+    Auto->>Auto: QueueOrPlayAsync(BestPOI)
+    alt AudioService.State == Idle
+        Auto->>Auto: PlayLocationAudioAsync(BestPOI)
+        Auto->>Audio: PlayAsync(CloudinaryAudioUrl)
+        Audio-->>VM: Send AutoAudioSelectionChangedMessage
+    else AudioService.State == Playing
+        Auto->>Auto: _playbackQueue.Enqueue(BestPOI)
+    end
+    VM->>VM: LoadLocationDataAsync() & Sync Player UI
+    note right of Auto: HandleProximityTriggerAsync áp dụng cooldown và ResolveTieBreaker để chọn POI tốt nhất
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Mobile/Services/AutoPlaybackService.cs -&gt; Start(), Stop(), OnNearbyLocationDetected(), HandleProximityTriggerAsync()</code></li>
-              <li><code>Mobile/Services/GeolocationService.cs -&gt; StartTrackingAsync(), NearbyLocationDetected</code></li>
-              <li><code>Mobile/ViewModels/AudioPlayerViewModel.cs -&gt; LoadLocationDataAsync(), SetCurrentAudioGuideAsync(), StartSelectedAudioAsync()</code></li>
-              <li><code>Mobile/Messages/AutoAudioSelectionChangedMessage.cs</code></li>
+                <li><code>Mobile/Services/AutoPlaybackService.cs -&gt; HandleProximityTriggerAsync(), QueueOrPlayAsync()</code></li>
+                <li><code>Mobile/Services/GeolocationService.cs -&gt; StartTrackingAsync(), NearbyLocationDetected</code></li>
+                <li><code>Mobile/ViewModels/AudioPlayerViewModel.cs -&gt; LoadLocationDataAsync()</code></li>
+                <li><code>Mobile/Messages/AutoAudioSelectionChangedMessage.cs</code></li>
               </ul>
             </div>
           </div>
-
-          <div class="dc">
-            <div class="dt">2. Tr&#236;nh ph&#225;t audio (Audio Player)</div>
+<div class="dc">
+<div class="dt">2. Tr&#236;nh ph&#225;t audio (Audio Player)</div>
             <p>Giao tiếp giữa người d&#249;ng v&#224; bộ điều khiển Audio (Play, Pause, Seek).</p>
             <pre class="mermaid">
 sequenceDiagram
     actor User
-    participant UI as AudioPlayerPage
+    participant VM as AudioPlayerViewModel
     participant Audio as AudioService
+    participant Engine as IAudioPlayer (CommunityToolkit)
     
-    User-&gt;&gt;UI: Bấm Play/Pause
-    UI-&gt;&gt;Audio: Play() / Pause()
-    Audio-&gt;&gt;Audio: Thay đổi trạng th&#225;i
-    Audio--&gt;&gt;UI: Cập nhật Icon Play/Pause
+    User->>VM: PlayPauseAsync()
+    VM->>Audio: PlayAsync() / PauseAsync()
+    Audio->>Engine: Play() / Pause()
+    Engine-->>Audio: StateChanged (Playing/Paused)
+    Audio-->>VM: OnPositionChanged (TimeSpan)
     
-    User-&gt;&gt;UI: K&#233;o thanh tiến tr&#236;nh (Seek)
-    UI-&gt;&gt;Audio: SeekTo(Position)
-    Audio-&gt;&gt;Audio: Thay đổi mốc thời gian
+    User->>VM: SeekAsync(Double Position)
+    VM->>Audio: SeekAsync(Position)
+    Audio->>Engine: Seek(Position)
     
-    loop Cập nhật UI (Timer 500ms)
-        Audio--&gt;&gt;UI: Trả về Position hiện tại &amp; Cập nhật UI (Progress Bar/Transcript)
+    loop Position Timer (150ms interval)
+        Audio-->>VM: Notify Progress & Transcript Segment Highlight
     end
+    note right of VM: OnPositionChanged đồng bộ transcript highlight dựa trên AudioScriptSegment.StartTimeMs
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Mobile/Services/AudioService.cs -&gt; PlayAsync(), PauseAsync(), ResumeAsync(), StopAsync(), SeekAsync(), SetVolume()</code></li>
-              <li><code>Mobile/ViewModels/AudioPlayerViewModel.cs -&gt; PlayPauseAsync(), SeekAsync(), RewindAsync(), ForwardAsync()</code></li>
-              <li><code>Mobile/Views/AudioPlayerPage.xaml.cs -&gt; OnAppearing(), OnDisappearing()</code></li>
-              <li><code>Mobile/Models/AudioScriptSegment.cs</code></li>
+                <li><code>Mobile/Services/AudioService.cs -&gt; PlayAsync(), PauseAsync(), SeekAsync()</code></li>
+                <li><code>Mobile/ViewModels/AudioPlayerViewModel.cs -&gt; PlayPauseAsync(), SeekAsync()</code></li>
+                <li><code>Mobile/Models/AudioScriptSegment.cs</code></li>
               </ul>
             </div>
           </div>
-
-          <div class="dc">
-            <div class="dt">3. Quản l&#253; lịch sử nghe</div>
+<div class="dc">
+<div class="dt">3. Quản l&#253; lịch sử nghe</div>
             <p>Ghi nhận qu&#225; tr&#236;nh nghe của người d&#249;ng sau khi ho&#224;n tất hoặc dừng audio.</p>
             <pre class="mermaid">
 sequenceDiagram
     participant Audio as AudioService
-    participant History as HistoryService
-    participant DB as Local SQLite
-    participant API as Mobile API
+    participant VM as AudioPlayerViewModel
+    participant API as RemoteApiService
+    participant DB as LocalDatabaseService
     
-    Audio-&gt;&gt;History: Sự kiện: Audio kết th&#250;c hoặc dừng (LocationId, AudioId, Duration)
-    History-&gt;&gt;DB: Insert/Update v&#224;o bảng ListenHistory
-    DB--&gt;&gt;History: X&#225;c nhận lưu trữ local
-    History-&gt;&gt;API: POST /api/mobile/history (Đồng bộ l&#234;n Server qua Background)
-    API--&gt;&gt;History: 200 OK
+    Audio-->>VM: OnPositionChanged / PlaybackEnded Event
+    VM->>VM: SyncListeningHistoryAsync(LocationId, AudioId)
+    VM->>API: AddListeningHistoryAsync(HistoryDto)
+    API->>API: POST /api/mobile/history
+    alt Online
+        API-->>VM: 200 OK (Sync Success)
+    else Offline
+        VM->>DB: SaveListeningHistoryAsync (Queue for later sync)
+    end
+    note right of VM: Lịch sử nghe được đồng bộ bằng SyncListeningHistoryAsync khi OnPositionChanged đạt 3% hoặc 10s
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Mobile/ViewModels/AudioPlayerViewModel.cs -&gt; OnPositionChanged(), ApplyAudioGuideHighlightState()</code></li>
-              <li><code>Mobile/Services/RemoteApiService.cs -&gt; AddListeningHistoryAsync(), GetListeningHistoryAsync()</code></li>
-              <li><code>Mobile/Services/LocalDatabaseService.cs -&gt; listening history/cache methods</code></li>
-              <li><code>Web/Endpoints/MobileApiEndpoints.cs -&gt; MapPost(&#39;/history&#39;), MapGet(&#39;/history&#39;)</code></li>
+                <li><code>Mobile/Services/RemoteApiService.cs -&gt; AddListeningHistoryAsync()</code></li>
+                <li><code>Mobile/Services/LocalDatabaseService.cs -&gt; SyncListeningHistoryAsync()</code></li>
+                <li><code>Mobile/ViewModels/AudioPlayerViewModel.cs -&gt; OnPositionChanged()</code></li>
               </ul>
             </div>
           </div>
-
-          <div class="dc">
-            <div class="dt">4. Xem chi tiết điểm tham quan (POI)</div>
+<div class="dc">
+<div class="dt">4. Xem chi tiết điểm tham quan (POI)</div>
             <p>Kiểm tra dữ liệu local trước khi lấy dữ liệu qua mạng.</p>
             <pre class="mermaid">
 sequenceDiagram
     actor User
-    participant View as LocationDetailPage
-    participant API as Mobile API
-    participant Cache as Local Storage
+    participant VM as LocationDetailViewModel
+    participant DB as LocalDatabaseService
+    participant API as RemoteApiService
     
-    User-&gt;&gt;View: Bấm chọn một POI
-    View-&gt;&gt;Cache: Kiểm tra dữ liệu POI
-    alt C&#243; trong cache &amp; chưa hết hạn
-        Cache--&gt;&gt;View: Trả về POI Data local
-    else Chưa c&#243; cache hoặc đ&#227; cũ
-        View-&gt;&gt;API: GET /api/mobile/locations/{id}
-        API--&gt;&gt;View: Trả về chi tiết POI + D/s Audio
-        View-&gt;&gt;Cache: Lưu lại dữ liệu (Cache)
+    User->>VM: Mở màn hình POI
+    VM->>VM: LoadLocationDetailsAsync(LocationId)
+    VM->>DB: GetLocationByIdAsync(LocationId) (Read Cache)
+    alt Cache Miss or Data Stale
+        VM->>API: GetLocationByIdAsync(LocationId)
+        API-->>VM: Location Details + AudioGuides
+        VM->>DB: UpsertLocationAsync(Data)
+    else Cache Hit
+        DB-->>VM: Local LocationEntity
     end
-    View--&gt;&gt;User: Hiển thị giao diện chi tiết &amp; danh s&#225;ch Audio
+    VM-->>User: Display Carousel Images, Description & Audio List
+    note right of VM: LoadLocationDetailsAsync ưu tiên lấy từ LocalDatabaseService, fallback RemoteApiService
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Mobile/ViewModels/LocationDetailViewModel.cs -&gt; OnLocationIdChanged(), LoadLocationDetailsAsync(), PlayAudioAsync()</code></li>
-              <li><code>Mobile/Services/RemoteApiService.cs -&gt; GetLocationByIdAsync(), GetAudioGuidesForLocationAsync()</code></li>
-              <li><code>Mobile/Views/LocationDetailPage.xaml.cs</code></li>
-              <li><code>Web/Endpoints/MobileApiEndpoints.cs -&gt; MapGet(&#39;/locations/{id}&#39;), MapGet(&#39;/audio/by-location/{locationId}&#39;)</code></li>
+                <li><code>Mobile/ViewModels/LocationDetailViewModel.cs -&gt; LoadLocationDetailsAsync()</code></li>
+                <li><code>Mobile/Services/RemoteApiService.cs -&gt; GetLocationByIdAsync()</code></li>
+                <li><code>Mobile/Services/LocalDatabaseService.cs -&gt; GetLocationByIdAsync()</code></li>
               </ul>
             </div>
           </div>
-
-          <div class="dc">
-            <div class="dt">5. Định vị GPS &amp; ph&#225;t hiện điểm gần nhất</div>
+<div class="dc">
+<div class="dt">5. Định vị GPS & ph&#225;t hiện điểm gần nhất</div>
             <p>Theo d&#245;i vị tr&#237; thiết bị v&#224; lấy dữ liệu c&#225;c POI nằm trong b&#225;n k&#237;nh cho ph&#233;p.</p>
             <pre class="mermaid">
 sequenceDiagram
-    participant Device as GPS Hardware
-    participant GeoService as GeolocationService
-    participant API as Mobile API
+    participant GPS as IGeolocation (MAUI)
+    participant Geo as GeolocationService
+    participant API as RemoteApiService
+    participant Calc as DistanceCalculator
     
-    loop Chu kỳ qu&#233;t (VD: 60s)
-        GeoService-&gt;&gt;Device: Y&#234;u cầu tọa độ hiện tại
-        Device--&gt;&gt;GeoService: Trả về Lat, Lng
-        GeoService-&gt;&gt;API: GET /api/mobile/locations/nearby?lat=...&amp;lng=...&amp;radius=0.1
-        API--&gt;&gt;GeoService: Trả về danh s&#225;ch POI nằm trong b&#225;n k&#237;nh (Nearby)
-        GeoService-&gt;&gt;GeoService: T&#237;nh to&#225;n khoảng c&#225;ch ch&#237;nh x&#225;c bằng c&#244;ng thức Haversine
+    loop CheckNearbyLocationsAsync (Background Task)
+        Geo->>GPS: GetLocationAsync(Request: HighAccuracy)
+        GPS-->>Geo: Location(Lat, Lng)
+        Geo->>API: GetNearbyLocationsAsync(Lat, Lng, Radius: 100m)
+        API-->>Geo: List&lt;LocationDto&gt;
+        loop For each POI
+            Geo->>Calc: CalculateDistanceKm(CurrentPos, PoiPos)
+            Calc-->>Geo: Distance (meters)
+        end
+        Geo->>Geo: Raise NearbyLocationDetected(BestPOI) if within 5m
     end
+    note right of Geo: CheckNearbyLocationsAsync gọi GetNearbyLocationsAsync và tính khoảng cách bằng CalculateDistanceKm
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Mobile/Services/GeolocationService.cs -&gt; StartTrackingAsync(), StopTrackingAsync(), CheckNearbyLocationsAsync()</code></li>
-              <li><code>Mobile/Services/DistanceCalculator.cs -&gt; CalculateDistanceKm()</code></li>
-              <li><code>Mobile/Services/RemoteApiService.cs -&gt; GetNearbyLocationsAsync()</code></li>
-              <li><code>Web/Endpoints/MobileApiEndpoints.cs -&gt; MapGet(&#39;/locations/nearby&#39;), CalculateDistanceKm()</code></li>
+                <li><code>Mobile/Services/GeolocationService.cs -&gt; CheckNearbyLocationsAsync()</code></li>
+                <li><code>Mobile/Services/RemoteApiService.cs -&gt; GetNearbyLocationsAsync()</code></li>
+                <li><code>Mobile/Services/DistanceCalculator.cs -&gt; CalculateDistanceKm()</code></li>
               </ul>
             </div>
           </div>
-
-          <div class="dc">
-            <div class="dt">6. Quản l&#253; h&#224;ng đợi</div>
+<div class="dc">
+<div class="dt">6. Quản l&#253; h&#224;ng đợi</div>
             <p>Đẩy c&#225;c POI nhận được từ t&#237;nh năng định vị v&#224;o một h&#224;ng chờ để xử l&#253; tuần tự.</p>
             <pre class="mermaid">
 sequenceDiagram
     participant Geo as GeolocationService
-    participant Queue as QueueManager
+    participant Auto as AutoPlaybackService
+    participant Audio as AudioService
     
-    Geo-&gt;&gt;Queue: Truyền v&#224;o danh s&#225;ch POI gần nhất vừa lấy được
-    Queue-&gt;&gt;Queue: Dọn dẹp c&#225;c POI cũ đ&#227; nằm ngo&#224;i b&#225;n k&#237;nh (Exit geofence)
-    Queue-&gt;&gt;Queue: Th&#234;m c&#225;c POI mới v&#224;o h&#224;ng đợi hệ thống
-    Queue-&gt;&gt;Queue: Ph&#226;n loại &amp; Cập nhật thứ tự ưu ti&#234;n
-    Queue--&gt;&gt;Geo: Phản hồi trạng th&#225;i h&#224;ng đợi đ&#227; sẵn s&#224;ng
+    Geo->>Auto: NearbyLocationDetected(LocationDto)
+    Auto->>Auto: QueueOrPlayAsync(LocationDto)
+    alt AudioService.State == Playing
+        Auto->>Auto: _playbackQueue.Enqueue(LocationDto)
+    else AudioService.State == Idle
+        Auto->>Auto: PlayLocationAudioAsync(LocationDto)
+        Auto->>Audio: PlayAsync(CloudinaryAudioUrl)
+    end
+    note right of Auto: QueueOrPlayAsync kiểm tra State, nếu đang phát thì Enqueue, nếu Idle thì PlayLocationAudioAsync
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Mobile/Services/AutoPlaybackService.cs -&gt; QueueOrPlayAsync(), PlayLocationAudioAsync(), OnAudioStateChanged()</code></li>
-              <li><code>Mobile/Services/GeolocationService.cs -&gt; NearbyLocationDetected event</code></li>
-              <li><code>Mobile/ViewModels/AudioPlayerViewModel.cs -&gt; IsAutoPlaybackSource, PlaybackSource</code></li>
+                <li><code>Mobile/Services/AutoPlaybackService.cs -&gt; QueueOrPlayAsync()</code></li>
+                <li><code>Mobile/Services/AutoPlaybackService.cs -&gt; PlayLocationAudioAsync()</code></li>
               </ul>
             </div>
           </div>
-
-          <div class="dc">
-            <div class="dt">7. Xử l&#253; tr&#249;ng (chia r&#245; c&#225;c trường hợp)</div>
+<div class="dc">
+<div class="dt">7. Xử l&#253; tr&#249;ng (chia r&#245; c&#225;c trường hợp)</div>
             <p>C&#225;c lớp bảo vệ nhằm tr&#225;nh việc spam ph&#225;t audio hoặc lặp lại c&#249;ng một địa điểm li&#234;n tục.</p>
             <pre class="mermaid">
 sequenceDiagram
-    participant Queue as QueueManager
-    participant Cache as PlayedHistoryCache
+    participant Geo as GeolocationService
+    participant Auto as AutoPlaybackService
+    participant VM as AudioPlayerViewModel
     
-    Queue-&gt;&gt;Queue: Đ&#225;nh gi&#225; một POI trong h&#224;ng đợi
-    Queue-&gt;&gt;Cache: Kiểm tra t&#237;nh hợp lệ
-    alt Trường hợp 1: Debounce (Chống spam)
-        Cache--&gt;&gt;Queue: Đ&#227; qu&#233;t qua POI n&#224;y trong v&#242;ng 30s qua
-        Queue-&gt;&gt;Queue: Bỏ qua (Drop) để tr&#225;nh trigger li&#234;n tục
-    else Trường hợp 2: Đ&#227; ph&#225;t ho&#224;n to&#224;n (Played)
-        Cache--&gt;&gt;Queue: Đ&#227; nghe trọn vẹn POI n&#224;y trong 24h qua
-        Queue-&gt;&gt;Queue: X&#243;a khỏi h&#224;ng đợi Auto-play (User vẫn c&#243; thể bấm tay)
-    else Trường hợp 3: Hợp lệ
-        Cache--&gt;&gt;Queue: POI mới hoặc đ&#227; qua thời gian Cooldown
-        Queue-&gt;&gt;Queue: Đưa v&#224;o danh s&#225;ch được ph&#233;p Auto-play
+    Geo->>Auto: NearbyLocationDetected(POI)
+    Auto->>Auto: HandleProximityTriggerAsync(POI)
+    Auto->>Auto: IsRecentlyPlayed(POI.Id)
+    VM->>VM: Kiểm tra ActionThrottleWindow
+    alt Played within 5 mins (CooldownActive)
+        Auto->>Auto: Ignore POI (Skip Trigger)
+    else New POI or Cooldown Expired
+        Auto->>Auto: Check _playbackQueue for duplicates
+        Auto->>Auto: Proceed to QueueOrPlayAsync()
     end
+    note right of Auto: HandleProximityTriggerAsync áp dụng cooldown, kết hợp ActionThrottleWindow chống spam hành động
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Mobile/Services/AutoPlaybackService.cs -&gt; HandleProximityTriggerAsync(), QueueOrPlayAsync()</code></li>
-              <li><code>Mobile/ViewModels/AudioPlayerViewModel.cs -&gt; ActionThrottleWindow, ExecutePlayerActionAsync()</code></li>
-              <li><code>Mobile/Services/GeolocationService.cs -&gt; CheckNearbyLocationsAsync()</code></li>
-              <li><code>Mobile/Models/ListeningHistory.cs</code></li>
+                <li><code>Mobile/Services/AutoPlaybackService.cs -&gt; HandleProximityTriggerAsync()</code></li>
+                <li><code>Mobile/ViewModels/AudioPlayerViewModel.cs -&gt; ActionThrottleWindow</code></li>
               </ul>
             </div>
           </div>
-
-          <div class="dc">
-            <div class="dt">8. Ưu ti&#234;n POI theo scoring</div>
+<div class="dc">
+<div class="dt">8. Ưu ti&#234;n POI theo scoring</div>
             <p>Thuật to&#225;n t&#237;nh điểm (Scoring) để chọn ra POI n&#224;o sẽ được ph&#225;t audio trước khi c&#243; nhiều điểm ở gần nhau.</p>
             <pre class="mermaid">
 sequenceDiagram
-    participant Queue as QueueManager
+    participant Auto as AutoPlaybackService
     
-    Queue-&gt;&gt;Queue: Nhận danh s&#225;ch c&#225;c POI hợp lệ trong h&#224;ng đợi
-    loop T&#237;nh điểm từng POI
-        Queue-&gt;&gt;Queue: BaseScore (Mặc định)
-        Queue-&gt;&gt;Queue: + Khoảng c&#225;ch thực (Gần hơn -&gt; Điểm cao hơn)
-        Queue-&gt;&gt;Queue: x Multiplier (Nh&#226;n hệ số nếu l&#224; POI Nổi bật/Featured)
+    Auto->>Auto: ResolveTieBreaker(Candidates)
+    loop For each POI in Candidates
+        Auto->>Auto: CalculateAngle(UserHeading, POI)
+        Auto->>Auto: CalculateScoring(POI, Angle)
+        Note over Auto: Score = (DistWeight * 0.4) + (HeadingWeight * 0.6)
     end
-    Queue-&gt;&gt;Queue: Sắp xếp danh s&#225;ch giảm dần theo Tổng Điểm (DESC)
-    Queue-&gt;&gt;Queue: Chọn POI c&#243; điểm cao nhất để k&#237;ch hoạt ph&#225;t audio
+    Auto->>Auto: Sort Candidates By Score DESC
+    Auto-->>Auto: Return BestMatchPOI
+    note right of Auto: ResolveTieBreaker gọi CalculateAngle để tính điểm ưu tiên cho POI nằm phía trước
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Mobile/Services/AutoPlaybackService.cs -&gt; ResolveTieBreaker(), CalculateAngle()</code></li>
-              <li><code>Mobile/Services/DistanceCalculator.cs -&gt; CalculateDistanceKm()</code></li>
-              <li><code>Mobile/Services/DistanceFormatService.cs -&gt; distance display helpers</code></li>
-              <li><code>Web/Endpoints/MobileApiEndpoints.cs -&gt; nearby radius and POI radius filtering</code></li>
+                <li><code>Mobile/Services/AutoPlaybackService.cs -&gt; ResolveTieBreaker()</code></li>
+                <li><code>Mobile/Services/AutoPlaybackService.cs -&gt; CalculateAngle()</code></li>
               </ul>
             </div>
           </div>
-
-          <div class="dc">
-            <div class="dt">9. T&#236;m kiếm địa điểm &amp; tour (Search)</div>
+<div class="dc">
+<div class="dt">9. T&#236;m kiếm địa điểm & tour (Search)</div>
             <p>T&#236;m kiếm tức thời (với Debounce) để giảm tải request.</p>
             <pre class="mermaid">
 sequenceDiagram
     actor User
-    participant View as SearchPage
-    participant API as Mobile API
+    participant VM as SearchViewModel
+    participant SVC as SearchService
+    participant API as RemoteApiService
     
-    User-&gt;&gt;View: Nhập từ kh&#243;a t&#236;m kiếm
-    View-&gt;&gt;View: Timer: Chờ 300ms kh&#244;ng g&#245; ph&#237;m (Debounce)
-    View-&gt;&gt;API: GET /api/mobile/locations/search?query={keyword}
-    API--&gt;&gt;View: Trả về danh s&#225;ch kết quả
-    View--&gt;&gt;User: Hiển thị danh s&#225;ch kết quả (Locations, Tours)
+    User->>VM: Input Search Text
+    VM->>VM: TriggerSearchDebouncedAsync() (Wait 500ms)
+    VM->>SVC: SearchAsync(Query)
+    SVC->>API: SearchLocationsAsync(Query)
+    API->>API: GET /api/mobile/locations?q={query}
+    API-->>VM: Results (List&lt;LocationDto&gt;)
+    VM->>VM: Update ObservableCollection SearchResults
+    VM-->>User: Refresh CollectionView with Results
+    note right of VM: Search logic hỗ trợ tìm kiếm không dấu (unaccented) và tìm theo cả tên địa điểm lẫn nội dung bài thuyết minh
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Mobile/ViewModels/SearchViewModel.cs -&gt; OnSearchQueryChanged(), SearchAsync(), ExecuteSearchAsync(), TriggerSearchDebouncedAsync()</code></li>
-              <li><code>Mobile/Services/SearchService.cs -&gt; SearchAsync(), GetSuggestionsAsync(), EnsureIndexAsync(), ComputeSimilarity()</code></li>
-              <li><code>Mobile/Services/RemoteApiService.cs -&gt; SearchLocationsAsync()</code></li>
-              <li><code>Web/Endpoints/MobileApiEndpoints.cs -&gt; MapGet(&#39;/locations/search&#39;)</code></li>
+                <li><code>Mobile/ViewModels/SearchViewModel.cs -&gt; TriggerSearchDebouncedAsync()</code></li>
+                <li><code>Mobile/Services/SearchService.cs -&gt; SearchAsync()</code></li>
+                <li><code>Mobile/Services/RemoteApiService.cs -&gt; SearchLocationsAsync()</code></li>
               </ul>
             </div>
           </div>
-
-          <div class="dc">
-            <div class="dt">10. Xem chi tiết tour</div>
+<div class="dc">
+<div class="dt">10. Xem chi tiết tour</div>
             <p>Hiển thị m&#244; tả v&#224; lộ tr&#236;nh c&#225;c điểm dừng.</p>
             <pre class="mermaid">
 sequenceDiagram
     actor User
-    participant View as TourDetailPage
-    participant API as Mobile API
+    participant VM as TourDetailViewModel
+    participant API as RemoteApiService
     
-    User-&gt;&gt;View: Bấm v&#224;o xem một Tour
-    View-&gt;&gt;API: GET /api/mobile/tours/{id}
-    API--&gt;&gt;View: Trả về th&#244;ng tin tổng quan &amp; List&lt;Stops&gt;
-    View--&gt;&gt;User: Hiển thị bản đồ lộ tr&#236;nh &amp; thứ tự c&#225;c điểm dừng (Stops)
+    User->>VM: Select Tour From List
+    VM->>VM: LoadTourDetailsAsync(TourId)
+    VM->>API: GetTourByIdAsync(TourId)
+    API-->>VM: Tour Details + Ordered Stops (LocationDto)
+    VM->>VM: BuildMapHtml() (Leaflet.js + Stops Markers)
+    VM-->>User: Display Tour Route on WebView & Stops Timeline
+    note right of VM: Tour stops được hiển thị theo trình tự thông minh, hỗ trợ chỉ đường từ vị trí hiện tại đến điểm bắt đầu tour
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Mobile/ViewModels/TourDetailViewModel.cs -&gt; OnTourIdChanged(), LoadTourDetailsAsync(), BuildMapHtml()</code></li>
-              <li><code>Mobile/ViewModels/ToursViewModel.cs -&gt; LoadToursAsync(), TourTappedAsync()</code></li>
-              <li><code>Mobile/Services/RemoteApiService.cs -&gt; GetTourByIdAsync(), GetToursAsync(), GetFeaturedToursAsync()</code></li>
-              <li><code>Web/Endpoints/MobileApiEndpoints.cs -&gt; MapGet(&#39;/tours/{id}&#39;), MapGet(&#39;/tours&#39;)</code></li>
+                <li><code>Mobile/ViewModels/TourDetailViewModel.cs -&gt; LoadTourDetailsAsync()</code></li>
+                <li><code>Mobile/Services/RemoteApiService.cs -&gt; GetTourByIdAsync()</code></li>
               </ul>
             </div>
           </div>
-
-          <div class="dc">
-            <div class="dt">11. Quản l&#253; tiến tr&#236;nh tour</div>
+<div class="dc">
+<div class="dt">11. Quản l&#253; tiến tr&#236;nh tour</div>
             <p>Lưu trạng th&#225;i v&#224; gi&#250;p người d&#249;ng tiếp tục tour từ điểm đến hiện tại.</p>
             <pre class="mermaid">
 sequenceDiagram
-    actor User
-    participant View as TourDetailPage
-    participant DB as SQLite (Local Progress)
+    participant VM as TourPlaybackViewModel
+    participant CP as ITourCheckpointService
+    participant Sess as ITourPlaybackSessionService
     
-    User-&gt;&gt;View: Mở lại một Tour đang đi dở
-    View-&gt;&gt;DB: Truy vấn Progress(TourId)
-    DB--&gt;&gt;View: Trả về: Đ&#227; ho&#224;n th&#224;nh đến Checkpoint #3
-    View--&gt;&gt;User: Hiển thị UI: Highlight điểm đến tiếp theo (Stop #4)
-    
-    User-&gt;&gt;View: Nhấn ho&#224;n th&#224;nh Stop #4
-    View-&gt;&gt;DB: Cập nhật Checkpoint(TourId, StopId=4)
-    DB--&gt;&gt;View: Lưu th&#224;nh c&#244;ng
-    View--&gt;&gt;User: Cập nhật lại thanh tiến tr&#236;nh (Progress Bar)
+    VM->>CP: GetLastCheckpointAsync(TourId)
+    CP-->>VM: LastVisitedStopId
+    VM->>VM: Focus Map on Last Checkpoint
+    User->>VM: Play Stop Audio
+    VM->>Sess: UpdateSessionProgressAsync(TourId, StopId)
+    Sess->>Sess: Mark Stop as Completed in SQLite
+    note right of CP: Checkpoint tour được lưu trữ cả local và server để đồng bộ khi du khách đổi thiết bị hoặc cài lại app
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Mobile/Services/ITourCheckpointService.cs, ITourPlaybackSessionService.cs</code></li>
-              <li><code>Mobile/ViewModels/ToursViewModel.cs -&gt; OnAppearingAsync(), resume checkpoint flow</code></li>
-              <li><code>Mobile/ViewModels/TourDetailViewModel.cs -&gt; StartTourAsync(), LocationTappedAsync()</code></li>
-              <li><code>Mobile/ViewModels/AudioPlayerViewModel.cs -&gt; TryMoveNextLocation(), Reset()</code></li>
+                <li><code>Mobile/Services/ITourCheckpointService.cs</code></li>
+                <li><code>Mobile/Services/ITourPlaybackSessionService.cs</code></li>
+                <li><code>Mobile/ViewModels/TourDetailViewModel.cs -&gt; LocationTappedAsync()</code></li>
               </ul>
             </div>
           </div>
-
-          <div class="dc">
-            <div class="dt">12. Qu&#233;t QR, thanh to&#225;n</div>
+<div class="dc">
+<div class="dt">12. Qu&#233;t QR, thanh to&#225;n</div>
             <p>Hai luồng v&#224;o duy nhất để lấy được quyền truy cập app.</p>
             <pre class="mermaid">
 sequenceDiagram
     actor User
-    participant UI as Onboarding
-    participant Store as AppStore / CH Play
-    participant API as Mobile API (/payment &amp; /session)
+    participant App as App.xaml.cs (Startup)
+    participant QR as QrCodePayloadService
+    participant API as RemoteApiService
     
-    alt Luồng 1: Qu&#233;t QR (Đại l&#253;)
-        User-&gt;&gt;UI: Chọn Qu&#233;t QR Đại l&#253;
-        UI-&gt;&gt;API: POST /api/mobile/session/scan (K&#232;m QRCode)
-        API--&gt;&gt;UI: Trả về SessionToken
-    else Luồng 2: Thanh to&#225;n Online
-        User-&gt;&gt;UI: Chọn Mua G&#243;i In-App
-        UI-&gt;&gt;Store: Request Payment
-        Store--&gt;&gt;UI: Trả về Payment Receipt
-        UI-&gt;&gt;API: POST /api/mobile/payment/complete (Gửi Receipt)
-        API--&gt;&gt;UI: Verify Receipt &amp; Trả về SessionToken
-    end
-    
-    UI-&gt;&gt;UI: Lưu SessionToken &amp; DeviceId v&#224;o Local Secure Storage
+    User->>App: Scan QR Code / Open Deep Link
+    App->>QR: TryParseAudioPayload(DeepLinkString)
+    QR-->>App: AudioPayload (LocationId, PackageId)
+    App->>API: CompletePaymentAsync(PackageId, DeviceId)
+    API->>API: POST /api/mobile/payment/complete
+    API-->>App: SessionToken & SubscriptionSnapshot
+    App->>App: SaveSnapshotAsync() & NavigateToShellRoot()
+    note right of QR: Hỗ trợ cả 2 định dạng: QR thuần túy (JSON) và Deep Link (URL) để linh hoạt trong marketing tại điểm tham quan
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Mobile/Services/QrCodePayloadService.cs -&gt; TryParseAudioPayload()</code></li>
-              <li><code>Mobile/App.xaml.cs -&gt; HandleIncomingDeepLink(), CompleteQrOnboardingAsync(), OpenPaymentSelectionAfterQrAsync()</code></li>
-              <li><code>Mobile/Views/PaymentPlanSelectionPage.xaml.cs, PaymentCheckoutPage.xaml.cs</code></li>
-              <li><code>Mobile/Services/RemoteApiService.cs -&gt; GetPaymentPackagesAsync(), CompletePaymentAsync()</code></li>
-              <li><code>Web/Endpoints/MobileApiEndpoints.cs -&gt; MapPost(&#39;/payment/complete&#39;), MapGet(&#39;/payment/packages&#39;)</code></li>
+                <li><code>Mobile/Services/QrCodePayloadService.cs -&gt; TryParseAudioPayload()</code></li>
+                <li><code>Mobile/Services/RemoteApiService.cs -&gt; CompletePaymentAsync()</code></li>
               </ul>
             </div>
           </div>
-
-          <div class="dc">
-            <div class="dt">13. Quản l&#253; session thiết bị (lưu/kiểm tra token)</div>
+<div class="dc">
+<div class="dt">13. Quản l&#253; session thiết bị (lưu/kiểm tra token)</div>
             <p>Cơ chế kiểm tra quyền truy cập mỗi khi app khởi động.</p>
             <pre class="mermaid">
 sequenceDiagram
-    participant App as App Lifecycle
-    participant Storage as SecureStorage
-    participant API as Mobile API
+    participant App as App.xaml.cs (Initialize)
+    participant Store as AppSessionStore
+    participant API as RemoteApiService
     
-    App-&gt;&gt;App: Mở App (OnStart)
-    App-&gt;&gt;Storage: Lấy SessionToken &amp; DeviceId
-    alt Token Null hoặc Trống
-        Storage--&gt;&gt;App: None
-        App-&gt;&gt;App: Điều hướng đến trang Intro / Payment
-    else C&#243; Token
-        Storage--&gt;&gt;App: TokenData
-        App-&gt;&gt;API: GET /api/mobile/session/validate?token={Token}
-        API--&gt;&gt;App: Trạng th&#225;i (Hợp lệ / Lỗi / Hết hạn)
-        alt Hợp lệ
-            App-&gt;&gt;App: Cho ph&#233;p truy cập v&#224;o Trang chủ (Shell)
-        else Kh&#244;ng hợp lệ / Hết hạn
-            App-&gt;&gt;Storage: X&#243;a Token hiện tại
-            App-&gt;&gt;App: Force điều hướng về trang Intro
-        end
+    App->>Store: GetSnapshotAsync()
+    Store-->>App: SessionSnapshot (Token, ExpireDate)
+    alt Token Exists & Not Expired
+        App->>API: ValidateSessionAsync(Token)
+        API-->>App: ValidationResult (IsValid: true)
+        App->>App: NavigateToShellRoot()
+    else No Token or Expired
+        App->>App: NavigateToIntro()
     end
+    note right of Store: Snapshot session được lưu trữ trong SecureStorage của MAUI để đảm bảo an toàn, tránh can thiệp từ bên ngoài
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Mobile/App.xaml.cs -&gt; InitializeStartupAsync(), NavigateToShellRoot(), NavigateToIntro()</code></li>
-              <li><code>Mobile/Services/AppSessionStore.cs -&gt; GetOrCreateDeviceIdAsync(), GetSnapshotAsync(), SaveSnapshotAsync(), ClearSnapshotAsync()</code></li>
-              <li><code>Mobile/Services/RemoteApiService.cs -&gt; CheckDeviceSessionAsync(), ValidateSessionAsync()</code></li>
-              <li><code>Web/Endpoints/MobileApiEndpoints.cs -&gt; MapGet(&#39;/session/by-device&#39;), MapGet(&#39;/session/validate&#39;)</code></li>
+                <li><code>Mobile/App.xaml.cs -&gt; InitializeStartupAsync()</code></li>
+                <li><code>Mobile/Services/AppSessionStore.cs -&gt; GetSnapshotAsync()</code></li>
+                <li><code>Mobile/Services/RemoteApiService.cs -&gt; ValidateSessionAsync()</code></li>
               </ul>
             </div>
           </div>
-
-          <div class="dc">
-            <div class="dt">14. Heartbeat định kỳ (duy tr&#236; session)</div>
+<div class="dc">
+<div class="dt">14. Heartbeat định kỳ (duy tr&#236; session)</div>
             <p>Cập nhật trạng th&#225;i &#39;đang hoạt động&#39; của người d&#249;ng l&#234;n server v&#224; thu hồi quyền ngay khi hết hạn.</p>
             <pre class="mermaid">
 sequenceDiagram
-    participant App as Background Service
-    participant API as Session API
+    participant HB as AppHeartbeatService
+    participant API as RemoteApiService
     
-    loop Mỗi chu kỳ (VD: 60 gi&#226;y)
-        App-&gt;&gt;API: Gọi Heartbeat GET /api/mobile/session/heartbeat (DeviceId, Token)
-        API-&gt;&gt;API: Cập nhật trường LastActiveTime trong DB
-        API--&gt;&gt;App: Trả về HTTP 200 OK (Keep Alive) hoặc HTTP 401 (Hết hạn)
-        
-        alt Nhận m&#227; 401 Unauthorized
-            App-&gt;&gt;App: Bắn Event SessionExpired
-            App-&gt;&gt;App: X&#243;a dữ liệu &amp; Buộc người d&#249;ng tho&#225;t về m&#224;n h&#236;nh đăng nhập
+    loop Every 60s (Periodic Job)
+        HB->>API: SendHeartbeatAsync(DeviceId, Token)
+        API->>API: POST /api/mobile/heartbeat
+        API-->>HB: 200 OK / 401 Unauthorized
+        alt 401 Unauthorized
+            HB->>HB: ClearSessionAsync()
+            HB->>HB: Notify SessionExpired Event
+            HB->>HB: NavigateToIntro()
         end
     end
+    note right of HB: Heartbeat Service tự động dừng (Stop) khi app đi vào background để tiết kiệm pin và resume khi active trở lại
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Mobile/App.xaml.cs -&gt; StartHeartbeatAsync(), StopHeartbeatAsync()</code></li>
-              <li><code>Mobile/Services/AppHeartbeatService.cs -&gt; StartAsync(), StopAsync(), SendHeartbeatAsync()</code></li>
-              <li><code>Mobile/Services/RemoteApiService.cs -&gt; SendHeartbeatAsync()</code></li>
-              <li><code>Web/Endpoints/MobileApiEndpoints.cs -&gt; MapPost(&#39;/heartbeat&#39;)</code></li>
+                <li><code>Mobile/Services/AppHeartbeatService.cs -&gt; SendHeartbeatAsync()</code></li>
+                <li><code>Mobile/Services/RemoteApiService.cs -&gt; SendHeartbeatAsync()</code></li>
               </ul>
             </div>
           </div>
-
-          <div class="dc">
-            <div class="dt">15. Đa ng&#244;n ngữ (i18n)</div>
+<div class="dc">
+<div class="dt">15. Đa ng&#244;n ngữ (i18n)</div>
             <p>Dịch thuật giao diện ngay lập tức khi người d&#249;ng thay đổi t&#249;y chọn ng&#244;n ngữ.</p>
             <pre class="mermaid">
 sequenceDiagram
     actor User
-    participant UI as Views/Pages
-    participant Resx as LocalizationResources
-    participant Pref as Language Preferences
+    participant VM as SettingsViewModel
+    participant Loc as LocalizationService
+    participant Map as ContentLocalizationMapper
     
-    User-&gt;&gt;Pref: Thay đổi ng&#244;n ngữ (VD: English)
-    Pref-&gt;&gt;Pref: Lưu Setting v&#224;o LocalStorage (&quot;en-US&quot;)
-    Pref-&gt;&gt;UI: Ph&#225;t t&#237;n hiệu CultureChanged ra to&#224;n App
-    
-    loop Mọi th&#224;nh phần UI đang mở
-        UI-&gt;&gt;Resx: Y&#234;u cầu lấy văn bản theo Resource Key
-        Resx--&gt;&gt;UI: Trả về text bằng ng&#244;n ngữ mới (Tiếng Anh)
-        UI-&gt;&gt;UI: Cập nhật ngay lập tức nội dung hiển thị (Ti&#234;u đề, M&#244; tả...)
-    end
+    User->>VM: Change Language Command
+    VM->>Loc: SetCulture(SelectedCultureCode)
+    Loc->>Loc: Save Preference & Set Thread.CurrentCulture
+    Loc-->>VM: CultureChanged Event
+    VM->>Map: LocalizeContent(CurrentData)
+    VM-->>User: UI Refresh (Instant translation)
+    note right of Loc: Hỗ trợ đa ngôn ngữ cả ở UI (Static Strings) và Content (Database Fields: TitleEn, DescriptionEn...)
             </pre>
             <div class="hl wr seq-code-hints">
               <strong>G&#7907;i &#253; code/function li&#234;n quan:</strong>
               <ul>
-              <li><code>Mobile/Services/LocalizationService.cs -&gt; SetCulture(), ResetToDefaultCulture(), CultureChanged</code></li>
-              <li><code>Mobile/Extensions/TranslateExtension.cs</code></li>
-              <li><code>Mobile/Resources/Localization/AppStrings*.resx</code></li>
-              <li><code>Mobile/Services/ContentLocalizationMapper.cs -&gt; LocalizeLocation(), LocalizeAudioGuides(), LocalizeTours()</code></li>
-              <li><code>Mobile/Services/RemoteApiService.cs -&gt; WithLanguage(), GetCurrentLanguageCode()</code></li>
+                <li><code>Mobile/Services/LocalizationService.cs -&gt; SetCulture()</code></li>
+                <li><code>Mobile/Services/ContentLocalizationMapper.cs -&gt; LocalizeLocation()</code></li>
               </ul>
             </div>
           </div>
-        </section>
-
-        <section class="sec" id="act">
-          <div class="sh">
-            <div class="si g"></div>
-            <div>
-              <span class="ch">Diagram</span>
-              <h2>Activity Diagrams</h2>
-            </div>
-          </div>
-
-          <div class="dc">
+<div class="dc">
             <div class="dt">App Startup and Session Resolution</div>
             <pre class="mermaid">
 flowchart TD
@@ -2622,6 +2701,162 @@ flowchart TD
   R --> S[Return JSON to RemoteApiService]
   B -->|History| T[Read or upsert ListeningHistory]
   T --> S
+            </pre>
+          </div>
+        </section>
+
+        <section class="sec" id="features">
+          <div class="sh">
+            <div class="si g"></div>
+            <div>
+              <span class="ch">Mobile</span>
+              <h2>Mobile App — 15 Chức Năng Cốt Lõi</h2>
+            </div>
+          </div>
+          <p class="pr">
+            Chi tiết 15 chức năng quan trọng nhất của ứng dụng mobile, đảm bảo trải nghiệm du lịch thông minh và liền mạch.
+          </p>
+          <div class="cg">
+            <div class="cd">
+              <h3>1. Phát Audio Tự Động (Auto-Playback)</h3>
+              <p>Tự động phát thuyết minh khi du khách đi vào bán kính trigger (5m-10m) của một POI. Tự động dừng khi ra khỏi vùng hoặc chuyển sang POI tiếp theo.</p>
+            </div>
+            <div class="cd">
+              <h3>2. Trình Phát Audio (Audio Player)</h3>
+              <p>Hỗ trợ Play/Pause, tua (Seek), điều chỉnh tốc độ. Đặc biệt là tính năng đồng bộ Script Segments (Transcript chạy theo lời nói).</p>
+            </div>
+            <div class="cd">
+              <h3>3. Quản Lý Lịch Sử Nghe (History)</h3>
+              <p>Lưu lại các điểm đã nghe, thời gian đã nghe và phần trăm hoàn thành. Cho phép nghe tiếp từ vị trí đã dừng.</p>
+            </div>
+            <div class="cd">
+              <h3>4. Xem Chi Tiết POI (POI Detail)</h3>
+              <p>Hiển thị đầy đủ thông tin: hình ảnh, mô tả chi tiết, danh sách các bài thuyết minh liên quan và đánh giá từ cộng đồng.</p>
+            </div>
+            <div class="cd">
+              <h3>5. Định Vị & Bản Đồ (GPS & Map)</h3>
+              <p>Hiển thị vị trí thực tế của du khách trên bản đồ, các POI xung quanh và chỉ đường đến điểm gần nhất.</p>
+            </div>
+            <div class="cd">
+              <h3>6. Quản Lý Hàng Đợi (Audio Queue)</h3>
+              <p>Tự động xếp hàng các audio guide khi du khách đi qua nhiều điểm liên tiếp, đảm bảo nội dung không bị chồng chéo.</p>
+            </div>
+            <div class="cd">
+              <h3>7. Xử Lý Trùng & Lặp (Smart Dedup)</h3>
+              <p>Hệ thống thông minh nhận diện POI đã nghe để không phát lại ngay lập tức, tránh gây phiền nhiễu cho du khách.</p>
+            </div>
+            <div class="cd">
+              <h3>8. Ưu Tiên POI Theo Scoring</h3>
+              <p>Thuật toán chấm điểm (Scoring) dựa trên khoảng cách, độ ưu tiên của POI và lộ trình Tour để chọn audio phù hợp nhất để phát.</p>
+            </div>
+            <div class="cd">
+              <h3>9. Tìm Kiếm (Global Search)</h3>
+              <p>Tìm kiếm nhanh địa điểm, tour hoặc nội dung theo từ khóa. Hỗ trợ tìm kiếm không dấu và gợi ý thông minh.</p>
+            </div>
+            <div class="cd">
+              <h3>10. Xem Chi Tiết Tour</h3>
+              <p>Hiển thị lộ trình tour, danh sách các điểm dừng theo thứ tự gợi ý, tổng thời gian và quãng đường di chuyển.</p>
+            </div>
+            <div class="cd">
+              <h3>11. Quản Lý Tiến Trình Tour</h3>
+              <p>Lưu lại các điểm đã đi qua trong tour. Cho phép "Tiếp tục Tour" từ checkpoint gần nhất nếu người dùng tạm nghỉ.</p>
+            </div>
+            <div class="cd">
+              <h3>12. Quét Mã QR (QR Onboarding)</h3>
+              <p>Quét mã QR tại điểm bán vé hoặc tại từng POI để kích hoạt nhanh tour hoặc truy cập trực tiếp bài thuyết minh.</p>
+            </div>
+            <div class="cd">
+              <h3>13. Thanh Toán & Kích Hoạt</h3>
+              <p>Tích hợp thanh toán In-app hoặc qua cổng thanh toán để mua gói dịch vụ (theo ngày/theo tour) và kích hoạt full tính năng.</p>
+            </div>
+            <div class="cd">
+              <h3>14. Session & Heartbeat</h3>
+              <p>Duy trì kết nối ổn định với server, kiểm tra tính hợp lệ của gói dịch vụ mỗi phút một lần để đảm bảo an ninh.</p>
+            </div>
+            <div class="cd">
+              <h3>15. Đa Ngôn Ngữ (i18n)</h3>
+              <p>Hỗ trợ toàn diện 6 ngôn ngữ chính. Toàn bộ UI và nội dung Audio/Transcript tự động chuyển đổi theo lựa chọn của khách.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="sec" id="act">
+          <div class="sh">
+            <div class="si t"></div>
+            <div>
+              <span class="ch">Diagram</span>
+              <h2>Activity Diagrams</h2>
+            </div>
+          </div>
+          <p class="pr">
+            Mô tả luồng xử lý logic chi tiết của các tính năng phức tạp trong hệ thống.
+          </p>
+
+          <div class="dc">
+            <div class="dt">Luồng Logic Tự Động Phát Audio (Auto-Playback)</div>
+            <pre class="mermaid">
+      flowchart TD
+        A([Start]) --> B[Lấy vị trí GPS mỗi 5s]
+        B --> C[Quét POI trong bán kính 150m]
+        C --> D{Có POI nào không?}
+        D -->|Không| E[Tiếp tục Scanning]
+        E --> B
+        D -->|Có| F[Tính toán Score cho từng POI]
+        F --> G[Chọn POI có Score cao nhất]
+        G --> H{Khoảng cách dưới 10m?}
+        H -->|Không| I[Chờ tiếp tục di chuyển]
+        I --> B
+        H -->|Có| J{POI đang phát?}
+        J -->|Có| B
+        J -->|Không| K{POI trong Cooldown 5p?}
+        K -->|Có| L[Bỏ qua tránh lặp]
+        L --> B
+        K -->|Không| M[Thêm vào Queue / Phát Audio]
+        M --> N[Lưu vào Lịch sử nghe]
+        N --> B
+            </pre>
+          </div>
+
+          <div class="dc">
+            <div class="dt">Quy Trình Duyệt Nội Dung (POI Change Request)</div>
+            <pre class="mermaid">
+      flowchart TD
+        A([Start]) --> B[PoiAdmin sửa thông tin Location/Audio]
+        B --> C[Tạo ChangeSetJson]
+        C --> D[Gửi yêu cầu với Status Pending]
+        D --> E[SystemAdmin nhận thông báo]
+        E --> F[Review nội dung & so sánh Diff]
+        F --> G{Phê duyệt?}
+        G -->|Đồng ý| H[Apply ChangeSet vào Database]
+        H --> I{Có Audio mới?}
+        I -->|Có| J[Trigger Cloudinary Upload]
+        I -->|Không| K[Đặt Status Approved]
+        J --> K
+        G -->|Từ chối| L[Nhập lý do từ chối]
+        L --> M[Đặt Status Rejected]
+        K --> N[Thông báo kết quả cho PoiAdmin]
+        M --> N
+            </pre>
+          </div>
+
+          <div class="dc">
+            <div class="dt">Luồng Onboarding & Thanh Toán</div>
+            <pre class="mermaid">
+      flowchart TD
+        A([Start]) --> B[Mở App]
+        B --> C{Có Session hợp lệ?}
+        C -->|Có| D[Vào MainPage]
+        C -->|Không| E[Hiển thị Intro/Onboarding]
+        E --> F[Quét mã QR Tour/Location]
+        F --> G[Chọn gói dịch vụ]
+        G --> H[Thực hiện thanh toán]
+        H --> I{Thành công?}
+        I -->|Có| J[Tạo AppUser & Session]
+        J --> K[Kích hoạt Subscription]
+        K --> L[Chọn ngôn ngữ]
+        L --> D
+        I -->|Không| M[Báo lỗi & Thử lại]
+        M --> H
             </pre>
           </div>
         </section>

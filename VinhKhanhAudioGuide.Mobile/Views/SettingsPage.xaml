@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:ext="clr-namespace:VinhKhanhAudioGuide.Mobile.Extensions"
@@ -47,18 +47,8 @@
                             </VerticalStackLayout>
                         </Grid>
 
-                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
                             <Frame Grid.Column="0" Style="{StaticResource CardFrameSmall}" Padding="12" BackgroundColor="{StaticResource SurfaceContainerLowest}">
-                                <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
-                                    <Image Source="heart_filled.svg" HeightRequest="22" WidthRequest="22" HorizontalOptions="Center" />
-                                    <Label Text="{ext:Translate Settings_Favorites}" FontSize="12" HorizontalTextAlignment="Center" />
-                                </VerticalStackLayout>
-                                <Frame.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding GoToFavoritesCommand}" />
-                                </Frame.GestureRecognizers>
-                            </Frame>
-
-                            <Frame Grid.Column="1" Style="{StaticResource CardFrameSmall}" Padding="12" BackgroundColor="{StaticResource SurfaceContainerLowest}">
                                 <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
                                     <Image Source="download.svg" HeightRequest="22" WidthRequest="22" HorizontalOptions="Center" />
                                     <Label Text="{ext:Translate Settings_Downloads}" FontSize="12" HorizontalTextAlignment="Center" />
@@ -68,7 +58,7 @@
                                 </Frame.GestureRecognizers>
                             </Frame>
 
-                            <Frame Grid.Column="2" Style="{StaticResource CardFrameSmall}" Padding="12" BackgroundColor="{StaticResource SurfaceContainerLowest}">
+                            <Frame Grid.Column="1" Style="{StaticResource CardFrameSmall}" Padding="12" BackgroundColor="{StaticResource SurfaceContainerLowest}">
                                 <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
                                     <Image Source="history.svg" HeightRequest="22" WidthRequest="22" HorizontalOptions="Center" />
                                     <Label Text="{ext:Translate Settings_History}" FontSize="12" HorizontalTextAlignment="Center" />

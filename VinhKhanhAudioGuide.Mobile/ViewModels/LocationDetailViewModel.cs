@@ -60,6 +60,19 @@ public partial class LocationDetailViewModel : ObservableObject
 
     public ObservableCollection<AudioGuide> AudioGuides { get; } = new();
     public ObservableCollection<RelatedTourItem> RelatedTours { get; } = new();
+    public ObservableCollection<MobileLocationReviewDto> Reviews { get; } = new();
+
+    [ObservableProperty]
+    private int _userRating = 5;
+
+    [ObservableProperty]
+    private string _userComment = string.Empty;
+
+    [ObservableProperty]
+    private bool _isSubmittingReview;
+
+    [ObservableProperty]
+    private bool _isLoadingReviews;
 
     public LocationDetailViewModel(
         INavigationService navigationService,
@@ -137,6 +150,8 @@ public partial class LocationDetailViewModel : ObservableObject
                 }
             }
             HasRelatedTours = RelatedTours.Count > 0;
+
+            await LoadReviewsAsync();
         }
         finally
         {
@@ -203,5 +218,77 @@ L.marker([{latStr},{lngStr}],{{icon:icon}}).addTo(map).bindPopup('{name.Replace(
         if (tour is null) return;
         await _navigationService.NavigateToAsync(nameof(Views.TourDetailPage),
             new Dictionary<string, object> { { "TourId", tour.Id } });
+    }
+
+    [RelayCommand]
+    public async Task LoadReviewsAsync()
+    {
+        if (string.IsNullOrEmpty(LocationId)) return;
+
+        IsLoadingReviews = true;
+        try
+        {
+            var reviews = await _apiService.GetLocationReviewsAsync(LocationId);
+            Reviews.Clear();
+            foreach (var review in reviews)
+            {
+                Reviews.Add(review);
+            }
+        }
+        finally
+        {
+            IsLoadingReviews = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task SubmitReviewAsync()
+    {
+        if (string.IsNullOrEmpty(LocationId)) return;
+        if (UserRating < 1 || UserRating > 5) return;
+
+        IsSubmittingReview = true;
+        try
+        {
+            var request = new SubmitReviewRequest
+            {
+                Rating = UserRating,
+                Comment = UserComment
+            };
+
+            var success = await _apiService.SubmitLocationReviewAsync(LocationId, request);
+            if (success)
+            {
+                UserComment = string.Empty;
+                UserRating = 5;
+                await LoadReviewsAsync();
+                
+                // Show success message (could use a service, but let's keep it simple)
+                await Shell.Current.DisplayAlert(
+                    _localizationService.GetString("Review_SuccessTitle") ?? "Thành công",
+                    _localizationService.GetString("Review_SuccessMessage") ?? "Cảm ơn bạn đã đánh giá địa điểm này!",
+                    "OK");
+            }
+            else
+            {
+                await Shell.Current.DisplayAlert(
+                    _localizationService.GetString("Review_ErrorTitle") ?? "Lỗi",
+                    _localizationService.GetString("Review_ErrorMessage") ?? "Không thể gửi đánh giá. Vui lòng thử lại sau.",
+                    "OK");
+            }
+        }
+        finally
+        {
+            IsSubmittingReview = false;
+        }
+    }
+
+    [RelayCommand]
+    private void SetRating(string rating)
+    {
+        if (int.TryParse(rating, out int r))
+        {
+            UserRating = r;
+        }
     }
 }

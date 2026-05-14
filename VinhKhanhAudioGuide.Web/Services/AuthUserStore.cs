@@ -12,9 +12,12 @@ public class AuthUserStore : IAuthUserStore
 {
     private readonly AppDbContext _db;
 
-    public AuthUserStore(AppDbContext db)
+    private readonly IPasswordHasher _passwordHasher;
+
+    public AuthUserStore(AppDbContext db, IPasswordHasher passwordHasher)
     {
         _db = db;
+        _passwordHasher = passwordHasher;
     }
 
     public async Task<AuthenticatedUser?> FindByCredentialsAsync(string username, string password, CancellationToken cancellationToken = default)
@@ -31,11 +34,10 @@ public class AuthUserStore : IAuthUserStore
             .AsNoTracking()
             .FirstOrDefaultAsync(user =>
                 user.IsActive
-                && user.Username == normalizedUsername
-                && user.Password == password,
+                && user.Username == normalizedUsername,
                 cancellationToken);
 
-        if (dbUser is null)
+        if (dbUser is null || !_passwordHasher.VerifyPassword(password, dbUser.Password))
         {
             return null;
         }

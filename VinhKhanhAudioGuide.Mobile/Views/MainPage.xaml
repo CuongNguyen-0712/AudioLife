@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -293,27 +293,7 @@
                                                     Aspect="AspectFill" />
                                             </Frame>
 
-                                            <ImageButton
-                                                Source="heart_no_fill.svg"
-                                                BackgroundColor="{StaticResource SecondaryContainer}"
-                                                HeightRequest="34"
-                                                WidthRequest="34"
-                                                Padding="7"
-                                                CornerRadius="17"
-                                                Margin="10"
-                                                HorizontalOptions="End"
-                                                VerticalOptions="Start"
-                                                Command="{Binding Source={x:Reference PageRoot}, Path=BindingContext.ToggleFavoriteCommand}"
-                                                CommandParameter="{Binding .}">
-                                                <ImageButton.Triggers>
-                                                    <DataTrigger TargetType="ImageButton" Binding="{Binding IsFavorite}" Value="True">
-                                                        <Setter Property="Source" Value="heart_filled.svg" />
-                                                    </DataTrigger>
-                                                    <DataTrigger TargetType="ImageButton" Binding="{Binding IsFavorite}" Value="False">
-                                                        <Setter Property="Source" Value="heart_no_fill.svg" />
-                                                    </DataTrigger>
-                                                </ImageButton.Triggers>
-                                            </ImageButton>
+
                                         </Grid>
 
                                         <VerticalStackLayout Spacing="{StaticResource Space2}">
@@ -347,106 +327,7 @@
                     </CollectionView>
                 </VerticalStackLayout>
 
-                <!-- Popular Eateries section -->
-                <VerticalStackLayout Spacing="{StaticResource Space4}">
-                    <VerticalStackLayout Spacing="{StaticResource Space2}">
-                        <Label 
-                            Text="{ext:Translate Main_PopularTitle}" 
-                            TextColor="{StaticResource OnPrimaryContainer}"
-                            FontSize="22"
-                            FontAttributes="Bold"
-                            LineHeight="1.2"
-                            Margin="0" />
-                        <Label 
-                            Text="{ext:Translate Main_PopularSubtitle}" 
-                            FontSize="16"
-                            TextColor="{StaticResource OnSurfaceVariant}"
-                            Opacity="0.7" />
-                    </VerticalStackLayout>
 
-                    <VerticalStackLayout
-                        Spacing="{StaticResource Space4}"
-                        BindableLayout.ItemsSource="{Binding FavoriteLocationsPreview}">
-
-                        <BindableLayout.ItemTemplate>
-                            <DataTemplate x:DataType="models:Location">
-                                <Frame Style="{StaticResource CardFrame}" Padding="{StaticResource Space3}">
-                                    <Frame.GestureRecognizers>
-                                        <TapGestureRecognizer
-                                            Command="{Binding Source={x:Reference PageRoot}, Path=BindingContext.LocationSelectedCommand}"
-                                            CommandParameter="{Binding .}" />
-                                    </Frame.GestureRecognizers>
-
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="{StaticResource Space3}">
-                                        <!-- Row image placeholder -->
-                                        <Frame
-                                            Style="{StaticResource SurfaceHighlightFrame}"
-                                            WidthRequest="80"
-                                            HeightRequest="80"
-                                            Padding="0"
-                                            Margin="0"
-                                            BackgroundColor="{StaticResource SurfaceContainerHigh}"
-                                            IsClippedToBounds="True">
-                                            <Image
-                                                Source="{Binding ImageUrl}"
-                                                Aspect="AspectFill" />
-                                        </Frame>
-
-                                        <VerticalStackLayout
-                                            Grid.Column="1"
-                                            Spacing="{StaticResource Space2}"
-                                            VerticalOptions="Center">
-
-                                            <Label
-                                                Text="{Binding Name}"
-                                                FontSize="16"
-                                                FontAttributes="Bold"
-                                                LineHeight="1.2"
-                                                MaxLines="2"
-                                                Margin="0" />
-
-                                            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                                <Image Source="time.svg" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" />
-                                                <Label
-                                                    Text="{Binding Duration, Converter={StaticResource DurationMinutesConverter}}"
-                                                    FontSize="13"
-                                                    TextColor="{StaticResource OnSurfaceVariant}"
-                                                    Opacity="0.7"
-                                                    VerticalOptions="Center" />
-                                            </HorizontalStackLayout>
-
-                                            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                                <Image Source="audio.svg" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" />
-                                                <Label
-                                                    Text="{Binding AudioGuideCount, Converter={StaticResource AudioCountConverter}}"
-                                                    FontSize="13"
-                                                    TextColor="{StaticResource OnSurfaceVariant}"
-                                                    Opacity="0.7"
-                                                    VerticalOptions="Center" />
-                                            </HorizontalStackLayout>
-                                        </VerticalStackLayout>
-
-                                        <!-- Action placeholder (no icon) -->
-                                        <Frame
-                                            Grid.Column="2"
-                                            Style="{StaticResource CardFrameSmall}"
-                                            BackgroundColor="{StaticResource SecondaryContainer}"
-                                            VerticalOptions="Center"
-                                            Padding="8">
-                                            <Image
-                                                Source="chevron_right.svg"
-                                                WidthRequest="16"
-                                                HeightRequest="16"
-                                                Aspect="AspectFit"
-                                                HorizontalOptions="Center"
-                                                VerticalOptions="Center" />
-                                        </Frame>
-                                    </Grid>
-                                </Frame>
-                            </DataTemplate>
-                        </BindableLayout.ItemTemplate>
-                    </VerticalStackLayout>
-                </VerticalStackLayout>
 
                 <!-- Floating action placeholder -->
                 <!-- <Grid ColumnDefinitions="*,Auto" Margin="0,16,0,0">

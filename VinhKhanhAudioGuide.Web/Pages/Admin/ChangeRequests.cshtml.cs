@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using VinhKhanhAudioGuide.Web.Data;
@@ -9,6 +10,7 @@ using VinhKhanhAudioGuide.Web.Services;
 
 namespace VinhKhanhAudioGuide.Web.Pages.Admin;
 
+[EnableRateLimiting("fixed-tts")]
 public class ChangeRequestsModel : PageModel
 {
     private const string DeleteLocationAction = "delete-location";

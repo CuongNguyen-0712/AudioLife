@@ -5,24 +5,70 @@
     ViewData["ActivePage"] = "AdminReports";
 
     var totalByCategory = Model.CategoryBreakdown.Sum(x => x.AudioCount);
+
+    // Fill 30-day array server-side so JS gets complete data
+    var last30Days = Enumerable.Range(0, 30)
+        .Select(i => DateTime.UtcNow.Date.AddDays(-(29 - i)))
+        .Select(d => new {
+            label = d.ToString("MM/dd"),
+            count = Model.Last30DaysStats.FirstOrDefault(x => x.Date.Date == d)?.Count ?? 0
+        })
+        .ToList();
+
+    var hourlyData = Enumerable.Range(0, 24)
+        .Select(h => new {
+            label = h.ToString("D2") + "h",
+            count = Model.HourlyDistribution.FirstOrDefault(x => x.Hour == h)?.Count ?? 0
+        })
+        .ToList();
 }
 
 <div class="dashboard-hero mb-4">
     <div>
         <p class="hero-kicker"><i class="fa-solid fa-chart-line"></i> Báo cáo tổng hợp</p>
-        <h1 class="hero-title">Báo cáo hệ thống</h1>
-        <p class="hero-subtitle">Theo dõi hiệu suất audio và phân bổ tài nguyên theo khu vực ẩm thực.</p>
+        <h1 class="hero-title">Báo cáo hệ thống &amp; Lượt Nghe</h1>
+        <p class="hero-subtitle">Theo dõi hiệu suất audio, lượt nghe và phân bổ tài nguyên theo khu vực ẩm thực.</p>
     </div>
-    <span class="hero-badge"><i class="fa-solid fa-chart-pie"></i> Snapshot thời gian thực</span>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-page-handler="ExportCsv" class="btn btn-outline-light"><i class="fa-solid fa-file-csv me-2"></i> Xuất CSV Lượt Nghe</a>
+        <span class="hero-badge"><i class="fa-solid fa-chart-pie"></i> Snapshot thời gian thực</span>
+    </div>
 </div>
 
+{{! KPI Cards }}
 <div class="row g-4 mb-4">
-    <div class="col-sm-6 col-xl-3"><div class="stat-card stat-card-v2"><div class="stat-icon bg-info"><i class="fas fa-headphones-alt"></i></div><div><div class="stat-value">@Model.TotalAudios</div><div class="stat-label">Tổng audio</div></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="stat-card stat-card-v2"><div class="stat-icon bg-primary"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-value">@Model.TotalLocations</div><div class="stat-label">Địa điểm ẩm thực</div></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="stat-card stat-card-v2"><div class="stat-icon bg-warning"><i class="fas fa-route"></i></div><div><div class="stat-value">@Model.TotalTours</div><div class="stat-label">Tour ẩm thực</div></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="stat-card stat-card-v2"><div class="stat-icon bg-success"><i class="fas fa-calculator"></i></div><div><div class="stat-value">@Model.AvgAudioPerLocation</div><div class="stat-label">Audio / địa điểm</div></div></div></div>
+    <div class="col-sm-6 col-xl-2"><div class="stat-card stat-card-v2"><div class="stat-icon bg-info"><i class="fas fa-headphones-alt"></i></div><div><div class="stat-value">@Model.TotalAudios</div><div class="stat-label">Tổng audio</div></div></div></div>
+    <div class="col-sm-6 col-xl-2"><div class="stat-card stat-card-v2"><div class="stat-icon bg-primary"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-value">@Model.TotalLocations</div><div class="stat-label">Địa điểm</div></div></div></div>
+    <div class="col-sm-6 col-xl-2"><div class="stat-card stat-card-v2"><div class="stat-icon bg-warning"><i class="fas fa-route"></i></div><div><div class="stat-value">@Model.TotalTours</div><div class="stat-label">Tour</div></div></div></div>
+    <div class="col-sm-6 col-xl-2"><div class="stat-card stat-card-v2"><div class="stat-icon bg-success"><i class="fas fa-calculator"></i></div><div><div class="stat-value">@Model.AvgAudioPerLocation</div><div class="stat-label">Audio / POI</div></div></div></div>
+    <div class="col-sm-6 col-xl-2"><div class="stat-card stat-card-v2"><div class="stat-icon bg-danger"><i class="fas fa-play-circle"></i></div><div><div class="stat-value">@Model.TotalListens</div><div class="stat-label">Lượt nghe</div></div></div></div>
+    <div class="col-sm-6 col-xl-2"><div class="stat-card stat-card-v2"><div class="stat-icon bg-secondary"><i class="fas fa-clock"></i></div><div><div class="stat-value">@Math.Round(Model.AvgListeningSeconds)</div><div class="stat-label">Giây/lần nghe</div></div></div></div>
 </div>
 
+{{! 30-day Trend Chart }}
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="admin-card h-100 card-v2">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-chart-line me-2"></i>Lượt nghe 30 ngày gần nhất</span>
+                <span class="badge-soft">@Model.Last30DaysStats.Sum(x => x.Count) lượt tổng</span>
+            </div>
+            <div class="p-3 p-md-4">
+                <div style="height: 220px"><canvas id="trendChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="admin-card h-100 card-v2">
+            <div class="card-header"><span><i class="fas fa-clock me-2"></i>Khung giờ nghe nhiều nhất</span></div>
+            <div class="p-3 p-md-4">
+                <div style="height: 220px"><canvas id="hourlyChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{! Category Pie + Top POI Bar }}
 <div class="row g-4 mb-4">
     <div class="col-lg-6">
         <div class="admin-card h-100 card-v2">
@@ -34,7 +80,7 @@
     </div>
     <div class="col-lg-6">
         <div class="admin-card h-100 card-v2">
-            <div class="card-header"><span><i class="fas fa-chart-column me-2"></i>Top POI theo audio</span></div>
+            <div class="card-header"><span><i class="fas fa-chart-column me-2"></i>Top 10 POI theo lượt nghe</span></div>
             <div class="p-3 p-md-4">
                 <div class="chart-wrap-sm"><canvas id="locationBarChart"></canvas></div>
             </div>
@@ -42,6 +88,7 @@
     </div>
 </div>
 
+{{! Tables }}
 <div class="row g-4">
     <div class="col-lg-5">
         <div class="admin-card h-100 card-v2">
@@ -66,17 +113,21 @@
     </div>
     <div class="col-lg-7">
         <div class="admin-card h-100 card-v2">
-            <div class="card-header"><span><i class="fas fa-ranking-star me-2"></i>Top POI theo audio</span></div>
+            <div class="card-header"><span><i class="fas fa-ranking-star me-2"></i>Top 10 POI được nghe nhiều nhất</span></div>
             <div class="table-responsive">
                 <table class="admin-table table-v2">
-                    <thead><tr><th>Địa điểm</th><th>Danh mục</th><th class="text-end">Audio</th></tr></thead>
+                    <thead><tr><th>#</th><th>Địa điểm</th><th class="text-end">Lượt nghe</th><th class="text-end">TG tb</th></tr></thead>
                     <tbody>
-                    @foreach (var item in Model.TopLocationsByAudio)
+                    @{ int rank = 0; }
+                    @foreach (var item in Model.TopLocationsByListens)
                     {
+                        rank++;
+                        string medal = rank == 1 ? "🥇" : rank == 2 ? "🥈" : rank == 3 ? "🥉" : rank.ToString();
                         <tr>
-                            <td class="fw-semibold">@item.Name</td>
-                            <td>@item.Category</td>
-                            <td class="text-end"><span class="badge-admin badge-count">@item.AudioCount</span></td>
+                            <td><strong>@medal</strong></td>
+                            <td class="fw-semibold">@item.LocationName</td>
+                            <td class="text-end"><span class="badge-admin badge-count">@item.ListenCount</span></td>
+                            <td class="text-end">@(Math.Round(item.AvgSeconds, 1))s</td>
                         </tr>
                     }
                     </tbody>
@@ -89,56 +140,75 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const categoryLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CategoryBreakdown.Select(x => x.Name)));
-        const categoryValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CategoryBreakdown.Select(x => x.AudioCount)));
-        const locationLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopLocationsByAudio.Select(x => x.Name)));
-        const locationValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopLocationsByAudio.Select(x => x.AudioCount)));
+        Chart.defaults.color = '#adb5bd';
+        Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
 
-        const pieCtx = document.getElementById('categoryPieChart');
-        if (pieCtx) {
-            new Chart(pieCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: categoryLabels,
-                    datasets: [{
-                        data: categoryValues,
-                        backgroundColor: ['#f97316', '#fb923c', '#fdba74', '#f59e0b', '#38bdf8', '#34d399'],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    }
-                }
-            });
-        }
+        const trendLabels  = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(last30Days.Select(x => x.label)));
+        const trendValues  = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(last30Days.Select(x => x.count)));
+        const hourLabels   = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(hourlyData.Select(x => x.label)));
+        const hourValues   = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(hourlyData.Select(x => x.count)));
+        const catLabels    = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CategoryBreakdown.Select(x => x.Name)));
+        const catValues    = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CategoryBreakdown.Select(x => x.AudioCount)));
+        const locLabels    = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopLocationsByListens.Select(x => x.LocationName)));
+        const locValues    = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopLocationsByListens.Select(x => x.ListenCount)));
 
-        const barCtx = document.getElementById('locationBarChart');
-        if (barCtx) {
-            new Chart(barCtx, {
-                type: 'bar',
-                data: {
-                    labels: locationLabels,
-                    datasets: [{
-                        label: 'Audio',
-                        data: locationValues,
-                        borderRadius: 8,
-                        backgroundColor: '#0ea5e9'
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { beginAtZero: true, ticks: { precision: 0 } }
-                    }
-                }
-            });
-        }
+        // ── 30-day Trend ──
+        new Chart(document.getElementById('trendChart'), {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [{
+                    label: 'Lượt nghe', data: trendValues,
+                    borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,0.12)',
+                    fill: true, tension: 0.4, pointRadius: 3, pointHoverRadius: 6, borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+                scales: { x: { ticks: { maxTicksLimit: 8 } }, y: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+        });
+
+        // ── Hourly distribution ──
+        new Chart(document.getElementById('hourlyChart'), {
+            type: 'bar',
+            data: {
+                labels: hourLabels,
+                datasets: [{
+                    label: 'Lượt nghe', data: hourValues,
+                    borderRadius: 4, backgroundColor: 'rgba(56,189,248,0.6)', borderColor: '#38bdf8', borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { ticks: { maxTicksLimit: 12 } }, y: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+        });
+
+        // ── Category Doughnut ──
+        new Chart(document.getElementById('categoryPieChart'), {
+            type: 'doughnut',
+            data: {
+                labels: catLabels,
+                datasets: [{ data: catValues, backgroundColor: ['#f97316','#fb923c','#fdba74','#f59e0b','#38bdf8','#34d399'], borderWidth: 1 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+
+        // ── Location Bar ──
+        new Chart(document.getElementById('locationBarChart'), {
+            type: 'bar',
+            data: {
+                labels: locLabels,
+                datasets: [{ label: 'Lượt nghe', data: locValues, borderRadius: 8, backgroundColor: '#ef4444' }]
+            },
+            options: {
+                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+        });
     </script>
 }

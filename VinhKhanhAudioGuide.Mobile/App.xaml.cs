@@ -193,6 +193,7 @@ public partial class App : Application
                 var newSnapshot = new AppSessionSnapshot(
                     deviceId,
                     validation.SessionToken,
+                    validation.AccessToken ?? check.AccessToken,
                     validation.RefreshToken ?? check.RefreshToken,
                     null, // QrToken
                     validation.UserAppId ?? check.UserAppId,

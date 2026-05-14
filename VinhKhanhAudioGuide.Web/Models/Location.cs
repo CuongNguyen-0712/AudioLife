@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using VinhKhanhAudioGuide.Web.Data;
 
 namespace VinhKhanhAudioGuide.Web.Models;
 
@@ -42,4 +43,5 @@ public class Location
     public ICollection<TourLocation> TourLocations { get; set; } = new List<TourLocation>();
 
     public ICollection<ListeningHistory> ListeningHistories { get; set; } = new List<ListeningHistory>();
+    public ICollection<LocationReview> Reviews { get; set; } = new List<LocationReview>();
 }
